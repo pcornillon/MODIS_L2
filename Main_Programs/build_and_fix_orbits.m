@@ -1,17 +1,22 @@
-function [timing problem_list] = build_and_fix_orbits( base_dir_in, base_dir_meta_in, base_dir_out, ...
-    start_date_time, end_date_time, fix_mask, fix_bowtie, get_gradients, use_OBPG)
+function [timing problem_list] = build_and_fix_orbits( orbits_directory, granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
+    start_date_time, end_date_time, fix_mask, fix_bowtie, get_gradients, use_OBPG, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
 %
 % INPUT
-%   base_dir_in - the base directory for the input files.
-%   base_dir_meta_in - the base directory for the location of the metadata
-%    files copied from the OBPG files.
-%   base_dir_out - the base directory for the output files. Note that this
-%    must be the full directory name,netCDF doesn't like ~/.
-%   start_date_time - build orbits with the first orbit to be built including
-%    this time specified as: [YYYY, MM, DD, HH, Min, 00].
+%   orbits_directory - the base directory for the .mat files with the
+%    orbit info, specifically, the names of granules contributing to each
+%    orbit. 
+%   granules_directory - the base directory for the input files.
+%   metadata_directory - the base directory for the location of the 
+%    metadata files copied from the OBPG files.
+%   fixit_directory - the directory for files required by this script to
+%    correct the cloud mask and the bow-tie effect.
+%   output_file_directory - the base directory for the output files. Note 
+%    that this must be the full directory name,netCDF doesn't like ~/.
+%   start_date_time - build orbits with the first orbit to be built 
+%    including this time specified as: [YYYY, MM, DD, HH, Min, 00].
 %   end_date_time - last orbit to be built includes this time.
 %   fix_mask - if 1 fixes the mask. If absent, will set to 1.
 %   fix_bowtie - if 1 fixes the bow-tie problem, otherwise bow-tie effect
@@ -19,6 +24,9 @@ function [timing problem_list] = build_and_fix_orbits( base_dir_in, base_dir_met
 %   get_gradients - 1 to calculate eastward and northward gradients, 0
 %    otherwise.
 %   use_OBPG - use metadata copied from the OBPG file.
+%   save_core - 1 to save only the core values, regridded lon, lat, SST,
+%    refined mask and nadir info, 0 otherwise.
+%   print_diag - 1 to print timing diagnostics, 0 otherwise.
 %
 % OUTPUT
 %   timing - a structure with the times to process different elements of
@@ -29,25 +37,35 @@ function [timing problem_list] = build_and_fix_orbits( base_dir_in, base_dir_met
 %                : 2 - couldn't find the metadata file copied from OBPG data.
 %
 % EXAMPLE
-%   base_dir_in = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/';  % Real run
-%   base_dir_in = '~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/';  % Test run.
-%   base_dir_in = '/Volumes/Backup/';  % Test run.
-%   base_dir_out = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/';  % Test run.
-%   [timing problem_list] = build_and_fix_orbits( base_dir_in, base_dir_out, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1);
+%   granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/';  % Test run.
+%   orbits_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Orbits/';  % Test run.
+%   metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+%   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
+%   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
+%   output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
+%   [timing problem_list] = build_and_fix_orbits(  orbits_directory, granules_directory, metadata_directory, fixit_directory, ...
+%    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1);
 %
-%  To do just one orbit, specify the start time somewhere in that orbit and
+%  To do just the test orbit, specify the start time somewhere in that orbit and
 %  the end time about 5 minutes after the start time; e.g.,
-%  [timing problem_list] = build_and_fix_orbits( base_dir_in, base_dir_out, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);
+%  [timing problem_list] = build_and_fix_orbits(  orbits_directory, granules_directory, metadata_directory, fixit_directory, ...
+%   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);
 %
 
 global print_diagnostics save_just_the_facts
 
-if isempty(save_just_the_facts)
-    save_just_the_facts = input('Enter 1 to save only the basic variables for this run otherwise enter 0 or simply cr: ');
+save_just_the_facts = 1;
+if exist('save_core') ~= 0
+    if save_core == 0
+        save_just_the_facts = 0;
+    end
 end
 
-if isempty(print_diagnostics)
-    print_diagnostics = input('Enter 1 to print diagnostic comments for this run otherwise enter 0 or simply cr: ');
+print_diagnostics = 0;
+if exist('print_diag') ~= 0
+    if print_diag == 1
+        print_diagnostics = 1;
+    end
 end
 
 if exist('use_OBPG') == 0
@@ -68,12 +86,12 @@ end
 amazon_s3_run = 0;
 June_19_2010_run = 0;
 
-if length(base_dir_in) > 5
-    if strcmp( base_dir_in(1:2), 's3') == 1
+if length(granules_directory) > 5
+    if strcmp( granules_directory(1:2), 's3') == 1
         fprintf('\n\n%s\n\n\n', 'This is an Amazon S3 run; will read data from s3 storage.')
         amazon_s3_run = 1;
     else
-        fprintf('\n\n%s\n\n\n', 'This is an GSO run; will read data from Aqua-1.')
+        fprintf('\n\n%s\n\n\n', 'This is a GSO run; will read data from Aqua-1.')
     end
 else
     fprintf('\n\n%s\n\n\n', 'This is a 19 June 2010 run; will read data from Matlab Project.')
@@ -109,14 +127,14 @@ if (matlab_end_time < acceptable_start_time) | (matlab_end_time > acceptable_end
     return
 end
 
-if strcmp(base_dir_out(1:2), '~/')
-    disp(['The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: ' base_dir_out])
+if strcmp(output_file_directory(1:2), '~/')
+    disp(['The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: ' output_file_directory])
     return
 end
 
 %% Passed checks on input parameters. Open a diary file for this run.
 
-Diary_File = [base_dir_out 'Logs/build_and_fix_orbits_' strrep(num2str(now), '.', '_') '.txt'];
+Diary_File = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '.txt'];
 diary(Diary_File)
 
 tic_build_start = tic;
@@ -139,7 +157,7 @@ global sst_range sst_range_grid_size
 sst_range_grid_size = 2;
 
 % % % load ~/Dropbox/ComputerPrograms/Satellite_Model_SST_Processing/AI-SST/Data/SST_Ranges/SST_Range_for_Declouding.mat
-load SST_Range_for_Declouding.mat
+load([fixit_directory 'SST_Range_for_Declouding.mat'])
 sst_range = gridded_sst_range(1:90,1:180,:);
 
 for i_range_image=1:12
@@ -159,13 +177,13 @@ end
 if fix_bowtie
     %     load Orbit_Weights_and_Locations_11501.mat
     %     clear fi_orbits fi_weights
-    load weights_and_locations_from_31191.mat
+    load([fixit_directory 'weights_and_locations_from_31191.mat'])
 end
 
 % Gradient stuff
 
 if get_gradients
-    gradient_filename = 'Separation_and_Angle_Arrays.n4';
+    gradient_filename = [fixit_directory 'Separation_and_Angle_Arrays.n4'];
     
     track_angle = ncread( gradient_filename, 'track_angle');
     cos_track_angle = cosd(track_angle);
@@ -193,7 +211,7 @@ while current_time < matlab_end_time
     [iyear imonth iday] = datevec(current_time);
     
     %     eval(['xx = load(''/Volumes/Aqua-1/MODIS_R2019/Orbits/nadir_info_' return_a_string(iyear) '_' return_a_string(imonth) '.mat'', ''filenames'', ''filename_index'', ''orbit_info'', ''scan_line_in_file'');'])
-    eval(['xx = load(''' base_dir_in 'nadir_info_' return_a_string(iyear) '_' return_a_string(imonth) '.mat'', ''filenames'', ''filename_index'', ''orbit_info'', ''scan_line_in_file'');'])
+    eval(['xx = load(''' orbits_directory 'nadir_info_' return_a_string(iyear) '_' return_a_string(imonth) '.mat'', ''filenames'', ''filename_index'', ''orbit_info'', ''scan_line_in_file'');'])
     
     filenames = [filenames xx.filenames];
     filename_index = [filename_index; xx.filename_index];
@@ -247,7 +265,7 @@ for iOrbit=start_orbit_no:end_orbit_no
     formatOut = 'mm';
     months = datestr(orbit_info.matlab_times(iOrbit), formatOut);
     
-    name_out_sst = [base_dir_out 'SST/' years '/' months '/' orbit_file_name '.nc4'];
+    name_out_sst = [output_file_directory years '/' months '/' orbit_file_name '.nc4'];
     
     if exist(name_out_sst) ~= 2
         
@@ -295,9 +313,9 @@ for iOrbit=start_orbit_no:end_orbit_no
             ss = strfind(filename, '/');
             
             if amazon_s3_run
-                % % %                 fi = [base_dir_in name_in_date name_in_hr_min '07' filename(ss(end)+15:end)];
+                % % %                 fi = [granules_directory name_in_date name_in_hr_min '07' filename(ss(end)+15:end)];
                 % % %                 if exist(fi) ~= 2
-                % % %                     fi = [base_dir_in name_in_date name_in_hr_min '08' filename(ss(end)+15:end)];
+                % % %                     fi = [granules_directory name_in_date name_in_hr_min '08' filename(ss(end)+15:end)];
                 % % %                     if exist(fi) ~= 2
                 % % %                         iProblemFile = iProblemFile + 1;
                 % % %                         problem_list.filename{iProblemFile} = filename;
@@ -307,7 +325,7 @@ for iOrbit=start_orbit_no:end_orbit_no
                 % % %                     end
                 % % %                 end
                 for iMeta=[7 8 0 1 2 3 4 5 6 9]
-                    fi_meta = [base_dir_meta_in filename(ss(end)+1:dd-2) '0' num2str(iMeta) filename(ss(end)+15:end)];
+                    fi_meta = [metadata_directory filename(ss(end)+1:dd-2) '0' num2str(iMeta) filename(ss(end)+15:end)];
                     if exist(fi) == 2
                         found_meta = 1;
                         break
@@ -324,7 +342,7 @@ for iOrbit=start_orbit_no:end_orbit_no
                     fprintf('\n******************************\nSkipping %s; could not find input file.\n******************************\n', fi_meta)
                 end
             else
-                fi = [base_dir_in filename(ss(end)+1:end)];
+                fi = [granules_directory filename(ss(end-2)+1:end)];
             end
             
             % Now build the metadata filename.
@@ -335,7 +353,7 @@ for iOrbit=start_orbit_no:end_orbit_no
             if use_OBPG
                 found_meta = 0;
                 for iMeta=[7 8 0 1 2 3 4 5 6 9]
-                    fi_meta = [base_dir_meta_in filename(ss(end)+1:dd-3) '0' num2str(iMeta) '_L2_SST_OBPG_extras.nc4'];
+                    fi_meta = [metadata_directory filename(ss(end)+1:dd-3) '0' num2str(iMeta) '_L2_SST_OBPG_extras.nc4'];
                     if exist(fi_meta) == 2
                         found_meta = 1;
                         break
@@ -352,7 +370,7 @@ for iOrbit=start_orbit_no:end_orbit_no
                     fprintf('\n******************************\nSkipping %s; could not find its metadata file.\n******************************\n', fi_meta)
                 end
             else
-                fi_meta = [base_dir_in filename(ss(end)+1:end)];
+                fi_meta = [granules_directory filename(ss(end)+1:end)];
             end
             
             if process_this_one

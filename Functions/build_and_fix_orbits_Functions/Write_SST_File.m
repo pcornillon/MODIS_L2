@@ -75,84 +75,86 @@ Second = str2num(time_coverage_start(18:20)) * 60;
 
 %% Create the variables to be written out along with their attributes and write them. Start with main variable.
 
-% longitude
-
-nccreate( output_filename, 'longitude', 'Datatype', 'int32', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-
-ncwriteatt( output_filename, 'longitude', 'long_name', 'Longitude')
-ncwriteatt( output_filename, 'longitude',  'standard_name', 'longitude')
-ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
-ncwriteatt( output_filename, 'longitude', 'add_offset', 0)
-ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
-ncwriteatt( output_filename, 'longitude', 'valid_min', -180000)
-ncwriteatt( output_filename, 'longitude', 'valid_max', 1800000)
-
-ncwrite(  output_filename, 'longitude', longitude)
-
-% latitude
-
-nccreate( output_filename, 'latitude', 'Datatype', 'int32', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-
-ncwriteatt( output_filename, 'latitude', 'long_name', 'latitude')
-ncwriteatt( output_filename, 'latitude',  'standard_name', 'latitude')
-ncwriteatt( output_filename, 'latitude', 'units', 'degrees_north')
-ncwriteatt( output_filename, 'latitude', 'add_offset', 0)
-ncwriteatt( output_filename, 'latitude', 'scale_factor', LatLonScaleFactor)
-ncwriteatt( output_filename, 'latitude', 'valid_min', -90000)
-ncwriteatt( output_filename, 'latitude', 'valid_max', 90000)
-
-ncwrite(  output_filename, 'latitude', latitude)
-
-% SST_In - SST in the original granules.
-
-nccreate( output_filename, 'SST_In', 'Datatype', 'int16', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
-
-ncwriteatt( output_filename, 'SST_In', 'long_name', 'sst')
-ncwriteatt( output_filename, 'SST_In',  'standard_name', 'sea_surface_temperature')
-ncwriteatt( output_filename, 'SST_In', 'units', 'C')
-ncwriteatt( output_filename, 'SST_In', 'add_offset', 0)
-ncwriteatt( output_filename, 'SST_In', 'scale_factor', sstScaleFactor)
-ncwriteatt( output_filename, 'SST_In',  'valid_min', -600)
-ncwriteatt( output_filename, 'SST_In',  'valid_max', 9000)
-
-ncwrite( output_filename, 'SST_In', SST_In)
-
-% qual_sst - quality in the original granules.
-
-nccreate( output_filename, 'qual_sst', 'Datatype', 'int8', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', -1)
-
-ncwriteatt( output_filename, 'qual_sst', 'long_name', 'Quality Levels, Sea Surface Temperature')
-ncwriteatt( output_filename, 'qual_sst',  'standard_name', 'sea_surface_temperature')
-ncwriteatt( output_filename, 'qual_sst', 'flag_masks', [0  1  2  3  4])
-ncwriteatt( output_filename, 'qual_sst', 'flag_meanings', 'BEST GOOD QUESTIONABLE BAD NOTPROCESSED')
-ncwriteatt( output_filename, 'qual_sst',  'valid_min', 0)
-ncwriteatt( output_filename, 'qual_sst',  'valid_max', 5)
-
-ncwrite( output_filename, 'qual_sst', qual_sst)
-
-% SST_In_Masked - SST_In with the refined mask applied. Still with bowtie issues.
-
-nccreate( output_filename, 'SST_In_Masked', 'Datatype', 'int16', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
-
-ncwriteatt( output_filename, 'SST_In_Masked', 'long_name', 'sst')
-ncwriteatt( output_filename, 'SST_In_Masked',  'standard_name', 'sea_surface_temperature')
-ncwriteatt( output_filename, 'SST_In_Masked', 'units', 'C')
-ncwriteatt( output_filename, 'SST_In_Masked', 'add_offset', 0)
-ncwriteatt( output_filename, 'SST_In_Masked', 'scale_factor', sstScaleFactor)
-ncwriteatt( output_filename, 'SST_In_Masked',  'valid_min', -600)
-ncwriteatt( output_filename, 'SST_In_Masked',  'valid_max', 9000)
-
-ncwrite( output_filename, 'SST_In_Masked', SST_In_Masked)
+if save_just_the_facts == 0
+    % longitude
+    
+    nccreate( output_filename, 'longitude', 'Datatype', 'int32', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+    
+    ncwriteatt( output_filename, 'longitude', 'long_name', 'Longitude')
+    ncwriteatt( output_filename, 'longitude',  'standard_name', 'longitude')
+    ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
+    ncwriteatt( output_filename, 'longitude', 'add_offset', 0)
+    ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
+    ncwriteatt( output_filename, 'longitude', 'valid_min', -180000)
+    ncwriteatt( output_filename, 'longitude', 'valid_max', 1800000)
+    
+    ncwrite(  output_filename, 'longitude', longitude)
+    
+    % latitude
+    
+    nccreate( output_filename, 'latitude', 'Datatype', 'int32', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+    
+    ncwriteatt( output_filename, 'latitude', 'long_name', 'latitude')
+    ncwriteatt( output_filename, 'latitude',  'standard_name', 'latitude')
+    ncwriteatt( output_filename, 'latitude', 'units', 'degrees_north')
+    ncwriteatt( output_filename, 'latitude', 'add_offset', 0)
+    ncwriteatt( output_filename, 'latitude', 'scale_factor', LatLonScaleFactor)
+    ncwriteatt( output_filename, 'latitude', 'valid_min', -90000)
+    ncwriteatt( output_filename, 'latitude', 'valid_max', 90000)
+    
+    ncwrite(  output_filename, 'latitude', latitude)
+    
+    % SST_In - SST in the original granules.
+    
+    nccreate( output_filename, 'SST_In', 'Datatype', 'int16', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
+    
+    ncwriteatt( output_filename, 'SST_In', 'long_name', 'sst')
+    ncwriteatt( output_filename, 'SST_In',  'standard_name', 'sea_surface_temperature')
+    ncwriteatt( output_filename, 'SST_In', 'units', 'C')
+    ncwriteatt( output_filename, 'SST_In', 'add_offset', 0)
+    ncwriteatt( output_filename, 'SST_In', 'scale_factor', sstScaleFactor)
+    ncwriteatt( output_filename, 'SST_In',  'valid_min', -600)
+    ncwriteatt( output_filename, 'SST_In',  'valid_max', 9000)
+    
+    ncwrite( output_filename, 'SST_In', SST_In)
+    
+    % qual_sst - quality in the original granules.
+    
+    nccreate( output_filename, 'qual_sst', 'Datatype', 'int8', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', -1)
+    
+    ncwriteatt( output_filename, 'qual_sst', 'long_name', 'Quality Levels, Sea Surface Temperature')
+    ncwriteatt( output_filename, 'qual_sst',  'standard_name', 'sea_surface_temperature')
+    ncwriteatt( output_filename, 'qual_sst', 'flag_masks', [0  1  2  3  4])
+    ncwriteatt( output_filename, 'qual_sst', 'flag_meanings', 'BEST GOOD QUESTIONABLE BAD NOTPROCESSED')
+    ncwriteatt( output_filename, 'qual_sst',  'valid_min', 0)
+    ncwriteatt( output_filename, 'qual_sst',  'valid_max', 5)
+    
+    ncwrite( output_filename, 'qual_sst', qual_sst)
+    
+    % SST_In_Masked - SST_In with the refined mask applied. Still with bowtie issues.
+    
+    nccreate( output_filename, 'SST_In_Masked', 'Datatype', 'int16', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
+    
+    ncwriteatt( output_filename, 'SST_In_Masked', 'long_name', 'sst')
+    ncwriteatt( output_filename, 'SST_In_Masked',  'standard_name', 'sea_surface_temperature')
+    ncwriteatt( output_filename, 'SST_In_Masked', 'units', 'C')
+    ncwriteatt( output_filename, 'SST_In_Masked', 'add_offset', 0)
+    ncwriteatt( output_filename, 'SST_In_Masked', 'scale_factor', sstScaleFactor)
+    ncwriteatt( output_filename, 'SST_In_Masked',  'valid_min', -600)
+    ncwriteatt( output_filename, 'SST_In_Masked',  'valid_max', 9000)
+    
+    ncwrite( output_filename, 'SST_In_Masked', SST_In_Masked)
+end
 
 if fix_mask
     
@@ -222,130 +224,134 @@ if fix_bowtie
     
     ncwrite(  output_filename, 'regridded_latitude', regridded_latitude)
     
-    % region_start
-    
-    nccreate( output_filename, 'region_start', 'Datatype', 'int32', ...
-        'Dimensions', {'i' 4})
-    
-    ncwriteatt( output_filename, 'region_start', 'long_name', 'region_start')
-    ncwriteatt( output_filename, 'region_start', 'standard_name', 'region_start')
-    ncwriteatt( output_filename, 'region_start', 'valid_min', 0)
-    ncwriteatt( output_filename, 'region_start', 'valid_max', 50000)
-    
-    ncwrite(  output_filename, 'region_start', int32(region_start))
-    
-    % region_end
-    
-    nccreate( output_filename, 'region_end', 'Datatype', 'int32', ...
-        'Dimensions', {'i' 4})
-    
-    ncwriteatt( output_filename, 'region_end', 'long_name', 'region_end')
-    ncwriteatt( output_filename, 'region_end', 'standard_name', 'region_end')
-    ncwriteatt( output_filename, 'region_end', 'valid_min', 0)
-    ncwriteatt( output_filename, 'region_end', 'valid_max', 50000)
-    
-    ncwrite(  output_filename, 'region_end', int32(region_end))
-    
-    % easting
-    
-    nccreate( output_filename, 'easting', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'easting', 'long_name', 'easting')
-    ncwriteatt( output_filename, 'easting', 'standard_name', 'easting')
-    ncwriteatt( output_filename, 'easting', 'units', 'km/east')
-    ncwriteatt( output_filename, 'easting', 'add_offset', 0)
-    ncwriteatt( output_filename, 'easting', 'scale_factor', 1)
-    ncwriteatt( output_filename, 'easting', 'valid_min', -1000000)
-    ncwriteatt( output_filename, 'easting', 'valid_max', 1000000)
-    
-    ncwrite(  output_filename, 'easting', int32(easting))
-    
-    % northing
-    
-    nccreate( output_filename, 'northing', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'northing', 'long_name', 'northing')
-    ncwriteatt( output_filename, 'northing', 'standard_name', 'northing')
-    ncwriteatt( output_filename, 'northing', 'units', 'km/east')
-    ncwriteatt( output_filename, 'northing', 'add_offset', 0)
-    ncwriteatt( output_filename, 'northing', 'scale_factor', 1)
-    ncwriteatt( output_filename, 'northing', 'valid_min', -1000000)
-    ncwriteatt( output_filename, 'northing', 'valid_max', 1000000)
-    
-    ncwrite(  output_filename, 'northing', int32(northing))
-    
-    % regridded_easting
-    
-    nccreate( output_filename, 'regridded_easting', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'regridded_easting', 'long_name', 'regridded_easting')
-    ncwriteatt( output_filename, 'regridded_easting', 'standard_name', 'regridded_easting')
-    ncwriteatt( output_filename, 'regridded_easting', 'units', 'km/east')
-    ncwriteatt( output_filename, 'regridded_easting', 'add_offset', 0)
-    ncwriteatt( output_filename, 'regridded_easting', 'scale_factor', 1)
-    ncwriteatt( output_filename, 'regridded_easting', 'valid_min', -1000000)
-    ncwriteatt( output_filename, 'regridded_easting', 'valid_max', 1000000)
-    
-    ncwrite(  output_filename, 'regridded_easting', int32(regridded_easting))
-    
-    % regridded_northing
-    
-    nccreate( output_filename, 'regridded_northing', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'regridded_northing', 'long_name', 'regridded_northing')
-    ncwriteatt( output_filename, 'regridded_northing', 'standard_name', 'regridded_northing')
-    ncwriteatt( output_filename, 'regridded_northing', 'units', 'km/east')
-    ncwriteatt( output_filename, 'regridded_northing', 'add_offset', 0)
-    ncwriteatt( output_filename, 'regridded_northing', 'scale_factor', 1)
-    ncwriteatt( output_filename, 'regridded_northing', 'valid_min', -1000000)
-    ncwriteatt( output_filename, 'regridded_northing', 'valid_max', 1000000)
-    
-    ncwrite(  output_filename, 'regridded_northing', int32(regridded_northing))
+    if save_just_the_facts == 0
+        % region_start
+        
+        nccreate( output_filename, 'region_start', 'Datatype', 'int32', ...
+            'Dimensions', {'i' 4})
+        
+        ncwriteatt( output_filename, 'region_start', 'long_name', 'region_start')
+        ncwriteatt( output_filename, 'region_start', 'standard_name', 'region_start')
+        ncwriteatt( output_filename, 'region_start', 'valid_min', 0)
+        ncwriteatt( output_filename, 'region_start', 'valid_max', 50000)
+        
+        ncwrite(  output_filename, 'region_start', int32(region_start))
+        
+        % region_end
+        
+        nccreate( output_filename, 'region_end', 'Datatype', 'int32', ...
+            'Dimensions', {'i' 4})
+        
+        ncwriteatt( output_filename, 'region_end', 'long_name', 'region_end')
+        ncwriteatt( output_filename, 'region_end', 'standard_name', 'region_end')
+        ncwriteatt( output_filename, 'region_end', 'valid_min', 0)
+        ncwriteatt( output_filename, 'region_end', 'valid_max', 50000)
+        
+        ncwrite(  output_filename, 'region_end', int32(region_end))
+        
+        % easting
+        
+        nccreate( output_filename, 'easting', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        
+        ncwriteatt( output_filename, 'easting', 'long_name', 'easting')
+        ncwriteatt( output_filename, 'easting', 'standard_name', 'easting')
+        ncwriteatt( output_filename, 'easting', 'units', 'km/east')
+        ncwriteatt( output_filename, 'easting', 'add_offset', 0)
+        ncwriteatt( output_filename, 'easting', 'scale_factor', 1)
+        ncwriteatt( output_filename, 'easting', 'valid_min', -1000000)
+        ncwriteatt( output_filename, 'easting', 'valid_max', 1000000)
+        
+        ncwrite(  output_filename, 'easting', int32(easting))
+        
+        % northing
+        
+        nccreate( output_filename, 'northing', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        
+        ncwriteatt( output_filename, 'northing', 'long_name', 'northing')
+        ncwriteatt( output_filename, 'northing', 'standard_name', 'northing')
+        ncwriteatt( output_filename, 'northing', 'units', 'km/east')
+        ncwriteatt( output_filename, 'northing', 'add_offset', 0)
+        ncwriteatt( output_filename, 'northing', 'scale_factor', 1)
+        ncwriteatt( output_filename, 'northing', 'valid_min', -1000000)
+        ncwriteatt( output_filename, 'northing', 'valid_max', 1000000)
+        
+        ncwrite(  output_filename, 'northing', int32(northing))
+        
+        % regridded_easting
+        
+        nccreate( output_filename, 'regridded_easting', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        
+        ncwriteatt( output_filename, 'regridded_easting', 'long_name', 'regridded_easting')
+        ncwriteatt( output_filename, 'regridded_easting', 'standard_name', 'regridded_easting')
+        ncwriteatt( output_filename, 'regridded_easting', 'units', 'km/east')
+        ncwriteatt( output_filename, 'regridded_easting', 'add_offset', 0)
+        ncwriteatt( output_filename, 'regridded_easting', 'scale_factor', 1)
+        ncwriteatt( output_filename, 'regridded_easting', 'valid_min', -1000000)
+        ncwriteatt( output_filename, 'regridded_easting', 'valid_max', 1000000)
+        
+        ncwrite(  output_filename, 'regridded_easting', int32(regridded_easting))
+        
+        % regridded_northing
+        
+        nccreate( output_filename, 'regridded_northing', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        
+        ncwriteatt( output_filename, 'regridded_northing', 'long_name', 'regridded_northing')
+        ncwriteatt( output_filename, 'regridded_northing', 'standard_name', 'regridded_northing')
+        ncwriteatt( output_filename, 'regridded_northing', 'units', 'km/east')
+        ncwriteatt( output_filename, 'regridded_northing', 'add_offset', 0)
+        ncwriteatt( output_filename, 'regridded_northing', 'scale_factor', 1)
+        ncwriteatt( output_filename, 'regridded_northing', 'valid_min', -1000000)
+        ncwriteatt( output_filename, 'regridded_northing', 'valid_max', 1000000)
+        
+        ncwrite(  output_filename, 'regridded_northing', int32(regridded_northing))
+    end
 end
 
 if get_gradients
     
-    % along_scan_gradient
-    
     MaxGrad = 20; % Don't expect to see gradients larger than 20 K/km
     
-    nccreate( output_filename, 'along_scan_gradient', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'along_scan_gradient', 'long_name', 'along_scan sst gradient')
-    ncwriteatt( output_filename, 'along_scan_gradient',  'standard_name', 'along_scan_temperature_gradient')
-    ncwriteatt( output_filename, 'along_scan_gradient', 'units', 'C/km')
-    ncwriteatt( output_filename, 'along_scan_gradient', 'add_offset', 0)
-    ncwriteatt( output_filename, 'along_scan_gradient', 'scale_factor', gradientScaleFactor)
-    ncwriteatt( output_filename, 'along_scan_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
-    ncwriteatt( output_filename, 'along_scan_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
-    
-    ncwrite(  output_filename, 'along_scan_gradient', int32(along_scan_gradient * 1/gradientScaleFactor))
-    
-    % along_track_gradient
-    
-    nccreate( output_filename, 'along_track_gradient', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'along_track_gradient', 'long_name', 'along_track sst gradient')
-    ncwriteatt( output_filename, 'along_track_gradient',  'standard_name', 'along_track_temperature_gradient')
-    ncwriteatt( output_filename, 'along_track_gradient', 'units', 'C/km')
-    ncwriteatt( output_filename, 'along_track_gradient', 'add_offset', 0)
-    ncwriteatt( output_filename, 'along_track_gradient', 'scale_factor', gradientScaleFactor)
-    ncwriteatt( output_filename, 'along_track_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
-    ncwriteatt( output_filename, 'along_track_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
-    
-    ncwrite(  output_filename, 'along_track_gradient', int32(along_track_gradient * 1/gradientScaleFactor))
+    if save_just_the_facts == 0
+        % along_scan_gradient
+                
+        nccreate( output_filename, 'along_scan_gradient', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        
+        ncwriteatt( output_filename, 'along_scan_gradient', 'long_name', 'along_scan sst gradient')
+        ncwriteatt( output_filename, 'along_scan_gradient',  'standard_name', 'along_scan_temperature_gradient')
+        ncwriteatt( output_filename, 'along_scan_gradient', 'units', 'C/km')
+        ncwriteatt( output_filename, 'along_scan_gradient', 'add_offset', 0)
+        ncwriteatt( output_filename, 'along_scan_gradient', 'scale_factor', gradientScaleFactor)
+        ncwriteatt( output_filename, 'along_scan_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
+        ncwriteatt( output_filename, 'along_scan_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
+        
+        ncwrite(  output_filename, 'along_scan_gradient', int32(along_scan_gradient * 1/gradientScaleFactor))
+        
+        % along_track_gradient
+        
+        nccreate( output_filename, 'along_track_gradient', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        
+        ncwriteatt( output_filename, 'along_track_gradient', 'long_name', 'along_track sst gradient')
+        ncwriteatt( output_filename, 'along_track_gradient',  'standard_name', 'along_track_temperature_gradient')
+        ncwriteatt( output_filename, 'along_track_gradient', 'units', 'C/km')
+        ncwriteatt( output_filename, 'along_track_gradient', 'add_offset', 0)
+        ncwriteatt( output_filename, 'along_track_gradient', 'scale_factor', gradientScaleFactor)
+        ncwriteatt( output_filename, 'along_track_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
+        ncwriteatt( output_filename, 'along_track_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
+        
+        ncwrite(  output_filename, 'along_track_gradient', int32(along_track_gradient * 1/gradientScaleFactor))
+    end
     
     % Eastward gradient
     

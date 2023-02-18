@@ -6,3 +6,35 @@ Prior to performing the correction outlined above, 5-minute granules of the orig
 build_and_fix_orbits.m was developed with data uploaded from the OBPG website but the script may be used to process MODIS L2 SST moved to the Amazon cloud by the Jet Propulsion Laboratories Physical Oceanography Distributed Active Archive Center (PO.DAAC). The archive in Amazon west has been modified by the PO.DAAC to make it GHRSST-compliant. This required the addition of some fields. As part of the process some metadata fields, not required by GHRSST, were eliminated. Unfortunately, these fields are required by build_and_fix_orbits.m. So, the OBPG granules were copied from the OBPG website to the University of Rhode Island and metadata files were created for each granule with the required metadata. These granules, which have the OBPG’s granule name with ‘_OBPG_extras’ appended prior to .nc4, will be moved to Amazon west for final processing.
 
 In addition to the input fields, either from the OBPG website or in Amazon west, build_and_fix_orbits.m requires three other files to perform the various corrections. These are available at: https://doi.org/10.5281/zenodo.7647185, a Zenodo archive. Also in the dataset are files that may be used to test build_and_fix_orbits.m. The various elements of this data set are described in the DOI.
+
+To test build_and_fix_orbits.m, first download the files required to fix an orbit and the test files from https://doi.org/10.5281/zenodo.7653308. 
+
+a) Unzip MODIS_R2019.zip into directory your-directory-a 
+b) Separation_and_Angle_Arrays.n4 into directory your-directory-b
+c) SST_Range_for_Declouding.mat into directory your-directory-b
+d) weights_and_locations_from_31191.mat into directory your-directory-b
+e) AQUA_MODIS.20100619T052031.L2.SST.nc4 into directory your-directory-c
+
+Then, open this project in Matlab and type the following:
+
+>> granules_directory = [your-directory-a 'Support_data_for_MODIS_L2_Corrections/MODIS_R2019/'];
+>> orbits_directory = [your-directory-a 'Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Orbits/'];
+>> metadata_directory = [your-directory-a  'Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/'];
+>> fixit_directory = your-directory-b;
+>> logs_directory = [your-directory-c 'Logs/'];
+>> output_file_directory = [your-directory-c 'Output/'];
+>> ! mkdir your-directory-c/Outout/2010/
+>> ! mkdir your-directory-c/Outout/2010/06
+>> [timing problem_list] = build_and_fix_orbits(  orbits_directory, granules_directory, metadata_directory, fixit_directory, logs_directory, 
+ output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);
+ 
+ On completion type:
+ 
+>> fi_new = [your-directory-c '/Outout/2010/06/2010/06/AQUA_MODIS.20100619T052031.L2.SST.nc4';
+>> eastward_grad_new = ncread(fi_new,'eastward_gradient');
+>> fi_test = [your-directory-c '/Outout/2010/06/2010/06/AQUA_MODIS.20100619T052031.L2.SST.nc4';
+>> eastward_grad_test = ncread(fi_test,'eastward_gradient');
+
+
+
+

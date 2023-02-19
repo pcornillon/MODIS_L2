@@ -5,4 +5,21 @@ Prior to performing the correction outlined above, 5-minute granules of the orig
 
 build_and_fix_orbits.m was developed with data uploaded from the OBPG website but the script may be used to process MODIS L2 SST moved to the Amazon cloud by the Jet Propulsion Laboratories Physical Oceanography Distributed Active Archive Center (PO.DAAC). The archive in Amazon west has been modified by the PO.DAAC to make it GHRSST-compliant. This required the addition of some fields. As part of the process some metadata fields, not required by GHRSST, were eliminated. Unfortunately, these fields are required by build_and_fix_orbits.m. So, the OBPG granules were copied from the OBPG website to the University of Rhode Island and metadata files were created for each granule with the required metadata. These granules, which have the OBPG’s granule name with ‘_OBPG_extras’ appended prior to .nc4, will be moved to Amazon west for final processing.
 
-In addition to the input fields, either from the OBPG website or in Amazon west, build_and_fix_orbits.m requires three other files to perform the various corrections. These are available at: https://doi.org/10.5281/zenodo.7647185, a Zenodo archive. Also in the dataset are files that may be used to test build_and_fix_orbits.m. The various elements of this data set are described in the DOI.
+In addition to the input fields, either from the OBPG website or in Amazon west, build_and_fix_orbits.m requires three other files to perform the various corrections. These are available at: https://doi.org/10.5281/zenodo.7655067, a Zenodo archive. (Note that the Zenodo DOI may change as files are added and/or modified so, go to this site and select the most receent DOI for the dataset.) Also in the dataset are files that may be used to test build_and_fix_orbits.m. The various elements of this data set are described in the DOI.
+
+To test build_and_fix_orbits.m, you will need to make some directories on your system for the files used to test and then to populate these from the landing page of the dataset. This is explained in the script that creates these directories. After you have opened this project in Matlab, enter the following at the Matlab prompt:
+
+[orbits_directory, granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory] = ...
+setup_for_build_fix_test_run('/Users/johnsmith/Desktop/');
+
+where you would repace /Users/johnsmith/Desktop/ with the directory location on your machine.
+
+When you have populated the directories as instructed, run build_and_fix_orbits.m as instructed in the setup file.
+
+Finally, to see if the file you created has the same values as they did when the script was originally run, at the Matlab prompt type:
+
+compare_eastward_gradients(output_file_directory)
+
+
+
+

@@ -385,19 +385,35 @@ for iOrbit=start_orbit_no:end_orbit_no
                 nscans = info.Dimensions(1).Length;
                 npixels = info.Dimensions(2).Length;
                 
+                % Get the start and end times for this granule.
+                 
+                xx = info.Attributes(29).Value;
+                datetime_start = datenum( str2num(xx(1:4)), str2num(xx(6:7)), str2num(xx(9:10)), str2num(xx(12:13)), str2num(xx(15:16)), str2num(xx(18:23)));
+
+                yy = info.Attributes(30).Value;
+                datetime_end = datenum( str2num(yy(1:4)), str2num(yy(6:7)), str2num(yy(9:10)), str2num(yy(12:13)), str2num(yy(15:16)), str2num(yy(18:23)));
+
+                % Get the time separating scans. Actually, this isn't quite
+                % right since scans are done in groups of ten so the times
+                % for the start of each of the 10 scan lines is the same
+                % but, for the purposes of this script, we will assume that
+                % the scans are sequential in time separated by the time
+                % below. 
+                
+                time_separating_scans = (datetime_end-datetime_start) * 24 * 60 * 60 / nscans;
+                
                 if ifilename == 1
-                    %         sscan = scan_line_in_file(new_iOrbit(1)-100);
-                    %         lscan = nscans - sscan + 1;
                     sscan = scan_line_in_file(orbit_info.scan_line_start(iOrbit));
                     lscan = nscans - sscan + 1;
                     
-                    % Get the global attributes for this file to use in the
-                    % fronts/gradients workflow output files
+                    % Get the start time for this orbit. This is the start
+                    % time of this granule plus the time to get to the
+                    % first scan line used for the orbit. 
                     
-                    % % %                 GlobalAttributes = ncinfo(file_list{1});
-                    % % %                 time_coverage_start = ncreadatt(file_list{1}, '/', 'time_coverage_start');
                     GlobalAttributes = ncinfo(fi);
                     time_coverage_start = ncreadatt(fi, '/', 'time_coverage_start');
+                    
+                    time_orbit_start = datetime_start + sscan * time_separating_scans;
                     
                 elseif ifilename == length(file_list)
                     sscan = 1;
@@ -551,7 +567,7 @@ for iOrbit=start_orbit_no:end_orbit_no
         % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
         % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
-            regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, time_coverage_start, GlobalAttributes, ...
+            regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, time_orbit_start, GlobalAttributes, ...
             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
         
         timing.time_to_process_this_orbit(iOrbit) = toc(start_time_to_process_this_orbit);

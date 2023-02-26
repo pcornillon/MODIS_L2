@@ -51,17 +51,17 @@ if strfind(year_list{1}, '-')
     day_start = input(['Enter the day to start with ', num2str(month_start) '/' year_list{1} ' (1 for first day or cr): ']);
     if isempty(day_start); day_start = 1; end
 else
-    file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
-    if isempty(file_list)
+%     file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
+%     if isempty(file_list)
         month_start = 1;
         day_start = 1;
-    else
-        date_list = cat(1,file_list.datenum);
-        nn = find(max(date_list) == date_list);
-        
-        month_start = str2num(file_list(nn).name(16:17));
-        day_start = str2num(file_list(nn).name(18:19));
-    end
+%     else
+%         date_list = cat(1,file_list.datenum);
+%         nn = find(max(date_list) == date_list);
+%         
+%         month_start = str2num(file_list(nn).name(16:17));
+%         day_start = str2num(file_list(nn).name(18:19));
+%     end
 end
 
 disp(['Successfully started job submitted for ' year_list{1} ' starting at month ' num2str(month_start) ' and day ' num2str(day_start)])

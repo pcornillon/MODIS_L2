@@ -1,12 +1,22 @@
-function get_nadir_info(start_date_time, end_date_time)
+function problem_orbits = get_nadir_info(start_date_time, end_date_time)
 % get_nadir_info - read nadir information for all granules in the specified period - PCC
 %
 % This function will read MODIS Aqua SST 11um granules in sequence for the
-%  given year and save the nadir track, the tracks of the two edges of each
-%  swath, the detector number, the orbit number and calculate the time for
-%  each. It strings them all together and saves them on a monthly basis. It
-%  will reset the vectors for each at the beginning of the next month,
-%  after saving.
+%  given specified period and save the nadir track, the swath edge tracks, 
+%  and the detector number for all scan lines in each orbit (defined below)
+%
+% The start of each orbit is defined as the nearest scan line for the middle 
+% detector of the 10 detector (detnum) to the latlim on the descending part
+% of the orbit. lat lim was set to 78 S when the script was written. The
+% orbit number assigned to each orbit, pcc_orbit_number is the NASA orbit
+% number for the granule containing the start of the new orbit. 
+%
+% The script will start reading granules looking for the start of the first
+% complete orbit; i.e., it will no save the portion of an orbit found prior
+% to the orbit starting point, 78 S on the descending part of the orbit.
+%
+% Each new orbit is defined to be 40,271 scan lines long. This should 
+% provide for an approximately 100 scan line overlap of sequential orbits.
 %
 % The function also records all granules that are missing, writing their
 %  estimated name to a cell array and adding nans in place of the missing
@@ -21,7 +31,8 @@ function get_nadir_info(start_date_time, end_date_time)
 %   end_date_time - year, month, day, hour minute vector for end time.
 %
 % OUTPUT
-%
+%   problem_orbits - a structure function with the orbit numbers that are a
+%    problem.
 %
 % EXAMPLE
 %   get_nadir_info([2009 12 31 22 0], [2011 1 1 2 0]) - to process all
@@ -29,9 +40,14 @@ function get_nadir_info(start_date_time, end_date_time)
 %    Including the last 2 hours of 2009 and the first 2 hours of 2011 will
 %    assure that the first and last orbit touching 2010 are captured.
 
+problem_orbits = [];
+iProblemOrbit = 0;
+
 nc_read = 0;
 
-save_long = 0;  % If =1, will save lots of info, other fairly little. 
+save_long = 0;  % If =1, will save lots of info, otherwise fairly little. 
+
+first_orbit = 1;
 
 if computer == 'MACI64'
     sw3 = 0;
@@ -64,6 +80,8 @@ if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
     keyboard
 end
 
+% Convert input start and end times to Matlab times.
+
 matlab_time_start = datenum(start_date_time);
 matlab_time_end = datenum(end_date_time);
 
@@ -76,6 +94,8 @@ iFilename = 0;
 iMissing = 0;
 
 clear filenames missing_granules
+
+% imatlab_time is the time of the current granule. 
 
 imatlab_time = matlab_time_start;
 month_save = -100;
@@ -91,8 +111,7 @@ while imatlab_time <= matlab_time_end
     
     imatlab_time = imatlab_time + 5 / (24 * 60);
     
-    % Get the date and time for this granule and generate strings for use
-    % in the names.
+    % Get the date and time for this granule and generate strings for use in the names.
     
     [iyear, imonth, iday, ihour, iminute, isecond] = datevec(imatlab_time);
     
@@ -102,172 +121,244 @@ while imatlab_time <= matlab_time_end
     ihours = return_a_string(ihour);
     iminutes = return_a_string(iminute);
     
-    if iday ~= day_save
-        day_save = iday;
-        disp(['Working on ' imonths '/' idays '/' iyears ' at time ' num2str(toc)])
-    end
+% %     if iday ~= day_save
+% %         day_save = iday;
+% %         fprintf('Working on %i/%i/%i at time%f\n', imonths, idays, iyears, num2str(toc)])
+% %     end
     
     % If this is a new month save the nadir track info and reinialize the vectors.
     
-    if (imonth ~= month_save)
-        
-        if exist('nlon')
-            % First find the start and end of each complete orbit. Note
-            % that 100 scan lines will be added to each end to assure
-            % overlap needed for gradient and fronts calculations.
-            
-            diff_nlat = diff(nlat);
-            nn = find(abs(nlat(1:end-1)-latlim)<0.1 & detnum(1:end-1)==5 & diff_nlat<0);
-            
-            diff_nn = diff(nn);
-            mm = find(diff_nn > 50);
-            nn_start = [nn(mm)' nn(end)] - 100;
-            nn_end = [nn_start(2:end)-1 length(nlat)-100] + 100;
-            
-            nn_start(1) = max(nn_start(1), 1);
-            nn_end(end) = min([nn_end(end), length(nlon)]);
-            
-            orbit_info.scan_line_start = nn_start;
-            orbit_info.scan_line_end = nn_end;
-            
-            orbit_info.matlab_times = matlab_time(nn_start);
-            orbit_info.matlab_timee = matlab_time(nn_end);
-            
-            if save_long
-                orbit_info.nlons = nlon(nn_start);
-                orbit_info.nlats = nlat(nn_start);
-                
-                orbit_info.matlab_times = matlab_time(nn_start);
-                orbit_info.matlab_timee = matlab_time(nn_end);
-            end
-            
-            % Now save.
-            
-            % Subtract a year from the value used in the filename if the
-            % previous month, month_save=12, since the year would have been
-            % incremented when going from month 12 to month 1.
-            
-            year_for_name = iyears;
-            if month_save == 12
-                year_for_name = convertStringsToChars(num2str(iyear - 1));
-            end
-            
-            if save_long
-                save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string(month_save) '_long'], ...
-                    'filenames', 'orbit_number', 'filename_index', 'matlab_time', '*lon', '*lat', 'detnum', ...
-                    'nsol_z', 'scan_line_in_file', 'orbit_info', 'latlim');
-            else
-                save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string(month_save)], ...
-                    'filenames', 'filename_index', 'scan_line_in_file', 'nsol_z', 'orbit_info');
-            end
-            
+%     if (imonth ~= month_save)
+%         
+%         if exist('nlon')
+%             % First find the start of each complete new orbit. The scan
+%             % line corresponding to the start of a new orbit is described
+%             % in the description of this function. 
+%             
+%             diff_nlat = diff(nlat);
+%             nn = find( (abs(nlat(1:end-1)-latlim)<0.1) & (detnum(1:end-1)==5) & (diff_nlat<0));
+%             
+%             diff_nn = diff(nn);
+%             mm = find(diff_nn > 50);
+%             
+% % % %             nn_start = [nn(mm)' nn(end)] - 100;
+% % % %             nn_end = [nn_start(2:end)-1 length(nlat)-100] + 100;
+% % % % 
+% % % %             nn_start(1) = max(nn_start(1), 1);
+% % % %             nn_end(end) = min([nn_end(end), length(nlon)]);
+%             
+%             nn_start = [1 nn(mm)'];
+%             nn_end = nn_start + 40271;
+%             nn_end(end) =length(nlon);
+%             
+%             % Test to see if the end of the a given orbit is more than 
+%             % +/- 20 scan lines from the beginning of the next orbit. If it
+%             % is flag it.
+%             
+%             for iOrbit=1:length(nn_start)-1
+%                 if abs(nn_end(iOrbit) - nn_start(iOrbit+1)) > 20
+%                     fprintf('\n********\nLength of %i (Orbit #\i) differs from 40,271 by more than 20 scan lines.\n********\n', iOrbit, orbit_no(iOrbit))
+%                     
+%                     iProblemOrbit = iProblemOrbit + 1;
+%                     problem_orbits(iProblemOrbit) = orbit_no(iOrbit);
+%                     
+%                     keyboard
+%                 end
+%                 
+%             orbit_info.scan_line_start = nn_start;
+%             orbit_info.scan_line_end = nn_end;
+%             
+%             orbit_info.matlab_times = matlab_time(nn_start);
+%             orbit_info.matlab_timee = matlab_time(nn_end);
+%             
 %             if save_long
-                matlab_time = matlab_time(nn_start(end):end);
-                
-                slat = slat(nn_start(end):end);
-                slon = slon(nn_start(end):end);
-                
-                elat = elat(nn_start(end):end);
-                elon = elon(nn_start(end):end);
-                
-                nlat = nlat(nn_start(end):end); % Although not saved for short file it is used below
-                nlon = nlon(nn_start(end):end);
-                    
-                detnum = detnum(nn_start(end):end);
-                
-                nsol_z = nsol_z(nn_start(end):end);
-                scan_line_in_file = scan_line_in_file(nn_start(end):end);
+%                 orbit_info.nlons = nlon(nn_start);
+%                 orbit_info.nlats = nlat(nn_start);
+%                 
+%                 orbit_info.matlab_times = matlab_time(nn_start);
+%                 orbit_info.matlab_timee = matlab_time(nn_end);
 %             end
-            
-            jgranule = 0;
-            for igranule=filename_index(nn_start(end)):filename_index(end)
-               jgranule = jgranule + 1;
-               temp(jgranule) = filenames(igranule);
-            end
-            
-            filenames = temp;
-            filename_index = filename_index(nn_start(end):end) - filename_index(nn_start(end)) + 1;
-
-            iFilename = jgranule;
-                        
-            month_save = imonth;
-            
-            if plotem; iFig = plot_orbits(iFig, nlon, nlat, orbit_info); end
-        else
+%             
+%             % Now save.
+%             
+%             % Subtract a year from the value used in the filename if the
+%             % previous month, month_save=12, since the year would have been
+%             % incremented when going from month 12 to month 1.
+%             
+%             year_for_name = iyears;
+%             if month_save == 12
+%                 year_for_name = convertStringsToChars(num2str(iyear - 1));
+%             end
+%             
 %             if save_long
-                matlab_time = [];
-                
-                slat = [];
-                slon = [];
-                
-                elat = [];
-                elon = [];
+%                 save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string(month_save) '_long'], ...
+%                     'filenames', 'orbit_number', 'filename_index', 'matlab_time', '*lon', '*lat', 'detnum', ...
+%                     'nsol_z', 'scan_line_in_file', 'orbit_info', 'latlim');
+%             else
+%                 save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string(month_save)], ...
+%                     'filenames', 'filename_index', 'scan_line_in_file', 'nsol_z', 'orbit_info');
 %             end
-            
-            nlat = [];
-            nlon = [];
-            
-            detnum = [];
-            
-            nsol_z = [];
-            scan_line_in_file = [];
-
-            filename_index = [];
-            
-            iFilename = 0;
-            
-            clear filenames missing_granules
-            
-            month_save = imonth;
-        end
-    end
+%             
+%             % Populate the last orbit info.
+%             
+% %             if save_long
+%                 matlab_time = matlab_time(nn_start(end):end);
+%                 
+%                 slat = slat(nn_start(end):end);
+%                 slon = slon(nn_start(end):end);
+%                 
+%                 elat = elat(nn_start(end):end);
+%                 elon = elon(nn_start(end):end);
+%                 
+%                 nlat = nlat(nn_start(end):end); % Although not saved for short file it is used below
+%                 nlon = nlon(nn_start(end):end);
+%                     
+%                 detnum = detnum(nn_start(end):end);
+%                 
+%                 nsol_z = nsol_z(nn_start(end):end);
+%                 scan_line_in_file = scan_line_in_file(nn_start(end):end);
+% %             end
+%             
+%             jgranule = 0;
+%             for igranule=filename_index(nn_start(end)):filename_index(end)
+%                jgranule = jgranule + 1;
+%                temp(jgranule) = filenames(igranule);
+%             end
+%             
+%             filenames = temp;
+%             filename_index = filename_index(nn_start(end):end) - filename_index(nn_start(end)) + 1;
+% 
+%             iFilename = jgranule;
+%                         
+%             month_save = imonth;
+%             
+%             if plotem; iFig = plot_orbits(iFig, nlon, nlat, orbit_info); end
+%         else
+% %             if save_long
+%                 matlab_time = [];
+%                 
+%                 slat = [];
+%                 slon = [];
+%                 
+%                 elat = [];
+%                 elon = [];
+% %             end
+%             
+%             nlat = [];
+%             nlon = [];
+%             
+%             detnum = [];
+%             
+%             nsol_z = [];
+%             scan_line_in_file = [];
+% 
+%             filename_index = [];
+%             
+%             iFilename = 0;
+%             
+%             clear filenames missing_granules
+%             
+%             month_save = imonth;
+%         end
+%     end
     
     iFilename = iFilename + 1;
     
     % See if this file exists. If not, nans for missing data.
     
-    file_found = 1;
+    granule_found = 1;
     
     if sw3
         % Need to put sw3 stuff here.
     else
         new_fi_list = dir([base_dir_in 'day/' iyears '/AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*']);
         
-        if isempty(new_fi_list)
-            new_fi_list = dir([base_dir_in 'night/' iyears '/AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*']);
-            
-            if isempty(new_fi_list)
-                disp(['Could not file file: AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*'])
-                file_found = 0;
-            else
-                fi = [new_fi_list(1).folder '/' new_fi_list(1).name];
-            end
-        else
+% % %         if isempty(new_fi_list)
+% % %             new_fi_list = dir([base_dir_in 'night/' iyears '/AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*']);
+% % %             
+% % %             if isempty(new_fi_list)
+% % %                 disp(['Could not file file: AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*'])
+% % %                 granule_found = 0;
+% % %             else
+% % %                 fi = [new_fi_list(1).folder '/' new_fi_list(1).name];
+% % %             end
+% % %         else
+% % %             fi = [new_fi_list(1).folder '/' new_fi_list(1).name];
+% % %         end
+        
+        granule_found = 1;
+        
+        if isempty(dir([base_dir_in 'day/' iyears '/AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*'])) == 1
             fi = [new_fi_list(1).folder '/' new_fi_list(1).name];
+        elseif isempty(dir([base_dir_in 'night/' iyears '/AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*'])) == 1
+            fi = [new_fi_list(1).folder '/' new_fi_list(1).name];
+        else
+            fprintf('Could not file file: AQUA_MODIS. %s%s%sT%i%i*\n', iyears, imonths, idays, ihours, iminutes)
+            granule_found = 0;
         end
     end
     
-    if file_found
-        % % %         fi = [new_fi_list(1).folder '/' new_fi_list(1).name];
-        
-        % Get info about this file.
+    % Get info about this granule.
+    
+    if granule_found
         
         if nc_read
             info = ncinfo(fi);
             
             if strcmp(info.Dimensions(1).Name, 'number_of_lines') ~= 1
-                disp(['Wrong dimension: ' info.Dimensions(1).Name])
-                keyboard
+                fprintf('\n********\nWrong dimension: %s\n********\n', info.Dimensions(1).Name)
+                break
             end
             nscans = info.Dimensions(1).Length;
+            
+            % Does this granule contain the start of a new orbit?
+            
+            nlat_t = single(ncread(fi, '/scan_line_attributes/clat'));
+            nlon_t = single(ncread(fi, '/scan_line_attributes/clon'));
+
+            detnum = [detnum; int8(ncread(fi, '/scan_line_attributes/detnum'))];
+
+            diff_nlat = diff(nlat_t);
+            nn = find( (abs(nlat_t(1:end)-latlim)<0.1) & (detnum(1:end-1)==5) & (diff_nlat<0));
+            
+            if isempty(nn) == 0
+                
+                % New orbit, save the previous orbit and initialize all variables. 
+                
+                if first_orbit
+                    first_orbit = 0;
+                    
+                    if save_long
+                        save( filename_out, ...
+                            'filenames', 'orbit_number', 'filename_index', 'matlab_time', '*lon', '*lat', 'detnum', ...
+                            'nsol_z', 'scan_line_in_file', 'orbit_info', 'latlim');
+                    else
+                        save( filename_out, ...
+                            'filenames', 'filename_index', 'scan_line_in_file', 'nsol_z', 'orbit_info');
+                    end
+                else
+                    
+                    filename_out = [base_dir_out, 'Orbits/Orbit_' num2str(pcc_orbit_number) '_nadir_info_' year_for_name '_' return_a_string(month_save) '_long'];
+                    
+                end
+                
+            else
+            end
+            
+            diff_nn = diff(nn);
+            mm = find(diff_nn > 50);
+            
+            nn_start = [1 nn(mm)'];
+            nn_end = nn_start + 40271;
+            nn_end(end) =length(nlon);
             
             filenames{iFilename} = fi;
             
             filename_index = [filename_index; int32(ones(nscans,1)*iFilename)];
             
             if strcmp(info.Attributes(5).Name, 'orbit_number') ~= 1
-                disp(['Wrong attribute: ' info.Dimensions(2).Name])
-                keyboard
+                fprintf('\n********\nWrong attribute: %s\n********\n', info.Dimensions(2).Name)
+                break
             end
             orbit_number(iFilename) = int32(info.Attributes(5).Value);
             
@@ -277,12 +368,16 @@ while imatlab_time <= matlab_time_end
                 sl_msec = floor(ncread(fi, '/scan_line_attributes/msec'));
                 matlab_time = [matlab_time; datenum(sl_year, 1, sl_day) + sl_msec/86400000];
                 
+                % Track of swath edges.
+                
                 slat = [slat; single(ncread(fi, '/scan_line_attributes/slat'))];
                 slon = [slon; single(ncread(fi, '/scan_line_attributes/slon'))];
                 
                 elat = [elat; single(ncread(fi, '/scan_line_attributes/elat'))];
                 elon = [elon; single(ncread(fi, '/scan_line_attributes/elon'))];
 %             end
+            
+            % Nadir track.
             
             nlat = [nlat; single(ncread(fi, '/scan_line_attributes/clat'))];
             nlon = [nlon; single(ncread(fi, '/scan_line_attributes/clon'))];
@@ -295,8 +390,8 @@ while imatlab_time <= matlab_time_end
             info = h5info(fi);
             
             if strcmp(info(1).Datasets(3).Name, 'number_of_lines') ~= 1
-                disp(['Wrong dimension: ' info.Dimensions(1).Name])
-                keyboard
+                fprintf('\n********\nWrong dimension: %s\n********\n', info.Dimensions(1).Name)
+                break
             end
             nscans = info(1).Datasets(3).Dataspace.Size;
             
@@ -312,12 +407,16 @@ while imatlab_time <= matlab_time_end
                 sl_msec = double(floor(h5read(fi, '/scan_line_attributes/msec')));
                 matlab_time = [matlab_time; datenum(sl_year, 1, sl_day) + sl_msec/86400000];
                 
+                % Track of swath edges.
+                
                 slat = [slat; single(h5read(fi, '/scan_line_attributes/slat'))];
                 slon = [slon; single(h5read(fi, '/scan_line_attributes/slon'))];
                 
                 elat = [elat; single(h5read(fi, '/scan_line_attributes/elat'))];
                 elon = [elon; single(h5read(fi, '/scan_line_attributes/elon'))];
 %             end
+            
+            % Nadir track.
             
             nlat = [nlat; single(h5read(fi, '/scan_line_attributes/clat'))];
             nlon = [nlon; single(h5read(fi, '/scan_line_attributes/clon'))];

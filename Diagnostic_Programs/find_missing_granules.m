@@ -28,7 +28,7 @@ while imatlab_time <= matlab_end_time
     
     iFile = iFile + 1;
     
-    [status, fi, start_line_index, imatlab_time, missing_granules{iFile}] = ...
+    [status, fi, mSec, start_line_index, imatlab_time, missing_granules{iFile}] = ...
         build_metadata_filename( 0, nan, granules_directory, imatlab_time);
     
     if mod(iFile,num_to_print) == 0

@@ -1,4 +1,5 @@
-function [status, fi, start_line_index, imatlab_time, missing_granule] = build_metadata_filename( get_granule_info, latlim, input_directory, imatlab_time)
+function [status, fi, start_line_index, scan_line_times, missing_granule] = ...
+    build_metadata_filename( get_granule_info, latlim, input_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
 % Read the latitude of the nadir track for this granule and determine
@@ -19,48 +20,41 @@ function [status, fi, start_line_index, imatlab_time, missing_granule] = build_m
 %   status - 0 if success, 1 if problem with detectors.
 %   fi - the completely specified filename of the 1st granule for the orbit found.
 %   start_line_index - the index in fi for the start of the orbit.
-%   imatlab_time - updated matlab_time for this granule to start with; the
-%    matlab time passed in is approximate.
+%   scan_line_times - matlab time for each scan line if granule info is
+%    requested.
 %   missing_granule - Matlab date/time of granule if missing otherwise empty. 
 %
 
 % Initialize return variables.
 
-start_line_index = [];
-missing_granule = [];
 status = 0;
+fi = '';
+start_line_index = [];
+scan_line_times = [];
+missing_granule = [];
 
-% Does an OBPG metadata file exist for this time? To sort this out, get the
-% date and time for this granule and generate strings for use in the names.
+% Define formats to use when unpacking the matlab time into file names. 
 
-[iyear, imonth, iday, ihour, iminute, isecond] = datevec(imatlab_time);
+formatOut = 'yyyymmddTHHMM';
+formatOutYear = 'yyyy';
 
-iyears = num2str(iyear);
-imonths = return_a_string(imonth);
-idays = return_a_string(iday);
-ihours = return_a_string(ihour);
-iminutes = return_a_string(iminute);
+% Does an OBPG metadata file exist for this time? 
 
 if strfind(input_directory, 'combined')
-    file_list = dir( [input_directory iyears '/AQUA_MODIS.' iyears imonths idays 'T' ihours iminutes '*']);
+    file_list = dir( [input_directory datestr(imatlab_time, formatOutYear) '/AQUA_MODIS.' datestr(imatlab_time, formatOut) '*']);
 else
-    file_list = dir( [input_directory iyears '/AQUA_MODIS_' iyears imonths idays 'T' ihours iminutes '*']);
+    file_list = dir( [input_directory datestr(imatlab_time, formatOutYear) '/AQUA_MODIS_' datestr(imatlab_time, formatOut) '*']);
 end
 
-fi = '';
-
 if isempty(file_list)
-    missing_granule = datenum( iyear, imonth, iday, ihour, iminute, 0);
-    fprintf('*** Missing file for %s%s%sT%s%s. Going to the next granule.\n', iyears, imonths, idays, ihours, iminutes)
+    missing_granule = imatlab_time;
+    fprintf('*** Missing file for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
 elseif length(file_list) > 2
-    fprintf('*** Too many files for %s%s%sT%s%s. Going to the next granule.\n', iyears, imonths, idays, ihours, iminutes)
+    fprintf('*** Too many files for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
 elseif get_granule_info
-    % Found a metadata granule. Does the nadir track for it cross latlim
-    % in descent? Read the nadir latitude valuesfor each scan line. Also 
-    % read the year, day-of-year and milliseconds for each scan line. These
-    % are used to update imatlab_time to the start of this granule. In 
-    % addition milliseconds are used to make sure that the 5th scan line in
-    % the granule corresponds to the middle detector array.
+
+    % Skip this part if the call was simply to build the file name and 
+    % check for its existence. Next get the Matlab times for each scan line. 
     
     fi = [file_list(1).folder '/' file_list(1).name];
     
@@ -68,29 +62,28 @@ elseif get_granule_info
     YrDay = ncread( fi, '/scan_line_attributes/day');
     mSec = ncread( fi, '/scan_line_attributes/msec');
     
-    % Find the matlab time corresponding to the first scan line.
-    
-    imatlab_time = datenum(Year(1), 1, YrDay(1)) + mSec(1)/(1000*86400);
-    
+    scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
+        
+    % Check that the 5th scan line in the granule corresponds to the middle
+    % of the detector array. 
+
     if abs(mSec(10)-mSec(1)) > 0
         fprintf('The 1st scan line for %s is not the 1st detector in a group of 10. Should never get here.', file_list(1).name)
         status = 1;
         return
     end
     
+    % Finally, check to see if the nadir track crosses latlim in descent?
+    % If it does, get the scan line nearest the middle of the 10 detector 
+    % group.
+        
     nlat_t = single(ncread( fi, '/scan_line_attributes/clat'));
     
     diff_nlat = diff(nlat_t);
     nn = find( (abs(nlat_t(1:end)-latlim)<0.1) & (diff_nlat<0));
     
     if isempty(nn) == 0
-        
-        % This granule contains the start of a new orbit. Assing the
-        % index to the nearest middle of a 10 detector group and break
-        % out of this loop.
-        
-        start_line_index = floor(nn(1) / 10) * 10 + 5;
-        return
+        start_line_index = floor(nn(1) / 10) * 10 + 5;        
     end
 end
 

@@ -73,19 +73,29 @@ elseif get_granule_info
         return
     end
     
-    % Finally, check to see if the nadir track crosses latlim in descent?
-    % If it does, get the scan line nearest the middle of the 10 detector 
-    % group.
+    % Does the nadir track crosses latlim?
         
     nlat_t = single(ncread( fi, '/scan_line_attributes/clat'));
+
+    nn = find(abs(nlat_t(1:end)-latlim)<0.1);
     
-    diff_nlat = diff(nlat_t);
-    nn = find( (abs(nlat_t(1:end)-latlim)<0.1) & (diff_nlat<0));
-    
-    if isempty(nn) == 0
-        start_line_index = floor(nn(1) / 10) * 10 + 5;        
+    % If nadir track didn't cross latlim, return. 
+    if isempty(nn)
+        return
+    else
+        % If ascending reset nn to empty & return; we want a descending orbit.
+        
+        diff_nlat = diff(nlat_t);
+        if diff_nlat(min(end, nn)) > 0
+            nn = [];
+            return
+        else
+            % Get the scan line nearest the middle of the 10 detector grou
+            
+            start_line_index = floor(nn(1) / 10) * 10 + 5;
+            return
+        end
     end
-end
 
 end
 

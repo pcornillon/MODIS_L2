@@ -130,3 +130,5 @@ while iOrbit <= number_of_orbits
 
     iMatlab_time = iMatlab_time + 5 / (24 * 60);
 end
+
+save([metadata_directory 'orbit_times_' strrep(datestr(start_date_time), ' ', '_')], 'number_of_scans', 'NASA_orbit_number', 'orbit_start_time', 'time_for_this_orbit')

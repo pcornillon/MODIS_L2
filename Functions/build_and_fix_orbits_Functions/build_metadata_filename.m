@@ -1,4 +1,4 @@
-function [status, fi, start_line_index, scan_line_times, missing_granule] = ...
+function [status, fi, start_line_index, scan_line_times, missing_granule, imatlab_time] = ...
     build_metadata_filename( get_granule_info, latlim, input_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
@@ -22,7 +22,10 @@ function [status, fi, start_line_index, scan_line_times, missing_granule] = ...
 %   start_line_index - the index in fi for the start of the orbit.
 %   scan_line_times - matlab time for each scan line if granule info is
 %    requested.
-%   missing_granule - Matlab date/time of granule if missing otherwise empty. 
+%   missing_granule - Matlab date/time of granule if missing otherwise empty.
+%   imatlab_time - the matlab_time of the granule to start with. If scan
+%    times are obtained for this granule, imatlab_time will be set to the
+%    first scan of the granule; otherwise the value passed in will be returned.
 %
 
 % Initialize return variables.
@@ -33,12 +36,12 @@ start_line_index = [];
 scan_line_times = [];
 missing_granule = [];
 
-% Define formats to use when unpacking the matlab time into file names. 
+% Define formats to use when unpacking the matlab time into file names.
 
 formatOut = 'yyyymmddTHHMM';
 formatOutYear = 'yyyy';
 
-% Does an OBPG metadata file exist for this time? 
+% Does an OBPG metadata file exist for this time?
 
 if strfind(input_directory, 'combined')
     file_list = dir( [input_directory datestr(imatlab_time, formatOutYear) '/AQUA_MODIS.' datestr(imatlab_time, formatOut) '*']);
@@ -51,51 +54,59 @@ if isempty(file_list)
     fprintf('*** Missing file for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
 elseif length(file_list) > 2
     fprintf('*** Too many files for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
-elseif get_granule_info
-
-    % Skip this part if the call was simply to build the file name and 
-    % check for its existence. Next get the Matlab times for each scan line. 
-    
+else
     fi = [file_list(1).folder '/' file_list(1).name];
-    
-    Year = ncread( fi, '/scan_line_attributes/year');
-    YrDay = ncread( fi, '/scan_line_attributes/day');
-    mSec = ncread( fi, '/scan_line_attributes/msec');
-    
-    scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
-        
-    % Check that the 5th scan line in the granule corresponds to the middle
-    % of the detector array. 
 
-    if abs(mSec(10)-mSec(1)) > 0
-        fprintf('The 1st scan line for %s is not the 1st detector in a group of 10. Should never get here.', file_list(1).name)
-        status = 1;
-        return
-    end
-    
-    % Does the nadir track crosses latlim?
-        
-    nlat_t = single(ncread( fi, '/scan_line_attributes/clat'));
+    if get_granule_info
 
-    nn = find(abs(nlat_t(1:end)-latlim)<0.1);
-    
-    % If nadir track didn't cross latlim, return. 
-    if isempty(nn)
-        return
-    else
-        % If ascending reset nn to empty & return; we want a descending orbit.
-        
-        diff_nlat = diff(nlat_t);
-        if diff_nlat(min(end, nn)) > 0
-            nn = [];
-            return
-        else
-            % Get the scan line nearest the middle of the 10 detector grou
-            
-            start_line_index = floor(nn(1) / 10) * 10 + 5;
+        % Skip this part if the call was simply to build the file name and
+        % check for its existence. Next get the Matlab times for each scan line.
+
+        Year = ncread( fi, '/scan_line_attributes/year');
+        YrDay = ncread( fi, '/scan_line_attributes/day');
+        mSec = ncread( fi, '/scan_line_attributes/msec');
+
+        scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
+
+        % Reset the imatlab_time to the start of this granule if present; this
+        % to avoid imatlabt_time drifting out of range.
+
+        if isempty(scan_line_times) == 0
+            imatlab_time = scan_line_times(1);
+        end
+
+        % Check that the 5th scan line in the granule corresponds to the middle
+        % of the detector array.
+
+        if abs(mSec(10)-mSec(1)) > 0
+            fprintf('The 1st scan line for %s is not the 1st detector in a group of 10. Should never get here.', file_list(1).name)
+            status = 1;
             return
         end
+
+        % Does the nadir track crosses latlim?
+
+        nlat_t = single(ncread( fi, '/scan_line_attributes/clat'));
+
+        nn = find(abs(nlat_t(1:end)-latlim)<0.1);
+
+        % If nadir track didn't cross latlim, return.
+        if isempty(nn)
+            return
+        else
+            % If ascending reset nn to empty & return; we want a descending orbit.
+
+            diff_nlat = diff(nlat_t);
+            if diff_nlat(min(end, nn)) > 0
+                nn = [];
+                return
+            else
+                % Get the scan line nearest the middle of the 10 detector grou
+
+                start_line_index = floor(nn(1) / 10) * 10 + 5;
+                return
+            end
+        end
+
     end
-
 end
-

@@ -221,7 +221,7 @@ iMatlab_time = Matlab_start_time;
 while iMatlab_time <= Matlab_end_time
     
     
-    [status, fi, start_line_index, scan_line_times, missing_granules_temp] ...
+    [status, fi, start_line_index, scan_line_times, missing_granules_temp, imatlab_time] ...
         = build_metadata_filename( 0, nan, metadata_directory, iMatlab_time);
     
     if isempty(missing_granules_temp) == 0
@@ -564,7 +564,7 @@ while iMatlab_time <= Matlab_end_time
         % % % % % % % % %             % the file is good. If it has problems abort all processing for
         % % % % % % % % %             % this orbit.
         % % % % % % % % %
-        % % % % % % % % %             [status, fi_metadata, start_line_index, scan_line_times, missing_granule] ...
+        % % % % % % % % %             [status, fi_metadata, start_line_index, scan_line_times, missing_granule, imatlab_time] ...
         % % % % % % % % %                 = build_metadata_filename( 1, latlim, metadata_directory, iMatlab_time);
         % % % % % % % % %
         % % % % % % % % %             if status ~= 0

@@ -1,4 +1,4 @@
-function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orbit_start_time] = ...
+function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] = ...
     find_start_of_orbit( latlim, metadata_directory, imatlab_time, matlab_end_time)
 % find_start_of_orbit - Does this granule cross the start of an orbit on descent - PCC
 %
@@ -20,6 +20,8 @@ function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orb
 %   orbit_scan_line_times - a 2d array of matlab times for each scan line for
 %    each granule for which there is data.
 %   orbit_start_time - matlab time of first scan line in the found orbit.
+%   num_scan_lines_in_granule - the number of scan lines in the granule
+%    for which the nadir track crosses latlim.
 %
 
 start_time = imatlab_time;
@@ -62,11 +64,12 @@ while imatlab_time <= matlab_end_time
         % Found the start of the next orbit, save the time and return.
         
         orbit_start_time = scan_line_timesT(start_line_index);
-
+        num_scan_lines_in_granule = length(scan_line_timesT);
+ 
         % Trim the scan line times array to only the number of granules
         % actually read.
 
-        orbit_scan_line_times = orbit_scan_line_timesT(iGranule,:);
+        orbit_scan_line_times = orbit_scan_line_timesT(1:iGranule,:);
         return
     end
 end

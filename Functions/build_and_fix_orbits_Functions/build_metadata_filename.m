@@ -84,29 +84,53 @@ else
             return
         end
 
-        % Does the nadir track crosses latlim?
+        % Does the descending nadir track crosses latlim?
 
         nlat_t = single(ncread( fi, '/scan_line_attributes/clat'));
 
-        nn = find(abs(nlat_t(1:end)-latlim)<0.1);
+        % Get the separation of along-track nadir pixels. Add one
+        % separation at the end of the track for this granule so that the
+        % size of the difference vector and along-track vector are the
+        % same; need this to find the minimum.
 
-        % If nadir track didn't cross latlim, return.
-        if isempty(nn)
+        diff_nlat = [diff(nlat_t); nlat_t(end)-nlat_t(end-1)];
+
+        mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
+
+        if isempty(mm)
             return
         else
-            % If ascending reset nn to empty & return; we want a descending orbit.
 
-            diff_nlat = diff(nlat_t);
-            if diff_nlat(min(end, nn)) > 0
-                nn = [];
+            % Make sure that the nadir track actually crossed latlim. This
+            % addresses the problem of a nadir track that ends before or 
+            % starts just after crossing latlim.
+    
+            if sign(nlat_t(mm(1))-latlim) == sign(nlat_t(mm(end))-latlim)
                 return
             else
-                % Get the scan line nearest the middle of the 10 detector grou
-
+                nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
                 start_line_index = floor(nn(1) / 10) * 10 + 5;
-                return
             end
         end
+
+% %         % If nadir track didn't cross latlim, return.
+% % 
+% %         if isempty(nn)
+% %             return
+% %         else
+% %             % If ascending reset nn to empty & return; we want a descending orbit.
+% % 
+% %             diff_nlat = diff(nlat_t);
+% %             if diff_nlat(min(end, nn)) > 0
+% %                 nn = [];
+% %                 return
+% %             else
+% %                 % Get the scan line nearest the middle of the 10 detector grou
+% % 
+% %                 start_line_index = floor(nn(1) / 10) * 10 + 5;
+% %                 return
+% %             end
+% %         end
 
     end
 end

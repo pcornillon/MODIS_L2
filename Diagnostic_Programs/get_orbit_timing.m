@@ -71,7 +71,7 @@ for iStartTime=1:size(start_date_time,1)
     
     start_line_index = [];
     
-    [status, fi_metadata, start_line_index, iMatlab_time, orbit_scan_line_times, orbit_start_timeT] ...
+    [status, fi_metadata, start_line_index, iMatlab_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
         = find_start_of_orbit( latlim, metadata_directory, iMatlab_time, Matlab_end_time);
     
     % Abort this run if a major problem occurs at this point.
@@ -86,17 +86,18 @@ for iStartTime=1:size(start_date_time,1)
     
     orbit_start_time(iOrbit) = orbit_start_timeT;
     
+    number_of_scans(iOrbit) = num_scan_lines_in_granule - start_line_index + 1;
+
+    NASA_orbit_number(iOrbit) = ncreadatt( fi_metadata,'/','orbit_number');
+    
     iMatlab_time = iMatlab_time + 5 / (24 * 60);
     
     %% Now loop over orbits.
     
-    % Loop over granules until the start of an orbit is found.
-    
-    iGranule = 0;
-    
-    number_of_scans(iOrbit) = size(orbit_scan_line_times,2) - start_line_index + 1;
-    NASA_orbit_number(iOrbit) = ncreadatt( fi_metadata,'/','orbit_number');
-    
+    % Loop over granules until the start of an orbit is found. It may be
+    % the next orbit or more than one orbit after the current one if there
+    % are missing granules for the next orbit(s).
+        
     while iOrbit <= number_of_orbits
         
         [status, fi, start_line_index, scan_line_timesT, missing_granule] ...
@@ -125,7 +126,7 @@ for iStartTime=1:size(start_date_time,1)
             orbit_start_time(iOrbit) = scan_line_timesT(start_line_index);
             number_of_scans(iOrbit) = length(scan_line_timesT) - start_line_index + 1;
             
-            NASA_orbit_number(iOrbit) = ncreadatt( fi_metadata,'/','orbit_number');
+            NASA_orbit_number(iOrbit) = ncreadatt( fi,'/','orbit_number');
         end
         
         % Add 5 minutes to the previous value of time to get the time of the
@@ -134,18 +135,20 @@ for iStartTime=1:size(start_date_time,1)
         iMatlab_time = iMatlab_time + 5 / (24 * 60);
     end
     
+    time_for_this_orbit = time_for_this_orbit * 86400;
+    
     % Print out some stats. First get all orbits with a reasonable duration.
     
     nn = find(time_for_this_orbit>5000 & time_for_this_orbit<7000);
     
     % Then print stats.
     
-    fprintf('\n\nFor orbits between %s and %s\n', datestr(orbit_start_time(1)), datestr(orbit_start_time(iOrbit)))
+    fprintf('\n\nFor orbits between %s and %s\n', datestr(orbit_start_time(1)), datestr(orbit_start_time(end)))
     
     fprintf('\nMin, max, mean and sigma of number of scans: %i, %i, %i and %i\n', ...
         min(number_of_scans(nn)), max(number_of_scans(nn)), mean(number_of_scans(nn)), std(number_of_scans(nn)))
     fprintf('\nMin, max, mean and sigma of orbit time in seconds: %f, %f, %f and %f\n', ...
-        min(number_of_scans(nn))*86400, max(number_of_scans(nn))*86400, mean(number_of_scans(nn))*86400, std(number_of_scans(nn))*86400)
+        min(time_for_this_orbit(nn)), max(time_for_this_orbit(nn)), mean(time_for_this_orbit(nn)), std(time_for_this_orbit(nn)))
     
     save([metadata_directory 'orbit_times_' strrep(datestr(Matlab_start_time), ' ', '_')], 'NASA_orbit_number', 'number_of_scans', 'orbit_start_time', 'time_for_this_orbit')
     

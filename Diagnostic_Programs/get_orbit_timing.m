@@ -44,8 +44,7 @@ for iStartTime=1:size(start_date_time,1)
     
     while iMatlab_time <= Matlab_end_time
         
-        
-        [status, fi, start_line_index, scan_line_times, missing_granules_temp] ...
+        [status, fi, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, imatlab_time] ...
             = build_metadata_filename( 0, nan, metadata_directory, iMatlab_time);
         
         if ~isempty(fi)
@@ -68,9 +67,7 @@ for iStartTime=1:size(start_date_time,1)
     
     % Next, find the ganule at the beginning of the first complete orbit
     % defined as starting at descending latlim, nominally 78 S.
-    
-    start_line_index = [];
-    
+        
     [status, fi_metadata, start_line_index, iMatlab_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
         = find_start_of_orbit( latlim, metadata_directory, iMatlab_time, Matlab_end_time);
     
@@ -100,7 +97,7 @@ for iStartTime=1:size(start_date_time,1)
         
     while iOrbit <= number_of_orbits
         
-        [status, fi, start_line_index, scan_line_timesT, missing_granule] ...
+        [status, fi, start_line_index, scan_line_timesT, missing_granule, num_scan_lines_in_granule, imatlab_time] ...
             = build_metadata_filename( 1, latlim, metadata_directory, iMatlab_time);
         
         if ~isempty(missing_granule)
@@ -113,7 +110,7 @@ for iStartTime=1:size(start_date_time,1)
         end
         
         if isempty(start_line_index)
-            number_of_scans(iOrbit) = number_of_scans(iOrbit) + length(scan_line_timesT);
+            number_of_scans(iOrbit) = number_of_scans(iOrbit) + num_scan_lines_in_granule;
         else
             number_of_scans(iOrbit) = number_of_scans(iOrbit) + start_line_index - 1;
             
@@ -124,7 +121,7 @@ for iStartTime=1:size(start_date_time,1)
             iOrbit = iOrbit + 1;
             
             orbit_start_time(iOrbit) = scan_line_timesT(start_line_index);
-            number_of_scans(iOrbit) = length(scan_line_timesT) - start_line_index + 1;
+            number_of_scans(iOrbit) = num_scan_lines_in_granule - start_line_index + 1;
             
             NASA_orbit_number(iOrbit) = ncreadatt( fi,'/','orbit_number');
         end

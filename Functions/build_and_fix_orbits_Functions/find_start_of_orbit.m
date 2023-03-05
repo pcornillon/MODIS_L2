@@ -32,7 +32,7 @@ start_line_index = [];
 % trim before returning. The problem is that some granules have 2030 scan
 % lines on them and others have 2040 so will populate with nans to start.
 
-orbit_scan_line_timesT = nan(30,2040);
+orbit_scan_line_timesT = nan(30,2050);
 
 % Loop over granules until the start of an orbit is found.
 
@@ -40,13 +40,13 @@ iGranule = 0;
 
 while imatlab_time <= matlab_end_time
         
-    [status, fi, start_line_index, scan_line_timesT, missing_granule, imatlab_time] ...
+    [status, fi, start_line_index, scan_line_timesT, missing_granule, num_scan_lines_in_granule, imatlab_time] ...
         = build_metadata_filename( 1, latlim, metadata_directory, imatlab_time);
     
     if isempty(missing_granule)
         iGranule = iGranule + 1;
         
-        orbit_scan_line_timesT(iGranule,1:length(scan_line_timesT)) = scan_line_timesT;
+        orbit_scan_line_timesT(iGranule,1:num_scan_lines_in_granule) = scan_line_timesT;
     end
     
     if status ~= 0
@@ -64,7 +64,6 @@ while imatlab_time <= matlab_end_time
         % Found the start of the next orbit, save the time and return.
         
         orbit_start_time = scan_line_timesT(start_line_index);
-        num_scan_lines_in_granule = length(scan_line_timesT);
  
         % Trim the scan line times array to only the number of granules
         % actually read.

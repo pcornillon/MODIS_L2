@@ -1,4 +1,4 @@
-function [status, fi, start_line_index, scan_line_times, missing_granule, imatlab_time] = ...
+function [status, fi, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
     build_metadata_filename( get_granule_info, latlim, input_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
@@ -23,6 +23,7 @@ function [status, fi, start_line_index, scan_line_times, missing_granule, imatla
 %   scan_line_times - matlab time for each scan line if granule info is
 %    requested.
 %   missing_granule - Matlab date/time of granule if missing otherwise empty.
+%   num_scan_lines_in_granule - number of scans in this granule.
 %   imatlab_time - the matlab_time of the granule to start with. If scan
 %    times are obtained for this granule, imatlab_time will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
@@ -34,6 +35,7 @@ status = 0;
 fi = '';
 start_line_index = [];
 scan_line_times = [];
+num_scan_lines_in_granule = [];
 missing_granule = [];
 
 % Define formats to use when unpacking the matlab time into file names.
@@ -68,6 +70,8 @@ else
 
         scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
 
+        num_scan_lines_in_granule = length(scan_line_times);
+        
         % Reset the imatlab_time to the start of this granule if present; this
         % to avoid imatlabt_time drifting out of range.
 

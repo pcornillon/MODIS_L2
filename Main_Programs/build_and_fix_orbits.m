@@ -105,7 +105,7 @@ end
 latlim = -78;
 
 problem_list.filename{1} = '';
-problem_list.problem_code{1} = nan;
+problem_list.problem_code(1) = [];
 
 acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
@@ -209,20 +209,21 @@ end
 
 %% Find first granule in time range.
 
-% iMatlab_time is the time of the first granule in the specified range. It
-% will be incremented as this script loops through granules. Need to find
-% the first granule in the range. Since there has to be a metadata granule
-% corresponding to the first data granule, search for the first metadata
-% granule. Loop in 5 minute increments from the given start time to find
-% the first granule in this period.
+% temp_granule_start_time is the time a dummy variable for the approximate
+% start time of a granule. It will be incremented by 5 minutes/granule as 
+% this script loops through granules. Need to find the first granule in the
+% range. Since there has to be a metadata granule corresponding to the 
+% first data granule, search for the first metadata granule. Note that
+% build_metadata_filename will upgrade temp_granule_start_time to the
+% actual time of the 1st scan when called with 1 for the 1st argument. This
+% effectively syncs the start times to avoid any drifts.
 
-iMatlab_time = Matlab_start_time;
+temp_granule_start_time = Matlab_start_time;
 
-while iMatlab_time <= Matlab_end_time
+while temp_granule_start_time <= Matlab_end_time
     
-    
-    [status, fi, start_line_index, scan_line_times, missing_granules_temp, imatlab_time] ...
-        = build_metadata_filename( 0, nan, metadata_directory, iMatlab_time);
+    [status, fi, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
+        = build_metadata_filename( 0, nan, metadata_directory, temp_granule_start_time);
     
     if isempty(missing_granules_temp) == 0
         fprintf('First granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi)
@@ -231,11 +232,11 @@ while iMatlab_time <= Matlab_end_time
     
     % Add 5 minutes to the previous value of time to get the time of the next granule.
     
-    iMatlab_time = iMatlab_time + 5 / (24 * 60);
+    temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
     
 end
 
-if iMatlab_time > Matlab_end_time
+if temp_granule_start_time > Matlab_end_time
     fprintf('****** Could not find a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi)
     return
 end
@@ -245,16 +246,14 @@ end
 % Next, find the ganule at the beginning of the first complete orbit
 % defined as starting at descending latlim, nominally 78 S.
 
-start_line_index = [];
-
-[status, fi_metadata, start_line_index, iMatlab_time, orbit_scan_line_times, orbit_start_timeT] ...
-    = find_start_of_orbit( latlim, metadata_directory, iMatlab_time, Matlab_end_time);
+[status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
+    = find_start_of_orbit( latlim, metadata_directory, temp_granule_start_time, Matlab_end_time);
 
 % Abort this run if a major problem occurs at this point. 
 
 if (status ~= 0) | isempty(start_line_index)
     fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s.\n', ...
-        fi_metadata, datestr(iMatlab_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+        fi_metadata, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
     return
 end
 
@@ -264,16 +263,32 @@ scan_line_times = orbit_scan_line_times(end,:);
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
-iGranule = 0;
+[status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
+    
 
-while iMatlab_time <= Matlab_end_time
+% First 
+iGranule = 1;
+
+granule_start_time(iGranule) = orbit_scan_line_times(end,1);
+granule_end_time(iGranule) = orbit_scan_line_times(end,num_scan_lines_in_granule);
+
+granule_no_for_orbit_start(iGranule) = iGranule;
+
+% Note that we used num_scan_lines_in_granule in the above since there
+% could be nans for the last scan lines since the orbit_scan_line_times
+% array was inialized with nans for the longest expected granule, 2050 scan
+% lines; actually never expect more than 2040 but, just in case...
+
+while temp_granule_start_time <= Matlab_end_time
     
     % Build the output filename for this orbit and check that it hasn't
     % already been processed. To build the filename, get the orbit number
     % and the date/time when the satellite crossed latlim.
     
     orbit_number = ncreadatt( fi_metadata,'/','orbit_number');
-    
+ 
+    granule_no_for_orbit_start(orbit_number) = int32(iGranule);
+
     orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(orbit_start_time, formatOut) '_L2_SST'];
     
     name_out_sst = [output_file_directory datestr(orbit_start_time, formatOutYear) '/' ...
@@ -283,19 +298,13 @@ while iMatlab_time <= Matlab_end_time
     
     if exist(name_out_sst) == 2
         fprintf('Have already processed %s. Going to the next orbit. \n', name_out_sst)
+                
+        [status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
+            = find_start_of_orbit( latlim, metadata_directory, temp_granule_start_time, Matlab_end_time);
         
-        start_line_index = [];
-        
-        [status, fi_metadata, start_line_index, iMatlab_time, orbit_scan_line_times, orbit_start_timeT] ...
-            = find_start_of_orbit( latlim, metadata_directory, iMatlab_time, Matlab_end_time);
-        
-        if status ~= 0
-            fprintf('*** Major problem with metadata file: %s at date/time %s.\n', fi_metadata, datestr(iMatlab_time))
-            return  % Major problem with metadata files.
-        end
-        
-        if isempty(start_line_index)
-            fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(iMatlab_time), datestr(Matlab_end_time))
+        if (status ~= 0) | isempty(start_line_index)
+            fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s.\n', ...
+                fi_metadata, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
             return
         end
         
@@ -333,28 +342,107 @@ while iMatlab_time <= Matlab_end_time
     sstref = single(nan(1354,40271));
     
     num_scans_this_orbit = 0;
-    
-    need_to_fill = 0;
-    
+        
     bad_metadata_file = 0;
     
-    iMatlab_time_start = iMatlab_time;
+    temp_granule_start_time_save = temp_granule_start_time;
         
     iOrbit_granule = 0;
     
+    % Orbit start and end numbers; i.e., the orbit variables will be
+    % populated from osscan through oescan.
+    
+    osscan = 1;
+    oesan = num_scan_lines_in_granule - start_line_index + 1;
+    
+    % Granule start and end numbers; i.e., the input arrays will be read
+    % from gsscan through gescan.
+    
+    gsscan = start_line_index;
+    gescan = num_scan_lines_in_granule;
+    
+    % Read the data for the first granule in this orbit.
+    
+    [fi_granule, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
+        = get_granule_data( fi_metadata, granules_directory, problem_list, [osscan oescan], ...
+        [gsscan gescan], latitude, longitude, SST_In, qual_sst, flags_sst, sstref);
+    
     %% Loop over granules in the orbit.
 
-    while iMatlab_time <= Matlab_end_time
+    while temp_granule_start_time <= Matlab_end_time
+        
+        % Get metadata information for the next granule.
+        
+        [status, fi, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, temp_granule_start_time] ...
+            = build_metadata_filename( 1, latlim, metadata_directory, iMatlab_time);
+        
+        if ~isempty(missing_granule)
+            fprintf('Missing granule for orbit #\i at time %s.\n', iOrbit, datestr(iMatlab_time))
+        end
+        
+        if status ~= 0
+            fprintf('Major problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(iMatlab_time), status)
+        else
+            
+            osscan = number_of_scans(iOrbit);
+            
+            if isempty(start_line_index)
                 
-        % If this granule is the start of a new orbit complete populating 
-        % and close the previous orbit and then begin populating the new
-        % orbit.
+                % Build the start and stop orbit and granule scan indices.
+                
+                oesan = osscan + num_scan_lines_in_granule - 1;
+                
+                gsscan = 1;
+                gescan = num_scan_lines_in_granule;
+
+                number_of_scans(iOrbit) = number_of_scans(iOrbit) + num_scan_lines_in_granule;
+                
+            else
+                % Build the start and stop orbit and granule scan indices.
+                
+                oesan = osscan + num_scan_lines_in_granule - 1;
+                
+                gsscan = 1;
+                gescan = start_line_index;
+
+                number_of_scans(iOrbit) = number_of_scans(iOrbit) + start_line_index - 1;
+                
+                time_for_this_orbit(iOrbit) = scan_line_timesT(start_line_index) - orbit_start_time(iOrbit);                
+            end
+            
+            % Now, read the data for this granule.
+            
+            [fi_granule, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
+                = get_granule_data( fi_metadata, granules_directory, problem_list, [osscan oescan], ...
+                [gsscan gescan], latitude, longitude, SST_In, qual_sst, flags_sst, sstref);
+            
+            %% If this granule contains the start of a new orbit, process.
+            
+            if ~isempty(start_line_index)
+            
+            
+            
         
         
+        
+                
         % Increment granule counters.
         
         iGranule = iGranule + 1;
         iOrbit_granule = iOrbit_granule + 1;
+        
+        [fi_granule, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
+            = get_granule_data( fi_metadata, granules_directory, problem_list, [osscan oescan], ...
+            [gsscan gescan], latitude, longitude, SST_In, qual_sst, flags_sst, sstref);
+                
+        
+        
+        
+        
+        
+        
+        
+        
         
         % Handle the first granule for this orbit a bit differently since
         % we are only interested in the scan lines from the start of the
@@ -378,81 +466,6 @@ while iMatlab_time <= Matlab_end_time
         % start of the next orbit.
         
         if nscans_this_orbit > 40271
-            
-            fprintf('Problem with orbit %i; it''s bleeding into the next orbit. End it here.\n', orbit_number)
-            
-            [longitude, latitude, SST_in, qual_sst, flags_sst, sstref] = ...
-                add_nan_scan_lines( longitude, latitude, SST_in, qual_sst, flags_sst, sstref, 40721-size(SST_in,2));
-            
-            
-            % Build the filename for this granule.
-            
-            % AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
-            %
-            % AQUA_MODIS.20030101T002505.L2.SST.nc
-            % s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100620224008-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
-            
-            nn = strfind( fi_metadata, '_2');
-            
-            name_in_date = fi_metadata(nn(2)+1:nn(2)+8);
-            name_in_hr_min = fi_metadata(nn(2)+9:nn(2)+14);
-            
-            ss = strfind(fi_metadata, '/');
-            
-            if amazon_s3_run
-                fi = [granules_directory name_in_date name_in_hr_min '07' fi_metadata(ss(end)+15:end)];
-                if exist(fi_granule) ~= 2
-                    fi = [granules_directory name_in_date name_in_hr_min(1:end-2) '08' fi_metadata(ss(end)+15:end)];
-                    if exist(fi_granule) ~= 2
-                        iProblemFile = iProblemFile + 1;
-                        problem_list.fi_metadata{iProblemFile} = fi_metadata;
-                        problem_list.problem_code{iProblemFile} = 1;
-                        
-                        no_granule = 0;
-                    end
-                end
-            else
-                YearS = fi_metadata(nn(2)+1:nn(2)+4);
-                fi = [granules_directory YearS '/AQUA_MODIS.' name_in_date 'T' name_in_hr_min '.L2.SST.nc'];
-                
-                % If the data file does not exist, very bad, exit.
-                
-                if exist(fi_granule) ~= 2
-                    fprintf('Whoops, couldn''t find %s.\n', fi_granule)
-                    return
-                else
-                    no_granule = 0;
-                end
-            end
-            
-            % % %                 % Now build the metadata filename.
-            % % %
-            % % %                 dd = strfind( filename, '.L2.');
-            % % %                 filename = strrep( filename, '.', '_');
-            % % %
-            % % %                 if use_OBPG
-            % % %                     found_meta = 0;
-            % % %                     for iMeta=[7 8 0 1 2 3 4 5 6 9]
-            % % %                         fi_meta = [metadata_directory filename(ss(end)+1:dd-3) '0' num2str(iMeta) '_L2_SST_OBPG_extras.nc4'];
-            % % %                         if exist(fi_meta) == 2
-            % % %                             found_meta = 1;
-            % % %                             break
-            % % %                         end
-            % % %                     end
-            % % %
-            % % %                     if found_meta == 0
-            % % %                         iProblemFile = iProblemFile + 1;
-            % % %                         problem_list.filename{iProblemFile} = filename;
-            % % %                         problem_list.problem_code{iProblemFile} = 2;
-            % % %
-            % % %                         no_granule = 0;
-            % % %
-            % % %                         fprintf('\n******************************\nSkipping %s; could not find its metadata file.\n******************************\n', fi_meta)
-            % % %                     end
-            % % %                 else
-            % % %                     fi_meta = [granules_directory filename(ss(end)+1:end)];
-            % % %                 end
-            
             if no_granule
                 
                 % If no granule for this time add 2040 blank scan lines.
@@ -543,7 +556,7 @@ while iMatlab_time <= Matlab_end_time
                 did_not_build_this_orbit = 1;
             end
             
-            iMatlab_time = iMatlab_time + 5 / (24 * 60);
+            granule_time = granule_time + 5 / (24 * 60);
         end
         
         % %         % Found at least one orbit with a scan of 10 detectors missing.
@@ -564,11 +577,11 @@ while iMatlab_time <= Matlab_end_time
         % % % % % % % % %             % the file is good. If it has problems abort all processing for
         % % % % % % % % %             % this orbit.
         % % % % % % % % %
-        % % % % % % % % %             [status, fi_metadata, start_line_index, scan_line_times, missing_granule, imatlab_time] ...
-        % % % % % % % % %                 = build_metadata_filename( 1, latlim, metadata_directory, iMatlab_time);
+        % % % % % % % % %             [status, fi_metadata, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, temp_granule_start_time] ...
+        % % % % % % % % %                 = build_metadata_filename( 1, latlim, metadata_directory, granule_time);
         % % % % % % % % %
         % % % % % % % % %             if status ~= 0
-        % % % % % % % % %                 frintf('***** Bad metadata file %s\n', datestr(iMatlab_time))
+        % % % % % % % % %                 frintf('***** Bad metadata file %s\n', datestr(granule_time))
         % % % % % % % % %                 bad_metadata_file = 1;
         % % % % % % % % %                 break  % Major problem with metadata files.
         % % % % % % % % %             end
@@ -587,7 +600,7 @@ while iMatlab_time <= Matlab_end_time
         % % % % % % % % %                 no_granule = 1;
         % % % % % % % % %
         % % % % % % % % %                 if isempty(fi_metadata)
-        % % % % % % % % %                     frintf('***** No data for %s\n', datestr(iMatlab_time))
+        % % % % % % % % %                     frintf('***** No data for %s\n', datestr(granule_time))
         % % % % % % % % %
         % % % % % % % % %                     need_to_fill = 1;
         % % % % % % % % %                     [longitude, latitude, SST_in, qual_sst, flags_sst, sstref] = ...
@@ -727,6 +740,11 @@ while iMatlab_time <= Matlab_end_time
         if print_diagnostics
             disp(['*** Time to process and save ' name_out_sst ': ', num2str( timing.time_to_process_this_orbit(iOrbit), 5) ' seconds.'])
         end
+            
+            % Add 5 minutes to the previous value of time to get the time of the
+            % next granule and continue searching.
+            
+            iMatlab_time = iMatlab_time + 5 / (24 * 60);
     end
 end
 % % % end

@@ -1,4 +1,5 @@
-function [fi_granule, problem_list] = build_granule_filename( fi_metadata, granules_directory, problem_list)
+function [status, fi_granule, problem_list, global_attrib] ...
+    = build_granule_filename( fi_metadata, granules_directory, problem_list, check_attributes)
 % build_granule_filename - based on metadata granule name - PCC
 %   
 % Start by finding the data/time information. Then build the granule file
@@ -9,20 +10,41 @@ function [fi_granule, problem_list] = build_granule_filename( fi_metadata, granu
 %    metadata information was copied from the OBPG granule because it does
 %    not exist in the PO.DAAC granule.
 %   granules_directory - the name of the directory with the granules.
+%   check_attributes - 1 to read the global attributes for the data granule
+%    and check that they exist and/or are reasonable.
 %   problem_list - structure with list of filenames (filename) for skipped 
 %    file and the reason for it being skipped (problem_code):
 %    problem_code: 1 - couldn't find the file in s3.
 %                : 2 - couldn't find the metadata file copied from OBPG data.
 %
 % OUTPUT
+%   status  : 0 - OK
+%           : 1 - couldn't find the data granule.
+%           : 2 - didn't find number_of_lines global attribute.
+%           : 3 - number of pixels global attribute not equal to 1354.
+%           : 4 - number of scan lines global attribute not between 2020 and 2050.
+%           : 5 - couldn't find the metadata file copied from OBPG data.
 %   fi_granule - granule filename. 
+%   problem_list - as above but the list is incremented by 1 if a problem.
+%   global_attrib - the global attributes read from the data granul.
 %
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
 % fi_granule_OBPG: /Volumes/Aqua-1/MODIS_R2019/combined/2003/Aqua-1AQUA_MODIS.20030101T002505.L2.SST.nc
 % fi_granule_s3: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100620224008-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
 
+status = 0;
 fi_granule = [];
+
+% Get the index for the problem list.
+
+if isempty(problem_list(1).problem_code)
+    iProblemFile = 0;
+else
+    iProblemFile = length(problem_list.problem_code);
+end
+
+% Start building the name of the data granule.
 
 nn = strfind( fi_metadata, '_2');
 
@@ -49,14 +71,13 @@ if strcmp( granules_directory(1:2), 's3') == 1
 
             % Here for a problem add this file to the problem list. 
             
-            if isempty(problem_list(1).problem_code)
-                iProblemFile = 1;
-            else
-                iProblemFile = length(problem_list.problem_code) + 1;
-            end
+            iProblemFile = iProblemFile + 1;
             
             problem_list.fi_metadata{iProblemFile} = fi_metadata;
             problem_list.problem_code(iProblemFile) = 1;
+            
+            status = problem_list.problem_code(iProblemFile);
+            return
         end
     end
 else
@@ -64,12 +85,25 @@ else
     
     fi_granule = [granules_directory YearS '/AQUA_MODIS.' name_in_date 'T' name_in_hr_min '.L2.SST.nc'];
     
-    % If the data file does not exist, very bad, exit.
+    % If the data file does not exist, very bad.
     
     if exist(fi_granule) ~= 2
         fprintf('Whoops, couldn''t find %s.\n', fi_granule)
+                
+        iProblemFile = iProblemFile + 1;
+        
+        problem_list.fi_metadata{iProblemFile} = fi_metadata;
+        problem_list.problem_code(iProblemFile) = 1;
+
+        status = problem_list.problem_code(iProblemFile);
         return
     end
+end
+
+% Check the global attributes in the granule data file if requested.
+
+if check_attributes
+    [status, global_attrib, problem_list] = check_global_attrib( fi_granule, problem_list);
 end
 
 end

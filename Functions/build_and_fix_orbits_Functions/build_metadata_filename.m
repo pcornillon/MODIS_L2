@@ -17,7 +17,10 @@ function [status, fi, start_line_index, scan_line_times, missing_granule, num_sc
 %   imatlab_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
-%   status - 0 if success, 1 if problem with detectors.
+%   status  : 0 - OK
+%           : 6 - 1st detector in data granule not 1st detector in group of 10. 
+%           : 10 - missing granule.
+%           : 11 - more than 2 metadata files for a given time. 
 %   fi - the completely specified filename of the 1st granule for the orbit found.
 %   start_line_index - the index in fi for the start of the orbit.
 %   scan_line_times - matlab time for each scan line if granule info is
@@ -54,8 +57,12 @@ end
 if isempty(file_list)
     missing_granule = imatlab_time;
     fprintf('*** Missing file for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
+    
+    status = 10;
 elseif length(file_list) > 2
-    fprintf('*** Too many files for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
+    fprintf('*** Too many metadata files for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
+    
+    status = 11;
 else
     fi = [file_list(1).folder '/' file_list(1).name];
 
@@ -84,7 +91,7 @@ else
 
         if abs(mSec(10)-mSec(1)) > 0
             fprintf('The 1st scan line for %s is not the 1st detector in a group of 10. Should never get here.', file_list(1).name)
-            status = 1;
+            status = 6;
             return
         end
 
@@ -116,25 +123,5 @@ else
                 start_line_index = floor(nn(1) / 10) * 10 + 5;
             end
         end
-
-% %         % If nadir track didn't cross latlim, return.
-% % 
-% %         if isempty(nn)
-% %             return
-% %         else
-% %             % If ascending reset nn to empty & return; we want a descending orbit.
-% % 
-% %             diff_nlat = diff(nlat_t);
-% %             if diff_nlat(min(end, nn)) > 0
-% %                 nn = [];
-% %                 return
-% %             else
-% %                 % Get the scan line nearest the middle of the 10 detector grou
-% % 
-% %                 start_line_index = floor(nn(1) / 10) * 10 + 5;
-% %                 return
-% %             end
-% %         end
-
     end
 end

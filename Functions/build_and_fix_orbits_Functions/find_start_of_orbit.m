@@ -13,7 +13,11 @@ function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orb
 %   matlab_end_time - check granules until this time.
 %
 % OUTPUT
-%   status - 0 if success, 1 if problem with detectors.
+%   status  : 0 - OK
+%           : 6 - 1st detector in data granule not 1st detector in group of 10. 
+%           : 10 - missing granule.
+%           : 11 - more than 2 metadata files for a given time. 
+%           : 100 - No granule with the start of an orbit found in time range. 
 %   fi - the completely specified filename of the 1st granule for the orbit found.
 %   start_line_index - the index in fi for the start of the orbit.
 %   imatlab_time - the matlab_time of the granule to start with.
@@ -75,6 +79,8 @@ end
 
 % If the start of an orbit was not found in the time range specified let
 % the calling program know.
+
+status = 100;
 
 scan_line_times = [];
 orbit_start_time = [];

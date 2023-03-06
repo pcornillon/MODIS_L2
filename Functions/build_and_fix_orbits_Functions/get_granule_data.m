@@ -1,4 +1,4 @@
-function [status, fi_granule, problem_list, global_attrib, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
+function [status, fi_granule, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
     = get_granule_data( fi_metadata, granules_directory, problem_list, check_attributes, orbit_data_range, ...
     granule_data_range, latitude, longitude, SST_In, qual_sst, flags_sst, sstref)
 % get_granule_data - build the granule filename and read the granule data - PCC
@@ -38,7 +38,6 @@ function [status, fi_granule, problem_list, global_attrib, latitude, longitude, 
 %           : 5 - couldn't find the metadata file copied from OBPG data.
 %   fi_granule - granule filename from which the data were read. 
 %   problem_list - structure with data on problem granules.
-%   global_attrib - the global attributes read from the data granule.
 %   latitude - the array for the latitudes in this orbit.
 %   longitude - the array for the longitude in this orbit.
 %   SST_In - the array for the input SST values in this orbit.
@@ -60,7 +59,7 @@ scan_lines_to_read = gescan - gsscan + 1;
 
 % Read the fields
 
-if ~skip_this_granule
+if status == 0
     latitude(:,osscan:oesan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
     longitude(:,osscan:oesan) = single(ncread( fi_granule , '/navigation_data/longitude', [1 gsscan], [npixels scan_lines_to_read]));
     SST_In(:,osscan:oesan) = single(ncread( fi_granule , '/geophysical_data/sst', [1 gsscan], [npixels scan_lines_to_read]));
@@ -69,6 +68,8 @@ if ~skip_this_granule
     flags_sst(:,osscan:oesan) = int16(ncread(fi_metadata, '/geophysical_data/flags_sst', [1 gsscan], [npixels scan_lines_to_read]));
     
     sstref(:,osscan:oesan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
+else
+    fprintf('****** Data for %s not read because of error %i.\n', status)
 end
 
 end

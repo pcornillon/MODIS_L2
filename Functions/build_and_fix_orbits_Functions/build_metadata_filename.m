@@ -1,5 +1,5 @@
 function [status, fi, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
-    build_metadata_filename( get_granule_info, latlim, input_directory, imatlab_time)
+    build_metadata_filename( get_granule_info, input_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
 % Read the latitude of the nadir track for this granule and determine
@@ -12,7 +12,6 @@ function [status, fi, start_line_index, scan_line_times, missing_granule, num_sc
 %   get_granule_info - if 1, read info needed to determine if this granule
 %    contains the start of a new orbit. If 0, return after checking for
 %    existence of the file.
-%   latlim - the latitude defining the start of an orbit.
 %   input_directory - the directory with the OBPG metadata files.
 %   imatlab_time - the matlab_time of the granule to start with.
 %
@@ -31,6 +30,8 @@ function [status, fi, start_line_index, scan_line_times, missing_granule, num_sc
 %    times are obtained for this granule, imatlab_time will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
+
+global latlim
 
 % Initialize return variables.
 

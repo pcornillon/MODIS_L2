@@ -1,5 +1,5 @@
 function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] = ...
-    find_start_of_orbit( latlim, metadata_directory, imatlab_time, matlab_end_time)
+    find_start_of_orbit( metadata_directory, imatlab_time)
 % find_start_of_orbit - Does this granule cross the start of an orbit on descent - PCC
 %
 % Loop over granules starting at imlat_time in steps of 5 minutes until the
@@ -7,10 +7,8 @@ function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orb
 % passed in. 
 %
 % INPUT
-%   latlim - the latitude defining the start of an orbit.
 %   metadata_directory - the directory with the OBPG metadata files.
 %   imatlab_time - the matlab_time of the granule to start with.
-%   matlab_end_time - check granules until this time.
 %
 % OUTPUT
 %   status  : 0 - OK
@@ -27,6 +25,8 @@ function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orb
 %   num_scan_lines_in_granule - the number of scan lines in the granule
 %    for which the nadir track crosses latlim.
 %
+
+global latlim
 
 start_time = imatlab_time;
 
@@ -45,7 +45,7 @@ iGranule = 0;
 while imatlab_time <= matlab_end_time
         
     [status, fi, start_line_index, scan_line_timesT, missing_granule, num_scan_lines_in_granule, imatlab_time] ...
-        = build_metadata_filename( 1, latlim, metadata_directory, imatlab_time);
+        = build_metadata_filename( 1, metadata_directory, imatlab_time);
     
     if isempty(missing_granule)
         iGranule = iGranule + 1;

@@ -1,4 +1,4 @@
-function [ status, global_attrib, problem_list] = check_global_attrib( fi_granule, problem_list)
+function [ status, problem_list] = check_global_attrib( fi_granule, problem_list)
 % check_global_attrib - read and check global attributes from the metadata file - PCC 
 %   
 % This script reads the global attributes from the granule file and make
@@ -25,6 +25,9 @@ function [ status, global_attrib, problem_list] = check_global_attrib( fi_granul
 %   problem_list - as above but the list is incremented by 1 if a problem.
 %
 
+global iOrbit orbit_info
+global npixels
+
 % Initialize some parameters.
 
 status = 0;
@@ -32,7 +35,7 @@ nscans_range = [2019 2051];
 
 % Get the index for problems.
 
-if isempty(problem_list(1).problem_code)
+if isnan(problem_list(1).problem_code)
     iProblemFile = 0;
 else
     iProblemFile = length(problem_list.problem_code);
@@ -40,12 +43,12 @@ end
 
 % Read the global attributes from the granule file.
 
-global_attrib = ncinfo(fi_granule);
+orbit_info(iOrbit).data_global_attrib = ncinfo(fi_granule);
 
 % Perform tests on some of the global variables. 
 
-if isempty(strcmp(global_attrib.Dimensions(1).Name, 'number_of_lines'))
-    fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', global_attrib.Dimensions(1).Name, fi_granule)
+if isempty(strcmp(orbit_info(iOrbit).data_global_attrib.Dimensions(1).Name, 'number_of_lines'))
+    fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', orbit_info(iOrbit).data_global_attrib.Dimensions(1).Name, fi_granule)
     skip_this_granule = 1;
     
     iProblemFile = iProblemFile + 1;
@@ -59,10 +62,10 @@ end
 
 % Check the number of pixels/scan line and the number of scan lines.
 
-nscans = global_attrib.Dimensions(1).Length;
-npixels = global_attrib.Dimensions(2).Length;
+nscans = orbit_info(iOrbit).data_global_attrib.Dimensions(1).Length;
+npixels_attr = orbit_info(iOrbit).data_global_attrib.Dimensions(2).Length;
 
-if npixels ~= 1354
+if npixels_attr ~= npixels
     fprintf('There are %i pixels/scan line in granule: %s but there should be 1354. Skipping this granule. Error code 3.\n', npixels, fi_granule)
     
     skip_this_granule = 1;
@@ -97,16 +100,16 @@ end
 % that time_coverage_start exists in the attributes.
 
 not_found = 1;
-for iAtt=1:length(global_attrib.Attributes)
-    if strfind(global_attrib.Attributes(iAtt).Name, 'time_coverage_start')
-        xx = global_attrib.Attributes(iAtt).Value;
+for iAtt=1:length(orbit_info(iOrbit).data_global_attrib.Attributes)
+    if strfind(orbit_info(iOrbit).data_global_attrib.Attributes(iAtt).Name, 'time_coverage_start')
+        xx = orbit_info(iOrbit).data_global_attrib.Attributes(iAtt).Value;
         not_found = 0;
         datetime_start = datenum( str2num(xx(1:4)), str2num(xx(6:7)), ...
             str2num(xx(9:10)), str2num(xx(12:13)), str2num(xx(15:16)), str2num(xx(18:23)));
     end
     
-    if strfind(global_attrib.Attributes(iAtt).Name, 'time_coverage_end')
-        xx = global_attrib.Attributes(iAtt).Value;
+    if strfind(orbit_info(iOrbit).data_global_attrib.Attributes(iAtt).Name, 'time_coverage_end')
+        xx = orbit_info(iOrbit).data_global_attrib.Attributes(iAtt).Value;
         datetime_end = datenum( str2num(xx(1:4)), str2num(xx(6:7)), ...
             str2num(xx(9:10)), str2num(xx(12:13)), str2num(xx(15:16)), str2num(xx(18:23)));
     end

@@ -1,4 +1,4 @@
-function [timing problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
+function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
     start_date_time, end_date_time, fix_mask, fix_bowtie, get_gradients, use_OBPG, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
@@ -23,40 +23,63 @@ function [timing problem_list] = build_and_fix_orbits( granules_directory, metad
 %   use_OBPG - use metadata copied from the OBPG file.
 %   save_core - 1 to save only the core values, regridded lon, lat, SST,
 %    refined mask and nadir info, 0 otherwise.
-%   print_diag - 1 to print timing diagnostics, 0 otherwise.
+%   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
 %
 % OUTPUT
-%   timing - a structure with the times to process different elements of
-%    the orbits processed.
+% % %   timing - a structure with the times to process different elements of
+% % %    the orbits processed.
+%   orbit_into - structure with information about each orbit.
 %   problem_list - structure with list of filenames for skipped file and
-%    the reason for it being skipped:
-%    problem_code: 1 - couldn't find the file in s3.
-%                : 2 - couldn't find the metadata file copied from OBPG data.
+%    the reason for it being skipped (same codes as status):
+%    problem_code: 0 - OK
+%                : 1 - couldn't find the data granule.
+%                : 2 - didn't find number_of_lines global attribute.
+%                : 3 - number of pixels global attribute not equal to 1354.
+%                : 4 - number of scan lines global attribute not between 2020 and 2050.
+%                : 5 - couldn't find the metadata file copied from OBPG data.
+%                : 6 - 1st detector in data granule not 1st detector in group of 10.
+%                : 10 - missing granule.
+%                : 11 - more than 2 metadata files for a given time.
+%                : 100 - No granule with the start of an orbit found in time range.
 %
 % EXAMPLE
-% % %   granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/';  % Test run.
-% % %   orbits_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Orbits/';  % Test run.
-% % %   metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-% % %   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
-% % %   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-% % %   output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
-% % %   [timing problem_list] = build_and_fix_orbits(  orbits_directory, granules_directory, metadata_directory, fixit_directory, ...
-% % %    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1);
 %   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 %   metadata_directory = 'Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 %   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
 %   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
 %   output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
-%   [timing problem_list] = build_and_fix_orbits(  granules_directory, metadata_directory, fixit_directory, ...
+%   [orbit_info problem_list] = build_and_fix_orbits(  granules_directory, metadata_directory, fixit_directory, ...
 %    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1);
 %
 %  To do just the test orbit, specify the start time somewhere in that orbit and
 %  the end time about 5 minutes after the start time; e.g.,
-%  [timing problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, ...
+%  [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, ...
 %   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);
 %
+% To do a test run, capture the lines in 'if test_values' group and execute
+% them at the Matlab command line prompt.
 
 global print_diagnostics save_just_the_facts
+
+% Initialize return variables.
+
+if ~exist('metadata_directory')
+    metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+    granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/';  % Test run.
+    fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
+    logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
+    output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
+    start_date_time = [2010 6 19 4 0 0]; % Test run.
+    end_date_time = [2010 6 20 7 0 0 ];  % Test run.
+    fix_mask = 0;  % Test run.
+    fix_bowtie = 0;  % Test run.
+    get_gradients = 0;  % Test run.
+    use_OBPG = 0;  % Test run.
+    save_core = 0;  % Test run.
+    print_diagnostics = 1;  % Test run.
+    
+    %     [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, [2010 6 19 4 0 0], [2010 6 19 7 0 0 ], 0, 0, 0, 1);
+end
 
 save_just_the_facts = 1;
 if exist('save_core') ~= 0
@@ -65,7 +88,6 @@ if exist('save_core') ~= 0
     end
 end
 
-print_diagnostics = 0;
 if exist('print_diag') ~= 0
     if print_diag == 1
         print_diagnostics = 1;
@@ -102,6 +124,14 @@ end
 
 %% Initialize some variables.
 
+global iOrbit orbit_info
+
+iOrbit = 0;
+
+global npixels
+
+npixels = 1354;
+
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
 latlim = -78;
@@ -113,15 +143,17 @@ secs_per_scan_line = 0.1477112;
 orbit_length = 40271;
 
 problem_list.filename{1} = '';
-problem_list.problem_code(1) = [];
+problem_list.problem_code(1) = nan;
 
 acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
 
 % Formats used in building filenames.
 
-formatOut = 'yyyymmddTHHMMSS';
-formatOutMnth = 'mm';
+global formatOutDateTime formatOutMonth formatOutYear
+
+formatOutDateTime = 'yyyymmddTHHMMSS';
+formatOutMonth = 'mm';
 formatOutYear = 'yyyy';
 
 %% Check input parameters to make sure they are OK.
@@ -235,8 +267,8 @@ while temp_granule_start_time <= Matlab_end_time
     [status, fi_metadata, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
         = build_metadata_filename( 0, metadata_directory, temp_granule_start_time);
     
-    if isempty(missing_granules_temp) == 0
-        fprintf('First granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi_metadata)
+    if isempty(missing_granules_temp)
+        fprintf('Found a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi_metadata)
         break
     end
     
@@ -251,342 +283,213 @@ if temp_granule_start_time > Matlab_end_time
     return
 end
 
-%% Find start of first orbit.
+% If the first granule does NOT contain the start of an orbit--defined as
+% the point at which the descending satellite crosses latlim, nominally
+% 78 S--increment temp_granule_start_time so that find_start_of_orbit
+% doesn't reread this granule--that would be a waster of time but OK
+% otherwise--and then search for a granule that contains the start of an
+% orbit.
 
-% Next, find the ganule at the beginning of the first complete orbit
-% defined as starting at descending latlim, nominally 78 S. Not processing
-% granules up to this point.
-
-[status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
-    = find_start_of_orbit( metadata_directory, temp_granule_start_time);
-
-% Abort this run if a major problem occurs at this point.
-
-if status ~= 0
-    fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
-        fi_metadata, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
-    return
+if isempty(start_line_index)
+    
+    % Not a new orbit granule; add 5 minutes to the previous value of
+    % time to get the time of the next granule and continue searching.
+    
+    temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
+    
+    % Next, find the ganule at the beginning of the first complete orbit
+    % defined as starting at descending latlim, nominally 78 S. Not processing
+    % granules up to this point.
+    
+    [status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] ...
+        = find_start_of_orbit( metadata_directory, temp_granule_start_time);
+    
+    % Abort this run if a major problem occurs at this point.
+    
+    if status ~= 0
+        fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
+            fi_metadata, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+        return
+    end
+    
+    % Load the scan line times for the last granule found, the first
+    % granule in a new orbit.
+    
+    scan_line_times = orbit_scan_line_times(end,1:num_scan_lines_in_granule);
+    
+    % Note that we used num_scan_lines_in_granule in the above since there
+    % could be nans for the last scan lines since the orbit_scan_line_times
+    % array was inialized with nans for the longest expected granule, 2050 scan
+    % lines; actually never expect more than 2040 but, just in case...
+else
+    
+    % Found the start of the next orbit, save the start time.
+    
+    orbit_start_time = scan_line_times(start_line_index);
 end
-
-% Load the scan line times for the first granule on this orbit.
-
-scan_line_times = orbit_scan_line_times(end,1:num_scan_lines_in_granule);
-
-% Note that we used num_scan_lines_in_granule in the above since there
-% could be nans for the last scan lines since the orbit_scan_line_times
-% array was inialized with nans for the longest expected granule, 2050 scan
-% lines; actually never expect more than 2040 but, just in case...
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
 
 while temp_granule_start_time <= Matlab_end_time
     
-% % %     % Build the output filename for this orbit and check that it hasn't
-% % %     % already been processed. To build the filename, get the orbit number
-% % %     % and the date/time when the satellite crossed latlim.
-% % %     
-% % %     orbit_number = ncreadatt( fi_metadata,'/','orbit_number');
-% % %     
-% % %     orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(orbit_start_time, formatOut) '_L2_SST'];
-% % %     
-% % %     name_out_sst = [output_file_directory datestr(orbit_start_time, formatOutYear) '/' ...
-% % %         datestr(orbit_start_time, formatOutMonth) '/' orbit_file_name '.nc4'];
-% % %     
-% % %     %% Skip this orbit if it exist already.
-% % %     
-% % %     if exist(name_out_sst) == 2
-% % %         fprintf('Have already processed %s. Going to the next orbit. \n', name_out_sst)
-% % %         
-% % %         [status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
-% % %             = find_start_of_orbit( latlim, metadata_directory, temp_granule_start_time);
-% % %         
-% % %         if status ~= 0
-% % %             fprintf('*** Problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
-% % %                 fi_metadata, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
-% % %             return
-% % %         end
-% % %         
-% % %         % Load the scan line times for the first granule on this orbit.
-% % %         
-% % %         scan_line_times = orbit_scan_line_times(end,1:num_scan_lines_in_granule);
-% % %         
-% % %         % See comment re use of num_scan_lines_in_granule above in 1st call
-% % %         % to find_start_of_orbit.
-% % %         
-% % %     end
-% % %     
-% % %     %% Now build this orbit from its granules; a granule has been found with the start of this orbit.
-% % %     
-% % %     fprintf('Working on %s.\n', name_out_sst)
-% % %     
-% % %     start_time_to_build_this_orbit = tic;
-% % %     
-% % %     iGranule = 1;
-% % %     
-% % %     clear granule
-% % %     
-% % %     granule(1).metadata_name = fi_metadata;
-% % %     
-% % %     granule(1).start_time = scan_line_times(1) * secs_per_day;
-% % %     granule(1).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
-% % %     
-% % %     % The next flag is set to 1 if we missed the end of an orbit.
-% % %     
-% % %     process_this_orbit = 0;
-% % %     
-% % %     % Initialize orbit arrays.
-% % %     
-% % %     latitude = single(nan(1354,40271));
-% % %     longitude = single(nan(1354,40271));
-% % %     SST_In = single(nan(1354,40271));
-% % %     qual_sst = int8(nan(1354,40271));
-% % %     flags_sst = int16(nan(1354,40271));
-% % %     sstref = single(nan(1354,40271));
-% % %     
-% % %     num_scans_this_orbit = 0;
-% % %     
-% % %     bad_metadata_file = 0;
-% % %     
-% % %     temp_granule_start_time_save = temp_granule_start_time;
-% % %     
-% % %     % Orbit start and end numbers; i.e., the orbit variables will be
-% % %     % populated from osscan through oescan.
-% % %     
-% % %     %     osscan = 1;
-% % %     %     oescan = num_scan_lines_in_granule - start_line_index + 1;
-% % %     granule(1).osscan = 1;
-% % %     granule(1).oescan = num_scan_lines_in_granule - start_line_index + 1;
-% % %     
-% % %     % Granule start and end numbers; i.e., the input arrays will be read
-% % %     % from gsscan through gescan.
-% % %     
-% % %     %     gsscan = start_line_index;
-% % %     %     gescan = num_scan_lines_in_granule;
-% % %     granule(1).gsscan = start_line_index;
-% % %     granule(1).gescan = num_scan_lines_in_granule;
-% % %     
-% % %     % Read the data for the first granule in this orbit.
-% % %     
-% % %     [status, granule(1).data_granule_name, problem_list, global_attrib, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
-% % %         = get_granule_data( fi_metadata, granules_directory, problem_list, check_attributes, [granule(1).osscan granule(1).oescan], ...
-% % %         [granule(1).gsscan granule(1).gescan], latitude, longitude, SST_In, qual_sst, flags_sst, sstref);
-% % %     
-% % %     granule(1).status = status;
-% % %     
-% % %     %% Loop over granules in the orbit.
-% % %     
-% % %     while temp_granule_start_time <= Matlab_end_time
-% % %         
-% % %         % Get metadata information for the next granule.
-% % %         
-% % %         [status, fi_metadata, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, temp_granule_start_time] ...
-% % %             = build_metadata_filename( 1, metadata_directory, iMatlab_time);
-% % %         
-% % %         if status ~= 0
-% % %             fprintf('Problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(iMatlab_time), status)
-% % %         else
-% % %             
-% % %             iGranule = iGranule + 1;
-% % %             granule(iGranule).metadata_name = fi_metadata;
-% % %             
-% % %             granule(iGranule).start_time = scan_line_times(1) * secs_per_day;
-% % %             granule(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
-% % %             
-% % %             % Get lines to skip for missing granules. Will, hopefully, be 0
-% % %             % if no granules skipped.
-% % %             
-% % %             lines_to_skip = floor( abs((scan_line_times(1)*secs_per_day - granule(end-1).end_time) + 0.05) / secs_per_scan_line);
-% % %             
-% % %             % Check that the number of lines to skip is a multiple
-% % %             % of 10. If not, force it to be.
-% % %             
-% % %             if mod(lines_to_skip, 10) ~= 0
-% % %                 fprintf('The number of lines to skip, %i, is not a multiple of 10 for granule %s. Forcing it to 10.\n', lines_to_skip, fi_metadata)
-% % %                 lines_to_skip = round(lines_to_skip / 10) * 10;
-% % %             end
-% % %             
-% % %             granule(iGranule).osscan = granule(iGranule-1).oescan + 1 + lines_to_skip;
-% % %             
-% % %             granule(iGranule).gsscan = 1;
-% % %             
-% % %             if isempty(start_line_index)
-% % %                 
-% % %                 % Didn't find the start of a new orbit but the granule for
-% % %                 % the start of the next orbit may be missing so, check the
-% % %                 % to see if the end was skipped. If so, process what we
-% % %                 % have for this orbit. Do not use the scan lines in this
-% % %                 % granule. When done processing, start a new orbit,
-% % %                 % estimating the number of scan lines into that orbit.
-% % %                 
-% % %                 if scan_line_times(1)*secs_per_day > (granule(1).start_time + secs_per_orbit + 300)
-% % %                     process_this_orbit = 1;
-% % %                     break
-% % %                 end
-% % %                 
-% % %                 granule(iGranule).oescan = granule(iGranule).osscan + num_scan_lines_in_granule - 1;
-% % %                 
-% % %                 granule(iGranule).gescan = num_scan_lines_in_granule;
-% % %                 
-% % %             else
-% % %                 granule(iGranule).oescan = granule(iGranule).osscan + start_line_index - 2;
-% % %                 
-% % %                 granule(iGranule).gescan = start_line_index - 1;
-% % %             end
-% % %             
-% % %             % Read the data for the first granule in this orbit.
-% % %             
-% % %             [status, granule(1).data_granule_name, problem_list, global_attrib, latitude, longitude, SST_In, qual_sst, flags_sst, sstref] ...
-% % %                 = get_granule_data( fi_metadata, granules_directory, problem_list, check_attributes, [granule(iGranule).osscan granule(iGranule).oescan], ...
-% % %                 [granule(iGranule).gsscan granule(iGranule).gescan], latitude, longitude, SST_In, qual_sst, flags_sst, sstref);
-% % %             
-% % %             granule(iGranule).status = status;
-% % %             
-% % %             if ~isempty(start_line_index)
-% % %                 break
-% % %             end
-% % %         end
-% % %         
-% % %         timing.time_to_build_orbit(iOrbit) = toc(start_time_to_build_this_orbit);
-% % %         
-% % %         if print_diagnostics
-% % %             disp(['*** Time to build this orbit: ' num2str( timing.time_to_build_orbit(iOrbit), 5) ' seconds.'])
-% % %         end
-% % %     end
-% % %     
-% % %     %********************************************************************************
-% % %     %********************************************************************************
-% % %     %********************************************************************************
+    %% Build the orbit.
     
+    iOrbit = iOrbit + 1;
     
-    %% Next fix the mask if requested.
+    orbit_info(iOrbit).orbit_start_time = orbit_start_time;
+    orbit_info(iOrbit).granule_info(1).metadata_global_attrib = ncinfo(fi_metadata);
+
+    this_orbit_start_time = orbit_start_time;
     
-    SST_In_Masked = SST_In;
+    [status, name_out_sst, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, orbit_start_time] ...
+        = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, fi_metadata, start_line_index, temp_granule_start_time, scan_line_times, ...
+        num_scan_lines_in_granule);
     
-    if fix_mask
-        start_time_to_fix_mask = tic;
-        % % %             [Final_Mask, Test_Counts, FracArea, nnReduced] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
-        [Final_Mask] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
+    if status == 110
+        fprintf('*****\n*****\nMajor problem. Status \i. Terminating the run.\n\n', status)
+        return
+    end
+    
+    if status > 0
+        fprintf('*****\nStatus \i for orbit %s. Do not process this orbit.\n\n', status, orbit_info(iOrbit).name)
         
-        timing.time_to_fix_mask(iOrbit) = toc(start_time_to_fix_mask);
+        % Decrement the orbit counter since we have already startd an orbit
+        % but will not be processing it; it has already been processed or
+        % there is a problem with it.
+        
+        iOrbit = iOrbit - 1;
+    else
+        
+        %% Next fix the mask if requested.
+        
+        SST_In_Masked = SST_In;
+        
+        if fix_mask
+            start_time_to_fix_mask = tic;
+            % % %             [Final_Mask, Test_Counts, FracArea, nnReduced] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
+            [Final_Mask] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
+            
+            orbit_info(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
+            
+            if print_diagnostics
+                disp(['*** Time to fix the mask for this orbit: ' num2str( orbit_info(iOrbit).time_to_fix_mask, 5) ' seconds.'])
+            end
+        else
+            Final_Mask = zeros(size(SST_In));
+            Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
+            
+            orbit_info(iOrbit).time_to_fix_mask = 0;
+        end
+        
+        SST_In_Masked(Final_Mask==1) = nan;
+        
+        % At this point,
+        %   if the mask has been fixed, final_mask will have values of 0
+        %    where the SST value is 'good' and 1 where it is 'bad'.
+        %   if the mask has NOT been fixed, final_mask is set 0 if
+        %    qual_sst<2, the value is 'good' according to the input mask
+        %    and it will be set to 1 otherwise, the pixel is 'bad'.
+        % AND
+        %   if the mask has been fixed, SST_In_Masked is the input SST
+        %    field, SST_In, with values for which final_mask is 1 set to
+        %    nan; i.e., the corrected mask.
+        %   if the mask has NOT been fixed, SST_In_Masked is the input SST
+        %    field, SST_In,again with values for which final_mask is 1 set
+        %    to nan but in this case using qual_sst values.
+        
+        %% Fix the bowtie problem, again if requested.
+        
+        if fix_bowtie
+            start_address_bowtie = tic;
+            
+            % ******************************************************************************************
+            % Need to add augmented_weights, augmented_locations as the first
+            % two arugments of the call to regrid... if you want to use fast
+            % regridding.
+            % ******************************************************************************************
+            
+            % % %             [regridded_longitude, regridded_latitude, regridded_sst, regridded_flags_sst, regridded_qual, regridded_sstref, ...
+            % % %                 region_start, region_end, easting, northing, new_easting, new_northing] = ...
+            % % %                 regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, flags_sst, qual_sst, sstref);
+            [regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+                regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+            
+            orbit_info(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
+            
+            if print_diagnostics
+                disp(['*** Time to address bowtie for this orbit: ' num2str( orbit_info(iOrbit).time_to_address_bowtie, 5) ' seconds.'])
+            end
+        else
+            regridded_sst = SST_In_Masked; % Need this for gradients.
+            
+            regridded_longitude = nan;
+            regridded_latitude = nan;
+            regridded_flags_sst = nan;
+            regridded_qual = nan;
+            regridded_sstref = nan;
+            region_start = nan;
+            region_end = nan;
+            easting = nan;
+            northing = nan;
+            new_easting = nan;
+            new_northing = nan;
+            
+            orbit_info(iOrbit).time_to_address_bowtie = 0;
+        end
+        
+        %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
+        
+        % Note that if the bow-tie problem has not been fixed, the
+        % regridded_sst field is actually the input SST field masked wither
+        % with the qual_sst mask if the mask has not been fixed or the
+        % fixed mixed mask if it has been fixed. Since some orbits are
+        % shorter than the separation and angle arrays, only use the first
+        % part; all orbits should start at about the same location.
+        
+        if get_gradients
+            start_time_to_determine_gradient = tic;
+            
+            [grad_at_per_km, grad_as_per_km, grad_mag_per_km] = sobel_gradient_degrees_per_kilometer( regridded_sst, along_track_seps_array(:,1:size(regridded_sst,2)), along_scan_seps_array(:,1:size(regridded_sst,2)));
+            
+            eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
+            northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
+            
+            orbit_info(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
+            
+            if print_diagnostics
+                disp(['*** Time to determine the gradient for this orbit: ' num2str( orbit_info(iOrbit).time_to_determine_gradient, 5) ' seconds.'])
+            end
+        else
+            grad_at_per_km = nan;
+            grad_as_per_km = nan;
+            
+            eastward_gradient = nan;
+            northward_gradient = nan;
+            
+            orbit_info(iOrbit).time_to_determine_gradient = 0;
+        end
+        
+        %% Wrap-up for this orbit.
+        
+        % % %         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
+        % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
+        % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
+        Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
+            regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
+            datestr(orbit_start_time,formatOutDateTime), region_start, region_end, fix_mask, fix_bowtie, get_gradients);
+        
+        orbit_info(iOrbit).time_to_process_this_orbit = toc();
         
         if print_diagnostics
-            disp(['*** Time to fix the mask for this orbit: ' num2str( timing.time_to_fix_mask(iOrbit), 5) ' seconds.'])
+            disp(['*** Time to process and save ' name_out_sst ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
         end
-    else
-        Final_Mask = zeros(size(SST_In));
-        Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
         
-        timing.time_to_fix_mask(iOrbit) = 0;
+        % Add 5 minutes to the previous value of time to get the time of the
+        % next granule and continue searching.
+        
+        iMatlab_time = iMatlab_time + 5 / (24 * 60);
     end
-    
-    SST_In_Masked(Final_Mask==1) = nan;
-    
-    % At this point,
-    %   if the mask has been fixed, final_mask will have values of 0
-    %    where the SST value is 'good' and 1 where it is 'bad'.
-    %   if the mask has NOT been fixed, final_mask is set 0 if
-    %    qual_sst<2, the value is 'good' according to the input mask
-    %    and it will be set to 1 otherwise, the pixel is 'bad'.
-    % AND
-    %   if the mask has been fixed, SST_In_Masked is the input SST
-    %    field, SST_In, with values for which final_mask is 1 set to
-    %    nan; i.e., the corrected mask.
-    %   if the mask has NOT been fixed, SST_In_Masked is the input SST
-    %    field, SST_In,again with values for which final_mask is 1 set
-    %    to nan but in this case using qual_sst values.
-    
-    %% Fix the bowtie problem, again if requested.
-    
-    if fix_bowtie
-        start_address_bowtie = tic;
-        
-        % ******************************************************************************************
-        % Need to add augmented_weights, augmented_locations as the first
-        % two arugments of the call to regrid... if you want to use fast
-        % regridding.
-        % ******************************************************************************************
-        
-        % % %             [regridded_longitude, regridded_latitude, regridded_sst, regridded_flags_sst, regridded_qual, regridded_sstref, ...
-        % % %                 region_start, region_end, easting, northing, new_easting, new_northing] = ...
-        % % %                 regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, flags_sst, qual_sst, sstref);
-        [regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-            regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
-        
-        timing.time_to_address_bowtie(iOrbit) = toc(start_address_bowtie);
-        
-        if print_diagnostics
-            disp(['*** Time to address bowtie for this orbit: ' num2str( timing.time_to_address_bowtie(iOrbit), 5) ' seconds.'])
-        end
-    else
-        regridded_sst = SST_In_Masked; % Need this for gradients.
-        
-        regridded_longitude = nan;
-        regridded_latitude = nan;
-        regridded_flags_sst = nan;
-        regridded_qual = nan;
-        regridded_sstref = nan;
-        region_start = nan;
-        region_end = nan;
-        easting = nan;
-        northing = nan;
-        new_easting = nan;
-        new_northing = nan;
-        
-        timing.time_to_address_bowtie(iOrbit) = 0;
-    end
-    
-    %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
-    
-    % Note that if the bow-tie problem has not been fixed, the
-    % regridded_sst field is actually the input SST field masked wither
-    % with the qual_sst mask if the mask has not been fixed or the
-    % fixed mixed mask if it has been fixed. Since some orbits are
-    % shorter than the separation and angle arrays, only use the first
-    % part; all orbits should start at about the same location.
-    
-    if get_gradients
-        start_time_to_determine_gradient = tic;
-        
-        [grad_at_per_km, grad_as_per_km, grad_mag_per_km] = sobel_gradient_degrees_per_kilometer( regridded_sst, along_track_seps_array(:,1:size(regridded_sst,2)), along_scan_seps_array(:,1:size(regridded_sst,2)));
-        
-        eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
-        northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
-        
-        timing.time_to_determine_gradient(iOrbit) = toc(start_time_to_determine_gradient);
-        
-        if print_diagnostics
-            disp(['*** Time to determine the gradient for this orbit: ' num2str( timing.time_to_determine_gradient(iOrbit), 5) ' seconds.'])
-        end
-    else
-        grad_at_per_km = nan;
-        grad_as_per_km = nan;
-        
-        eastward_gradient = nan;
-        northward_gradient = nan;
-        
-        timing.time_to_determine_gradient(iOrbit) = 0;
-    end
-    
-    %% Wrap-up for this orbit.
-    
-    % % %         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
-    % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
-    % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
-    Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
-        regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, time_orbit_start, GlobalAttributes, ...
-        region_start, region_end, fix_mask, fix_bowtie, get_gradients);
-    
-    timing.time_to_process_this_orbit(iOrbit) = toc();
-    
-    if print_diagnostics
-        disp(['*** Time to process and save ' name_out_sst ': ', num2str( timing.time_to_process_this_orbit(iOrbit), 5) ' seconds.'])
-    end
-    
-    % Add 5 minutes to the previous value of time to get the time of the
-    % next granule and continue searching.
-    
-    iMatlab_time = iMatlab_time + 5 / (24 * 60);
 end
 
 disp(['*** Time for this run: ', num2str(toc(tic_build_start),5) ' seconds.'])

@@ -46,6 +46,8 @@ function [status, fi_granule, problem_list, latitude, longitude, SST_In, qual_ss
 %   sstref - the array for the reference SST field in this orbit.
 %
 
+global npixels
+
 osscan = orbit_data_range(1);
 oescan = orbit_data_range(2);
 
@@ -54,20 +56,19 @@ gescan = granule_data_range(2);
 
 scan_lines_to_read = gescan - gsscan + 1;
 
-[status, fi_granule, problem_list, global_attrib] ...
-    = build_granule_filename( fi_metadata, granules_directory, problem_list, check_attributes);
+[status, fi_granule, problem_list] = build_granule_filename( fi_metadata, granules_directory, problem_list, check_attributes);
 
 % Read the fields
 
 if status == 0
-    latitude(:,osscan:oesan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
-    longitude(:,osscan:oesan) = single(ncread( fi_granule , '/navigation_data/longitude', [1 gsscan], [npixels scan_lines_to_read]));
-    SST_In(:,osscan:oesan) = single(ncread( fi_granule , '/geophysical_data/sst', [1 gsscan], [npixels scan_lines_to_read]));
+    latitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
+    longitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/longitude', [1 gsscan], [npixels scan_lines_to_read]));
+    SST_In(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sst', [1 gsscan], [npixels scan_lines_to_read]));
     
-    qual_sst(:,osscan:oesan) = int8(ncread( fi_granule , '/geophysical_data/qual_sst', [1 gsscan], [npixels scan_lines_to_read]));
-    flags_sst(:,osscan:oesan) = int16(ncread(fi_metadata, '/geophysical_data/flags_sst', [1 gsscan], [npixels scan_lines_to_read]));
+    qual_sst(:,osscan:oescan) = int8(ncread( fi_granule , '/geophysical_data/qual_sst', [1 gsscan], [npixels scan_lines_to_read]));
+    flags_sst(:,osscan:oescan) = int16(ncread(fi_metadata, '/geophysical_data/flags_sst', [1 gsscan], [npixels scan_lines_to_read]));
     
-    sstref(:,osscan:oesan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
+    sstref(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
 else
     fprintf('****** Data for %s not read because of error %i.\n', status)
 end

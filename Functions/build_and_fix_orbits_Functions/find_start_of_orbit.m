@@ -1,4 +1,4 @@
-function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] = ...
+function [status, fi_metadata, start_line_index, imatlab_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] = ...
     find_start_of_orbit( metadata_directory, imatlab_time)
 % find_start_of_orbit - Does this granule cross the start of an orbit on descent - PCC
 %
@@ -16,7 +16,8 @@ function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orb
 %           : 10 - missing granule.
 %           : 11 - more than 2 metadata files for a given time. 
 %           : 100 - No granule with the start of an orbit found in time range. 
-%   fi - the completely specified filename of the 1st granule for the orbit found.
+%   fi_metadata - the completely specified filename of the 1st granule for
+%    the orbit found.
 %   start_line_index - the index in fi for the start of the orbit.
 %   imatlab_time - the matlab_time of the granule to start with.
 %   orbit_scan_line_times - a 2d array of matlab times for each scan line for
@@ -26,7 +27,9 @@ function [status, fi, start_line_index, imatlab_time, orbit_scan_line_times, orb
 %    for which the nadir track crosses latlim.
 %
 
-global latlim
+global Matlab_end_time
+
+fi_metadata = [];
 
 start_time = imatlab_time;
 
@@ -42,9 +45,9 @@ orbit_scan_line_timesT = nan(30,2050);
 
 iGranule = 0;
 
-while imatlab_time <= matlab_end_time
+while imatlab_time <= Matlab_end_time
         
-    [status, fi, start_line_index, scan_line_timesT, missing_granule, num_scan_lines_in_granule, imatlab_time] ...
+    [status, fi_metadata, start_line_index, scan_line_timesT, missing_granule, num_scan_lines_in_granule, imatlab_time] ...
         = build_metadata_filename( 1, metadata_directory, imatlab_time);
     
     if isempty(missing_granule)
@@ -85,6 +88,6 @@ status = 100;
 scan_line_times = [];
 orbit_start_time = [];
 
-fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(matlab_end_time))
+fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
 
 

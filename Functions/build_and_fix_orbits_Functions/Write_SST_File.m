@@ -1,6 +1,6 @@
 function Write_SST_File( output_filename, longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, ...
     regridded_longitude, regridded_latitude, regridded_sst, easting, northing, regridded_easting, regridded_northing, ...
-    along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, time_coverage_start, GlobalAttributes, ...
+    along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, time_coverage_start, ...
     region_start, region_end, fix_mask, fix_bowtie, get_gradients)
 % Write_SST_File - will create and write a file for the gradient/fronts workflow SST and mask data - PCC
 %
@@ -21,7 +21,6 @@ function Write_SST_File( output_filename, longitude, latitude, SST_In, qual_sst,
 %   Fix_MODIS_Mask_number - the version of Fix_MODIS_Mask used to create
 %    the median SST field written by this function.'
 %   time_coverage_start - The time this granule or orbit started.
-%   GlobalAttributes - read from the first input file for this orbit.
 %   north_lat_limit, south_lat_limit
 %   fix_mask - if 1 fixes the mask. If absent, will set to 1.
 %   fix_bowtie - if 1 fixes the bow-tie problem, otherwise bow-tie effect
@@ -42,6 +41,7 @@ function Write_SST_File( output_filename, longitude, latitude, SST_In, qual_sst,
 %
 %   3/26/2022 - PCC - Major modifications to include other variables.
 
+global iOrbit orbit_info
 global print_diagnostics save_just_the_facts
 
 % Initialize variables.
@@ -65,13 +65,22 @@ gradientScaleFactor = 0.0001;
 
 YearS = time_coverage_start(1:4);
 Year = str2num(YearS);
-MonthS = time_coverage_start(6:7);
+MonthS = time_coverage_start(5:6);
 Month = str2num(MonthS);
-DayS = time_coverage_start(9:10);
+DayS = time_coverage_start(7:8);
 Day = str2num(DayS);
-Hour = str2num(time_coverage_start(12:13));
-Minute = str2num(time_coverage_start(15:16));
-Second = str2num(time_coverage_start(18:20)) * 60;
+Hour = str2num(time_coverage_start(10:11));
+Minute = str2num(time_coverage_start(11:12));
+Second = str2num(time_coverage_start(12:13)) * 60;YearS = time_coverage_start(1:4);
+Year = str2num(YearS);
+MonthS = time_coverage_start(5:6);
+Month = str2num(MonthS);
+DayS = time_coverage_start(7:8);
+Day = str2num(DayS);
+Hour = str2num(time_coverage_start(10:11));
+Minute = str2num(time_coverage_start(11:12));
+Second = str2num(time_coverage_start(12:13)) * 60;
+
 
 %% Create the variables to be written out along with their attributes and write them. Start with main variable.
 
@@ -598,7 +607,10 @@ for iAttribute = 1:length(GlobalAttributes.Attributes)
                 'geospatial_lat_units' 'geospatial_lon_units' 'geospatial_lat_max' 'geospatial_lat_min' 'geospatial_lon_max' 'geospatial_lon_min' ...
                 'startDirection' 'endDirection' 'day_night_flag' 'earth_sun_distance_correction'}
             
-            ncwriteatt(output_filename, '/', GlobalAttributes.Attributes(iAttribute).Name, GlobalAttributes.Attributes(iAttribute).Value);
+% % %             ncwriteatt(output_filename, '/', GlobalAttributes.Attributes(iAttribute).Name, GlobalAttributes.Attributes(iAttribute).Value);
+            ncwriteatt(output_filename, '/', ...
+                orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Name, ...
+                orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Value);
             
         otherwise
     end

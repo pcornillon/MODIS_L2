@@ -1,4 +1,4 @@
-function [status, fi, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
+function [status, fi_metadata, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
     build_metadata_filename( get_granule_info, input_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
@@ -36,11 +36,11 @@ global latlim
 % Initialize return variables.
 
 status = 0;
-fi = '';
+fi_metadata = '';
 start_line_index = [];
 scan_line_times = [];
-num_scan_lines_in_granule = [];
 missing_granule = [];
+num_scan_lines_in_granule = [];
 
 % Define formats to use when unpacking the matlab time into file names.
 
@@ -65,16 +65,16 @@ elseif length(file_list) > 2
     
     status = 11;
 else
-    fi = [file_list(1).folder '/' file_list(1).name];
+    fi_metadata = [file_list(1).folder '/' file_list(1).name];
 
     if get_granule_info
 
         % Skip this part if the call was simply to build the file name and
         % check for its existence. Next get the Matlab times for each scan line.
 
-        Year = ncread( fi, '/scan_line_attributes/year');
-        YrDay = ncread( fi, '/scan_line_attributes/day');
-        mSec = ncread( fi, '/scan_line_attributes/msec');
+        Year = ncread( fi_metadata, '/scan_line_attributes/year');
+        YrDay = ncread( fi_metadata, '/scan_line_attributes/day');
+        mSec = ncread( fi_metadata, '/scan_line_attributes/msec');
 
         scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
 
@@ -98,7 +98,7 @@ else
 
         % Does the descending nadir track crosses latlim?
 
-        nlat_t = single(ncread( fi, '/scan_line_attributes/clat'));
+        nlat_t = single(ncread( fi_metadata, '/scan_line_attributes/clat'));
 
         % Get the separation of along-track nadir pixels. Add one
         % separation at the end of the track for this granule so that the
@@ -108,6 +108,9 @@ else
         diff_nlat = [diff(nlat_t); nlat_t(end)-nlat_t(end-1)];
 
         mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
+        
+% % %         nlon_t = single(ncread( fi_metadata, '/scan_line_attributes/clon')); figure(1); clf; plot( nlon_t, nlat_t); set(gca, fontsize=18); hold on; plot( nlon_t(1), nlat_t(1), '*r'); fprintf('%s.\n', file_list(1).name)
+% % %         keyboard
 
         if isempty(mm)
             return

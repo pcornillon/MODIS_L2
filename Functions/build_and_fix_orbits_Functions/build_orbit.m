@@ -81,6 +81,15 @@ global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 global formatOutDateTime formatOutMonth formatOutYear
 global print_diagnostics save_just_the_facts
 
+% Initialize return variables.
+
+latitude = single(nan);
+longitude = single(nan);
+SST_In = single(nan);
+qual_sst = int8(nan);
+flags_sst = int16(nan);
+sstref = single(nan);
+
 % Initialize parameters
 
 check_attributes = 1;
@@ -109,6 +118,13 @@ if exist(name_out_sst) == 2
     
     fprintf('Have already processed %s. Going to the next orbit. \n', name_out_sst)
     
+    % Start by incrementing granule_start_time so that we don't just find
+    % the same granule start time as for the previous orbit. 
+    
+    granule_start_time = granule_start_time + 5 /(24 * 60);
+    
+    % Now search for the start of a new orbit.
+    
     [status, fi_metadata, start_line_index, granule_start_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] ...
         = find_start_of_orbit( metadata_directory, granule_start_time);
     
@@ -124,6 +140,8 @@ if exist(name_out_sst) == 2
     
     % See comment re use of num_scan_lines_in_granule above in 1st call
     % to find_start_of_orbit.
+    
+    status = 200;
     
     return
     
@@ -197,6 +215,8 @@ while granule_start_time <= Matlab_end_time
     [status, fi_metadata, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, granule_start_time] ...
         = build_metadata_filename( 1, metadata_directory, granule_start_time);
     
+    orbit_start_time = scan_line_times(start_line_index);
+    
     if status ~= 0
         fprintf('Problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(iMatlab_time), status)
     else
@@ -244,7 +264,7 @@ while granule_start_time <= Matlab_end_time
             orbit_info(iOrbit).granule_info(iGranule).oescan = orbit_info(iOrbit).granule_info(iGranule).osscan + num_scan_lines_in_granule - 1;
             
             % Make sure that this granule does not add more scan lines than
-            % the maximum allowed, orbit_lenght. This should not happen
+            % the maximum allowed, orbit_length. This should not happen
             % since this granule does not have the start of an orbit in it.
 
             if orbit_info(iOrbit).granule_info(iGranule).oescan > orbit_length
@@ -350,10 +370,10 @@ while granule_start_time <= Matlab_end_time
     end
 end
 
-timing.time_to_build_orbit(iOrbit) = toc(start_time_to_build_this_orbit);
+orbit_info(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
 
 if print_diagnostics
-    disp(['Time to build this orbit: ' num2str( timing.time_to_build_orbit(iOrbit), 5) ' seconds.'])
+    disp(['Time to build this orbit: ' num2str( orbit_info(iOrbit).time_to_build_orbit, 5) ' seconds.'])
 end
 
 

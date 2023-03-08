@@ -335,11 +335,13 @@ while temp_granule_start_time <= Matlab_end_time
     
     %% Build the orbit.
     
+    time_to_process_this_orbit = tic;
+    
     iOrbit = iOrbit + 1;
     
     orbit_info(iOrbit).orbit_start_time = orbit_start_time;
     orbit_info(iOrbit).granule_info(1).metadata_global_attrib = ncinfo(fi_metadata);
-
+    
     this_orbit_start_time = orbit_start_time;
     
     [status, name_out_sst, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, orbit_start_time] ...
@@ -347,12 +349,16 @@ while temp_granule_start_time <= Matlab_end_time
         num_scan_lines_in_granule);
     
     if status == 110
-        fprintf('*****\n*****\nMajor problem. Status \i. Terminating the run.\n\n', status)
+        fprintf('*****\n*****\nMajor problem. Status %i. Terminating the run.\n\n', status)
         return
     end
     
     if status > 0
-        fprintf('*****\nStatus \i for orbit %s. Do not process this orbit.\n\n', status, orbit_info(iOrbit).name)
+        if status == 200
+            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(orbit_start_time))
+        else
+            fprintf('*****\nStatus \i for orbit %s. Do not process this orbit.\n\n', status, orbit_info(iOrbit).name)
+        end
         
         % Decrement the orbit counter since we have already startd an orbit
         % but will not be processing it; it has already been processed or
@@ -472,14 +478,14 @@ while temp_granule_start_time <= Matlab_end_time
         
         %% Wrap-up for this orbit.
         
+        orbit_info(iOrbit).time_to_process_this_orbit = toc();
+        
         % % %         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
         % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
         % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
             datestr(orbit_start_time,formatOutDateTime), region_start, region_end, fix_mask, fix_bowtie, get_gradients);
-        
-        orbit_info(iOrbit).time_to_process_this_orbit = toc();
         
         if print_diagnostics
             disp(['*** Time to process and save ' name_out_sst ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
@@ -492,5 +498,5 @@ while temp_granule_start_time <= Matlab_end_time
     end
 end
 
-disp(['*** Time for this run: ', num2str(toc(tic_build_start),5) ' seconds.'])
+fprintf('*** Time for this run: %8.1f seconds or, in minutes, %5.1f\n', toc(tic_build_start), toc(tic_build_start/60))
 

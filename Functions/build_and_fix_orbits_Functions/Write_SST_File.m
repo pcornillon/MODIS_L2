@@ -598,9 +598,9 @@ ncwriteatt(output_filename, '/', 'cdm_data_type', 'Grid');
 
 % % % GlobalAttributes = ncinfo(output_filename);
 
-for iAttribute = 1:length(GlobalAttributes.Attributes)
+for iAttribute = 1:length(orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes)
     
-    switch GlobalAttributes.Attributes(iAttribute).Name
+    switch orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Name
         
         case {'time_coverage_end' 'start_center_longitude' 'start_center_latitude' 'end_center_longitude' 'end_center_latitude' ...
                 'northernmost_latitude' 'southernmost_latitude' 'easternmost_longitude' 'westernmost_longitude' ...

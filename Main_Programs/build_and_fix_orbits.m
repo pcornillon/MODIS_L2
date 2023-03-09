@@ -69,10 +69,10 @@ if ~exist('metadata_directory')
     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
     output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
-    start_date_time = [2010 6 19 4 0 0]; % Test run.
+    start_date_time = [2010 6 19 5 10 0]; % Test run.
     end_date_time = [2010 6 20 7 0 0 ];  % Test run.
     fix_mask = 0;  % Test run.
-    fix_bowtie = 0;  % Test run.
+    fix_bowtie = 1;  % Test run.
     get_gradients = 0;  % Test run.
     use_OBPG = 0;  % Test run.
     save_core = 0;  % Test run.
@@ -265,7 +265,7 @@ temp_granule_start_time = Matlab_start_time;
 while temp_granule_start_time <= Matlab_end_time
     
     [status, fi_metadata, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
-        = build_metadata_filename( 0, metadata_directory, temp_granule_start_time);
+        = build_metadata_filename( 1, metadata_directory, temp_granule_start_time);
     
     if isempty(missing_granules_temp)
         fprintf('Found a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi_metadata)
@@ -478,7 +478,7 @@ while temp_granule_start_time <= Matlab_end_time
         
         %% Wrap-up for this orbit.
         
-        orbit_info(iOrbit).time_to_process_this_orbit = toc();
+        orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
         
         % % %         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
         % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...

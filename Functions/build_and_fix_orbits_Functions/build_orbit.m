@@ -78,8 +78,8 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 global iOrbit orbit_info iGranule
 global Matlab_end_time 
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
-global formatOutDateTime formatOutMonth formatOutYear
 global print_diagnostics save_just_the_facts
+global formatOut
 
 % Initialize return variables.
 
@@ -97,19 +97,16 @@ check_attributes = 1;
 acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
 
-% Formats used in building filenames.
-
-
 % Build the output filename for this orbit and check that it hasn't
 % already been processed. To build the filename, get the orbit number
 % and the date/time when the satellite crossed latlim.
 
 orbit_number = ncreadatt( orbit_info(iOrbit).granule_info(iGranule).metadata_name,'/','orbit_number');
 
-orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(orbit_info(iOrbit).orbit_start_time, formatOutDateTime) '_L2_SST'];
+orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(orbit_info(iOrbit).orbit_start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
 
-orbit_info(iOrbit).name = [output_file_directory datestr(orbit_info(iOrbit).orbit_start_time, formatOutYear) '/' ...
-    datestr(orbit_info(iOrbit).orbit_start_time, formatOutMonth) '/' orbit_file_name '.nc4'];
+orbit_info(iOrbit).name = [output_file_directory datestr(orbit_info(iOrbit).orbit_start_time, formatOut.yyyy) '/' ...
+    datestr(orbit_info(iOrbit).orbit_start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
 
 %% Skip this orbit if it exist already.
 

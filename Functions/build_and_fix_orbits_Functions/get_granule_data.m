@@ -42,8 +42,7 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 %
 
 global iOrbit orbit_info iGranule
-global npixels
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
 osscan = orbit_info(iOrbit).granule_info(iGranule).osscan;
 oescan = orbit_info(iOrbit).granule_info(iGranule).oescan;

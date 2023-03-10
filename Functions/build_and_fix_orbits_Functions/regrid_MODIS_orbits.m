@@ -1,5 +1,5 @@
-function [new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
+function [ status, problem_list, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
+    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In, problem_list)
 % % % % % function [new_lon, new_lat, new_sst, new_flags, new_qual, new_sstref, region_start, region_end, ...
 % % % % %     easting, northing, new_easting, new_northing, grad_x, grad_y] = regrid_MODIS_orbits( ...
 % % % % %     augmented_weights, augmented_locations, longitude, latitude, SST_In, flags_sst, Qual_In, sstref)
@@ -19,8 +19,10 @@ function [new_lon, new_lat, new_sst, region_start, region_end,  easting, northin
 %   base_dir_out - the directory to which the new lon, lat, SST_In and mask
 %    will be writte. The output filename will the same as the input filename
 %    with '_fixed' appended.
+%   problem_list - bad granules.
 %
 % EXAMPLE
+%  ........
 %   fi_in = '~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Original/2010/AQUA_MODIS.20100619T000124.L2.SST.mat';
 %   regrid_MODIS_orbits( fi_in, [])
 
@@ -52,6 +54,20 @@ end
 % load(fi_in)
 
 [npixels nscans] = size(longitude);
+
+if mpixels ~= npixels
+    fprintf('***** There are %i pixels/scan line in this granule but there should be %i. Skipping this granule. Error code 3.\n', mpixels, npixels)
+    
+    skip_this_granule = 1;
+    
+    iProblemFile = iProblemFile + 1;
+    
+    problem_list.fi_metadata{iProblemFile} = fi_granule;
+    problem_list.problem_code(iProblemFile) = 3;
+    
+    status = problem_list.problem_code(iProblemFile);
+    return
+end
 
 dummy_scans = reshape([1:10*npixels], npixels, 10);
 

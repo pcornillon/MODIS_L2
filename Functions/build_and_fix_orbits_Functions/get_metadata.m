@@ -1,5 +1,5 @@
 function [status, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
-    get_metadata( get_granule_info, input_directory, imatlab_time)
+    get_metadata( get_granule_info, metadata_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
 % Read the latitude of the nadir track for this granule and determine
@@ -12,7 +12,7 @@ function [status, start_line_index, scan_line_times, missing_granule, num_scan_l
 %   get_granule_info - if 1, read info needed to determine if this granule
 %    contains the start of a new orbit. If 0, return after checking for
 %    existence of the file.
-%   input_directory - the directory with the OBPG metadata files.
+%   metadata_directory - the directory with the OBPG metadata files.
 %   imatlab_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
@@ -31,7 +31,9 @@ function [status, start_line_index, scan_line_times, missing_granule, num_scan_l
 %
 
 global iOrbit orbit_info iGranule
+global formatOut
 global latlim
+global amazon_s3_run
 
 % Initialize return variables.
 
@@ -42,26 +44,28 @@ scan_line_times = [];
 missing_granule = [];
 num_scan_lines_in_granule = [];
 
-% Define formats to use when unpacking the matlab time into file names.
-
-formatOut = 'yyyymmddTHHMM';
-formatOutYear = 'yyyy';
-
 % Does an OBPG metadata file exist for this time?
 
-if strfind(input_directory, 'combined')
-    file_list = dir( [input_directory datestr(imatlab_time, formatOutYear) '/AQUA_MODIS.' datestr(imatlab_time, formatOut) '*']);
+if amazon_s3_run
+    % Here for s3. May need to fix this; not sure I will have combined
+    % in the name. Probably should set up to search for data or
+    % metadata file as we did for the not-s3 run.
+    file_list = dir( [metadata_directory datestr(imatlab_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(imatlab_time, formatOut.yyyymmddThhmm) '*']);
+elseif isempty(strfind(metadata_directory,'combined'))
+    % Here if looking for a metadata file - notice the underscore after MODIS.
+    file_list = dir( [metadata_directory datestr(imatlab_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(imatlab_time, formatOut.yyyymmddThhmm) '*']);
 else
-    file_list = dir( [input_directory datestr(imatlab_time, formatOutYear) '/AQUA_MODIS_' datestr(imatlab_time, formatOut) '*']);
+    % Here if looking for a data file - notice the period after MODIS.
+    file_list = dir( [metadata_directory datestr(imatlab_time, formatOut.yyyy) '/AQUA_MODIS.' datestr(imatlab_time, formatOut.yyyymmddThhmm) '*']);
 end
-
+    
 if isempty(file_list)
     missing_granule = imatlab_time;
-    fprintf('*** Missing file for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
+    fprintf('*** Missing file for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut.hhmm))
     
     status = 10;
 elseif length(file_list) > 2
-    fprintf('*** Too many metadata files for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut))
+    fprintf('*** Too many metadata files for %s. Going to the next granule.\n', datestr(imatlab_time, formatOut.hhmm))
     
     status = 11;
 else

@@ -60,12 +60,12 @@ function problem_list = build_and_fix_orbits( granules_directory, metadata_direc
 
 global iOrbit orbit_info iGranule
 global print_diagnostics save_just_the_facts
-global formatOutDateTime formatOutMonth formatOutYear
-global npixels
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global formatOut
+global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 global Matlab_end_time
 global sst_range sst_range_grid_size
 global med_op
+global amazon_s3_run
 
 % Initialize return variables.
 
@@ -152,9 +152,20 @@ acceptable_end_time = datenum(2022, 12, 31);
 
 % Formats used in building filenames.
 
-formatOutDateTime = 'yyyymmddTHHMMSS';
-formatOutMonth = 'mm';
-formatOutYear = 'yyyy';
+formatOut.dd = 'dd';
+formatOut.mm = 'mm';
+formatOut.yyyy = 'yyyy';
+
+formatOut.HH = 'HH';
+formatOut.MM = 'MM';
+formatOut.SS = 'SS';
+
+formatOut.yyyymmdd = 'yyyymmdd';
+formatOut.HHMMSS = 'HHMMSS';
+
+formatOut.yyyymmddThhmmss = 'yyyymmddTHHMMSS';
+formatOut.yyyymmddThhmm = 'yyyymmddTHHMM';
+formatOut.yyyymmddThh = 'yyyymmddTHH';
 
 %% Check input parameters to make sure they are OK.
 
@@ -246,99 +257,101 @@ end
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-% temp_granule_start_time is the time a dummy variable for the approximate
-% start time of a granule. It will be incremented by 5 minutes/granule as
-% this script loops through granules. Need to find the first granule in the
-% range. Since there has to be a metadata granule corresponding to the
-% first data granule, search for the first metadata granule. Note that
-% build_metadata_filename will upgrade temp_granule_start_time to the
-% actual time of the 1st scan when called with 1 for the 1st argument. This
-% effectively syncs the start times to avoid any drifts.
+[scan_line_times, start_line_index, num_scan_lines_in_granule, temp_granule_start_time] = get_start_of_first_full_orbit( metadata_directory, Matlab_start_time);
 
-temp_granule_start_time = Matlab_start_time;
-
-while temp_granule_start_time <= Matlab_end_time
-    
-    [status, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
-        = get_metadata( 1, metadata_directory, temp_granule_start_time);
-    
-    if isempty(missing_granules_temp)
-        fprintf('Found a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), ...
-            datestr(Matlab_end_time), orbit_info(iOrbit).granule_info(iGranule).metadata_name)
-        break
-    end
-    
-    % Add 5 minutes to the previous value of time to get the time of the next granule.
-    
-    temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
-end
-
-if temp_granule_start_time > Matlab_end_time
-    fprintf('****** Could not find a granule in the specified range (%s, %s) is: %s\n', ...
-        datestr(Matlab_start_time), datestr(Matlab_end_time), orbit_info(iOrbit).granule_info(iGranule).metadata_name)
-    return
-end
-
-% If the first granule does NOT contain the start of an orbit--defined as
-% the point at which the descending satellite crosses latlim, nominally
-% 78 S--increment temp_granule_start_time so that find_start_of_orbit
-% doesn't reread this granule--that would be a waster of time but OK
-% otherwise--and then search for a granule that contains the start of an
-% orbit.
-
-if isempty(start_line_index)
-    
-    % Not a new orbit granule; add 5 minutes to the previous value of
-    % time to get the time of the next granule and continue searching.
-    
-    temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
-    
-    % Next, find the ganule at the beginning of the first complete orbit
-    % defined as starting at descending latlim, nominally 78 S. Not processing
-    % granules up to this point.
-    
-    [status, start_line_index, temp_granule_start_time, orbit_scan_line_times, num_scan_lines_in_granule] ...
-        = find_start_of_orbit( metadata_directory, temp_granule_start_time);
-    
-    % Abort this run if a major problem occurs at this point.
-    
-    if status ~= 0
-        fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
-            orbit_info(iOrbit).granule_info(iGranule).metadata_name, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
-        
-        % See explanation at end of this section for setting iOrbit to 0.
-        
-        iOrbit = 0;
-        return
-    end
-    
-    % Load the scan line times for the last granule found, the first
-    % granule in a new orbit.
-    
-    scan_line_times = orbit_scan_line_times(end,1:num_scan_lines_in_granule);
-    
-    % Note that we used num_scan_lines_in_granule in the above since there
-    % could be nans for the last scan lines since the orbit_scan_line_times
-    % array was inialized with nans for the longest expected granule, 2050 scan
-    % lines; actually never expect more than 2040 but, just in case...
-else
-    
-    % Found the start of the next orbit, save the start time.
-    
-    orbit_info(iOrbit).orbit_start_time = scan_line_times(start_line_index);
-end
-
-% Need to set iOrbit to 0, it should be 1 here but the next step is to
-% loop over all granule times in the time range and we start by
-% incrementing iOrbit by one so that it increments properly from
-% orbit-to-orbit but for this the first one we will already have loaded
-% orbit_info stuff so decrementing by 1 here means that the remainder of
-% the orbit_info stuff will be stored for orbit #1.
-
-iOrbit = 0;
-
-% Note that find_start_of_orbit does not increment iGranule so no need to
-% mess with orbit_info(iOrbit).granule_info.
+% % % % temp_granule_start_time is the time a dummy variable for the approximate
+% % % % start time of a granule. It will be incremented by 5 minutes/granule as
+% % % % this script loops through granules. Need to find the first granule in the
+% % % % range. Since there has to be a metadata granule corresponding to the
+% % % % first data granule, search for the first metadata granule. Note that
+% % % % build_metadata_filename will upgrade temp_granule_start_time to the
+% % % % actual time of the 1st scan when called with 1 for the 1st argument. This
+% % % % effectively syncs the start times to avoid any drifts.
+% % % 
+% % % temp_granule_start_time = Matlab_start_time;
+% % % 
+% % % while temp_granule_start_time <= Matlab_end_time
+% % %     
+% % %     [status, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
+% % %         = get_metadata( 1, metadata_directory, temp_granule_start_time);
+% % %     
+% % %     if isempty(missing_granules_temp)
+% % %         fprintf('Found a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), ...
+% % %             datestr(Matlab_end_time), orbit_info(iOrbit).granule_info(iGranule).metadata_name)
+% % %         break
+% % %     end
+% % %     
+% % %     % Add 5 minutes to the previous value of time to get the time of the next granule.
+% % %     
+% % %     temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
+% % % end
+% % % 
+% % % if temp_granule_start_time > Matlab_end_time
+% % %     fprintf('****** Could not find a granule in the specified range (%s, %s) is: %s\n', ...
+% % %         datestr(Matlab_start_time), datestr(Matlab_end_time), orbit_info(iOrbit).granule_info(iGranule).metadata_name)
+% % %     return
+% % % end
+% % % 
+% % % % If the first granule does NOT contain the start of an orbit--defined as
+% % % % the point at which the descending satellite crosses latlim, nominally
+% % % % 78 S--increment temp_granule_start_time so that find_start_of_orbit
+% % % % doesn't reread this granule--that would be a waster of time but OK
+% % % % otherwise--and then search for a granule that contains the start of an
+% % % % orbit.
+% % % 
+% % % if isempty(start_line_index)
+% % %     
+% % %     % Not a new orbit granule; add 5 minutes to the previous value of
+% % %     % time to get the time of the next granule and continue searching.
+% % %     
+% % %     temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
+% % %     
+% % %     % Next, find the ganule at the beginning of the first complete orbit
+% % %     % defined as starting at descending latlim, nominally 78 S. Not processing
+% % %     % granules up to this point.
+% % %     
+% % %     [status, start_line_index, temp_granule_start_time, orbit_scan_line_times, num_scan_lines_in_granule] ...
+% % %         = find_start_of_orbit( metadata_directory, temp_granule_start_time);
+% % %     
+% % %     % Abort this run if a major problem occurs at this point.
+% % %     
+% % %     if status ~= 0
+% % %         fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
+% % %             orbit_info(iOrbit).granule_info(iGranule).metadata_name, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+% % %         
+% % %         % See explanation at end of this section for setting iOrbit to 0.
+% % %         
+% % %         iOrbit = 0;
+% % %         return
+% % %     end
+% % %     
+% % %     % Load the scan line times for the last granule found, the first
+% % %     % granule in a new orbit.
+% % %     
+% % %     scan_line_times = orbit_scan_line_times(end,1:num_scan_lines_in_granule);
+% % %     
+% % %     % Note that we used num_scan_lines_in_granule in the above since there
+% % %     % could be nans for the last scan lines since the orbit_scan_line_times
+% % %     % array was inialized with nans for the longest expected granule, 2050 scan
+% % %     % lines; actually never expect more than 2040 but, just in case...
+% % % else
+% % %     
+% % %     % Found the start of the next orbit, save the start time.
+% % %     
+% % %     orbit_info(iOrbit).orbit_start_time = scan_line_times(start_line_index);
+% % % end
+% % % 
+% % % % Need to set iOrbit to 0, it should be 1 here but the next step is to
+% % % % loop over all granule times in the time range and we start by
+% % % % incrementing iOrbit by one so that it increments properly from
+% % % % orbit-to-orbit but for this the first one we will already have loaded
+% % % % orbit_info stuff so decrementing by 1 here means that the remainder of
+% % % % the orbit_info stuff will be stored for orbit #1.
+% % % 
+% % % iOrbit = 0;
+% % % 
+% % % % Note that find_start_of_orbit does not increment iGranule so no need to
+% % % % mess with orbit_info(iOrbit).granule_info.
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
@@ -427,8 +440,8 @@ while temp_granule_start_time <= Matlab_end_time
             % % %             [regridded_longitude, regridded_latitude, regridded_sst, regridded_flags_sst, regridded_qual, regridded_sstref, ...
             % % %                 region_start, region_end, easting, northing, new_easting, new_northing] = ...
             % % %                 regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, flags_sst, qual_sst, sstref);
-            [regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+            [status, problem_list, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+                regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, problem_list);
             
             orbit_info(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
             

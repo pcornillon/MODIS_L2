@@ -44,7 +44,7 @@ for Year=Years
         iFile = iFile + 1;
 
         [status, fi, ~, ~, missing_granules_temp] = ...
-            build_metadata_filename( 0, nan, granules_directory, imatlab_time);
+            get_metadata( 0, nan, granules_directory, imatlab_time);
 
         if mod(iFile,num_to_print) == 0
             fprintf('Processed file #%i - %s - Elapsed time %6.0f seconds. \n', iFile, convertCharsToStrings(fi), toc(tic_start))

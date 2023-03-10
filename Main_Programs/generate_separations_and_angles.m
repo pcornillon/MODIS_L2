@@ -42,9 +42,9 @@
 %
 % The main output fields of this step are arrays of along-scan separations,
 % along-track separations and the angle of the scan line measured
-% counter-clockwise from east. If the scan direction is determined in the
+% counter-clockwise from east. The scan direction is determined in the
 % context of the direction of the scan--if the scan is east-to-west, the
-% anlge would 180 degrees, west-to-east, 0 degrees and south-to-north 90
+% angle would 180 degrees, west-to-east, 0 degrees and south-to-north 90
 % degrees. These fields and associated variance fields are saved in a file
 % called: 'mean_seps_and_angles_pass_1.mat'. Also saved in this file is the
 % nadir track of one of the input files. The latitudes should be very
@@ -59,8 +59,8 @@
 %
 % For each orbit the script loads the .mat file written in Step 1 for that
 % orbit. It then averages the along-scan and along-track separation arrays
-% in the along-track to obtain a mean scan line of separations for each.
-% The scan lines are replicated to produce an array the siz of the input
+% in the along-track to obtain a mean scan line of separations for each pixel.
+% The scan lines are replicated to produce an array the size of the input
 % array. Two tests are then performed on the input array: 1) all elements
 % of the input array that differ from the reconstructed array by more than
 % Threshold(2) (0.3 km) are set to nan, and 2) all elements of the input

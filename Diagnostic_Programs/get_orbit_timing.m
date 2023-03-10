@@ -45,7 +45,7 @@ for iStartTime=1:size(start_date_time,1)
     while iMatlab_time <= Matlab_end_time
         
         [status, fi, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, imatlab_time] ...
-            = build_metadata_filename( 0, nan, metadata_directory, iMatlab_time);
+            = get_metadata( 0, nan, metadata_directory, iMatlab_time);
         
         if ~isempty(fi)
             fprintf('First granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi)
@@ -98,7 +98,7 @@ for iStartTime=1:size(start_date_time,1)
     while iOrbit <= number_of_orbits
         
         [status, fi, start_line_index, scan_line_timesT, missing_granule, num_scan_lines_in_granule, imatlab_time] ...
-            = build_metadata_filename( 1, latlim, metadata_directory, iMatlab_time);
+            = get_metadata( 1, latlim, metadata_directory, iMatlab_time);
         
         if ~isempty(missing_granule)
             fprintf('Missing granule for orbit #\i at time %s.\n', iOrbit, datestr(iMatlab_time))

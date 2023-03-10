@@ -1,5 +1,5 @@
-function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
-    start_date_time, end_date_time, fix_mask, fix_bowtie, get_gradients, use_OBPG, save_core, print_diag)
+function problem_list = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
+    start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, use_OBPG, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -18,6 +18,7 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 %   fix_mask - if 1 fixes the mask. If absent, will set to 1.
 %   fix_bowtie - if 1 fixes the bow-tie problem, otherwise bow-tie effect
 %    not fixed.
+%   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
 %   get_gradients - 1 to calculate eastward and northward gradients, 0
 %    otherwise.
 %   use_OBPG - use metadata copied from the OBPG file.
@@ -26,8 +27,6 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
 %
 % OUTPUT
-% % %   timing - a structure with the times to process different elements of
-% % %    the orbits processed.
 %   orbit_into - structure with information about each orbit.
 %   problem_list - structure with list of filenames for skipped file and
 %    the reason for it being skipped (same codes as status):
@@ -59,7 +58,14 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 % To do a test run, capture the lines in 'if test_values' group and execute
 % them at the Matlab command line prompt.
 
+global iOrbit orbit_info iGranule
 global print_diagnostics save_just_the_facts
+global formatOutDateTime formatOutMonth formatOutYear
+global npixels
+global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global Matlab_end_time
+global sst_range sst_range_grid_size
+global med_op
 
 % Initialize return variables.
 
@@ -73,6 +79,7 @@ if ~exist('metadata_directory')
     end_date_time = [2010 6 20 7 0 0 ];  % Test run.
     fix_mask = 0;  % Test run.
     fix_bowtie = 1;  % Test run.
+    regrid_sst = 0;  % Test run.
     get_gradients = 0;  % Test run.
     use_OBPG = 0;  % Test run.
     save_core = 0;  % Test run.
@@ -124,15 +131,10 @@ end
 
 %% Initialize some variables.
 
-global iOrbit orbit_info
-
-iOrbit = 0;
-
-global npixels
+iOrbit = 1;
+iGranule = 1;
 
 npixels = 1354;
-
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
 latlim = -78;
 
@@ -150,8 +152,6 @@ acceptable_end_time = datenum(2022, 12, 31);
 
 % Formats used in building filenames.
 
-global formatOutDateTime formatOutMonth formatOutYear
-
 formatOutDateTime = 'yyyymmddTHHMMSS';
 formatOutMonth = 'mm';
 formatOutYear = 'yyyy';
@@ -162,8 +162,6 @@ if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
     disp(['Input start and end time vectors must be 6 elements long. start_date_time: ' num2str(start_date_time) ' to ' num2str(end_date_time)])
     return
 end
-
-global Matlab_end_time
 
 Matlab_start_time = datenum(start_date_time);
 Matlab_end_time = datenum(end_date_time);
@@ -192,18 +190,13 @@ tic_build_start = tic;
 
 %% Initialize parameters
 
-% Start with global variables.
-
 % med_op is the 2 element vector specifying the number of pixels to use in
 % the median filtering operation. Usually it is [3 3] but for test work,
 % set it to [1 1]; i.e., do not median filter.
 
-global med_op
 med_op = [1 1];
 
 % Get the range matrices to use for the reference temperature test.
-
-global sst_range sst_range_grid_size
 
 sst_range_grid_size = 2;
 
@@ -248,8 +241,10 @@ end
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
-
-%% Find first granule in time range.
+% Here to process orbits.
+%______________________________________________________________________________________________
+%______________________________________________________________________________________________
+%______________________________________________________________________________________________
 
 % temp_granule_start_time is the time a dummy variable for the approximate
 % start time of a granule. It will be incremented by 5 minutes/granule as
@@ -264,22 +259,23 @@ temp_granule_start_time = Matlab_start_time;
 
 while temp_granule_start_time <= Matlab_end_time
     
-    [status, fi_metadata, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
-        = build_metadata_filename( 1, metadata_directory, temp_granule_start_time);
+    [status, start_line_index, scan_line_times, missing_granules_temp, num_scan_lines_in_granule, temp_granule_start_time] ...
+        = get_metadata( 1, metadata_directory, temp_granule_start_time);
     
     if isempty(missing_granules_temp)
-        fprintf('Found a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi_metadata)
+        fprintf('Found a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), ...
+            datestr(Matlab_end_time), orbit_info(iOrbit).granule_info(iGranule).metadata_name)
         break
     end
     
     % Add 5 minutes to the previous value of time to get the time of the next granule.
     
     temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
-    
 end
 
 if temp_granule_start_time > Matlab_end_time
-    fprintf('****** Could not find a granule in the specified range (%s, %s) is: %s\n', datestr(Matlab_start_time), datestr(Matlab_end_time), fi_metadata)
+    fprintf('****** Could not find a granule in the specified range (%s, %s) is: %s\n', ...
+        datestr(Matlab_start_time), datestr(Matlab_end_time), orbit_info(iOrbit).granule_info(iGranule).metadata_name)
     return
 end
 
@@ -301,14 +297,18 @@ if isempty(start_line_index)
     % defined as starting at descending latlim, nominally 78 S. Not processing
     % granules up to this point.
     
-    [status, fi_metadata, start_line_index, temp_granule_start_time, orbit_scan_line_times, orbit_start_time, num_scan_lines_in_granule] ...
+    [status, start_line_index, temp_granule_start_time, orbit_scan_line_times, num_scan_lines_in_granule] ...
         = find_start_of_orbit( metadata_directory, temp_granule_start_time);
     
     % Abort this run if a major problem occurs at this point.
     
     if status ~= 0
         fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
-            fi_metadata, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+            orbit_info(iOrbit).granule_info(iGranule).metadata_name, datestr(temp_granule_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+        
+        % See explanation at end of this section for setting iOrbit to 0.
+        
+        iOrbit = 0;
         return
     end
     
@@ -325,11 +325,22 @@ else
     
     % Found the start of the next orbit, save the start time.
     
-    orbit_start_time = scan_line_times(start_line_index);
+    orbit_info(iOrbit).orbit_start_time = scan_line_times(start_line_index);
 end
 
-%% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
+% Need to set iOrbit to 0, it should be 1 here but the next step is to
+% loop over all granule times in the time range and we start by
+% incrementing iOrbit by one so that it increments properly from
+% orbit-to-orbit but for this the first one we will already have loaded
+% orbit_info stuff so decrementing by 1 here means that the remainder of
+% the orbit_info stuff will be stored for orbit #1.
 
+iOrbit = 0;
+
+% Note that find_start_of_orbit does not increment iGranule so no need to
+% mess with orbit_info(iOrbit).granule_info.
+
+%% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
 while temp_granule_start_time <= Matlab_end_time
     
@@ -338,15 +349,13 @@ while temp_granule_start_time <= Matlab_end_time
     time_to_process_this_orbit = tic;
     
     iOrbit = iOrbit + 1;
+    iGranule = 1;
     
-    orbit_info(iOrbit).orbit_start_time = orbit_start_time;
-    orbit_info(iOrbit).granule_info(1).metadata_global_attrib = ncinfo(fi_metadata);
-    
-    this_orbit_start_time = orbit_start_time;
-    
-    [status, name_out_sst, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, orbit_start_time] ...
-        = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, fi_metadata, start_line_index, temp_granule_start_time, scan_line_times, ...
-        num_scan_lines_in_granule);
+    orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);
+        
+    [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+        = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, start_line_index, ...
+        temp_granule_start_time, scan_line_times, num_scan_lines_in_granule);
     
     if status == 110
         fprintf('*****\n*****\nMajor problem. Status %i. Terminating the run.\n\n', status)
@@ -355,7 +364,7 @@ while temp_granule_start_time <= Matlab_end_time
     
     if status > 0
         if status == 200
-            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(orbit_start_time))
+            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(orbit_info(iOrbit).orbit_start_time))
         else
             fprintf('*****\nStatus \i for orbit %s. Do not process this orbit.\n\n', status, orbit_info(iOrbit).name)
         end
@@ -419,7 +428,7 @@ while temp_granule_start_time <= Matlab_end_time
             % % %                 region_start, region_end, easting, northing, new_easting, new_northing] = ...
             % % %                 regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, flags_sst, qual_sst, sstref);
             [regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+                regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
             
             orbit_info(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
             
@@ -456,7 +465,10 @@ while temp_granule_start_time <= Matlab_end_time
         if get_gradients
             start_time_to_determine_gradient = tic;
             
-            [grad_at_per_km, grad_as_per_km, grad_mag_per_km] = sobel_gradient_degrees_per_kilometer( regridded_sst, along_track_seps_array(:,1:size(regridded_sst,2)), along_scan_seps_array(:,1:size(regridded_sst,2)));
+            [grad_at_per_km, grad_as_per_km, grad_mag_per_km] = sobel_gradient_degrees_per_kilometer( ...
+                regridded_sst, ...
+                along_track_seps_array(:,1:size(regridded_sst,2)), ...
+                along_scan_seps_array(:,1:size(regridded_sst,2)));
             
             eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
             northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
@@ -480,21 +492,21 @@ while temp_granule_start_time <= Matlab_end_time
         
         orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
         
-        % % %         Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
+        % % %         Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
         % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
         % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
-        Write_SST_File( name_out_sst, longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
+        Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
-            datestr(orbit_start_time,formatOutDateTime), region_start, region_end, fix_mask, fix_bowtie, get_gradients);
+            region_start, region_end, fix_mask, fix_bowtie, get_gradients);
         
         if print_diagnostics
-            disp(['*** Time to process and save ' name_out_sst ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
+            disp(['*** Time to process and save ' orbit_info(iOrbit).name ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
         end
         
         % Add 5 minutes to the previous value of time to get the time of the
         % next granule and continue searching.
         
-        iMatlab_time = iMatlab_time + 5 / (24 * 60);
+        temp_granule_start_time = temp_granule_start_time + 5 / (24 * 60);
     end
 end
 

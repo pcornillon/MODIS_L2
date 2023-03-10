@@ -1,6 +1,6 @@
-function Write_SST_File( output_filename, longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, ...
+function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, scan_seconds_from_start, ...
     regridded_longitude, regridded_latitude, regridded_sst, easting, northing, regridded_easting, regridded_northing, ...
-    along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, time_coverage_start, ...
+    along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
     region_start, region_end, fix_mask, fix_bowtie, get_gradients)
 % Write_SST_File - will create and write a file for the gradient/fronts workflow SST and mask data - PCC
 %
@@ -13,8 +13,6 @@ function Write_SST_File( output_filename, longitude, latitude, SST_In, qual_sst,
 % Gradients workflow, the metadata that will be passed from file to file.
 %
 % INPUT
-%   output_filename - the full path and name of the file containing the SST field
-%    for which this mask was generated.
 %   base_dir - the location to which this file is to be written.
 %   sst_in_masked - the raw SST read in.
 %   refined_mask - the refined mask.
@@ -41,8 +39,11 @@ function Write_SST_File( output_filename, longitude, latitude, SST_In, qual_sst,
 %
 %   3/26/2022 - PCC - Major modifications to include other variables.
 
-global iOrbit orbit_info
+global iOrbit orbit_info iGranule
 global print_diagnostics save_just_the_facts
+global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+
+output_filename = orbit_info(iOrbit).name;
 
 % Initialize variables.
 
@@ -60,27 +61,6 @@ sstFillValue = fill_value_int16;
 sstScaleFactor = 0.005;
 LatLonScaleFactor = 0.001;
 gradientScaleFactor = 0.0001;
-
-%% Now create the output NetCDF file and the variables; first build the output filename.
-
-YearS = time_coverage_start(1:4);
-Year = str2num(YearS);
-MonthS = time_coverage_start(5:6);
-Month = str2num(MonthS);
-DayS = time_coverage_start(7:8);
-Day = str2num(DayS);
-Hour = str2num(time_coverage_start(10:11));
-Minute = str2num(time_coverage_start(11:12));
-Second = str2num(time_coverage_start(12:13)) * 60;YearS = time_coverage_start(1:4);
-Year = str2num(YearS);
-MonthS = time_coverage_start(5:6);
-Month = str2num(MonthS);
-DayS = time_coverage_start(7:8);
-Day = str2num(DayS);
-Hour = str2num(time_coverage_start(10:11));
-Minute = str2num(time_coverage_start(11:12));
-Second = str2num(time_coverage_start(12:13)) * 60;
-
 
 %% Create the variables to be written out along with their attributes and write them. Start with main variable.
 
@@ -397,6 +377,17 @@ end
 
 %% Now create and write out some of the less important  variables.
 
+% time_from_start_orbit
+
+nccreate( output_filename, 'time_from_start_orbit', 'Datatype', 'single', ...
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+
+ncwriteatt( output_filename, 'time_from_start_orbit', 'long_name', 'time in orbit')
+ncwriteatt( output_filename, 'time_from_start_orbit', 'standard_name', 'time_in_orbit')
+ncwriteatt( output_filename, 'time_from_start_orbit', 'units', 'seconds')
+
+ncwrite(  output_filename, 'time_from_start_orbit', scan_seconds_from_start)
+
 % nadir_longitude
 
 nccreate( output_filename, 'nadir_longitude', 'Datatype', 'single', ...
@@ -512,8 +503,9 @@ ncwriteatt( output_filename, 'DateTime', 'units', 'seconds')
 
 % When did this granule start?
 
-time_coverage_start = (datenum(Year, Month, Day, Hour, Minute, Second) - datenum(1970, 1, 1, 0, 0, 0)) * 86400;
+% % % time_coverage_start = (datenum(Year, Month, Day, Hour, Minute, Second) - datenum(1970, 1, 1, 0, 0, 0)) * 86400;
 
+time_coverage_start = datenum(orbit_info(iOrbit).orbit_start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
 ncwrite( output_filename, 'DateTime', time_coverage_start)
 
 %% Now for the global attributes.

@@ -1,11 +1,19 @@
 function [new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In)
+    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
 % % % % % function [new_lon, new_lat, new_sst, new_flags, new_qual, new_sstref, region_start, region_end, ...
 % % % % %     easting, northing, new_easting, new_northing, grad_x, grad_y] = regrid_MODIS_orbits( ...
 % % % % %     augmented_weights, augmented_locations, longitude, latitude, SST_In, flags_sst, Qual_In, sstref)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
+%   regrid_sst - if 1 will regrid SST. If 0 will just determine new
+%    latitudes and longitudes, which involves simple interpolations along
+%    the track line; no need for griddate.
+%   augmented_weights - weights used for fast regridding of SST. If empty,
+%    will skip do 'slow' regridding. Fast regridding uses weights and
+%    locations to determine regridded SST values; simple multiplications
+%    instead of using griddata, which can be painfully slow.
+%   augmented_locations - used with augmented weights for fast regridding.
 %   longitude - array to be fixed.
 %   latitude - needed for high latitude locations.
 %   base_dir_out - the directory to which the new lon, lat, SST_In and mask
@@ -16,6 +24,8 @@ function [new_lon, new_lat, new_sst, region_start, region_end,  easting, northin
 %   fi_in = '~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Original/2010/AQUA_MODIS.20100619T000124.L2.SST.mat';
 %   regrid_MODIS_orbits( fi_in, [])
 
+global iOrbit orbit_info iGranule
+
 % Initialize variables.
 
 Debug = 0;
@@ -24,10 +34,14 @@ if Debug
     tic_regrid_start = tic;
 end
 
-if isempty(augmented_weights)
-    in_loop = 0; 
+if regrid_sst == 1
+    if isempty(augmented_weights)
+        in_loop = 0;
+    else
+        in_loop = -1;  % Set to -1 to use fast regridding **************************
+    end
 else
-    in_loop = -1;  % Set to -1 to use fast regridding **************************
+    in_loop = -999;
 end
 
 % Get the data

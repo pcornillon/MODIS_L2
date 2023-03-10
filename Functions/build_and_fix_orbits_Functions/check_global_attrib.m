@@ -1,4 +1,4 @@
-function [ status, problem_list] = check_global_attrib( fi_granule, problem_list)
+function [ status, problem_list] = check_global_attrib(problem_list)
 % check_global_attrib - read and check global attributes from the metadata file - PCC 
 %   
 % This script reads the global attributes from the granule file and make
@@ -6,7 +6,6 @@ function [ status, problem_list] = check_global_attrib( fi_granule, problem_list
 % check.
 %
 % INPUT
-%   fi_granule - granule filename. 
 %   problem_list - structure with list of filenames (filename) for skipped 
 %    file and the reason for it being skipped (problem_code):
 %    problem_code: 1 - couldn't find the file in s3.
@@ -25,7 +24,7 @@ function [ status, problem_list] = check_global_attrib( fi_granule, problem_list
 %   problem_list - as above but the list is incremented by 1 if a problem.
 %
 
-global iOrbit orbit_info
+global iOrbit orbit_info iGranule
 global npixels
 
 % Initialize some parameters.
@@ -43,17 +42,19 @@ end
 
 % Read the global attributes from the granule file.
 
-orbit_info(iOrbit).data_global_attrib = ncinfo(fi_granule);
+orbit_info(iOrbit).data_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).data_granule_name);
 
 % Perform tests on some of the global variables. 
 
 if isempty(strcmp(orbit_info(iOrbit).data_global_attrib.Dimensions(1).Name, 'number_of_lines'))
-    fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', orbit_info(iOrbit).data_global_attrib.Dimensions(1).Name, fi_granule)
+    fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', ...
+        orbit_info(iOrbit).data_global_attrib.Dimensions(1).Name, orbit_info(iOrbit).granule_info(iGranule).data_granule_name)
+    
     skip_this_granule = 1;
     
     iProblemFile = iProblemFile + 1;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
+    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
     problem_list.problem_code(iProblemFile) = 2;
     
     status = problem_list.problem_code(iProblemFile);
@@ -66,13 +67,14 @@ nscans = orbit_info(iOrbit).data_global_attrib.Dimensions(1).Length;
 npixels_attr = orbit_info(iOrbit).data_global_attrib.Dimensions(2).Length;
 
 if npixels_attr ~= npixels
-    fprintf('There are %i pixels/scan line in granule: %s but there should be 1354. Skipping this granule. Error code 3.\n', npixels, fi_granule)
+    fprintf('There are %i pixels/scan line in granule: %s but there should be 1354. Skipping this granule. Error code 3.\n', ...
+        npixels, orbit_info(iOrbit).granule_info(iGranule).data_granule_name)
     
     skip_this_granule = 1;
     
     iProblemFile = iProblemFile + 1;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
+    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
     problem_list.problem_code(iProblemFile) = 3;
     
     status = problem_list.problem_code(iProblemFile);
@@ -82,13 +84,13 @@ end
 
 if (nscans < nscans_range(1)) | (nscans > nscans_range(2))
     fprintf('There are %i scan lines in this granule: %s but the number of scan lines should be between %i and %i. Skipping this granule. Error code 4.\n', ...
-        nscans, fi_granule, nscans_range)
+        nscans, orbit_info(iOrbit).granule_info(iGranule).data_granule_name, nscans_range)
     
     skip_this_granule = 1;
     
     iProblemFile = iProblemFile + 1;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
+    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
     problem_list.problem_code(iProblemFile) = 4;
     
     status = problem_list.problem_code(iProblemFile);
@@ -116,13 +118,14 @@ for iAtt=1:length(orbit_info(iOrbit).data_global_attrib.Attributes)
 end
 
 if not_found
-    fprintf('Whoa, didn''t find ''time_coverage_start'' in the attributes for: %s. This should never happen. Skipping this granule. Error code 5.\n', fi_granule)
+    fprintf('Whoa, didn''t find ''time_coverage_start'' in the attributes for: %s. This should never happen. Skipping this granule. Error code 5.\n', ...
+        orbit_info(iOrbit).granule_info(iGranule).data_granule_name)
     
     skip_this_granule = 1;
     
     iProblemFile = iProblemFile + 1;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
+    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
     problem_list.problem_code(iProblemFile) = 5;
     
     status = problem_list.problem_code(iProblemFile);

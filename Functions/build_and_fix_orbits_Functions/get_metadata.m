@@ -1,5 +1,5 @@
-function [status, fi_metadata, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
-    build_metadata_filename( get_granule_info, input_directory, imatlab_time)
+function [status, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, imatlab_time] = ...
+    get_metadata( get_granule_info, input_directory, imatlab_time)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
 % Read the latitude of the nadir track for this granule and determine
@@ -20,7 +20,6 @@ function [status, fi_metadata, start_line_index, scan_line_times, missing_granul
 %           : 6 - 1st detector in data granule not 1st detector in group of 10. 
 %           : 10 - missing granule.
 %           : 11 - more than 2 metadata files for a given time. 
-%   fi - the completely specified filename of the 1st granule for the orbit found.
 %   start_line_index - the index in fi for the start of the orbit.
 %   scan_line_times - matlab time for each scan line if granule info is
 %    requested.
@@ -31,12 +30,13 @@ function [status, fi_metadata, start_line_index, scan_line_times, missing_granul
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 
+global iOrbit orbit_info iGranule
 global latlim
 
 % Initialize return variables.
 
 status = 0;
-fi_metadata = '';
+orbit_info(iOrbit).granule_info(iGranule).metadata_name = '';
 start_line_index = [];
 scan_line_times = [];
 missing_granule = [];
@@ -65,16 +65,16 @@ elseif length(file_list) > 2
     
     status = 11;
 else
-    fi_metadata = [file_list(1).folder '/' file_list(1).name];
+    orbit_info(iOrbit).granule_info(iGranule).metadata_name = [file_list(1).folder '/' file_list(1).name];
 
     if get_granule_info
 
         % Skip this part if the call was simply to build the file name and
         % check for its existence. Next get the Matlab times for each scan line.
 
-        Year = ncread( fi_metadata, '/scan_line_attributes/year');
-        YrDay = ncread( fi_metadata, '/scan_line_attributes/day');
-        mSec = ncread( fi_metadata, '/scan_line_attributes/msec');
+        Year = ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/year');
+        YrDay = ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/day');
+        mSec = ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/msec');
 
         scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
 
@@ -98,7 +98,7 @@ else
 
         % Does the descending nadir track crosses latlim?
 
-        nlat_t = single(ncread( fi_metadata, '/scan_line_attributes/clat'));
+        nlat_t = single(ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/clat'));
 
         % Get the separation of along-track nadir pixels. Add one
         % separation at the end of the track for this granule so that the
@@ -109,7 +109,7 @@ else
 
         mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
         
-% % %         nlon_t = single(ncread( fi_metadata, '/scan_line_attributes/clon')); figure(1); clf; plot( nlon_t, nlat_t); set(gca, fontsize=18); hold on; plot( nlon_t(1), nlat_t(1), '*r'); fprintf('%s.\n', file_list(1).name)
+% % %         nlon_t = single(ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/clon')); figure(1); clf; plot( nlon_t, nlat_t); set(gca, fontsize=18); hold on; plot( nlon_t(1), nlat_t(1), '*r'); fprintf('%s.\n', file_list(1).name)
 % % %         keyboard
 
         if isempty(mm)

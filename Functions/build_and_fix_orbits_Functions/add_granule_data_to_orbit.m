@@ -63,7 +63,7 @@ scan_lines_to_read = gescan - gsscan + 1;
 fi_granule = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
 fi_metadata = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
 
-if status == 0
+if (status == 0) & ~isempty(oescan)
     latitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
     longitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/longitude', [1 gsscan], [npixels scan_lines_to_read]));
     SST_In(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sst', [1 gsscan], [npixels scan_lines_to_read]));

@@ -433,9 +433,7 @@ while granule_start_time_guess <= Matlab_end_time
         end
         
         %% Wrap-up for this orbit.
-        
-        orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
-        
+                
         % % %         Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
         % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
         % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
@@ -443,6 +441,8 @@ while granule_start_time_guess <= Matlab_end_time
             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
             region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
         
+        orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
         if print_diagnostics
             disp(['*** Time to process and save ' orbit_info(iOrbit).name ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
         end

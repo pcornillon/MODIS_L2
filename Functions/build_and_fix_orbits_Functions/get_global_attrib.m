@@ -25,6 +25,7 @@ function [ status, global_attrib, problem_list] = check_global_attrib( fi_granul
 %   problem_list - as above but the list is incremented by 1 if a problem.
 %
 
+global scan_line_times start_line_index num_scan_lines_in_granule
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
 % Initialize some parameters.
@@ -32,13 +33,13 @@ global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixel
 status = 0;
 nscans_range = [2019 2051];
 
-% Get the index for problems.
-
-if isempty(problem_list(1).problem_code)
-    iProblemFile = 0;
-else
-    iProblemFile = length(problem_list.problem_code);
-end
+% % % % Get the index for problems.
+% % % 
+% % % if isempty(problem_list(1).problem_code)
+% % %     iProblemFile = 0;
+% % % else
+% % %     iProblemFile = length(problem_list.problem_code);
+% % % end
 
 % Read the global attributes from the granule file.
 
@@ -50,12 +51,11 @@ if isempty(strcmp(global_attrib.Dimensions(1).Name, 'number_of_lines'))
     fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', global_attrib.Dimensions(1).Name, fi_granule)
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = fi_granule;
+    problem_list.problem_code(problem_list.iProblem) = 2;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
-    problem_list.problem_code(iProblemFile) = 2;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 
@@ -69,12 +69,11 @@ if mpixels ~= npixels
     
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = fi_granule;
+    problem_list.problem_code(problem_list.iProblem) = 3;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
-    problem_list.problem_code(iProblemFile) = 3;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 
@@ -85,12 +84,11 @@ if (nscans < nscans_range(1)) | (nscans > nscans_range(2))
     
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = fi_granule;
+    problem_list.problem_code(problem_list.iProblem) = 4;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
-    problem_list.problem_code(iProblemFile) = 4;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 
@@ -119,12 +117,11 @@ if not_found
     
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = fi_granule;
+    problem_list.problem_code(problem_list.iProblem) = 5;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
-    problem_list.problem_code(iProblemFile) = 5;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 

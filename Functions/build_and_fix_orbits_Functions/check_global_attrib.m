@@ -25,6 +25,7 @@ function [ status, problem_list] = check_global_attrib(problem_list)
 %
 
 global iOrbit orbit_info iGranule
+global scan_line_times start_line_index num_scan_lines_in_granule
 global npixels
 
 % Initialize some parameters.
@@ -34,11 +35,11 @@ nscans_range = [2019 2051];
 
 % Get the index for problems.
 
-if isnan(problem_list(1).problem_code)
-    iProblemFile = 0;
-else
-    iProblemFile = length(problem_list.problem_code);
-end
+% % % if isnan(problem_list(1).problem_code)
+% % %     iProblemFile = 0;
+% % % else
+% % %     iProblemFile = length(problem_list.problem_code);
+% % % end
 
 % Read the global attributes from the granule file.
 
@@ -54,10 +55,11 @@ if isempty(strcmp(orbit_info(iOrbit).data_global_attrib.Dimensions(1).Name, 'num
     
     iProblemFile = iProblemFile + 1;
     
-    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-    problem_list.problem_code(iProblemFile) = 2;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+    problem_list.problem_code(problem_list.iProblem) = 2;
     
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 
@@ -72,12 +74,11 @@ if npixels_attr ~= npixels
     
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+    problem_list.problem_code(problem_list.iProblem) = 3;
     
-    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-    problem_list.problem_code(iProblemFile) = 3;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 
@@ -87,13 +88,12 @@ if (nscans < nscans_range(1)) | (nscans > nscans_range(2))
         nscans, orbit_info(iOrbit).granule_info(iGranule).data_granule_name, nscans_range)
     
     skip_this_granule = 1;
+        
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+    problem_list.problem_code(problem_list.iProblem) = 4;
     
-    iProblemFile = iProblemFile + 1;
-    
-    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-    problem_list.problem_code(iProblemFile) = 4;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 
@@ -123,12 +123,11 @@ if not_found
     
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+    problem_list.problem_code(problem_list.iProblem) = 5;
     
-    problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-    problem_list.problem_code(iProblemFile) = 5;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 

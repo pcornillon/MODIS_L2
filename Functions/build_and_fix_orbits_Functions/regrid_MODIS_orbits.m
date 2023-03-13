@@ -27,8 +27,14 @@ function [ status, problem_list, new_lon, new_lat, new_sst, region_start, region
 %   regrid_MODIS_orbits( fi_in, [])
 
 global iOrbit orbit_info iGranule
+global scan_line_times start_line_index num_scan_lines_in_granule
+global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
-% Initialize variables.
+% Initialize return variables.
+
+status = 0;
+
+% Initialize other variables.
 
 Debug = 0;
 
@@ -53,19 +59,18 @@ end
 %   fi_in - fully specified the input netCDF filename.
 % load(fi_in)
 
-[npixels nscans] = size(longitude);
+[mpixels nscans] = size(longitude);
 
 if mpixels ~= npixels
     fprintf('***** There are %i pixels/scan line in this granule but there should be %i. Skipping this granule. Error code 3.\n', mpixels, npixels)
     
     skip_this_granule = 1;
     
-    iProblemFile = iProblemFile + 1;
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.fi_metadata{problem_list.iProblem} = fi_granule;
+    problem_list.problem_code(problem_list.iProblem) = 3;
     
-    problem_list.fi_metadata{iProblemFile} = fi_granule;
-    problem_list.problem_code(iProblemFile) = 3;
-    
-    status = problem_list.problem_code(iProblemFile);
+    status = problem_list.problem_code(problem_list.iProblem);
     return
 end
 

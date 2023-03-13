@@ -24,6 +24,7 @@ function [status, problem_list] = build_granule_filename( granules_directory, pr
 %
 
 global iOrbit orbit_info iGranule
+global scan_line_times start_line_index num_scan_lines_in_granule
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
 % fi_granule_OBPG: /Volumes/Aqua-1/MODIS_R2019/combined/2003/Aqua-1AQUA_MODIS.20030101T002505.L2.SST.nc
@@ -33,13 +34,13 @@ status = 0;
 
 orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [];
 
-% Get the index for the problem list.
-
-if isnan(problem_list(1).problem_code)
-    iProblemFile = 0;
-else
-    iProblemFile = length(problem_list.problem_code);
-end
+% % % % Get the index for the problem list.
+% % % 
+% % % if isnan(problem_list(1).problem_code)
+% % %     iProblemFile = 0;
+% % % else
+% % %     iProblemFile = length(problem_list.problem_code);
+% % % end
 
 % Start building the name of the data granule. Get the bare filename first,
 % this will avoid problems with '_'s in the directory names.
@@ -72,12 +73,11 @@ if strcmp( granules_directory(1:2), 's3') == 1
 
             % Here for a problem add this file to the problem list. 
             
-            iProblemFile = iProblemFile + 1;
+            problem_list.iProblemFile = problem_list.iProblemFile + 1;
+            problem_list.fi_metadata{problem_list.iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
+            problem_list.problem_code(problem_list.iProblemFile) = 1;
             
-            problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
-            problem_list.problem_code(iProblemFile) = 1;
-            
-            status = problem_list.problem_code(iProblemFile);
+            status = problem_list.problem_code(problem_list.iProblemFile);
             return
         end
     end
@@ -91,12 +91,11 @@ else
     if exist(orbit_info(iOrbit).granule_info(iGranule).data_granule_name) ~= 2
         fprintf('Whoops, couldn''t find %s.\n', orbit_info(iOrbit).granule_info(iGranule).data_granule_name)
                 
-        iProblemFile = iProblemFile + 1;
-        
-        problem_list.fi_metadata{iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-        problem_list.problem_code(iProblemFile) = 1;
+        problem_list.iProblemFile = problem_list.iProblemFile + 1;
+        problem_list.fi_metadata{problem_list.iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+        problem_list.problem_code(problem_list.iProblemFile) = 1;
 
-        status = problem_list.problem_code(iProblemFile);
+        status = problem_list.problem_code(problem_list.iProblemFile);
         return
     end
 end

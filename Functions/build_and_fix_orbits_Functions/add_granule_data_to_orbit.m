@@ -1,11 +1,14 @@
 function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = get_granule_data( granules_directory, problem_list, check_attributes, scan_line_times, ...
+    = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, ...
     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start)
+% % % function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+% % %     = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, scan_line_times, ...
+% % %     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start)
 % get_granule_data - build the granule filename and read the granule data - PCC
 %
-% This function calls build_granule_filename, which builds the filename for
-% either Amazon s3 or OBPG granules and then reads the fields reqiured for
-% the remainder of the processing.
+% This function calls get_metadata, which builds the filename for either
+% Amazon s3 or OBPG granules and then reads the fields reqiured for the
+% remainder of the processing.
 %
 % INPUT
 %   granules_directory - the name of the directory with the granules.
@@ -15,7 +18,7 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 %                : 2 - couldn't find the metadata file copied from OBPG data.
 %   check_attributes - 1 to read the global attributes for the data granule
 %    and check that they exist and/or are reasonable.
-%   scan_line_times - time for the start of each scan line.
+% % %   scan_line_times - time for the start of each scan line.
 %   latitude - the array for the latitudes in this orbit.
 %   longitude - the array for the longitude in this orbit.
 %   SST_In - the array for the input SST values in this orbit.
@@ -42,6 +45,7 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 %
 
 global iOrbit orbit_info iGranule
+global scan_line_times start_line_index num_scan_lines_in_granule
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
 osscan = orbit_info(iOrbit).granule_info(iGranule).osscan;

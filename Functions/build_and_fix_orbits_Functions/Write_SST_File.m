@@ -1,7 +1,7 @@
 function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, scan_seconds_from_start, ...
     regridded_longitude, regridded_latitude, regridded_sst, easting, northing, regridded_easting, regridded_northing, ...
     along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
-    region_start, region_end, fix_mask, fix_bowtie, get_gradients)
+    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients)
 % Write_SST_File - will create and write a file for the gradient/fronts workflow SST and mask data - PCC
 %
 % The SST field (raw), SST_In, passed in is masked based on refined_mask,
@@ -23,6 +23,7 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %   fix_mask - if 1 fixes the mask. If absent, will set to 1.
 %   fix_bowtie - if 1 fixes the bow-tie problem, otherwise bow-tie effect
 %    not fixed.
+%   regrid_sst - 1 to regrid SST, 0 to return SST_In without regridding.
 %   get_gradients - 1 to calculate eastward and northward gradients, 0
 %    otherwise.
 %
@@ -40,6 +41,7 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %   3/26/2022 - PCC - Major modifications to include other variables.
 
 global iOrbit orbit_info iGranule
+global scan_line_times start_line_index num_scan_lines_in_granule
 global print_diagnostics save_just_the_facts
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
@@ -64,44 +66,14 @@ gradientScaleFactor = 0.0001;
 
 %% Create the variables to be written out along with their attributes and write them. Start with main variable.
 
-if save_just_the_facts == 0
-    % longitude
-    
-    nccreate( output_filename, 'longitude', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'longitude', 'long_name', 'Longitude')
-    ncwriteatt( output_filename, 'longitude',  'standard_name', 'longitude')
-    ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
-    ncwriteatt( output_filename, 'longitude', 'add_offset', 0)
-    ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, 'longitude', 'valid_min', -180000)
-    ncwriteatt( output_filename, 'longitude', 'valid_max', 1800000)
-    
-    ncwrite(  output_filename, 'longitude', longitude)
-    
-    % latitude
-    
-    nccreate( output_filename, 'latitude', 'Datatype', 'int32', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
-    
-    ncwriteatt( output_filename, 'latitude', 'long_name', 'latitude')
-    ncwriteatt( output_filename, 'latitude',  'standard_name', 'latitude')
-    ncwriteatt( output_filename, 'latitude', 'units', 'degrees_north')
-    ncwriteatt( output_filename, 'latitude', 'add_offset', 0)
-    ncwriteatt( output_filename, 'latitude', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, 'latitude', 'valid_min', -90000)
-    ncwriteatt( output_filename, 'latitude', 'valid_max', 90000)
-    
-    ncwrite(  output_filename, 'latitude', latitude)
-    
+if regrid_sst == 0
+
     % SST_In - SST in the original granules.
     
     nccreate( output_filename, 'SST_In', 'Datatype', 'int16', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'SST_In', 'long_name', 'sst')
     ncwriteatt( output_filename, 'SST_In',  'standard_name', 'sea_surface_temperature')
@@ -117,7 +89,8 @@ if save_just_the_facts == 0
     
     nccreate( output_filename, 'qual_sst', 'Datatype', 'int8', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', -1)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', -1, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'qual_sst', 'long_name', 'Quality Levels, Sea Surface Temperature')
     ncwriteatt( output_filename, 'qual_sst',  'standard_name', 'sea_surface_temperature')
@@ -127,12 +100,49 @@ if save_just_the_facts == 0
     ncwriteatt( output_filename, 'qual_sst',  'valid_max', 5)
     
     ncwrite( output_filename, 'qual_sst', qual_sst)
+end
+
+if save_just_the_facts == 0
+    % longitude
+    
+    nccreate( output_filename, 'longitude', 'Datatype', 'int32', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, 'longitude', 'long_name', 'Longitude')
+    ncwriteatt( output_filename, 'longitude',  'standard_name', 'longitude')
+    ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
+    ncwriteatt( output_filename, 'longitude', 'add_offset', 0)
+    ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
+    ncwriteatt( output_filename, 'longitude', 'valid_min', -180000)
+    ncwriteatt( output_filename, 'longitude', 'valid_max', 1800000)
+    
+    ncwrite(  output_filename, 'longitude', longitude)
+    
+    % latitude
+    
+    nccreate( output_filename, 'latitude', 'Datatype', 'int32', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, 'latitude', 'long_name', 'latitude')
+    ncwriteatt( output_filename, 'latitude',  'standard_name', 'latitude')
+    ncwriteatt( output_filename, 'latitude', 'units', 'degrees_north')
+    ncwriteatt( output_filename, 'latitude', 'add_offset', 0)
+    ncwriteatt( output_filename, 'latitude', 'scale_factor', LatLonScaleFactor)
+    ncwriteatt( output_filename, 'latitude', 'valid_min', -90000)
+    ncwriteatt( output_filename, 'latitude', 'valid_max', 90000)
+    
+    ncwrite(  output_filename, 'latitude', latitude)
     
     % SST_In_Masked - SST_In with the refined mask applied. Still with bowtie issues.
     
     nccreate( output_filename, 'SST_In_Masked', 'Datatype', 'int16', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'SST_In_Masked', 'long_name', 'sst')
     ncwriteatt( output_filename, 'SST_In_Masked',  'standard_name', 'sea_surface_temperature')
@@ -151,7 +161,8 @@ if fix_mask
     
     nccreate( output_filename, 'refined_mask', 'Datatype', 'int8', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue',fill_value_byte)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue',fill_value_byte, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'refined_mask', 'long_name', 'mask for original high gradient values set to 0')
     ncwriteatt( output_filename, 'refined_mask',  'standard_name', 'mask_for_original_high_gradient_values_set_to_0')
@@ -165,27 +176,31 @@ end
 
 if fix_bowtie
     
-    % regridded_sst - the input SST masked with the refined mask and then fixed for the bowtie effect.
-    
-    nccreate( output_filename, 'regridded_sst', 'Datatype', 'int16', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', sstFillValue)
-    
-    ncwriteatt( output_filename, 'regridded_sst', 'long_name', 'regridded_sst')
-    ncwriteatt( output_filename, 'regridded_sst',  'standard_name', 'masked_sea_surface_temperature')
-    ncwriteatt( output_filename, 'regridded_sst', 'units', 'C')
-    ncwriteatt( output_filename, 'regridded_sst', 'add_offset', 0)
-    ncwriteatt( output_filename, 'regridded_sst', 'scale_factor', sstScaleFactor)
-    ncwriteatt( output_filename, 'regridded_sst',  'valid_min', -600)
-    ncwriteatt( output_filename, 'regridded_sst',  'valid_max', 9000)
-    
-    ncwrite( output_filename, 'regridded_sst', regridded_sst)
+    if regrid_sst == 1
+        % regridded_sst - the input SST masked with the refined mask and then fixed for the bowtie effect.
+        
+        nccreate( output_filename, 'regridded_sst', 'Datatype', 'int16', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+        
+        ncwriteatt( output_filename, 'regridded_sst', 'long_name', 'regridded_sst')
+        ncwriteatt( output_filename, 'regridded_sst',  'standard_name', 'masked_sea_surface_temperature')
+        ncwriteatt( output_filename, 'regridded_sst', 'units', 'C')
+        ncwriteatt( output_filename, 'regridded_sst', 'add_offset', 0)
+        ncwriteatt( output_filename, 'regridded_sst', 'scale_factor', sstScaleFactor)
+        ncwriteatt( output_filename, 'regridded_sst',  'valid_min', -600)
+        ncwriteatt( output_filename, 'regridded_sst',  'valid_max', 9000)
+        
+        ncwrite( output_filename, 'regridded_sst', regridded_sst)
+    end
     
     % regridded_longitude
     
     nccreate( output_filename, 'regridded_longitude', 'Datatype', 'int32', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'regridded_longitude', 'long_name', 'regridded_longitude')
     ncwriteatt( output_filename, 'regridded_longitude',  'standard_name', 'regridded_longitude')
@@ -201,7 +216,8 @@ if fix_bowtie
     
     nccreate( output_filename, 'regridded_latitude', 'Datatype', 'int32', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'regridded_latitude', 'long_name', 'regridded_latitude')
     ncwriteatt( output_filename, 'regridded_latitude',  'standard_name', 'regridded_latitude')
@@ -217,7 +233,7 @@ if fix_bowtie
         % region_start
         
         nccreate( output_filename, 'region_start', 'Datatype', 'int32', ...
-            'Dimensions', {'i' 4})
+            'Dimensions', {'i' 4}, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'region_start', 'long_name', 'region_start')
         ncwriteatt( output_filename, 'region_start', 'standard_name', 'region_start')
@@ -229,7 +245,7 @@ if fix_bowtie
         % region_end
         
         nccreate( output_filename, 'region_end', 'Datatype', 'int32', ...
-            'Dimensions', {'i' 4})
+            'Dimensions', {'i' 4}, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'region_end', 'long_name', 'region_end')
         ncwriteatt( output_filename, 'region_end', 'standard_name', 'region_end')
@@ -242,7 +258,8 @@ if fix_bowtie
         
         nccreate( output_filename, 'easting', 'Datatype', 'int32', ...
             'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'easting', 'long_name', 'easting')
         ncwriteatt( output_filename, 'easting', 'standard_name', 'easting')
@@ -258,7 +275,8 @@ if fix_bowtie
         
         nccreate( output_filename, 'northing', 'Datatype', 'int32', ...
             'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'northing', 'long_name', 'northing')
         ncwriteatt( output_filename, 'northing', 'standard_name', 'northing')
@@ -274,7 +292,8 @@ if fix_bowtie
         
         nccreate( output_filename, 'regridded_easting', 'Datatype', 'int32', ...
             'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'regridded_easting', 'long_name', 'regridded_easting')
         ncwriteatt( output_filename, 'regridded_easting', 'standard_name', 'regridded_easting')
@@ -290,7 +309,8 @@ if fix_bowtie
         
         nccreate( output_filename, 'regridded_northing', 'Datatype', 'int32', ...
             'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'regridded_northing', 'long_name', 'regridded_northing')
         ncwriteatt( output_filename, 'regridded_northing', 'standard_name', 'regridded_northing')
@@ -313,7 +333,8 @@ if get_gradients
                 
         nccreate( output_filename, 'along_scan_gradient', 'Datatype', 'int32', ...
             'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'along_scan_gradient', 'long_name', 'along_scan sst gradient')
         ncwriteatt( output_filename, 'along_scan_gradient',  'standard_name', 'along_scan_temperature_gradient')
@@ -329,7 +350,8 @@ if get_gradients
         
         nccreate( output_filename, 'along_track_gradient', 'Datatype', 'int32', ...
             'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
         
         ncwriteatt( output_filename, 'along_track_gradient', 'long_name', 'along_track sst gradient')
         ncwriteatt( output_filename, 'along_track_gradient',  'standard_name', 'along_track_temperature_gradient')
@@ -346,7 +368,8 @@ if get_gradients
     
     nccreate( output_filename, 'eastward_gradient', 'Datatype', 'int32', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'eastward_gradient', 'long_name', 'eastward sst gradient')
     ncwriteatt( output_filename, 'eastward_gradient', 'standard_name', 'eastward_temperature_gradient')
@@ -362,7 +385,8 @@ if get_gradients
     
     nccreate( output_filename, 'northward_gradient', 'Datatype', 'int32', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4, 'FillValue', fill_value_int32)
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
     
     ncwriteatt( output_filename, 'northward_gradient', 'long_name', 'northward sst gradient')
     ncwriteatt( output_filename, 'northward_gradient',  'standard_name', 'northward_temperature_gradient')
@@ -380,7 +404,7 @@ end
 % time_from_start_orbit
 
 nccreate( output_filename, 'time_from_start_orbit', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'time_from_start_orbit', 'long_name', 'time in orbit')
 ncwriteatt( output_filename, 'time_from_start_orbit', 'standard_name', 'time_in_orbit')
@@ -391,7 +415,7 @@ ncwrite(  output_filename, 'time_from_start_orbit', scan_seconds_from_start)
 % nadir_longitude
 
 nccreate( output_filename, 'nadir_longitude', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'nadir_longitude', 'long_name', 'Nadir Longitude')
 ncwriteatt( output_filename, 'nadir_longitude', 'standard_name', 'nadir_longitude')
@@ -402,7 +426,7 @@ ncwrite(  output_filename, 'nadir_longitude', longitude(nadir_x,:))
 % left_swath_edge_trackline_longitude
 
 nccreate( output_filename, 'left_swath_edge_trackline_longitude', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'left_swath_edge_trackline_longitude', 'long_name', 'left swath edge longitude')
 ncwriteatt( output_filename, 'left_swath_edge_trackline_longitude',  'standard_name', 'left_swath_edge_trackline_longitude')
@@ -413,7 +437,7 @@ ncwrite(  output_filename, 'left_swath_edge_trackline_longitude', longitude(1,:)
 % right_swath_edge_trackline_longitude
 
 nccreate( output_filename, 'right_swath_edge_trackline_longitude', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'right_swath_edge_trackline_longitude', 'long_name', 'right swath edge longitude')
 ncwriteatt( output_filename, 'right_swath_edge_trackline_longitude',  'standard_name', 'right_swath_edge_trackline_longitude')
@@ -424,7 +448,7 @@ ncwrite(  output_filename, 'right_swath_edge_trackline_longitude', longitude(end
 % nadir_latitude
 
 nccreate( output_filename, 'nadir_latitude', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'nadir_latitude', 'long_name', 'Nadir latitude')
 ncwriteatt( output_filename, 'nadir_latitude', 'standard_name', 'nadir_latitude')
@@ -435,7 +459,7 @@ ncwrite(  output_filename, 'nadir_latitude', latitude(nadir_x,:))
 % left_swath_edge_trackline_latitude
 
 nccreate( output_filename, 'left_swath_edge_trackline_latitude', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'left_swath_edge_trackline_latitude', 'long_name', 'left swath edge latitude')
 ncwriteatt( output_filename, 'left_swath_edge_trackline_latitude',  'standard_name', 'left_swath_edge_trackline_latitude')
@@ -446,7 +470,7 @@ ncwrite(  output_filename, 'left_swath_edge_trackline_latitude', latitude(1,:))
 % right_swath_edge_trackline_latitude
 
 nccreate( output_filename, 'right_swath_edge_trackline_latitude', 'Datatype', 'single', ...
-    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single)
+    'Dimensions', {'ny' nyDimension}, 'FillValue', fill_value_single, 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'right_swath_edge_trackline_latitude', 'long_name', 'right swath edge latitude')
 ncwriteatt( output_filename, 'right_swath_edge_trackline_latitude',  'standard_name', 'right_swath_edge_trackline_latitude')
@@ -454,59 +478,153 @@ ncwriteatt( output_filename, 'right_swath_edge_trackline_latitude', 'units', 'de
 
 ncwrite(  output_filename, 'right_swath_edge_trackline_latitude', latitude(end,:))
 
-% cloud_free_pixels - not sure what this one is
+if save_just_the_facts == 0
+    
+    % cloud_free_pixels - not sure what this one is
+    
+    nccreate( output_filename, 'cloud_free_pixels', 'Datatype', 'int16', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', int16(-1), 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, 'cloud_free_pixels', 'long_name', 'cloud_free_pixels')
+    ncwriteatt( output_filename, 'cloud_free_pixels', 'standard_name', 'sea_surface_temperature')
+    ncwriteatt( output_filename, 'cloud_free_pixels', 'valid_min', 0)
+    ncwriteatt( output_filename, 'cloud_free_pixels', 'valid_max', 1)
+    ncwriteatt( output_filename, 'cloud_free_pixels', 'flag_meanings',  'cloudy clear')
+    ncwriteatt( output_filename, 'cloud_free_pixels', 'flag_values', [0  1])
+    
+    % cayula_cornillon_front_pixel - 1 if the pixel was flagged as a front pixel.
+    
+    nccreate( output_filename, 'cayula_cornillon_front_pixel', 'Datatype', 'int16', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', int16(-1), 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'long_name', 'sst')
+    ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'standard_name', 'cayula_cornillon_front_pixel')
+    ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'valid_min', 0)
+    ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'valid_max', 1)
+    ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'flag_meanings',  'no_front front')
+    ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'flag_values', [0  1])
+    
+    % day_or_night_pixel
+    
+    nccreate( output_filename, 'day_or_night_pixel', 'Datatype', 'int16', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', int16(-1), 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, 'day_or_night_pixel', 'long_name', 'sst')
+    ncwriteatt( output_filename, 'day_or_night_pixel', 'standard_name', 'day_or_night_pixel')
+    ncwriteatt( output_filename, 'day_or_night_pixel', 'valid_min', 0)
+    ncwriteatt( output_filename, 'day_or_night_pixel', 'valid_max', 1)
+    ncwriteatt( output_filename, 'day_or_night_pixel', 'flag_meanings',  'Day Night')
+    ncwriteatt( output_filename, 'day_or_night_pixel', 'flag_values', [0  1])
+    
+end
 
-nccreate( output_filename, 'cloud_free_pixels', 'Datatype', 'int16', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', int16(-1))
+% Date and time of the start of this orbit sconds since 1/1/1970
 
-ncwriteatt( output_filename, 'cloud_free_pixels', 'long_name', 'cloud_free_pixels')
-ncwriteatt( output_filename, 'cloud_free_pixels', 'standard_name', 'sea_surface_temperature')
-ncwriteatt( output_filename, 'cloud_free_pixels', 'valid_min', 0)
-ncwriteatt( output_filename, 'cloud_free_pixels', 'valid_max', 1)
-ncwriteatt( output_filename, 'cloud_free_pixels', 'flag_meanings',  'cloudy clear')
-ncwriteatt( output_filename, 'cloud_free_pixels', 'flag_values', [0  1])
+time_coverage_start = datenum(orbit_info(iOrbit).orbit_start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
 
-% cayula_cornillon_front_pixel - 1 if the pixel was flagged as a front pixel.
-
-nccreate( output_filename, 'cayula_cornillon_front_pixel', 'Datatype', 'int16', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', int16(-1))
-
-ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'long_name', 'sst')
-ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'standard_name', 'cayula_cornillon_front_pixel')
-ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'valid_min', 0)
-ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'valid_max', 1)
-ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'flag_meanings',  'no_front front')
-ncwriteatt( output_filename, 'cayula_cornillon_front_pixel', 'flag_values', [0  1])
-
-% day_or_night_pixel
-
-nccreate( output_filename, 'day_or_night_pixel', 'Datatype', 'int16', ...
-    'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-    'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], 'Deflatelevel', 4,'FillValue', int16(-1))
-
-ncwriteatt( output_filename, 'day_or_night_pixel', 'long_name', 'sst')
-ncwriteatt( output_filename, 'day_or_night_pixel', 'standard_name', 'day_or_night_pixel')
-ncwriteatt( output_filename, 'day_or_night_pixel', 'valid_min', 0)
-ncwriteatt( output_filename, 'day_or_night_pixel', 'valid_max', 1)
-ncwriteatt( output_filename, 'day_or_night_pixel', 'flag_meanings',  'Day Night')
-ncwriteatt( output_filename, 'day_or_night_pixel', 'flag_values', [0  1])
-
-% Date and time of the start of this orbit.
-
-nccreate( output_filename, 'DateTime', 'Datatype', 'double')
+nccreate( output_filename, 'DateTime', 'Datatype', 'double', 'Format', 'netcdf4')
 
 ncwriteatt( output_filename, 'DateTime', 'long_name', 'time since 1970-01-01 00:00:00.0')
 ncwriteatt( output_filename, 'DateTime', 'standard_name', 'time')
 ncwriteatt( output_filename, 'DateTime', 'units', 'seconds')
 
-% When did this granule start?
-
-% % % time_coverage_start = (datenum(Year, Month, Day, Hour, Minute, Second) - datenum(1970, 1, 1, 0, 0, 0)) * 86400;
-
-time_coverage_start = datenum(orbit_info(iOrbit).orbit_start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
 ncwrite( output_filename, 'DateTime', time_coverage_start)
+
+% Contributing granules. Put these in a group. There are no high level
+% Matlab commands to do this so must open the file, create the group, add
+% granule metadata in the group and close the file.
+
+nGranules = length(orbit_info(iOrbit).granule_info);
+
+if ~isempty(nGranules)
+    
+    % Loop over granules creating and populating a subgroup for each granule.
+    
+    kGranule = 0;
+    filenames = [];
+    for jGranule=1:nGranules
+        
+        % If no indicies for the location of data in the orbit, skip
+        
+        if ~isempty(orbit_info(iOrbit).granule_info(jGranule).osscan)
+            kGranule = kGranule + 1;
+            group_name = ['/contributing_granules/granule_' num2str(jGranule) '/'];
+            
+            % Load the granule filenams into variable filenames.
+            
+            nn = strfind(orbit_info(iOrbit).granule_info(jGranule).data_granule_name, 'AQUA_MODIS.');
+            filename = orbit_info(iOrbit).granule_info(jGranule).data_granule_name(nn:end);
+            filenames = [filenames; filename];
+            
+            % Next load the start and end times of this granule.
+
+            start_times(kGranule) = datenum(orbit_info(iOrbit).granule_info(jGranule).start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
+            end_times(kGranule) = datenum(orbit_info(iOrbit).granule_info(jGranule).end_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
+            
+            % Now for the start and end indices of the location of the data
+            % from this granule in the orbit.
+
+            osscans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).osscan;
+            oescans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).oescan;
+            
+            % And the start and end indices for the data from this granule.
+
+            gsscans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).gsscan;
+            gescans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).gescan;
+        end
+    end
+    
+    % Create the variable name for the name of this granule and write to the file.
+    
+    nccreate( output_filename, '/contributing_granules/filenames', 'Datatype', 'char', ...
+        'Dimensions', {'nGranules' kGranule 'name_length', length(filename)}, 'Format', 'netcdf4')
+    ncwrite( output_filename, '/contributing_granules/filenames', filenames)
+    
+    % Next the start and end times of this granule.
+    
+    nccreate(   output_filename, '/contributing_granules/start_time', 'Dimensions', {'nGranules' kGranule}, 'Format', 'netcdf4')
+    ncwriteatt( output_filename, '/contributing_granules/start_time', 'long_name', 'start time since 1970-01-01 00:00:00.0')
+    ncwriteatt( output_filename, '/contributing_granules/start_time', 'standard_name', 'start_time_of_granule')
+    ncwriteatt( output_filename, '/contributing_granules/start_time', 'units', 'seconds')
+    ncwrite(    output_filename, '/contributing_granules/start_time', start_times)
+    
+    nccreate(   output_filename, '/contributing_granules/end_time', 'Dimensions', {'nGranules' kGranule}, 'Format', 'netcdf4')
+    ncwriteatt( output_filename, '/contributing_granules/end_time', 'long_name', 'end time since 1970-01-01 00:00:00.0')
+    ncwriteatt( output_filename, '/contributing_granules/end_time', 'standard_name', 'end_time_of_granule')
+    ncwriteatt( output_filename, '/contributing_granules/end_time', 'units', 'seconds')
+    ncwrite(    output_filename, '/contributing_granules/end_time', start_times)
+    
+    % Now for the start and end indices of the location of the data
+    % from this granule in the orbit.
+    
+    nccreate(   output_filename, '/contributing_granules/orbit_start_index', 'Dimensions', {'nGranules' kGranule}, 'Format', 'netcdf4')
+    ncwriteatt( output_filename, '/contributing_granules/orbit_start_index', 'long_name', 'first index in the orbit for this granule')
+    ncwriteatt( output_filename, '/contributing_granules/orbit_start_index', 'standard_name', 'first_index_in_orbit')
+    ncwrite(    output_filename, '/contributing_granules/orbit_start_index', osscans)
+    
+    nccreate(   output_filename, '/contributing_granules/orbit_end_index', 'Dimensions', {'nGranules' kGranule}, 'Format', 'netcdf4')
+    ncwriteatt( output_filename, '/contributing_granules/orbit_end_index', 'long_name', 'last index in the orbit for this granule')
+    ncwriteatt( output_filename, '/contributing_granules/orbit_end_index', 'standard_name', 'last_index_in_orbit')
+    ncwrite(    output_filename, '/contributing_granules/orbit_end_index', oescans)
+    
+    % And the start and end indices for the data from this granule.
+    
+    nccreate(   output_filename, '/contributing_granules/granule_start_index', 'Dimensions', {'nGranules' kGranule}, 'Format', 'netcdf4')
+    ncwriteatt( output_filename, '/contributing_granules/granule_start_index', 'long_name', 'first index in the granule for this granule')
+    ncwriteatt( output_filename, '/contributing_granules/granule_start_index', 'standard_name', 'first_index_in_granule')
+    ncwrite(    output_filename, '/contributing_granules/granule_start_index', gsscans)
+    
+    nccreate(   output_filename, '/contributing_granules/granule_end_index', 'Dimensions', {'nGranules' kGranule}, 'Format', 'netcdf4')
+    ncwriteatt( output_filename, '/contributing_granules/granule_end_index', 'long_name', 'last index in the granule for this granule')
+    ncwriteatt( output_filename, '/contributing_granules/granule_end_index', 'standard_name', 'last_index_in_granule')
+    ncwrite(    output_filename, '/contributing_granules/granule_end_index', gescans)
+end
 
 %% Now for the global attributes.
 
@@ -516,6 +634,7 @@ if isempty(nn)
     disp(['This function is setup for SST only but this does not appear to be an SST granule.'])
     keyboard
 end
+
 parameter_name = 'SST';
 
 nn = strfind(output_filename, 'AQUA');

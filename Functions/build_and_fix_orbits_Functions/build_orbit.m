@@ -273,7 +273,7 @@ while granule_start_time_guess <= Matlab_end_time
             end
             
             orbit_info(iOrbit).granule_info(iGranule).oescan = orbit_info(iOrbit).granule_info(iGranule).osscan + num_scan_lines_in_granule - 1;
-            
+
             % Make sure that this granule does not add more scan lines than
             % the maximum allowed, orbit_length. This should not happen
             % since this granule does not have the start of an orbit in it.
@@ -285,6 +285,13 @@ while granule_start_time_guess <= Matlab_end_time
             end
             
             orbit_info(iOrbit).granule_info(iGranule).gescan = num_scan_lines_in_granule;
+            
+            if isempty(orbit_info(iOrbit).granule_info(iGranule).osscan) | ...
+                    isempty(orbit_info(iOrbit).granule_info(iGranule).oescan) | ...
+                    isempty(orbit_info(iOrbit).granule_info(iGranule).gsscan) | ...
+                    isempty(orbit_info(iOrbit).granule_info(iGranule).gescan)
+                keyboard
+            end
             
         else
             % Determine how many scan lines are needed to bring the length

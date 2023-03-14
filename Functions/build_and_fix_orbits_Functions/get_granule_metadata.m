@@ -80,6 +80,7 @@ else
     % to avoid granule_start_time_guess drifting out of range.
     
     if isempty(scan_line_times) == 0
+        fprintf('(iOrbit, iGranule) = (%i,%i). granule_start_time_guess= %s. scan_line_times(1) = %s\n', iOrbit, iGranule, datestr(granule_start_time_guess), datestr(scan_line_times(1)))
         granule_start_time_guess = scan_line_times(1);
     end
     

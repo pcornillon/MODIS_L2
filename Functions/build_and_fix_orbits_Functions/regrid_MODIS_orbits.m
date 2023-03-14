@@ -1,8 +1,5 @@
 function [ status, problem_list, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In, problem_list)
-% % % % % function [new_lon, new_lat, new_sst, new_flags, new_qual, new_sstref, region_start, region_end, ...
-% % % % %     easting, northing, new_easting, new_northing, grad_x, grad_y] = regrid_MODIS_orbits( ...
-% % % % %     augmented_weights, augmented_locations, longitude, latitude, SST_In, flags_sst, Qual_In, sstref)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
@@ -178,13 +175,11 @@ if in_loop==0
     
     pp = find(isnan(xx) == 0);
 
-% % %     new_sst(:,scans_this_section) = griddata(double(easting(:,scans_this_section)), double(northing(:,scans_this_section)), double(SST_In(:,scans_this_section)), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
 end
 
 % And convert from polar to lat, lon.
 
-% % % [new_lat(:,region_start(1):region_end(1)), new_lon(:,region_start(1):region_end(1))] = ps2ll(new_easting, new_northing);
 [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = ps2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
 % % toc
@@ -258,8 +253,6 @@ for iSection=[2,4]
         
         pp = find(isnan(xx) == 0);
         
-% % %         new_sst(:,scans_this_section) = griddata(double(longitude(:,scans_this_section)), double(latitude(:,scans_this_section)), double(SST_In(:,scans_this_section)), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
-% % %         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
     end
 end
@@ -316,7 +309,6 @@ if in_loop==0
     
     pp = find(isnan(xx) == 0);
 
-% % %     new_sst(:,scans_this_section) = griddata(double(easting(:,scans_this_section)), double(northing(:,scans_this_section)), double(SST_In(:,scans_this_section)), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
 end
 

@@ -34,14 +34,6 @@ status = 0;
 
 orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [];
 
-% % % % Get the index for the problem list.
-% % % 
-% % % if isnan(problem_list(1).problem_code)
-% % %     iProblemFile = 0;
-% % % else
-% % %     iProblemFile = length(problem_list.problem_code);
-% % % end
-
 % Start building the name of the data granule. Get the bare filename first,
 % this will avoid problems with '_'s in the directory names.
 

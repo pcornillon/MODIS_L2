@@ -1,9 +1,6 @@
 function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
     = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, ...
     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start)
-% % % function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-% % %     = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, scan_line_times, ...
-% % %     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start)
 % get_granule_data - build the granule filename and read the granule data - PCC
 %
 % This function calls get_metadata, which builds the filename for either
@@ -18,7 +15,6 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 %                : 2 - couldn't find the metadata file copied from OBPG data.
 %   check_attributes - 1 to read the global attributes for the data granule
 %    and check that they exist and/or are reasonable.
-% % %   scan_line_times - time for the start of each scan line.
 %   latitude - the array for the latitudes in this orbit.
 %   longitude - the array for the longitude in this orbit.
 %   SST_In - the array for the input SST values in this orbit.

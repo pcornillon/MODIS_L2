@@ -35,12 +35,6 @@ nscans_range = [2019 2051];
 
 % Get the index for problems.
 
-% % % if isnan(problem_list(1).problem_code)
-% % %     iProblemFile = 0;
-% % % else
-% % %     iProblemFile = length(problem_list.problem_code);
-% % % end
-
 % Read the global attributes from the granule file.
 
 orbit_info(iOrbit).data_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).data_granule_name);

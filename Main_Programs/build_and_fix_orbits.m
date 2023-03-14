@@ -221,7 +221,6 @@ med_op = [1 1];
 
 sst_range_grid_size = 2;
 
-% % % load ~/Dropbox/ComputerPrograms/Satellite_Model_SST_Processing/AI-SST/Data/SST_Ranges/SST_Range_for_Declouding.mat
 load([fixit_directory 'SST_Range_for_Declouding.mat'])
 sst_range = gridded_sst_range(1:90,1:180,:);
 
@@ -268,10 +267,7 @@ end
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-% % % [scan_line_times, start_line_index, num_scan_lines_in_granule, granule_start_time_guess] = get_start_of_first_full_orbit( metadata_directory, Matlab_start_time);
 granule_start_time_guess = get_start_of_first_full_orbit( metadata_directory, Matlab_start_time);
-
-% % % orbit_info(1).granule_info(1).metadata_global_attrib = ncinfo(orbit_info(1).granule_info(1).metadata_name);
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
@@ -281,18 +277,8 @@ while granule_start_time_guess <= Matlab_end_time
     
     time_to_process_this_orbit = tic;
     
-% % %     iOrbit = iOrbit + 1;
-% % %     iGranule = 1;
+    orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);
     
-% % %     if iOrbit>=2
-% % %         orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);
-% % %         orbit_info(iOrbit).granule_info(iGranule).metadata_name = orbit_info(iOrbit-1).granule_info(end).metadata_name;
-        orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);
-% % %     end
-    
-% % %     [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, scan_line_times] ...
-% % %         = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, start_line_index, ...
-% % %         granule_start_time_guess, scan_line_times, num_scan_lines_in_granule);
     [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
     
@@ -322,7 +308,7 @@ while granule_start_time_guess <= Matlab_end_time
         
         if fix_mask
             start_time_to_fix_mask = tic;
-            % % %             [Final_Mask, Test_Counts, FracArea, nnReduced] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
+            
             [Final_Mask] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
             
             orbit_info(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
@@ -364,9 +350,6 @@ while granule_start_time_guess <= Matlab_end_time
             % regridding.
             % ******************************************************************************************
             
-            % % %             [regridded_longitude, regridded_latitude, regridded_sst, regridded_flags_sst, regridded_qual, regridded_sstref, ...
-            % % %                 region_start, region_end, easting, northing, new_easting, new_northing] = ...
-            % % %                 regrid_MODIS_orbits( augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, flags_sst, qual_sst, sstref);
             [status, problem_list, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
                 regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, problem_list);
             
@@ -434,9 +417,6 @@ while granule_start_time_guess <= Matlab_end_time
         
         %% Wrap-up for this orbit.
                 
-        % % %         Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, regridded_longitude, regridded_latitude, ...
-        % % %             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 3, time_coverage_start, GlobalAttributes, ...
-        % % %             region_start, region_end, fix_mask, fix_bowtie, get_gradients);
         Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
             region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);

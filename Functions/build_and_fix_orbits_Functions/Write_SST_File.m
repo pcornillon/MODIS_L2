@@ -707,8 +707,6 @@ ncwriteatt(output_filename, '/', 'cdm_data_type', 'Grid');
 
 %% And get the global attributes from the input file
 
-% % % GlobalAttributes = ncinfo(output_filename);
-
 for iAttribute = 1:length(orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes)
     
     switch orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Name
@@ -718,7 +716,6 @@ for iAttribute = 1:length(orbit_info(iOrbit).granule_info(1).metadata_global_att
                 'geospatial_lat_units' 'geospatial_lon_units' 'geospatial_lat_max' 'geospatial_lat_min' 'geospatial_lon_max' 'geospatial_lon_min' ...
                 'startDirection' 'endDirection' 'day_night_flag' 'earth_sun_distance_correction'}
             
-% % %             ncwriteatt(output_filename, '/', GlobalAttributes.Attributes(iAttribute).Name, GlobalAttributes.Attributes(iAttribute).Value);
             ncwriteatt(output_filename, '/', ...
                 orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Name, ...
                 orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Value);

@@ -33,14 +33,6 @@ global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixel
 status = 0;
 nscans_range = [2019 2051];
 
-% % % % Get the index for problems.
-% % % 
-% % % if isempty(problem_list(1).problem_code)
-% % %     iProblemFile = 0;
-% % % else
-% % %     iProblemFile = length(problem_list.problem_code);
-% % % end
-
 % Read the global attributes from the granule file.
 
 global_attrib = ncinfo(fi_granule);

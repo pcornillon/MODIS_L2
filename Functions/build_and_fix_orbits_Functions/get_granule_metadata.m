@@ -1,6 +1,4 @@
 function [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess)
-% % % function [status, start_line_index, scan_line_times, missing_granule, num_scan_lines_in_granule, granule_start_time_guess] = ...
-% % %     get_granule_metadata( metadata_directory, granule_start_time_guess)
 % find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
 % Read the latitude of the nadir track for this granule and determine
@@ -18,11 +16,8 @@ function [status, missing_granule, granule_start_time_guess] = get_granule_metad
 %           : 6 - 1st detector in data granule not 1st detector in group of 10.
 %           : 10 - missing granule.
 %           : 11 - more than 2 metadata files for a given time.
-% % %   start_line_index - the index in fi for the start of the orbit.
-% % %   scan_line_times - matlab time for each scan line if granule info is
 %    requested.
 %   missing_granule - Matlab date/time of granule if missing otherwise empty.
-% % %   num_scan_lines_in_granule - number of scans in this granule.
 %   granule_start_time_guess - the matlab_time of the granule to start with. If scan
 %    times are obtained for this granule, granule_start_time_guess will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
@@ -37,11 +32,9 @@ global amazon_s3_run
 % Initialize return variables.
 
 status = 0;
-% % % orbit_info(iOrbit).granule_info(iGranule).metadata_name = '';
+
 start_line_index = [];
-% % % scan_line_times = [];
 missing_granule = [];
-% % % num_scan_lines_in_granule = [];
 
 % Does an OBPG metadata file exist for this time?
 
@@ -113,9 +106,6 @@ else
     diff_nlat = [diff(nlat_t); nlat_t(end)-nlat_t(end-1)];
     
     mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
-    
-    % % %         nlon_t = single(ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/clon')); figure(1); clf; plot( nlon_t, nlat_t); set(gca, fontsize=18); hold on; plot( nlon_t(1), nlat_t(1), '*r'); fprintf('%s.\n', file_list(1).name)
-    % % %         keyboard
     
     if isempty(mm)
         return

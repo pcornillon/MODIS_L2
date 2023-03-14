@@ -365,7 +365,7 @@ while granule_start_time_guess <= Matlab_end_time
 
             orbit_info(iOrbit).granule_info(iGranule).status = statusT;
             
-            lines_to_skip = floor( abs((temp_granule_start_time * secs_per_day - orbit_info(iOrbit).granule_info(iGranule).end_time) + 0.05) / secs_per_scan_line);
+            lines_to_skip = floor( abs((temp_granule_start_time * secs_per_day - orbit_info(iOrbit).granule_info(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
             
             % Done building this orbit if the next granule is missing, go to
             % processing. Otherwise read data from next granule into this orbit.
@@ -375,9 +375,15 @@ while granule_start_time_guess <= Matlab_end_time
                 % Decrement iGranule; we want to set up for the next orbit
                 % and we had to add a granule to this one because it
                 % extended past the end when we added the extra 100 lines.
-                
+
                 iGranule = iGranule - 1;
 
+                % Retrieve the old version fo scan_line_times, ...
+
+                scan_line_times = save_scan_line_times;
+                start_line_index = save_start_line_index;
+                num_scan_lines_in_granule = save_num_scan_lines_in_granule;
+                
                 break
             else
                 orbit_info(iOrbit).granule_info(iGranule).osscan = orbit_info(iOrbit).granule_info(iGranule-1).oescan + 1;
@@ -398,15 +404,15 @@ while granule_start_time_guess <= Matlab_end_time
                 % extended past the end when we added the extra 100 lines.
                 
                 iGranule = iGranule - 1;
-                
+
+                % Retrieve the old version fo scan_line_times, ...
+
+                scan_line_times = save_scan_line_times;
+                start_line_index = save_start_line_index;
+                num_scan_lines_in_granule = save_num_scan_lines_in_granule;
+
                 break
             end
-            
-            % Retrieve the old version fo scan_line_times, ...
-            
-            scan_line_times = save_scan_line_times;
-            start_line_index = save_start_line_index;
-            num_scan_lines_in_granule = save_num_scan_lines_in_granule;
         end
         
         % If this granule corresponds to the start of a new orbit break out

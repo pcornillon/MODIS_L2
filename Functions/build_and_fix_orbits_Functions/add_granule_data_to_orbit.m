@@ -76,7 +76,7 @@ if (status == 0) & ~isempty(oescan)
     scan_seconds_from_start(osscan:oescan) = single(scan_line_times(gsscan:gescan) - orbit_info(iOrbit).orbit_start_time) * secs_per_day;
 else
     fprintf('****** Data for %s not read because of error %i.\n', orbit_info(iOrbit).name, status)
-    fprintf('Orbit range %i-%i; granule range %i-%i.\n', osscan, oescan gsscan, gescan)
+    fprintf('Orbit range %i-%i; granule range %i-%i.\n', osscan, oescan, gsscan, gescan)
 end
 
 end

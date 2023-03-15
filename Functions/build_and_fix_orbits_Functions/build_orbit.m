@@ -181,7 +181,7 @@ orbit_info(iOrbit).granule_info(iGranule).gescan = num_scan_lines_in_granule;
 
 orbit_info(iOrbit).granule_info(iGranule).status = status;
 
-% Increment the granule start date/time by 5 minutes and begin looping over
+% % % % Increment the granule start date/time by 5 minutes and begin looping over
 % granules to populate the next orbit.
 
 granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);

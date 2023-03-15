@@ -1,4 +1,4 @@
-function problem_list = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
+function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
     start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, use_OBPG, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
@@ -427,10 +427,10 @@ while granule_start_time_guess <= Matlab_end_time
             disp(['*** Time to process and save ' orbit_info(iOrbit).name ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
         end
         
-        % Add 5 minutes to the previous value of time to get the time of the
-        % next granule and continue searching.
-        
-        granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+% % %         % Add 5 minutes to the previous value of time to get the time of the
+% % %         % next granule and continue searching.
+% % %         
+% % %         granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     end
     
     % Increment orbit counter and reset granule counter to 1.

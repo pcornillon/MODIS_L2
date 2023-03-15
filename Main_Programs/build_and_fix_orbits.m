@@ -1,5 +1,5 @@
 function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
-    start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, use_OBPG, save_core, print_diag)
+    start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -21,7 +21,6 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 %   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
 %   get_gradients - 1 to calculate eastward and northward gradients, 0
 %    otherwise.
-%   use_OBPG - use metadata copied from the OBPG file.
 %   save_core - 1 to save only the core values, regridded lon, lat, SST,
 %    refined mask and nadir info, 0 otherwise.
 %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
@@ -86,7 +85,6 @@ if ~exist('metadata_directory')
     fix_bowtie = 1;  % Test run.
     regrid_sst = 0;  % Test run.
     get_gradients = 0;  % Test run.
-    use_OBPG = 0;  % Test run.
     save_core = 1;  % Test run.
     print_diagnostics = 1;  % Test run.
     
@@ -110,11 +108,6 @@ if exist('print_diag') ~= 0
     end
 end
 
-if exist('use_OBPG') == 0
-    use_OBPG = 1;
-    fprintf('\n\nWill use OBPG metadata for this run.\n')
-end
-
 if exist('get_gradients') == 0
     get_gradients = 1;
     fprintf('\n\nWill calculate gradients for this run.\n')
@@ -128,14 +121,10 @@ end
 amazon_s3_run = 0;
 
 if strcmp( granules_directory(1:2), 's3') == 1
-    fprintf('\n\n%s\n\n\n', 'This is an Amazon S3 run; will read data from s3 storage.')
+    fprintf('\n%s\n\n\n', 'This is an Amazon S3 run; will read data from s3 storage.')
     amazon_s3_run = 1;
-    
-    % If an S3 run will have to use OBPG metadata regardless of the value passed in.
-    
-    use_OBPG = 1;
 else
-    fprintf('\n\n%s\n\n\n', 'This is not an Amazon S3 run; will read data from local disks.')
+    fprintf('\n%s\n\n\n', 'This is not an Amazon S3 run; will read data from local disks.')
 end
 
 %% Initialize some variables.
@@ -155,7 +144,7 @@ orbit_length = 40271;
 
 problem_list.iProblem = 0;
 problem_list.filename{1} = '';
-problem_list.problem_code(1) = nan;
+problem_list.code(1) = nan;
 
 % Formats used in building filenames.
 
@@ -180,7 +169,7 @@ acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
 
 if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
-    disp(['Input start and end time vectors must be 6 elements long. start_date_time: ' num2str(start_date_time) ' to ' num2str(end_date_time)])
+    fprintf('Input start and end time vectors must be 6 elements long. start_date_time: %s to %s.\n' num2str(start_date_time), num2str(end_date_time))
     return
 end
 
@@ -188,17 +177,17 @@ Matlab_start_time = datenum(start_date_time);
 Matlab_end_time = datenum(end_date_time);
 
 if (Matlab_start_time < acceptable_start_time) | (Matlab_start_time > acceptable_end_time)
-    disp(['Specified start time ' datestr(Matlab_start_time) ' not between ' datestr(Matlab_start_time) ' and ' datestr(Matlab_end_time)])
+    fprintf('Specified start time %s not between %s and %s\n', datestr(Matlab_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
     return
 end
 
 if (Matlab_end_time < acceptable_start_time) | (Matlab_end_time > acceptable_end_time)
-    disp(['Specified start time ' datestr(Matlab_end_time) ' not between ' datestr(Matlab_start_time) ' and ' datestr(Matlab_end_time)])
+    fprintf('Specified end time %s not between %s and %s\n', datestr(Matlab_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
     return
 end
 
 if strcmp(output_file_directory(1:2), '~/')
-    disp(['The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: ' output_file_directory])
+    fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory])
     return
 end
 
@@ -314,7 +303,7 @@ while granule_start_time_guess <= Matlab_end_time
             orbit_info(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
             
             if print_diagnostics
-                disp(['*** Time to fix the mask for this orbit: ' num2str( orbit_info(iOrbit).time_to_fix_mask, 5) ' seconds.'])
+                fprintf('   Time to fix the mask for this orbit: %6.1f seconds.\n', orbit_info(iOrbit).time_to_fix_mask)
             end
         else
             Final_Mask = zeros(size(SST_In));
@@ -360,7 +349,7 @@ while granule_start_time_guess <= Matlab_end_time
             orbit_info(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
             
             if print_diagnostics
-                disp(['*** Time to address bowtie for this orbit: ' num2str( orbit_info(iOrbit).time_to_address_bowtie, 5) ' seconds.'])
+                fprintf('   Time to address bowtie for this orbit: %6.1f seconds.\n',  orbit_info(iOrbit).time_to_address_bowtie)
             end
         else
             regridded_sst = SST_In_Masked; % Need this for gradients.
@@ -403,7 +392,7 @@ while granule_start_time_guess <= Matlab_end_time
             orbit_info(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
             
             if print_diagnostics
-                disp(['*** Time to determine the gradient for this orbit: ' num2str( orbit_info(iOrbit).time_to_determine_gradient, 5) ' seconds.'])
+                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', orbit_info(iOrbit).time_to_determine_gradient, 5)
             end
         else
             grad_at_per_km = nan;
@@ -424,7 +413,7 @@ while granule_start_time_guess <= Matlab_end_time
         orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
         if print_diagnostics
-            disp(['*** Time to process and save ' orbit_info(iOrbit).name ': ', num2str( orbit_info(iOrbit).time_to_process_this_orbit, 5) ' seconds.'])
+            fprintf(['   Time to process and save %s: %6.1f seconds.\n', orbit_info(iOrbit).name, orbit_info(iOrbit).time_to_process_this_orbit)
         end
         
 % % %         % Add 5 minutes to the previous value of time to get the time of the
@@ -439,5 +428,5 @@ while granule_start_time_guess <= Matlab_end_time
     iGranule = 1;
 end
 
-fprintf('*** Time for this run: %8.1f seconds or, in minutes, %5.1f\n', toc(tic_build_start), toc(tic_build_start/60))
+fprintf('   Time for this run: %8.1f seconds or, in minutes, %5.1f\n', toc(tic_build_start), toc(tic_build_start/60))
 

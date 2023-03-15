@@ -106,7 +106,7 @@ orbit_info(iOrbit).name = [output_file_directory datestr(orbit_info(iOrbit).orbi
 
 if exist(orbit_info(iOrbit).name) == 2
     
-    fprintf('Have already processed %s. Going to the next orbit. \n', orbit_info(iOrbit).name)
+    fprintf('--- Have already processed %s. Going to the next orbit. \n', orbit_info(iOrbit).name)
     
     % Start by incrementing granule_start_time_guess so that we don't just find
     % the same granule start time as for the previous orbit. 
@@ -116,7 +116,7 @@ if exist(orbit_info(iOrbit).name) == 2
     [status, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granule_start_time_guess);
     
     if status ~= 0
-        fprintf('*** Problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
+        fprintf('*** Problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s.\n Terminating building of this orbit. Will process portion already built.\n', ...
             orbit_info(iOrbit).granule_info(iGranule).metadata_name, datestr(granule_start_time_guess), datestr(Matlab_start_time), datestr(Matlab_end_time))
         return
     end
@@ -197,7 +197,7 @@ while granule_start_time_guess <= Matlab_end_time
     [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
         
     if status ~= 0
-        fprintf('Problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(granule_start_time_guess), status)
+        fprintf('*** Problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(granule_start_time_guess), status)
         
         % Decrement iGranule since this one isn't contributing.
         
@@ -217,7 +217,7 @@ while granule_start_time_guess <= Matlab_end_time
         % Check that the number of lines to skip is a multiple of 10. If not, force it to be.
         
         if mod(lines_to_skip, 10) ~= 0
-            fprintf('The number of lines to skip, %i, is not a multiple of 10 for granule %s. Forcing it to 10.\n', lines_to_skip, orbit_info(iOrbit).granule_info(iGranule).metadata_name)
+            fprintf('... The number of lines to skip, %i, is not a multiple of 10 for granule %s. Forcing it to 10.\n', lines_to_skip, orbit_info(iOrbit).granule_info(iGranule).metadata_name)
             lines_to_skip = round(lines_to_skip / 10) * 10;
         end
         
@@ -239,7 +239,7 @@ while granule_start_time_guess <= Matlab_end_time
             % lines into that orbit that correspond to this granule.
             
             if orbit_info(iOrbit).granule_info(iGranule).start_time > (orbit_info(iOrbit).granule_info(1).start_time + secs_per_orbit + 300)
-                fprintf('Seems like the granule containing the start of the next orbit is MISSING,\nThat this granule\n %s\nis in a new orbit so break our of loop over granules for this orbit.\n', orbit_info(iOrbit).granule_info(iGranule).metadata_name)
+                fprintf('... Seems like the granule containing the start of the next orbit is MISSING,\nThat this granule\n %s\nis in a new orbit so break our of loop over granules for this orbit.\n', orbit_info(iOrbit).granule_info(iGranule).metadata_name)
                 orbit_info(iOrbit+1).granule_info(1) = orbit_info(iOrbit).granule_info(iGranule);
                 break
             end
@@ -251,8 +251,13 @@ while granule_start_time_guess <= Matlab_end_time
             % since this granule does not have the start of an orbit in it.
 
             if orbit_info(iOrbit).granule_info(iGranule).oescan > orbit_length
+
                 status = 110;
-                keyboard
+
+                problem_list.iProblem = problem_list.iProblem + 1;
+                problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+                problem_list.code = status;
+
                 return
             end
             
@@ -395,7 +400,7 @@ end
 orbit_info(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
 
 if print_diagnostics
-    disp(['Time to build this orbit: ' num2str( orbit_info(iOrbit).time_to_build_orbit, 5) ' seconds.'])
+    fprintf('   Time to build this orbit: %6.1f seconds.\n', orbit_info(iOrbit).time_to_build_orbit)
 end
 
 

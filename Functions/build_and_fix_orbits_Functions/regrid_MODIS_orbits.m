@@ -61,13 +61,12 @@ end
 if mpixels ~= npixels
     fprintf('***** There are %i pixels/scan line in this granule but there should be %i. Skipping this granule. Error code 3.\n', mpixels, npixels)
     
-    skip_this_granule = 1;
-    
+    status = 3;
+
     problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.fi_metadata{problem_list.iProblem} = fi_granule;
-    problem_list.problem_code(problem_list.iProblem) = 3;
-    
-    status = problem_list.problem_code(problem_list.iProblem);
+    problem_list.filename = fi_granule;
+    problem_list.code = status;
+
     return
 end
 

@@ -60,16 +60,15 @@ if strcmp( granules_directory(1:2), 's3') == 1
         
         orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [granules_directory name_in_date name_in_hr_min(1:end-2) ...
             '08-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-        
+
         if exist(orbit_info(iOrbit).granule_info(iGranule).data_granule_name) ~= 2
 
-            % Here for a problem add this file to the problem list. 
-            
-            problem_list.iProblemFile = problem_list.iProblemFile + 1;
-            problem_list.fi_metadata{problem_list.iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
-            problem_list.problem_code(problem_list.iProblemFile) = 1;
-            
-            status = problem_list.problem_code(problem_list.iProblemFile);
+            status = 1;
+
+            problem_list.iProblem = problem_list.iProblem + 1;
+            problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
+            problem_list.code = status;
+
             return
         end
     end
@@ -82,12 +81,13 @@ else
     
     if exist(orbit_info(iOrbit).granule_info(iGranule).data_granule_name) ~= 2
         fprintf('Whoops, couldn''t find %s.\n', orbit_info(iOrbit).granule_info(iGranule).data_granule_name)
-                
-        problem_list.iProblemFile = problem_list.iProblemFile + 1;
-        problem_list.fi_metadata{problem_list.iProblemFile} = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-        problem_list.problem_code(problem_list.iProblemFile) = 1;
 
-        status = problem_list.problem_code(problem_list.iProblemFile);
+        status = 1;
+
+        problem_list.iProblem = problem_list.iProblem + 1;
+        problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+        problem_list.code = status;
+
         return
     end
 end

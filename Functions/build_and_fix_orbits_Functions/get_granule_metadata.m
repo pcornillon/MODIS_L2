@@ -53,15 +53,25 @@ end
 
 if isempty(file_list)
     missing_granule = granule_start_time_guess;
-    fprintf('*** Missing file for %s. Going to the next granule.\n', datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss))
+    fprintf('... Missing file for %s. Going to the next granule.\n', datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss))
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
-    
+
     status = 10;
+
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.filename = orbit_info(iOrbit).name;
+    problem_list.code = status;
+
 elseif length(file_list) > 2
     fprintf('*** Too many metadata files for %s. Going to the next granule.\n', datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss))
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
-    
+
     status = 11;
+
+    problem_list.iProblem = problem_list.iProblem + 1;
+    problem_list.filename = file_list(1);
+    problem_list.code = status;
+
 else
     orbit_info(iOrbit).granule_info(iGranule).metadata_name = [file_list(1).folder '/' file_list(1).name];
     
@@ -87,10 +97,15 @@ else
     % of the detector array.
     
     if abs(mSec(10)-mSec(1)) > 0
-        fprintf('The 1st scan line for %s is not the 1st detector in a group of 10. Should never get here.', file_list(1).name)
+        fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Going to the next granule.', file_list(1).name)
         granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
         status = 6;
+
+        problem_list.iProblem = problem_list.iProblem + 1;
+        problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
+        problem_list.code = status;
+        
         return
     end
     

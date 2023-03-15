@@ -1,4 +1,4 @@
-function [status, problem_list] = build_granule_filename( granules_directory, problem_list, check_attributes)
+function [status] = build_granule_filename( granules_directory, check_attributes)
 % build_granule_filename - based on metadata granule name - PCC
 %   
 % Start by finding the data/time information. Then build the granule file
@@ -8,10 +8,6 @@ function [status, problem_list] = build_granule_filename( granules_directory, pr
 %   granules_directory - the name of the directory with the granules.
 %   check_attributes - 1 to read the global attributes for the data granule
 %    and check that they exist and/or are reasonable.
-%   problem_list - structure with list of filenames (filename) for skipped 
-%    file and the reason for it being skipped (problem_code):
-%    problem_code: 1 - couldn't find the file in s3.
-%                : 2 - couldn't find the metadata file copied from OBPG data.
 %
 % OUTPUT
 %   status  : 0 - OK
@@ -20,10 +16,9 @@ function [status, problem_list] = build_granule_filename( granules_directory, pr
 %           : 3 - number of pixels global attribute not equal to 1354.
 %           : 4 - number of scan lines global attribute not between 2020 and 2050.
 %           : 5 - couldn't find the metadata file copied from OBPG data.
-%   problem_list - as above but the list is incremented by 1 if a problem.
 %
 
-global iOrbit orbit_info iGranule
+global iOrbit orbit_info iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
@@ -95,7 +90,7 @@ end
 % Check the global attributes in the granule data file if requested.
 
 if check_attributes
-    [status, problem_list] = check_global_attrib(problem_list);
+    status = check_global_attrib;
 end
 
 end

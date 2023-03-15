@@ -47,12 +47,12 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 %   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
 %   output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
 %   [orbit_info problem_list] = build_and_fix_orbits(  granules_directory, metadata_directory, fixit_directory, ...
-%    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1);
+%    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1, 1, 1);
 %
 %  To do just the test orbit, specify the start time somewhere in that orbit and
 %  the end time about 5 minutes after the start time; e.g.,
 %  [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, ...
-%   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);
+%   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1, 1, 1);
 %
 % To do a test run, capture the lines in 'if test_values' group and execute
 % them at the Matlab command line prompt.
@@ -61,7 +61,7 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 
 clear global
 
-global iOrbit orbit_info iGranule
+global iOrbit orbit_info iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 global print_diagnostics save_just_the_facts
 global formatOut
@@ -169,7 +169,7 @@ acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
 
 if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
-    fprintf('Input start and end time vectors must be 6 elements long. start_date_time: %s to %s.\n' num2str(start_date_time), num2str(end_date_time))
+    fprintf('Input start and end time vectors must be 6 elements long. start_date_time: %s to %s.\n', num2str(start_date_time), num2str(end_date_time))
     return
 end
 
@@ -187,7 +187,7 @@ if (Matlab_end_time < acceptable_start_time) | (Matlab_end_time > acceptable_end
 end
 
 if strcmp(output_file_directory(1:2), '~/')
-    fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory])
+    fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory)
     return
 end
 
@@ -268,8 +268,8 @@ while granule_start_time_guess <= Matlab_end_time
     
     orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);
     
-    [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
-        = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
+    [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
+        = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
     
     if status == 110
         fprintf('*****\n*****\nMajor problem. Status %i. Terminating the run.\n\n', status)
@@ -339,8 +339,8 @@ while granule_start_time_guess <= Matlab_end_time
             % regridding.
             % ******************************************************************************************
             
-            [status, problem_list, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked, problem_list);
+            [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+                regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
             
             if status ~= 0
                 fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', orbit_info.name, status)
@@ -413,7 +413,7 @@ while granule_start_time_guess <= Matlab_end_time
         orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
         if print_diagnostics
-            fprintf(['   Time to process and save %s: %6.1f seconds.\n', orbit_info(iOrbit).name, orbit_info(iOrbit).time_to_process_this_orbit)
+            fprintf('   Time to process and save %s: %6.1f seconds.\n', orbit_info(iOrbit).name, orbit_info(iOrbit).time_to_process_this_orbit)
         end
         
 % % %         % Add 5 minutes to the previous value of time to get the time of the

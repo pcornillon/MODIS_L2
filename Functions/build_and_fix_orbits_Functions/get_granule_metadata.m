@@ -23,7 +23,7 @@ function [status, missing_granule, granule_start_time_guess] = get_granule_metad
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 
-global iOrbit orbit_info iGranule
+global iOrbit orbit_info iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 global formatOut
 global latlim
@@ -54,6 +54,10 @@ end
 if isempty(file_list)
     missing_granule = granule_start_time_guess;
     fprintf('... Missing file for %s. Going to the next granule.\n', datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss))
+
+    % Does this granule contain the start of a new orbit? If so get info
+    % for start of next orbit and break out of this loop.
+
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
     status = 10;
@@ -105,7 +109,7 @@ else
         problem_list.iProblem = problem_list.iProblem + 1;
         problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
         problem_list.code = status;
-        
+
         return
     end
     

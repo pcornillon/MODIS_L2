@@ -1,5 +1,5 @@
-function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
-    = build_orbit( problem_list, granules_directory, metadata_directory, output_file_directory, granule_start_time_guess)
+function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
+    = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess)
 % build_orbit - build the next unprocessed orbit from data granules - PCC
 % 
 % Starting with OBPG metadata file for a granule that includes the start of
@@ -13,7 +13,6 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 % orbit is missing.
 %
 % INPUT
-%   problem_list - structure with list of filenames for skipped file and
 %    the reason for it being skipped (same codes as status):
 %    problem_code: 0 - OK
 %                : 1 - couldn't find the data granule.
@@ -44,7 +43,6 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 %           : 10 - missing granule.
 %           : 11 - more than 2 metadata files for a given time. 
 %           : 100 - No granule with the start of an orbit found in time range. 
-%   problem_list - structure with data on problem granules.
 %   latitude - the array for the latitudes in this orbit.
 %   longitude - the array for the longitude in this orbit.
 %   SST_In - the array for the input SST values in this orbit.
@@ -71,7 +69,7 @@ function [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst
 %   scan_seconds_from_start - seconds since start of orbit to this granule.
 %
 
-global iOrbit orbit_info iGranule
+global iOrbit orbit_info iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 global Matlab_end_time 
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
@@ -175,8 +173,8 @@ orbit_info(iOrbit).granule_info(iGranule).gescan = num_scan_lines_in_granule;
 
 % Read the data for the first granule in this orbit.
 
-[status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, ...
+[status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+    = add_granule_data_to_orbit( granules_directory, check_attributes, ...
     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
 
 orbit_info(iOrbit).granule_info(iGranule).status = status;
@@ -307,8 +305,8 @@ while granule_start_time_guess <= Matlab_end_time
         
         % Read the data for the next granule in this orbit.
         
-        [status, problem_list, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-            = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, ...
+        [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+            = add_granule_data_to_orbit( granules_directory, check_attributes, ...
             latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
         
         orbit_info(iOrbit).granule_info(iGranule).status = status;
@@ -365,7 +363,7 @@ while granule_start_time_guess <= Matlab_end_time
                 orbit_info(iOrbit).granule_info(iGranule).gescan = orbit_info(iOrbit).granule_info(iGranule).oescan - orbit_info(iOrbit).granule_info(iGranule).osscan + 1;
                 
                 [status, ~, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-                    = add_granule_data_to_orbit( granules_directory, problem_list, check_attributes, ...
+                    = add_granule_data_to_orbit( granules_directory, check_attributes, ...
                     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
                                 
                 % Decrement iGranule; we want to set up for the next orbit

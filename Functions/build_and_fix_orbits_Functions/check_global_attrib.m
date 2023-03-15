@@ -1,4 +1,4 @@
-function [ status, problem_list] = check_global_attrib(problem_list)
+function [status] = check_global_attrib
 % check_global_attrib - read and check global attributes from the metadata file - PCC 
 %   
 % This script reads the global attributes from the granule file and make
@@ -6,13 +6,6 @@ function [ status, problem_list] = check_global_attrib(problem_list)
 % check.
 %
 % INPUT
-%   problem_list - structure with list of filenames (filename) for skipped 
-%    file and the reason for it being skipped (problem_code):
-%    problem_code: 1 - couldn't find the file in s3.
-%                : 2 - didn't find number_of_lines global attribute.
-%                : 3 - number of pixels global attribute not equal to 1354.
-%                : 4 - number of scan lines global attribute not between 2020 and 2050.
-%                : 5 - couldn't find the metadata file copied from OBPG data.
 %
 % OUTPUT
 %   status : 0 - OK
@@ -21,10 +14,17 @@ function [ status, problem_list] = check_global_attrib(problem_list)
 %          : 4 - number of scan lines global attribute not between 2020 and 2050.
 %          : 5 - couldn't find the metadata file copied from OBPG data.
 %   global_attrib - the global attributes read from the data granul.
-%   problem_list - as above but the list is incremented by 1 if a problem.
 %
 
-global iOrbit orbit_info iGranule
+%   problem_list - structure with list of filenames (filename) for skipped 
+%    file and the reason for it being skipped (problem_code):
+%    problem_code: 1 - couldn't find the file in s3.
+%                : 2 - didn't find number_of_lines global attribute.
+%                : 3 - number of pixels global attribute not equal to 1354.
+%                : 4 - number of scan lines global attribute not between 2020 and 2050.
+%                : 5 - couldn't find the metadata file copied from OBPG data.
+
+global iOrbit orbit_info iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 global npixels
 
@@ -32,8 +32,6 @@ global npixels
 
 status = 0;
 nscans_range = [2019 2051];
-
-% Get the index for problems.
 
 % Read the global attributes from the granule file.
 

@@ -1,5 +1,5 @@
-function [ status, problem_list, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In, problem_list)
+function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
+    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
@@ -16,14 +16,13 @@ function [ status, problem_list, new_lon, new_lat, new_sst, region_start, region
 %   base_dir_out - the directory to which the new lon, lat, SST_In and mask
 %    will be writte. The output filename will the same as the input filename
 %    with '_fixed' appended.
-%   problem_list - bad granules.
 %
 % EXAMPLE
 %  ........
 %   fi_in = '~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Original/2010/AQUA_MODIS.20100619T000124.L2.SST.mat';
 %   regrid_MODIS_orbits( fi_in, [])
 
-global iOrbit orbit_info iGranule
+global iOrbit orbit_info iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 

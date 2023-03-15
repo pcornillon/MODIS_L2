@@ -12,22 +12,27 @@
 
 file_list = dir('/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/01/AQUA_MODIS*');
 
-% Get the time of the start of each scan line relative to the first scan line.
+% Get the time of the start of each scan line relative to the first scan 
+% line and the nadir latitude value of each scan line.
 
 for i=1:length(file_list)
     filename = [file_list(i).folder '/' file_list(i).name];
     sltimes(i,:) = ncread(filename, 'time_from_start_orbit');
+    nlat(i,:) = ncread(filename, 'nadir_latitude');
 end
 
-% Average start times by scan line and save the average.
+% Average start times by scan line and latitudes and save the average.
 
 sltimes_avg = mean(sltimes,1,'omitnan');
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg')
+nlat_avg = mean(nlat,1,'omitnan');
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg')
 
 % Get the anomalies from the average orbit.
 
 sltimes_anom = sltimes - sltimes_avg;
+nlat_anom = nlat - nlat_avg;
 
 % Print results
 
 fprintf('Scan line start time anomalies from the average are between %f and %f\n', min(sltimes_anom(:)), max(sltimes_anom(:)))
+fprintf('Latitude anomalies from the average are between %f and %f\n', min(nlat_anom(:)), max(nlat_anom(:)))

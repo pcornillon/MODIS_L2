@@ -25,7 +25,7 @@ function [status] = check_global_attrib
 %                : 5 - couldn't find the metadata file copied from OBPG data.
 
 global iOrbit orbit_info iGranule problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global npixels
 
 % Initialize some parameters.

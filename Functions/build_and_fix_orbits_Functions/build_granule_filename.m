@@ -19,7 +19,7 @@ function [status] = build_granule_filename( granules_directory, check_attributes
 %
 
 global iOrbit orbit_info iGranule problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
 % fi_granule_OBPG: /Volumes/Aqua-1/MODIS_R2019/combined/2003/Aqua-1AQUA_MODIS.20030101T002505.L2.SST.nc

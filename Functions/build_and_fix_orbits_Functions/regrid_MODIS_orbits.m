@@ -23,7 +23,7 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %   regrid_MODIS_orbits( fi_in, [])
 
 global iOrbit orbit_info iGranule problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
 % Initialize return variables.

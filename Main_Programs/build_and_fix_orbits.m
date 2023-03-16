@@ -62,7 +62,7 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 clear global
 
 global iOrbit orbit_info iGranule problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global formatOut
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
@@ -247,6 +247,12 @@ if get_gradients
     along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
 end
 
+<<<<<<< HEAD
+=======
+%% Get the relative scan line start times and latitudes.
+
+load([fixit_directory 'avg_scan_line_start_times.mat'])
+>>>>>>> 38a0c7105c4f54afe2b0dd08920d3f2f056b250f
 
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
@@ -271,6 +277,13 @@ while granule_start_time_guess <= Matlab_end_time
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
+    
+    if status == 100 
+        % Will get here if search for a new orbit fails. This should not
+        % happen, but might at the end of the time range. Simply end the job. 
+        
+        return
+    end
     
     if status == 110
         fprintf('*****\n*****\nMajor problem. Status %i. Terminating the run.\n\n', status)

@@ -24,7 +24,8 @@ function [status, missing_granule, granule_start_time_guess] = get_granule_metad
 %
 
 global iOrbit orbit_info iGranule problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 global formatOut
 global latlim
 global amazon_s3_run
@@ -55,10 +56,7 @@ if isempty(file_list)
     missing_granule = granule_start_time_guess;
     fprintf('... Missing file for %s. Going to the next granule.\n', datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss))
 
-    % Does this granule contain the start of a new orbit? If so get info
-    % for start of next orbit and break out of this loop.
-
-    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+% % %     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
     status = 10;
 
@@ -68,7 +66,8 @@ if isempty(file_list)
 
 elseif length(file_list) > 2
     fprintf('*** Too many metadata files for %s. Going to the next granule.\n', datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss))
-    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+
+% % %     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
     status = 11;
 

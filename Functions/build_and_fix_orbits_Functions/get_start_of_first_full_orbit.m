@@ -16,7 +16,7 @@ function granule_start_time_guess = get_start_of_first_full_orbit( metadata_dire
 %
 
 global iOrbit orbit_info iGranule
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global formatOut
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length

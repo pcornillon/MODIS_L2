@@ -200,6 +200,13 @@ while granule_start_time_guess <= Matlab_end_time
         % Decrement iGranule since this one isn't contributing.
         
         orbit_info(iOrbit).granule_info(iGranule).status = -999;
+
+        % Does this granule contain the start of a new orbit? If so get
+        % info for start of next orbit and break out of this loop.
+
+        
+        break
+        
     else
         
         orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);

@@ -26,6 +26,7 @@ end
 sltimes_avg = mean(sltimes,1,'omitnan');
 nlat_avg = mean(nlat,1,'omitnan');
 save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg')
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/scan_and_nadir', 'sltimes', 'nlat')
 
 % Get the anomalies from the average orbit.
 

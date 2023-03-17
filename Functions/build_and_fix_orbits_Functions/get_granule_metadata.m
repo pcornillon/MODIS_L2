@@ -23,7 +23,7 @@ function [status, missing_granule, granule_start_time_guess] = get_granule_metad
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 
-global iOrbit orbit_info iGranule problem_list
+global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 global formatOut
@@ -61,7 +61,7 @@ if isempty(file_list)
     status = 10;
 
     problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = orbit_info(iOrbit).name;
+    problem_list.filename = oinfo(iOrbit).name;
     problem_list.code = status;
 
 elseif length(file_list) > 2
@@ -76,14 +76,14 @@ elseif length(file_list) > 2
     problem_list.code = status;
 
 else
-    orbit_info(iOrbit).granule_info(iGranule).metadata_name = [file_list(1).folder '/' file_list(1).name];
+    oinfo(iOrbit).ginfo(iGranule).metadata_name = [file_list(1).folder '/' file_list(1).name];
     
     % Skip this part if the call was simply to build the file name and
     % check for its existence. Next get the Matlab times for each scan line.
     
-    Year = ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/year');
-    YrDay = ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/day');
-    mSec = ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/msec');
+    Year = ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/year');
+    YrDay = ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/day');
+    mSec = ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/msec');
     
     scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
     
@@ -106,7 +106,7 @@ else
         status = 6;
 
         problem_list.iProblem = problem_list.iProblem + 1;
-        problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
+        problem_list.filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
         problem_list.code = status;
 
         return
@@ -114,7 +114,7 @@ else
     
     % Does the descending nadir track crosses latlim?
     
-    nlat_t = single(ncread( orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/scan_line_attributes/clat'));
+    nlat_t = single(ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clat'));
     
     % Get the separation of along-track nadir pixels. Add one
     % separation at the end of the track for this granule so that the
@@ -138,6 +138,17 @@ else
         else
             nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
             start_line_index = floor(nn(1) / 10) * 10 + 5;
+
+            % Next check to see if the 11th point from here is closer to
+            % latlim, if it is use is but first make sure that there are at
+            % least 11 more scan lines left in in the orbit after
+            % start_line_index.
+
+            if (start_line_index + 10) < num_scan_lines_in_granule
+                if (abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
+                    start_line_index = start_line_index + 10;
+                end
+            end
         end
     end
 end

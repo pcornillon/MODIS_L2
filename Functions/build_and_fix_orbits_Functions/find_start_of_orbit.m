@@ -18,7 +18,7 @@ function [status, granule_start_time_guess] = find_start_of_orbit( metadata_dire
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
-global iOrbit orbit_info iGranule problem_list
+global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global Matlab_end_time
 
@@ -50,7 +50,7 @@ while granule_start_time_guess <= Matlab_end_time
             
             % Found the start of the next orbit, save the time and return.
             
-            orbit_info(iOrbit).orbit_start_time = scan_line_times(start_line_index);
+            oinfo(iOrbit).orbit_start_time = scan_line_times(start_line_index);
             return
         end
     end
@@ -62,7 +62,7 @@ end
 status = 100;
 
 % % % scan_line_times = [];
-% % % orbit_info(iOrbit).orbit_start_time = [];
+% % % oinfo(iOrbit).orbit_start_time = [];
 
 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
 

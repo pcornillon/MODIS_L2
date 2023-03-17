@@ -1,4 +1,4 @@
-function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
+function [oinfo problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
     start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
@@ -46,12 +46,12 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 %   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
 %   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
 %   output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
-%   [orbit_info problem_list] = build_and_fix_orbits(  granules_directory, metadata_directory, fixit_directory, ...
+%   [oinfo problem_list] = build_and_fix_orbits(  granules_directory, metadata_directory, fixit_directory, ...
 %    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1, 1, 1);
 %
 %  To do just the test orbit, specify the start time somewhere in that orbit and
 %  the end time about 5 minutes after the start time; e.g.,
-%  [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, ...
+%  [oinfo problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, ...
 %   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1, 1, 1);
 %
 % To do a test run, capture the lines in 'if test_values' group and execute
@@ -61,7 +61,7 @@ function [orbit_info problem_list] = build_and_fix_orbits( granules_directory, m
 
 clear global
 
-global iOrbit orbit_info iGranule problem_list
+global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global formatOut
@@ -92,7 +92,7 @@ if ~exist('metadata_directory')
     
 %     ! rm /Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/2010/06/AQUA_MODIS_orbit_43222_20100619T065429_L2_SST.nc4
     
-    %     [orbit_info problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, [2010 6 19 4 0 0], [2010 6 19 7 0 0 ], 0, 0, 0, 1);
+    %     [oinfo problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, [2010 6 19 4 0 0], [2010 6 19 7 0 0 ], 0, 0, 0, 1);
 end
 
 save_just_the_facts = 1;
@@ -247,12 +247,9 @@ if get_gradients
     along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
 end
 
-<<<<<<< HEAD
-=======
 %% Get the relative scan line start times and latitudes.
 
 load([fixit_directory 'avg_scan_line_start_times.mat'])
->>>>>>> 38a0c7105c4f54afe2b0dd08920d3f2f056b250f
 
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
@@ -273,7 +270,7 @@ while granule_start_time_guess <= Matlab_end_time
     
     time_to_process_this_orbit = tic;
     
-    orbit_info(iOrbit).granule_info(iGranule).metadata_global_attrib = ncinfo(orbit_info(iOrbit).granule_info(iGranule).metadata_name);
+    oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
@@ -293,9 +290,9 @@ while granule_start_time_guess <= Matlab_end_time
     
     if status > 0
         if status == 200
-            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(orbit_info(iOrbit).orbit_start_time))
+            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).orbit_start_time))
         else
-            fprintf('*****\nStatus %i for orbit %s. Do not process this orbit.\n\n', status, orbit_info(iOrbit).name)
+            fprintf('*****\nStatus %i for orbit %s. Do not process this orbit.\n\n', status, oinfo(iOrbit).name)
         end
         
         % Decrement the orbit counter since we have already startd an orbit
@@ -314,16 +311,16 @@ while granule_start_time_guess <= Matlab_end_time
             
             [Final_Mask] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
             
-            orbit_info(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
+            oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
             
             if print_diagnostics
-                fprintf('   Time to fix the mask for this orbit: %6.1f seconds.\n', orbit_info(iOrbit).time_to_fix_mask)
+                fprintf('   Time to fix the mask for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_fix_mask)
             end
         else
             Final_Mask = zeros(size(SST_In));
             Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
             
-            orbit_info(iOrbit).time_to_fix_mask = 0;
+            oinfo(iOrbit).time_to_fix_mask = 0;
         end
         
         SST_In_Masked(Final_Mask==1) = nan;
@@ -357,13 +354,13 @@ while granule_start_time_guess <= Matlab_end_time
                 regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
             
             if status ~= 0
-                fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', orbit_info.name, status)
+                fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo.name, status)
             end
             
-            orbit_info(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
+            oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
             
             if print_diagnostics
-                fprintf('   Time to address bowtie for this orbit: %6.1f seconds.\n',  orbit_info(iOrbit).time_to_address_bowtie)
+                fprintf('   Time to address bowtie for this orbit: %6.1f seconds.\n',  oinfo(iOrbit).time_to_address_bowtie)
             end
         else
             regridded_sst = SST_In_Masked; % Need this for gradients.
@@ -380,7 +377,7 @@ while granule_start_time_guess <= Matlab_end_time
             new_easting = nan;
             new_northing = nan;
             
-            orbit_info(iOrbit).time_to_address_bowtie = 0;
+            oinfo(iOrbit).time_to_address_bowtie = 0;
         end
         
         %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
@@ -403,10 +400,10 @@ while granule_start_time_guess <= Matlab_end_time
             eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
             northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
             
-            orbit_info(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
+            oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
             
             if print_diagnostics
-                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', orbit_info(iOrbit).time_to_determine_gradient, 5)
+                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient, 5)
             end
         else
             grad_at_per_km = nan;
@@ -415,7 +412,7 @@ while granule_start_time_guess <= Matlab_end_time
             eastward_gradient = nan;
             northward_gradient = nan;
             
-            orbit_info(iOrbit).time_to_determine_gradient = 0;
+            oinfo(iOrbit).time_to_determine_gradient = 0;
         end
         
         %% Wrap-up for this orbit.
@@ -424,10 +421,10 @@ while granule_start_time_guess <= Matlab_end_time
             regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
             region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
         
-        orbit_info(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+        oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
         if print_diagnostics
-            fprintf('   Time to process and save %s: %6.1f seconds.\n', orbit_info(iOrbit).name, orbit_info(iOrbit).time_to_process_this_orbit)
+            fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
         end
         
 % % %         % Add 5 minutes to the previous value of time to get the time of the

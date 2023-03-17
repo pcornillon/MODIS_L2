@@ -18,7 +18,7 @@ function [status] = build_granule_filename( granules_directory, check_attributes
 %           : 5 - couldn't find the metadata file copied from OBPG data.
 %
 
-global iOrbit orbit_info iGranule problem_list
+global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
@@ -27,13 +27,13 @@ global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nl
 
 status = 0;
 
-orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [];
+oinfo(iOrbit).ginfo(iGranule).data_granule_name = [];
 
 % Start building the name of the data granule. Get the bare filename first,
 % this will avoid problems with '_'s in the directory names.
 
-ss = strfind(orbit_info(iOrbit).granule_info(iGranule).metadata_name, '/');
-filename_in = orbit_info(iOrbit).granule_info(iGranule).metadata_name(ss(end)+1:end);
+ss = strfind(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/');
+filename_in = oinfo(iOrbit).ginfo(iGranule).metadata_name(ss(end)+1:end);
 
 nn = strfind( filename_in, '_2');
 
@@ -44,24 +44,24 @@ if strcmp( granules_directory(1:2), 's3') == 1
     
     % Build the name.
     
-    orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [granules_directory name_in_date name_in_hr_min(1:end-2) ...
+    oinfo(iOrbit).ginfo(iGranule).data_granule_name = [granules_directory name_in_date name_in_hr_min(1:end-2) ...
         '07-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
     
     % Check for existence. If it is not found increment the seconds by 1
     % and check again. For some reason the seconds differ between the
     % PO.DAAC granules and the OBPG granules.
     
-    if exist(orbit_info(iOrbit).granule_info(iGranule).data_granule_name) ~= 2
+    if exist(oinfo(iOrbit).ginfo(iGranule).data_granule_name) ~= 2
         
-        orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [granules_directory name_in_date name_in_hr_min(1:end-2) ...
+        oinfo(iOrbit).ginfo(iGranule).data_granule_name = [granules_directory name_in_date name_in_hr_min(1:end-2) ...
             '08-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
 
-        if exist(orbit_info(iOrbit).granule_info(iGranule).data_granule_name) ~= 2
+        if exist(oinfo(iOrbit).ginfo(iGranule).data_granule_name) ~= 2
 
             status = 1;
 
             problem_list.iProblem = problem_list.iProblem + 1;
-            problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
+            problem_list.filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
             problem_list.code = status;
 
             return
@@ -70,17 +70,17 @@ if strcmp( granules_directory(1:2), 's3') == 1
 else
     YearS = name_in_date(1:4);
     
-    orbit_info(iOrbit).granule_info(iGranule).data_granule_name = [granules_directory YearS '/AQUA_MODIS.' name_in_date 'T' name_in_hr_min '.L2.SST.nc'];
+    oinfo(iOrbit).ginfo(iGranule).data_granule_name = [granules_directory YearS '/AQUA_MODIS.' name_in_date 'T' name_in_hr_min '.L2.SST.nc'];
     
     % If the data file does not exist, very bad.
     
-    if exist(orbit_info(iOrbit).granule_info(iGranule).data_granule_name) ~= 2
-        fprintf('Whoops, couldn''t find %s.\n', orbit_info(iOrbit).granule_info(iGranule).data_granule_name)
+    if exist(oinfo(iOrbit).ginfo(iGranule).data_granule_name) ~= 2
+        fprintf('Whoops, couldn''t find %s.\n', oinfo(iOrbit).ginfo(iGranule).data_granule_name)
 
         status = 1;
 
         problem_list.iProblem = problem_list.iProblem + 1;
-        problem_list.filename = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
+        problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
         problem_list.code = status;
 
         return

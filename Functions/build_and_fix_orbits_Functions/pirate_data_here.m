@@ -1,13 +1,13 @@
 function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = pirate_from_next_granule(metadata_directory, granules_directory, granule_start_time_guess, ...
-    check_attributes, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start)
+    = pirate_data_here(metadata_directory, granules_directory, granule_start_time_guess, check_attributes, ...
+    latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start)
 % pirate_from_next_granule - fill remainder of an orbit from the next granule - PCC
 %
 % This occurs when the additional 100 line buffer added to an orbit goes
 % beyond the granule with the start of a new orbit.
 %
 
-global iOrbit orbit_info iGranule problem_list
+global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global Matlab_end_time 
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
@@ -35,12 +35,12 @@ if isempty(missing_granuleT)
     status = 80;
 end
 
-orbit_info(iOrbit).granule_info(iGranule).start_time = scan_line_times(1) * secs_per_day;
-orbit_info(iOrbit).granule_info(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
+oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
+oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
 
-orbit_info(iOrbit).granule_info(iGranule).status = statusT;
+oinfo(iOrbit).ginfo(iGranule).status = statusT;
 
-lines_to_skip = floor( abs((temp_granule_start_time * secs_per_day - orbit_info(iOrbit).granule_info(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
+lines_to_skip = floor( abs((temp_granule_start_time * secs_per_day - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
 
 % Done building this orbit if the next granule is missing, go to
 % processing. Otherwise read data from next granule into this orbit.
@@ -59,13 +59,13 @@ if (lines_to_skip > 11) | statusT~=0
     start_line_index = save_start_line_index;
     num_scan_lines_in_granule = save_num_scan_lines_in_granule;
 else
-    orbit_info(iOrbit).granule_info(iGranule).osscan = orbit_info(iOrbit).granule_info(iGranule-1).oescan + 1;
-    orbit_info(iOrbit).granule_info(iGranule).oescan = orbit_length;
+    oinfo(iOrbit).ginfo(iGranule).osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1;
+    oinfo(iOrbit).ginfo(iGranule).oescan = orbit_length;
     
-    orbit_info(iOrbit).granule_info(iGranule).gsscan = 1;
-    orbit_info(iOrbit).granule_info(iGranule).gescan = orbit_info(iOrbit).granule_info(iGranule).oescan - orbit_info(iOrbit).granule_info(iGranule).osscan + 1;
+    oinfo(iOrbit).ginfo(iGranule).gsscan = 1;
+    oinfo(iOrbit).ginfo(iGranule).gescan = oinfo(iOrbit).ginfo(iGranule).oescan - oinfo(iOrbit).ginfo(iGranule).osscan + 1;
     
-    [status, ~, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+    [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
         = add_granule_data_to_orbit( granules_directory, check_attributes, ...
         latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
     

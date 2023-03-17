@@ -35,15 +35,15 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   scan_seconds_from_start - seconds for from the start of the orbit.
 %
 
-global iOrbit orbit_info iGranule problem_list
+global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
-osscan = orbit_info(iOrbit).granule_info(iGranule).osscan;
-oescan = orbit_info(iOrbit).granule_info(iGranule).oescan;
+osscan = oinfo(iOrbit).ginfo(iGranule).osscan;
+oescan = oinfo(iOrbit).ginfo(iGranule).oescan;
 
-gsscan = orbit_info(iOrbit).granule_info(iGranule).gsscan;
-gescan = orbit_info(iOrbit).granule_info(iGranule).gescan;
+gsscan = oinfo(iOrbit).ginfo(iGranule).gsscan;
+gescan = oinfo(iOrbit).ginfo(iGranule).gescan;
 
 scan_lines_to_read = gescan - gsscan + 1;
 
@@ -51,8 +51,8 @@ status = build_granule_filename( granules_directory, check_attributes);
 
 % Read the fields
 
-fi_granule = orbit_info(iOrbit).granule_info(iGranule).data_granule_name;
-fi_metadata = orbit_info(iOrbit).granule_info(iGranule).metadata_name;
+fi_granule = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
+fi_metadata = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 
 if (status == 0) & ~isempty(oescan)
     latitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
@@ -64,9 +64,9 @@ if (status == 0) & ~isempty(oescan)
     
     sstref(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
     
-    scan_seconds_from_start(osscan:oescan) = single(scan_line_times(gsscan:gescan) - orbit_info(iOrbit).orbit_start_time) * secs_per_day;
+    scan_seconds_from_start(osscan:oescan) = single(scan_line_times(gsscan:gescan) - oinfo(iOrbit).orbit_start_time) * secs_per_day;
 else
-    fprintf('****** Data for %s not read because of error %i.\n', orbit_info(iOrbit).name, status)
+    fprintf('****** Data for %s not read because of error %i.\n', oinfo(iOrbit).name, status)
     fprintf('Orbit range %i-%i; granule range %i-%i.\n', osscan, oescan, gsscan, gescan)
 end
 

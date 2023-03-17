@@ -40,12 +40,12 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %
 %   3/26/2022 - PCC - Major modifications to include other variables.
 
-global iOrbit orbit_info iGranule
+global iOrbit oinfo iGranule
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
-output_filename = orbit_info(iOrbit).name;
+output_filename = oinfo(iOrbit).name;
 
 % Initialize variables.
 
@@ -526,7 +526,7 @@ end
 
 % Date and time of the start of this orbit sconds since 1/1/1970
 
-time_coverage_start = datenum(orbit_info(iOrbit).orbit_start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
+time_coverage_start = datenum(oinfo(iOrbit).orbit_start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
 
 nccreate( output_filename, 'DateTime', 'Datatype', 'double', 'Format', 'netcdf4')
 
@@ -540,7 +540,7 @@ ncwrite( output_filename, 'DateTime', time_coverage_start)
 % Matlab commands to do this so must open the file, create the group, add
 % granule metadata in the group and close the file.
 
-nGranules = length(orbit_info(iOrbit).granule_info);
+nGranules = length(oinfo(iOrbit).ginfo);
 
 if ~isempty(nGranules)
     
@@ -552,31 +552,31 @@ if ~isempty(nGranules)
         
         % If no indicies for the location of data in the orbit, skip
         
-        if ~isempty(orbit_info(iOrbit).granule_info(jGranule).osscan)
+        if ~isempty(oinfo(iOrbit).ginfo(jGranule).osscan)
             kGranule = kGranule + 1;
             group_name = ['/contributing_granules/granule_' num2str(jGranule) '/'];
             
             % Load the granule filenams into variable filenames.
             
-            nn = strfind(orbit_info(iOrbit).granule_info(jGranule).data_granule_name, 'AQUA_MODIS.');
-            filename = orbit_info(iOrbit).granule_info(jGranule).data_granule_name(nn:end);
+            nn = strfind(oinfo(iOrbit).ginfo(jGranule).data_granule_name, 'AQUA_MODIS.');
+            filename = oinfo(iOrbit).ginfo(jGranule).data_granule_name(nn:end);
             filenames = [filenames; filename];
             
             % Next load the start and end times of this granule.
 
-            start_times(kGranule) = datenum(orbit_info(iOrbit).granule_info(jGranule).start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
-            end_times(kGranule) = datenum(orbit_info(iOrbit).granule_info(jGranule).end_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
+            start_times(kGranule) = datenum(oinfo(iOrbit).ginfo(jGranule).start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
+            end_times(kGranule) = datenum(oinfo(iOrbit).ginfo(jGranule).end_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
             
             % Now for the start and end indices of the location of the data
             % from this granule in the orbit.
 
-            osscans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).osscan;
-            oescans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).oescan;
+            osscans(kGranule) = oinfo(iOrbit).ginfo(jGranule).osscan;
+            oescans(kGranule) = oinfo(iOrbit).ginfo(jGranule).oescan;
             
             % And the start and end indices for the data from this granule.
 
-            gsscans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).gsscan;
-            gescans(kGranule) = orbit_info(iOrbit).granule_info(jGranule).gescan;
+            gsscans(kGranule) = oinfo(iOrbit).ginfo(jGranule).gsscan;
+            gescans(kGranule) = oinfo(iOrbit).ginfo(jGranule).gescan;
         end
     end
     
@@ -707,9 +707,9 @@ ncwriteatt(output_filename, '/', 'cdm_data_type', 'Grid');
 
 %% And get the global attributes from the input file
 
-for iAttribute = 1:length(orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes)
+for iAttribute = 1:length(oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attributes)
     
-    switch orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Name
+    switch oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attributes(iAttribute).Name
         
         case {'time_coverage_end' 'start_center_longitude' 'start_center_latitude' 'end_center_longitude' 'end_center_latitude' ...
                 'northernmost_latitude' 'southernmost_latitude' 'easternmost_longitude' 'westernmost_longitude' ...
@@ -717,8 +717,8 @@ for iAttribute = 1:length(orbit_info(iOrbit).granule_info(1).metadata_global_att
                 'startDirection' 'endDirection' 'day_night_flag' 'earth_sun_distance_correction'}
             
             ncwriteatt(output_filename, '/', ...
-                orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Name, ...
-                orbit_info(iOrbit).granule_info(1).metadata_global_attrib.Attributes(iAttribute).Value);
+                oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attributes(iAttribute).Name, ...
+                oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attributes(iAttribute).Value);
             
         otherwise
     end

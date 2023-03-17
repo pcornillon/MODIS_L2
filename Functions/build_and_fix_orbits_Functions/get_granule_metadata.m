@@ -145,7 +145,7 @@ else
             % start_line_index.
 
             if (start_line_index + 10) < num_scan_lines_in_granule
-                if (abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
+                if abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
                     start_line_index = start_line_index + 10;
                 end
             end

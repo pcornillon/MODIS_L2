@@ -66,7 +66,7 @@ global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nl
 global print_diagnostics save_just_the_facts
 global formatOut
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
-global Matlab_end_time
+global Matlab_start_time Matlab_end_time
 global sst_range sst_range_grid_size
 global med_op
 global amazon_s3_run
@@ -260,7 +260,7 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-granule_start_time_guess = get_start_of_first_full_orbit( metadata_directory, Matlab_start_time);
+granule_start_time_guess = get_start_of_first_full_orbit( metadata_directory);
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 

@@ -32,7 +32,7 @@ iGranule = iGranule + 1;
 % Check to make sure that there is data in the next granule. If not, skip.
 
 if isempty(missing_granuleT)
-    status = 80;
+    status = populate_problem_list( 80, []);
 end
 
 oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;

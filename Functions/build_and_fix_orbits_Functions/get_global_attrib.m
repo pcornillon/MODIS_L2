@@ -34,12 +34,7 @@ global_attrib = ncinfo(fi_granule);
 if isempty(strcmp(global_attrib.Dimensions(1).Name, 'number_of_lines'))
     fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', global_attrib.Dimensions(1).Name, fi_granule)
     
-    status = 2;
-        
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = fi_granule;
-    problem_list.code = status;
-    
+    status = populate_problem_list( 2, fi_granule);
     return
 end
 
@@ -51,12 +46,7 @@ mpixels = global_attrib.Dimensions(2).Length;
 if mpixels ~= npixels
     fprintf('There are %i pixels/scan line in granule: %s but there should be %i. Skipping this granule. Error code 3.\n', mpixels, fi_granule, npixels)
     
-    status = 3;
-    
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = fi_granule;
-    problem_list.code = status;
-    
+    status = populate_problem_list( 3, fi_granule);
     return
 end
 
@@ -65,12 +55,7 @@ if (nscans < nscans_range(1)) | (nscans > nscans_range(2))
     fprintf('There are %i scan lines in this granule: %s but the number of scan lines should be between %i and %i. Skipping this granule. Error code 4.\n', ...
         nscans, fi_granule, nscans_range)
     
-    status = 4;
-    
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = fi_granule;
-    problem_list.code = status;
-    
+    status = populate_problem_list( 4, fi_granule);
     return
 end
 
@@ -97,12 +82,7 @@ end
 if not_found
     fprintf('Whoa, didn''t find ''time_coverage_start'' in the attributes for: %s. This should never happen. Skipping this granule. Error code 5.\n', fi_granule)
     
-    status = 5;
-    
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = fi_granule;
-    problem_list.code = status;
-    
+    status = populate_problem_list( 5, fi_granule);
     return
 end
 

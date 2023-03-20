@@ -129,8 +129,7 @@ if exist(oinfo(iOrbit).name) == 2
     % See comment re use of num_scan_lines_in_granule above in 1st call
     % to find_start_of_orbit.
     
-    status = 200;
-    
+    status = populate_problem_list( 200, []);
     return
     
 end
@@ -203,6 +202,8 @@ while granule_start_time_guess <= Matlab_end_time
         fprintf('*** Problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(granule_start_time_guess), status)
         
         oinfo(iOrbit).ginfo(iGranule).status = -999;
+        
+        statusT = populate_problem_list( -999, oinfo(iOrbit).ginfo(iGranule).metadata_granule_name);
 
         % Does this granule contain the start of a new orbit? If so get
         % info for start of next orbit and break out of this loop.
@@ -387,13 +388,8 @@ while granule_start_time_guess <= Matlab_end_time
             % since this granule does not have the start of an orbit in it.
 
             if oinfo(iOrbit).ginfo(iGranule).oescan > orbit_length
-
-                status = 110;
-
-                problem_list.iProblem = problem_list.iProblem + 1;
-                problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
-                problem_list.code = status;
-
+                
+                status = populate_problem_list( 110, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
                 return
             end
             

@@ -59,10 +59,7 @@ end
 % If the start of an orbit was not found in the time range specified let
 % the calling program know.
 
-status = 100;
-
-% % % scan_line_times = [];
-% % % oinfo(iOrbit).orbit_start_time = [];
+status = populate_problem_list( 100, []);
 
 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
 

@@ -43,12 +43,7 @@ if isempty(strcmp(oinfo(iOrbit).data_global_attrib.Dimensions(1).Name, 'number_o
     fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', ...
         oinfo(iOrbit).data_global_attrib.Dimensions(1).Name, oinfo(iOrbit).ginfo(iGranule).data_granule_name)
     
-    status = 2;
-
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
-    problem_list.code = status;
-
+    status = populate_problem_list( 2, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
     return
 end
 
@@ -61,12 +56,7 @@ if npixels_attr ~= npixels
     fprintf('There are %i pixels/scan line in granule: %s but there should be 1354. Skipping this granule. Error code 3.\n', ...
         npixels, oinfo(iOrbit).ginfo(iGranule).data_granule_name)
     
-    status = 3;
-    
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
-    problem_list.code = status;
-
+    status = populate_problem_list( 3, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
     return
 end
 
@@ -75,12 +65,7 @@ if (nscans < nscans_range(1)) | (nscans > nscans_range(2))
     fprintf('There are %i scan lines in this granule: %s but the number of scan lines should be between %i and %i. Skipping this granule. Error code 4.\n', ...
         nscans, oinfo(iOrbit).ginfo(iGranule).data_granule_name, nscans_range)
    
-    status = 4;
-    
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
-    problem_list.code = status;
-
+    status = populate_problem_list( 4, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
     return
 end
 
@@ -108,12 +93,7 @@ if not_found
     fprintf('Whoa, didn''t find ''time_coverage_start'' in the attributes for: %s. This should never happen. Skipping this granule. Error code 5.\n', ...
         oinfo(iOrbit).ginfo(iGranule).data_granule_name)
     
-    status = 5;
-    
-    problem_list.iProblem = problem_list.iProblem + 1;
-    problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
-    problem_list.code = status;
-
+    status = populate_problem_list( 5, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
     return
 end
 

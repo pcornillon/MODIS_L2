@@ -57,13 +57,8 @@ if strcmp( granules_directory(1:2), 's3') == 1
             '08-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
 
         if exist(oinfo(iOrbit).ginfo(iGranule).data_granule_name) ~= 2
-
-            status = 1;
-
-            problem_list.iProblem = problem_list.iProblem + 1;
-            problem_list.filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-            problem_list.code = status;
-
+            
+            status = populate_problem_list( 1, oinfo(iOrbit).ginfo(iGranule).metadata_name);
             return
         end
     end
@@ -77,12 +72,7 @@ else
     if exist(oinfo(iOrbit).ginfo(iGranule).data_granule_name) ~= 2
         fprintf('Whoops, couldn''t find %s.\n', oinfo(iOrbit).ginfo(iGranule).data_granule_name)
 
-        status = 1;
-
-        problem_list.iProblem = problem_list.iProblem + 1;
-        problem_list.filename = oinfo(iOrbit).ginfo(iGranule).data_granule_name;
-        problem_list.code = status;
-
+        status = populate_problem_list( 1, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
         return
     end
 end

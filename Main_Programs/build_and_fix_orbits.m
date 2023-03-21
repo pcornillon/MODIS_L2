@@ -61,7 +61,7 @@ function [oinfo problem_list] = build_and_fix_orbits( granules_directory, metada
 
 clear global
 
-global iOrbit oinfo iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global formatOut

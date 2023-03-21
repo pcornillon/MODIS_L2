@@ -40,7 +40,7 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %
 %   3/26/2022 - PCC - Major modifications to include other variables.
 
-global iOrbit oinfo iGranule
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length

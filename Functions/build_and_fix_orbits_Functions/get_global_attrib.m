@@ -17,6 +17,7 @@ function [ status, global_attrib] = check_global_attrib( fi_granule)
 %   global_attrib - the global attributes read from the data granul.
 %
 
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 

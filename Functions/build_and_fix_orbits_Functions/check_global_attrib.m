@@ -24,7 +24,7 @@ function [status] = check_global_attrib
 %                : 4 - number of scan lines global attribute not between 2020 and 2050.
 %                : 5 - couldn't find the metadata file copied from OBPG data.
 
-global iOrbit oinfo iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global npixels
 

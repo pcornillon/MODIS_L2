@@ -35,7 +35,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   scan_seconds_from_start - seconds for from the start of the orbit.
 %
 
-global iOrbit oinfo iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 

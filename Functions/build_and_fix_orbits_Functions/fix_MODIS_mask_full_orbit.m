@@ -139,6 +139,7 @@ function [Final_Mask] = fix_MODIS_full_orbit( file_in, longitude, latitude, SST_
 tic
 Start_Time = tic;
 
+global oinfo iOrbit iGranule iProblem problem_list
 global print_diagnostics save_just_the_facts
 
 global sst_range sst_range_grid_size

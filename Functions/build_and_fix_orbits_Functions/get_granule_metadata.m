@@ -23,7 +23,7 @@ function [status, missing_granule, granule_start_time_guess] = get_granule_metad
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 
-global iOrbit oinfo iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 global formatOut

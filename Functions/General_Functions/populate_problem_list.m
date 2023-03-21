@@ -16,18 +16,17 @@ function status = populate_problem_list( status, problem_filename)
 %   status - the status code passed in.
 %
 
-global oinfo iOrbit iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 
-jProblem = problem_list.iProblem + 1;
+iProblem = iProblem + 1;
 
-problem_list.iProblem = jProblem;
-problem_list.filename{jProblem} = problem_filename;
-problem_list.code(jProblem) = status;
+problem_list(iProblem).filename = problem_filename;
+problem_list(iProblem).code = status;
 
 % In what function did the error occur?
 
 st = dbstack;
-problem_list.calling_function{jProblem} = st(2).name;
+problem_list(iProblem).calling_function = st(2).name;
 
 end
 

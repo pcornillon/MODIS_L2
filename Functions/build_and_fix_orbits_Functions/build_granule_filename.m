@@ -18,7 +18,7 @@ function [status] = build_granule_filename( granules_directory, check_attributes
 %           : 5 - couldn't find the metadata file copied from OBPG data.
 %
 
-global iOrbit oinfo iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4

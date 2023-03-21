@@ -18,7 +18,7 @@ function [status, granule_start_time_guess] = find_start_of_orbit( metadata_dire
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
-global iOrbit oinfo iGranule problem_list
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global Matlab_end_time
 

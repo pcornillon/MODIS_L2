@@ -19,14 +19,16 @@ for i=1:length(file_list)
     filename = [file_list(i).folder '/' file_list(i).name];
     sltimes(i,:) = ncread(filename, 'time_from_start_orbit');
     nlat(i,:) = ncread(filename, 'nadir_latitude');
+    nlon(i,:) = ncread(filename, 'nadir_longitude');
 end
 
 % Average start times by scan line and latitudes and save the average.
 
 sltimes_avg = mean(sltimes,1,'omitnan');
 nlat_avg = mean(nlat,1,'omitnan');
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg')
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/scan_and_nadir', 'sltimes', 'nlat')
+
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg', 'nlon(end,:)')
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/scan_and_nadir', 'sltimes', 'nlat', 'nlon')
 
 % Get the anomalies from the average orbit.
 

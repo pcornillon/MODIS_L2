@@ -155,7 +155,28 @@ end
 
 
 
+% but the 3rd point would be very close to the end of
+% the orbit. If the function is being used to find  result in using a few 
+% points from this granule to complete 
+% this orbit, the vast majority of which would be
+% empty and then the remaining points as the 1st
+% part of the next granule. Using the 1st point
+% found would mean that the 1st few scan lines on
+% this orbit would be empty but the remainder of
+% the orbit would be complete. In either case, we
+% would end up using all the points on this granule
+% but it would be more complicated to use the 3rd
+% point so, that's what we will do! Note that we're
+% searching for the 5th and 10th point. This is to
+% make sure that the orbit starts in the middle of
+% a 10 detector group.
 
+filename_to_use = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+nnToUse = get_scanline_index( nlat_t(5), nlat_t(11), filename_to_use);
+
+% This index has to be an even multiple of 10.
+
+nnToUse = floor(mod(nnToUse(1))/10 * 10;
 
 
 

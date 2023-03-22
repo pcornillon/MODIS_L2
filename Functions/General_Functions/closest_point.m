@@ -30,7 +30,7 @@ else
     % each of the regions.
     
     if isempty(mm)
-        Indices = floor(mean(nn(1));
+        Indices = floor(mean(nn(1)));
     else
         kk = [1 nn(mm) length(vector)];
         for iK=1:length(mm)+1

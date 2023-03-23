@@ -174,9 +174,9 @@ end
 filename_to_use = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 nnToUse = get_scanline_index( nlat_t(5), nlat_t(11), filename_to_use);
 
-% This index has to be an even multiple of 10.
+% This index plus 5 has to be an even multiple of 10.
 
-nnToUse = floor(mod(nnToUse(1))/10 * 10;
+nnToUse = round((nnToUse+5)/10)*10 - 5;
 
 
 

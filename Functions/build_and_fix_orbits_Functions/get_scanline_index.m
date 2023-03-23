@@ -22,7 +22,7 @@ function nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filenam
 %    problem.
 %
 % OUTPUT
-%   nnToUse - the indices, either 1 or 2, to use.
+%   nnToUse - the indices, either 1 (and 3 if 3 intersections) or 2, to use.
 %
 
 global oinfo iOrbit iGranule iProblem problem_list
@@ -40,8 +40,15 @@ if isempty(nn1) | isempty(nn2)
     return
 end
 
+% If the 2nd point comes farther along in the orbit than the 1st point then
+% the 1st (or 3rd if there is one) point(s) are the appropriate ones,
+% otherwist the 2nd point is.
+
 if nn2(1) > nn1(1)
     nnToUse = nn1(1);
+    if length(nn1) == 3
+        nnToUse(2) = nn1(3);
+    end
 else
     nnToUse = nn1(2);
 end

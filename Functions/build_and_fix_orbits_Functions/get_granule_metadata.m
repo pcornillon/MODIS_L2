@@ -66,6 +66,8 @@ elseif length(file_list) > 2
 else
     oinfo(iOrbit).ginfo(iGranule).metadata_name = [file_list(1).folder '/' file_list(1).name];
     
+    oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
+    
     % Skip this part if the call was simply to build the file name and
     % check for its existence. Next get the Matlab times for each scan line.
     

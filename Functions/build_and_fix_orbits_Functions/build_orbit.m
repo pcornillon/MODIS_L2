@@ -190,156 +190,26 @@ granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
 %% Loop over the remainder of granules in this orbit.
 
-while granule_start_time_guess <= Matlab_end_time
+orbit_ended_with_empty_granule = 1;
+
+% % % while granule_start_time_guess <= Matlab_end_time
+while granule_start_time_guess <= oinfo(iOrbit).orbit_end_time
     
     iGranule = iGranule + 1;
     
     % Get metadata information for the next granule.
     
-    [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
-        
-    if status ~= 0
-        fprintf('*** Problem for granule on orbit #%i at time %s; status returned as %i. Going to next granule.\n', iOrbit, datestr(granule_start_time_guess), status)
+    [status, ~, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
+
+    if (status == 6) | (status == 110)
+        fprintf('*** Major problem for granule on orbit #%i at time %s; status returned as %i. Returning.\n', iOrbit, datestr(granule_start_time_guess), status)
         
         oinfo(iOrbit).ginfo(iGranule).status = -999;
         
-        statusT = populate_problem_list( -999, oinfo(iOrbit).ginfo(iGranule).metadata_granule_name);
-
-        % Does this granule contain the start of a new orbit? If so get
-        % info for start of next orbit and break out of this loop.
-
-        
+        statusT = populate_problem_list( -999, oinfo(iOrbit).ginfo(iGranule).metadata_granule_name);        
         break
-% % %         
-% % %         % Does this granule contain the start of a new orbit? If so get info
-% % %         % for start of next orbit and break out of this loop.
-% % %         
-% % %         est_orbit_end_time = oinfo(iOrbit).orbit_start_time + 5 / (24 * 60) + sltimes_avg(end) / secs_per_day;
-% % %         
-% % %         if est_orbit_end_time < granule_start_time_guess
-% % %             
-% % %             % Orbit ended before this granule. Find the next granule with
-% % %             % data, get info for the next orbit from this granule and 
-% % %             % either break, if everything OK--i.e., process the current 
-% % %             % orbit--or return if a problem.
-% % %             
-% % %             found_one = 0;
-% % %             while granule_start_time_guess <= Matlab_end_time
-% % %                 
-% % %                 [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
-% % %                 
-% % %                 % If the status is ~= 0 there was a problem with the granule at this
-% % %                 % time if, in fact, on existed so skip and continue with the search.
-% % %                 
-% % %                 if status == 0
-% % %                     found_one = 1;
-% % %                     
-% % %                     % Does this granule contain the start of an orbit?
-% % %                     % Remember that the previous orbit has ended at this
-% % %                     % point so if the granule doesn't contain the start of
-% % %                     % an orbit, we will have to calculate one.
-% % %                     
-% % %                     if exist(start_line_index)
-% % %                         oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
-% % %                         oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-% % %                         
-% % %                         oinfo(iOrbit+1).ginfo(1).osscan = 1;
-% % %                         oinfo(iOrbit+1).ginfo(1).oescan = num_scan_lines_in_granule - start_line_index + 1;
-% % %                         oinfo(iOrbit+1).ginfo(1).gsscan = start_line_index;
-% % %                         oinfo(iOrbit+1).ginfo(1).gescan = num_scan_lines_in_granule;
-% % %                     else
-% % %                         nlat_t = ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clat');
-% % %                         
-% % %                         % The following must find at least 2 points each
-% % %                         % but could find 3 in some cases because of the
-% % %                         % overlap at the end of the orbit. If the orbit is
-% % %                         % descending, either the 1st or 3rd points found
-% % %                         % would work but the 3rd point would result in
-% % %                         % using a few points from this granule to complete
-% % %                         % this orbit, the vast majority of which would be 
-% % %                         % empty and then the remaining points as the 1st
-% % %                         % part of the next granule. Using the 1st point 
-% % %                         % found would mean that the 1st few scan lines on
-% % %                         % this orbit would be empty but the remainder of
-% % %                         % the orbit would be complete. In either case, we
-% % %                         % would end up using all the points on this granule
-% % %                         % but it would be more complicated to use the 3rd
-% % %                         % point so, that's what we will do! Note that we're
-% % %                         % searching for the 5th and 10th point. This is to
-% % %                         % make sure that the orbit starts in the middle of
-% % %                         % a 10 detector group. 
-% % %                         
-% % %                         
-% % %                         nn1 = closest_point( nlat_avg, nlat_t(5), 0.02);
-% % %                         nn2 = closest_point( nlat_avg, nlat_t(10), 0.02);
-% % %                         
-% % %                        if isempty(nn1) | isempty(nn2)
-% % %                             fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
-% % %                             
-% % %                             status = 101;
-% % %                             
-% % %                             problem_list.iProblem = problem_list.iProblem + 1;
-% % %                             problem_list.filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-% % %                             problem_list.code = status;
-% % %                             
-% % %                             return
-% % %                         end
-% % %                         
-% % %                         if nn2(1) > nn1(1) 
-% % %                             nnToUse = nn1(1);
-% % %                         else
-% % %                             nnToUse = nn1(2);
-% % %                         end
-% % %                         
-% % %                         % This index has to be an even multiple of 10.
-% % %                         
-% % %                         nnToUse = floor(mod(nnToUse)/10 * 10;
-% % %                         
-% % %                         % If the number of scans in this granule would take
-% % %                         % us past the end of the orbit, we'll skip to the
-% % %                         % next orbit; i.e., use what would be left over 
-% % %                         
-% % %                         excess = (num_scan_lines_in_granule + nnToUse) - orbit_length;
-% % %                         
-% % %                         if excess > 0
-% % %                             oinfo(iOrbit+1).orbit_start_time = scan_line_times(1) - sltimes_avg(nnToUse);
-% % %                             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-% % %                             
-% % %                             oinfo(iOrbit+1).ginfo(1).osscan = 1;
-% % %                             oinfo(iOrbit+1).ginfo(1).oescan = orbit_length - nnToUse - 2;
-% % %                             oinfo(iOrbit+1).ginfo(1).gsscan = nnToUse;
-% % %                             oinfo(iOrbit+1).ginfo(1).gescan = num_scan_lines_in_granule;
-% % %                             
-% % %                             oinfo(iOrbit+1).ginfo(1).osscan = nn1(1)
-% % %                             sltimes_avg(nn1(1))
-% % %                         else
-% % %                             oinfo(iOrbit+1).orbit_start_time = scan_line_times(1) - sltimes_avg(nnToUse);
-% % %                             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-% % %                             
-% % %                             oinfo(iOrbit+1).ginfo(1).osscan = nnToUse;
-% % %                             oinfo(iOrbit+1).ginfo(1).oescan = num_scan_lines_in_granule - start_line_index + 1;
-% % %                             oinfo(iOrbit+1).ginfo(1).gsscan = start_line_index;
-% % %                             oinfo(iOrbit+1).ginfo(1).gescan = num_scan_lines_in_granule;
-% % %                             
-% % %                             oinfo(iOrbit+1).ginfo(1).osscan = nn1(1)
-% % %                             sltimes_avg(nn1(1))
-% % %                         end
-% % %                     end
-% % %                     
-% % %                     oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
-% % %                     break
-% % %                 end
-% % %             end
-% % %             
-% % %             if found_one == 0
-% % %                 status = 100;
-% % %                 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
-% % %                 return
-% % %             else
-% % %                 break
-% % %             end
-% % %         end
-    else
+        
+    elseif status == 0
         
         oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
         
@@ -477,4 +347,136 @@ if print_diagnostics
     fprintf('   Time to build this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_build_orbit)
 end
 
+JUNK
+        
+% % %         
+% % %         % Does this granule contain the start of a new orbit? If so get info
+% % %         % for start of next orbit and break out of this loop.
+% % %         
+% % %         est_orbit_end_time = oinfo(iOrbit).orbit_start_time + 5 / (24 * 60) + sltimes_avg(end) / secs_per_day;
+% % %         
+% % %         if est_orbit_end_time < granule_start_time_guess
+% % %             
+% % %             % Orbit ended before this granule. Find the next granule with
+% % %             % data, get info for the next orbit from this granule and 
+% % %             % either break, if everything OK--i.e., process the current 
+% % %             % orbit--or return if a problem.
+% % %             
+% % %             found_one = 0;
+% % %             while granule_start_time_guess <= Matlab_end_time
+% % %                 
+% % %                 [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
+% % %                 
+% % %                 % If the status is ~= 0 there was a problem with the granule at this
+% % %                 % time if, in fact, on existed so skip and continue with the search.
+% % %                 
+% % %                 if status == 0
+% % %                     found_one = 1;
+% % %                     
+% % %                     % Does this granule contain the start of an orbit?
+% % %                     % Remember that the previous orbit has ended at this
+% % %                     % point so if the granule doesn't contain the start of
+% % %                     % an orbit, we will have to calculate one.
+% % %                     
+% % %                     if exist(start_line_index)
+% % %                         oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
+% % %                         oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+% % %                         
+% % %                         oinfo(iOrbit+1).ginfo(1).osscan = 1;
+% % %                         oinfo(iOrbit+1).ginfo(1).oescan = num_scan_lines_in_granule - start_line_index + 1;
+% % %                         oinfo(iOrbit+1).ginfo(1).gsscan = start_line_index;
+% % %                         oinfo(iOrbit+1).ginfo(1).gescan = num_scan_lines_in_granule;
+% % %                     else
+% % %                         nlat_t = ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clat');
+% % %                         
+% % %                         % The following must find at least 2 points each
+% % %                         % but could find 3 in some cases because of the
+% % %                         % overlap at the end of the orbit. If the orbit is
+% % %                         % descending, either the 1st or 3rd points found
+% % %                         % would work but the 3rd point would result in
+% % %                         % using a few points from this granule to complete
+% % %                         % this orbit, the vast majority of which would be 
+% % %                         % empty and then the remaining points as the 1st
+% % %                         % part of the next granule. Using the 1st point 
+% % %                         % found would mean that the 1st few scan lines on
+% % %                         % this orbit would be empty but the remainder of
+% % %                         % the orbit would be complete. In either case, we
+% % %                         % would end up using all the points on this granule
+% % %                         % but it would be more complicated to use the 3rd
+% % %                         % point so, that's what we will do! Note that we're
+% % %                         % searching for the 5th and 10th point. This is to
+% % %                         % make sure that the orbit starts in the middle of
+% % %                         % a 10 detector group. 
+% % %                         
+% % %                         
+% % %                         nn1 = closest_point( nlat_avg, nlat_t(5), 0.02);
+% % %                         nn2 = closest_point( nlat_avg, nlat_t(10), 0.02);
+% % %                         
+% % %                        if isempty(nn1) | isempty(nn2)
+% % %                             fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
+% % %                             
+% % %                             status = 101;
+% % %                             
+% % %                             problem_list.iProblem = problem_list.iProblem + 1;
+% % %                             problem_list.filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+% % %                             problem_list.code = status;
+% % %                             
+% % %                             return
+% % %                         end
+% % %                         
+% % %                         if nn2(1) > nn1(1) 
+% % %                             nnToUse = nn1(1);
+% % %                         else
+% % %                             nnToUse = nn1(2);
+% % %                         end
+% % %                         
+% % %                         % This index has to be an even multiple of 10.
+% % %                         
+% % %                         nnToUse = floor(mod(nnToUse)/10 * 10;
+% % %                         
+% % %                         % If the number of scans in this granule would take
+% % %                         % us past the end of the orbit, we'll skip to the
+% % %                         % next orbit; i.e., use what would be left over 
+% % %                         
+% % %                         excess = (num_scan_lines_in_granule + nnToUse) - orbit_length;
+% % %                         
+% % %                         if excess > 0
+% % %                             oinfo(iOrbit+1).orbit_start_time = scan_line_times(1) - sltimes_avg(nnToUse);
+% % %                             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+% % %                             
+% % %                             oinfo(iOrbit+1).ginfo(1).osscan = 1;
+% % %                             oinfo(iOrbit+1).ginfo(1).oescan = orbit_length - nnToUse - 2;
+% % %                             oinfo(iOrbit+1).ginfo(1).gsscan = nnToUse;
+% % %                             oinfo(iOrbit+1).ginfo(1).gescan = num_scan_lines_in_granule;
+% % %                             
+% % %                             oinfo(iOrbit+1).ginfo(1).osscan = nn1(1)
+% % %                             sltimes_avg(nn1(1))
+% % %                         else
+% % %                             oinfo(iOrbit+1).orbit_start_time = scan_line_times(1) - sltimes_avg(nnToUse);
+% % %                             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+% % %                             
+% % %                             oinfo(iOrbit+1).ginfo(1).osscan = nnToUse;
+% % %                             oinfo(iOrbit+1).ginfo(1).oescan = num_scan_lines_in_granule - start_line_index + 1;
+% % %                             oinfo(iOrbit+1).ginfo(1).gsscan = start_line_index;
+% % %                             oinfo(iOrbit+1).ginfo(1).gescan = num_scan_lines_in_granule;
+% % %                             
+% % %                             oinfo(iOrbit+1).ginfo(1).osscan = nn1(1)
+% % %                             sltimes_avg(nn1(1))
+% % %                         end
+% % %                     end
+% % %                     
+% % %                     oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
+% % %                     break
+% % %                 end
+% % %             end
+% % %             
+% % %             if found_one == 0
+% % %                 status = 100;
+% % %                 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+% % %                 return
+% % %             else
+% % %                 break
+% % %             end
+% % %         end
+% % %     else
 

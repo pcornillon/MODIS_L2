@@ -30,31 +30,72 @@ global Matlab_start_time Matlab_end_time
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 global print_diagnostics
 
-% Which case, start of new orbit found or granule past end of existing
+if oinfo(iOrbit).ginfo(iGranule).start_time > oinfo(iOrbit).end_time
+    
+    % Which case, start of new orbit found or granule past end of existing
 % orbit?
 
 if isempty(start_line_index)
     indices.case = 3;
     
-    % Find location on canonical orbit.
+    % Find location of start of this granule in the canonical orbit.
     
-    indices.osscan_p1 = 
+    pt1 = nlat_t(5);
+    pt2 = nlat_t(11);
+    filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
     
+    nnToUse = get_scanline_index( pt1, pt2, filename);
+    
+    % This index plus 5 has to be an even multiple of 10.
+    
+    nnToUse = round((nnToUse+5)/10)*10 - 5;
+    
+    indices.next.osscan =
+    
+
+
+
+
+
+% but the 3rd point would be very close to the end of
+% the orbit. If the function is being used to find  result in using a few 
+% points from this granule to complete 
+% this orbit, the vast majority of which would be
+% empty and then the remaining points as the 1st
+% part of the next granule. Using the 1st point
+% found would mean that the 1st few scan lines on
+% this orbit would be empty but the remainder of
+% the orbit would be complete. In either case, we
+% would end up using all the points on this granule
+% but it would be more complicated to use the 3rd
+% point so, that's what we will do! Note that we're
+% searching for the 5th and 10th point. This is to
+% make sure that the orbit starts in the middle of
+% a 10 detector group.
+
 else
     
-    indices.case = 1;
+    % Even though this granule contains the start of an orbit, it doesn't
+    % meand that it corresponds to the end of the current orbit; missing
+    % granules between the previous granule and this one could contain the
+    % end of the current orbit; i.e., this may be the end of some future
+    % orbit.
     
-    if strcmp(orbit_status, 'continue_orbit')
+    if oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number > oinfo(iOrbit).orbit_number
         
-        % Get lines to skip for missing granules. Will, hopefully, be 0 if no granules skipped.
+        indices.case = 1;
+        
+        if strcmp(orbit_status, 'continue_orbit')
+            
+            % Get lines to skip for missing granules. Will, hopefully, be 0 if no granules skipped.
 
         oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
         oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
                 
-        lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(end-1).end_time) + 0.05) / secs_per_scan_line);
+        lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
         
-        % The lines to skip should be either 1030 or 1040 -- I think. If
-        % less than 1000, set to zero.
+        % The lines to skip should be either 1020, 1030, 1040 or 1050 -- I 
+        % think, so, if less than 1000, set to zero and add to problem_list. 
         
         if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
             fprint('Wanted to skip %i lines but the only permissible values are multiles of 1020, 1030, 1040 or 1050. Setting lines to skip to 0.\n', lines_to_skip)
@@ -63,10 +104,25 @@ else
             status = populate_problem_list( 60, []);
         end
         
-        indices.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
-        indices.oescan = indices.osscan + start_line_index + 100 - 2;
-        indices.gsscan = 1;
-        indices.gescan = start_line_index;
+        % Add 101 to osscan + sli to get 100 scanline overlap of this orbit
+        % with the next one plus an additional line, hence 101, to allow
+        % for the scanline correction. Also, gescan is sli-2 since sli is
+        % the index of the start line for the next orbit so, instead of
+        % sli-1 need an extra -1.
+        
+        indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
+        indices.current.oescan = indices.current.osscan + (start_line_index - 2) + 101;
+        
+        indices.current.gsscan = 1;
+        indices.current.gescan = start_line_index - 1;
+        
+        if indices.current.oescan ~= orbit_length
+            fprintf('Calculated end of orbit is %i, which does no agree with the mandated orbit length, nominally 40,271\n', indices.current.oescan, orbit_length)
+            indices.current.oescan = orbit_length;
+            indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
+            
+            status = populated_problem_list( 61, oinfo(iOrbit).ginfo(iGranule));
+        end
         
         % Determine how many scan lines are needed to bring the length
         % of this orbit to orbit_length, nominally 40,271 scan lines.
@@ -83,24 +139,25 @@ else
         if (oescan + 1 - osscan) > num_scan_lines_in_granule
             indices.case = 2;
             
-            indices.oescan = indices.osscan + num_scan_lines_in_granule - 1;
-            indices.gescan = num_scan_lines_in_granule;
+            indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
+            indices.current.gescan = num_scan_lines_in_granule;
             
-            indices.osscan_a = indices.oescan + 1;
-            indices.oescan_a = orbit_length;
-            indices.gsscan_a = 1;
-            indices.gescan_a = indices.oescan_a - indices.osscan_a + 1;
-        else
-            oinfo(iOrbit).ginfo(iGranule).oescan = orbit_length;
+            % The .pirate. group is for the scanlines to be read from the
+            % next orbit to complete this orbit since adding 100 scanlines
+            % resulting in going past the end of this granule (with the
+            % start of an orbit in it).
             
-            oinfo(iOrbit).ginfo(iGranule).gescan = oinfo(iOrbit).ginfo(iGranule).oescan - oinfo(iOrbit).ginfo(iGranule).osscan + 1;
+            indices.pirate.osscan = indices.oescan + 1;
+            indices.pirate.oescan = orbit_length;
+            indices.pirate.gsscan = 1;
+            indices.pirate.gescan = orbit_length - indices.pirate.osscan + 1;
         end
     end
     
-    indices.osscan_p1 = 1;
-    indices.oescan_p1 = num_scan_lines_in_granule - start_line_index + 1;
-    indices.gsscan_p1 = start_line_index;
-    indices.gescan_p1 = num_scan_lines_in_granule;
+    indices.next.osscan = 1;
+    indices.next.oescan = num_scan_lines_in_granule - start_line_index + 1;
+    indices.next.gsscan = start_line_index;
+    indices.next.gescan = num_scan_lines_in_granule;
     
     % Save the start time for the next orbit. This will be passed
     % back to the main program.
@@ -150,33 +207,6 @@ if print_diagnostics
 end
 
 end
-
-
-
-
-
-% but the 3rd point would be very close to the end of
-% the orbit. If the function is being used to find  result in using a few 
-% points from this granule to complete 
-% this orbit, the vast majority of which would be
-% empty and then the remaining points as the 1st
-% part of the next granule. Using the 1st point
-% found would mean that the 1st few scan lines on
-% this orbit would be empty but the remainder of
-% the orbit would be complete. In either case, we
-% would end up using all the points on this granule
-% but it would be more complicated to use the 3rd
-% point so, that's what we will do! Note that we're
-% searching for the 5th and 10th point. This is to
-% make sure that the orbit starts in the middle of
-% a 10 detector group.
-
-filename_to_use = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-nnToUse = get_scanline_index( nlat_t(5), nlat_t(11), filename_to_use);
-
-% This index plus 5 has to be an even multiple of 10.
-
-nnToUse = round((nnToUse+5)/10)*10 - 5;
 
 
 

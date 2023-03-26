@@ -58,10 +58,10 @@ mSec = ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attribut
 % detector group to minimize the spreading effect from the bowtie issue.
 
 if isempty(scan_line_times) == 0
-    fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Going to the next granule.', metadata_file_list(1).name)
+    fprintf('*** No scanline start times for scanlines in this granule.', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     
-    status = populate_problem_list( 206, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    status = populate_problem_list( 201, oinfo(iOrbit).ginfo(iGranule).metadata_name);
     return
 end
 
@@ -69,7 +69,7 @@ if abs(mSec(10)-mSec(1)) > 0.01
     fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Going to the next granule.', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     
-    status = populate_problem_list( 206, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    status = populate_problem_list( 202, oinfo(iOrbit).ginfo(iGranule).metadata_name);
     return
 end
 

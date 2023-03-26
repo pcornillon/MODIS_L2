@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_with_sli( orbit_status)
+function [status, indices] = get_osscan_etc_with_sli( new_orbit)
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in 
@@ -17,9 +17,7 @@ function [status, indices] = get_osscan_etc_with_sli( orbit_status)
 % locations from which to copy the data in the current granule.
 %
 % INPUT
-%   orbit_status - 'new_orbit' to start an orbit from scratch, 'continue_orbit',
-%    to get the indices to complete the current orbit and beginninggranule_start_time_guess
-%    building the next one.
+%   new_orbit - 1 to start an orbit from scratch, 0 to get the indices to complete the current orbit and begin building the next one.
 % OUTPUT
 %   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
@@ -49,20 +47,17 @@ indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
 indices.current.gsscan = 1;
 indices.current.gescan = num_scan_lines_in_granule - 1;
 
-% This case is the simplest, scanlines from the current granule up to the
-% start of the next orbit plus a 100 scanline buffer will be copied to
-% current orbit. And, the relevant information will be generated for the
-% remainder of the current granule that is to be written to the start of
-% the next orbit.
+% This case is the simplest, the number of scanlines required to complete
+% this orbit--go to the start of the next orbit + 101 scanlines for overlap
+% with next orbit--exist in this granule. Generate the relevant information
+% for the location of scanlines in the current and next orbits and where to
+% extract them from the current granule.
 
 indices.case = 1;
 
-if strcmp(orbit_status, 'continue_orbit')
+if strcmp(new_orbit, 'continue_orbit')
     
     % Get lines to skip for missing granules. Will, hopefully, be 0 if no granules skipped.
-    
-% % %     oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
-% % %     oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
     
     indices.current.osscan = nnToUse(1);
     
@@ -77,7 +72,7 @@ if strcmp(orbit_status, 'continue_orbit')
         fprint('Wanted to skip %i lines but the only permissible values are multiles of 1020, 1030, 1040 or 1050. Setting lines to skip to 0.\n', lines_to_skip)
         lines_to_skip = 0;
         
-        status = populate_problem_list( 60, []);
+        status = populate_problem_list( 111, []);
     end
 
     osscan_test = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
@@ -86,7 +81,7 @@ if strcmp(orbit_status, 'continue_orbit')
         fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule. \n', ...
             oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
         
-        status = populate_problem_list( 65, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+        status = populate_problem_list( 211, oinfo(iOrbit).ginfo(iGranule).metadata_name);
         return
     end
     

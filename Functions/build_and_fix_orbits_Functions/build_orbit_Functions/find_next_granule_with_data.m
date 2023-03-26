@@ -114,9 +114,9 @@ else
         
         metadata_file_list = [];
         
-        fprintf('No data granule corresponding the metadata granule %s. Flagging to skip this granule and return.\n', oinfo(iOrbit).ginfo(iGranle).metadata_granule_name)
+        fprintf('No data granule corresponding the metadata granule %s. Return.\n', oinfo(iOrbit).ginfo(iGranle).metadata_granule_name)
         
-        status = populate_problem_list( 151, oinfo(iOrbit).ginfo(iGranle).metadata_granule_name);
+        status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranle).metadata_granule_name);
     else        
         % Get the metadata for this granule.
         
@@ -127,10 +127,14 @@ else
         
         if status == 0
             if isempty(start_line_index)
-                [indices] = get_osscan_etc_NO_sli( orbit_status);
+                [status, indices] = get_osscan_etc_NO_sli( orbit_status);
             else
-                [indices] = get_osscan_etc_with_sli( orbit_status);
+                [status, indices] = get_osscan_etc_with_sli( orbit_status);
             end
+            
+            % bad status values here are 111, 121, 221 or 231. .osscan,
+            % .oescan,... will not be set for current, next or pirate,
+            % which means that the data from this granule will not be use.
             
             return
         end

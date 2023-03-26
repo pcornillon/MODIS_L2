@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_with_sli( new_orbit)
+function [status, indices] = get_osscan_etc_with_sli( continue_orbit)
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in 
@@ -17,7 +17,9 @@ function [status, indices] = get_osscan_etc_with_sli( new_orbit)
 % locations from which to copy the data in the current granule.
 %
 % INPUT
-%   new_orbit - 1 to start an orbit from scratch, 0 to get the indices to complete the current orbit and begin building the next one.
+%   continue_orbit - 1 to get the indices to complete the current orbit and
+%    begin building the next one, 0 to get the indices to begin building
+%    the next orbit only.
 % OUTPUT
 %   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
@@ -55,14 +57,14 @@ indices.current.gescan = num_scan_lines_in_granule - 1;
 
 indices.case = 1;
 
-if strcmp(new_orbit, 'continue_orbit')
+if continue_orbit
     
-    % Get lines to skip for missing granules. Will, hopefully, be 0 if no granules skipped.
-    
-    indices.current.osscan = nnToUse(1);
-    
-    % Check the start line in the orbit determined above.
-    
+    % Check the start line in the current orbit determined determined from
+    % the latitude in the canonical orbit with an estimate of the start
+    % line based on the time between the beginning of this granule and the
+    % end of the previous one. This is just a sanity check on the
+    % calculaiton. Start by getting the number of lines to skip if any.
+        
     lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
     
     % The lines to skip should be either 1020, 1030, 1040 or 1050 -- I

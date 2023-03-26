@@ -163,6 +163,10 @@ formatOut.yyyymmddThhmmss = 'yyyymmddTHHMMSS';
 formatOut.yyyymmddThhmm = 'yyyymmddTHHMM';
 formatOut.yyyymmddThh = 'yyyymmddTHH';
 
+formatOut.yyyymmddhhmmss = 'yyyymmddHHMMSS';
+formatOut.yyyymmddhhmm = 'yyyymmddHHMM';
+formatOut.yyyymmddhh = 'yyyymmddHH';
+
 %% Check input parameters to make sure they are OK.
 
 acceptable_start_time = datenum(2002, 7, 1);
@@ -290,7 +294,7 @@ while granule_start_time_guess <= Matlab_end_time
     
     if status > 0
         if status == 200
-            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).orbit_start_time))
+            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).start_time))
         else
             fprintf('*****\nStatus %i for orbit %s. Do not process this orbit.\n\n', status, oinfo(iOrbit).name)
         end

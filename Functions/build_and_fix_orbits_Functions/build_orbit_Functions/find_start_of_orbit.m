@@ -21,6 +21,7 @@ function [status, granule_start_time_guess] = find_start_of_orbit( metadata_dire
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global Matlab_end_time
+global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
 start_time = granule_start_time_guess;
 
@@ -31,9 +32,9 @@ start_time = granule_start_time_guess;
 
 % Loop over granules until the start of an orbit is found.
 
-while granule_start_time_guess <= Matlab_end_time
-    
-    [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
+% % % while granule_start_time_guess <= Matlab_end_time
+% % %     
+% % %     [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
     
     % If the status is ~= 0 there was a problem with the granule at this
     % time if, in fact, on existed so skip and continue with the search.
@@ -50,7 +51,8 @@ while granule_start_time_guess <= Matlab_end_time
             
             % Found the start of the next orbit, save the time and return.
             
-            oinfo(iOrbit).orbit_start_time = scan_line_times(start_line_index);
+            oinfo(iOrbit).start_time = scan_line_times(start_line_index);
+            oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;
             return
         end
     end

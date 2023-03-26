@@ -3,13 +3,13 @@ function nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filenam
 %  
 % This function looks for the location of a target latitude in the
 % canonical orbit. To find it requires two points following each other in
-% time. Each one will have at either 2 or 3 intersections with the
-% canonical orbit because of the overlap at the end of the orbit. The
-% reason for giving a pair of points in is to make sure we are on either
-% the ascending or descending part of the orbit; i.e., to pick out the
-% correct one. Unfortunately, if it is in the overlapping portion of the
-% orbittthe function may find two points for descending paths, either of
-% which is good so both will be returned.
+% time. Each one will have either 2 or 3 intersections with the canonical
+% orbit, 3 because of the overlap at the end of the orbit. The  reason for
+% passing a pair of points in is to make sure we are on either the
+% ascending or descending part of the orbit; i.e., to pick out the correct
+% one. Unfortunately, if it is in the overlapping portion of the function
+% may find two points for descending paths, either of which is good so both
+% will be returned. 
 %
 % INPUT
 %   targe_lat_1 - the latitude of the 1st point (in time). 

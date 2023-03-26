@@ -95,10 +95,10 @@ check_attributes = 1;
 
 orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
 
-orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).orbit_start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
 
-oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).orbit_start_time, formatOut.yyyy) '/' ...
-    datestr(oinfo(iOrbit).orbit_start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
+oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
+    datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
 
 %% Skip this orbit if it exist already.
 
@@ -193,7 +193,7 @@ granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 orbit_ended_with_empty_granule = 1;
 
 % % % while granule_start_time_guess <= Matlab_end_time
-while granule_start_time_guess <= oinfo(iOrbit).orbit_end_time
+while granule_start_time_guess <= oinfo(iOrbit).end_time
     
     iGranule = iGranule + 1;
     
@@ -302,7 +302,7 @@ while granule_start_time_guess <= oinfo(iOrbit).orbit_end_time
             % Save the start time for the next orbit. This will be passed
             % back to the main program.
             
-            oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
+            oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
             
         end
@@ -353,7 +353,7 @@ JUNK
 % % %         % Does this granule contain the start of a new orbit? If so get info
 % % %         % for start of next orbit and break out of this loop.
 % % %         
-% % %         est_orbit_end_time = oinfo(iOrbit).orbit_start_time + 5 / (24 * 60) + sltimes_avg(end) / secs_per_day;
+% % %         est_orbit_end_time = oinfo(iOrbit).start_time + 5 / (24 * 60) + sltimes_avg(end) / secs_per_day;
 % % %         
 % % %         if est_orbit_end_time < granule_start_time_guess
 % % %             
@@ -379,7 +379,7 @@ JUNK
 % % %                     % an orbit, we will have to calculate one.
 % % %                     
 % % %                     if exist(start_line_index)
-% % %                         oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
+% % %                         oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
 % % %                         oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 % % %                         
 % % %                         oinfo(iOrbit+1).ginfo(1).osscan = 1;
@@ -441,7 +441,7 @@ JUNK
 % % %                         excess = (num_scan_lines_in_granule + nnToUse) - orbit_length;
 % % %                         
 % % %                         if excess > 0
-% % %                             oinfo(iOrbit+1).orbit_start_time = scan_line_times(1) - sltimes_avg(nnToUse);
+% % %                             oinfo(iOrbit+1).start_time = scan_line_times(1) - sltimes_avg(nnToUse);
 % % %                             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 % % %                             
 % % %                             oinfo(iOrbit+1).ginfo(1).osscan = 1;
@@ -452,7 +452,7 @@ JUNK
 % % %                             oinfo(iOrbit+1).ginfo(1).osscan = nn1(1)
 % % %                             sltimes_avg(nn1(1))
 % % %                         else
-% % %                             oinfo(iOrbit+1).orbit_start_time = scan_line_times(1) - sltimes_avg(nnToUse);
+% % %                             oinfo(iOrbit+1).start_time = scan_line_times(1) - sltimes_avg(nnToUse);
 % % %                             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 % % %                             
 % % %                             oinfo(iOrbit+1).ginfo(1).osscan = nnToUse;
@@ -465,7 +465,7 @@ JUNK
 % % %                         end
 % % %                     end
 % % %                     
-% % %                     oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
+% % %                     oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
 % % %                     break
 % % %                 end
 % % %             end

@@ -89,13 +89,15 @@ sstref = single(nan);
 
 check_attributes = 1;
 
-% Build the output filename for this orbit and check that it hasn't
-% already been processed. To build the filename, get the orbit number
-% and the date/time when the satellite crossed latlim.
+% % % % Build the output filename for this orbit and check that it hasn't
+% % % % already been processed. To build the filename, get the orbit number
+% % % % and the date/time when the satellite crossed latlim.
+% % % 
+% % % orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
 
-orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
-
-orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+% % % orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit).ginfo(1).metadata_name) '_' ...
+    datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
 
 oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
     datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];

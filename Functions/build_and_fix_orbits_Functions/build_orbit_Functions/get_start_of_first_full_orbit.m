@@ -49,7 +49,7 @@ while isempty(file_list)
     if granule_start_time_guess > Matlab_end_time
         fprintf('Didn''t find a metadata granule between %f and %f.\n', Matlab_start_time, Matlab_end_time)
         
-        status = populate_problem_list( 100, []);
+        status = populate_problem_list( 911, []);
         return
     end
     

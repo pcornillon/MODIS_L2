@@ -63,7 +63,7 @@ if isempty(metadata_file_list)
     % Is this time passed the end of the run.
     
     if granule_start_time_guess > Matlab_end_time
-        status = 999;
+        status = 901;
         return
     end
     

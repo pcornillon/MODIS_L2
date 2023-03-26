@@ -1,4 +1,4 @@
-function [status, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granule_start_time_guess)
+function [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess)
 % find_start_of_orbit - Does this granule cross the start of an orbit on descent - PCC
 %
 % Loop over granules starting at imlat_time in steps of 5 minutes until the
@@ -25,7 +25,6 @@ global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
 start_time = granule_start_time_guess;
 
-
 % Initialize orbit_scan_line_times to 30 granules and 2040 scan lines. Will
 % trim before returning. The problem is that some granules have 2030 scan
 % lines on them and others have 2040 so will populate with nans to start.
@@ -33,11 +32,15 @@ start_time = granule_start_time_guess;
 % Loop over granules until the start of an orbit is found.
 
 % % % while granule_start_time_guess <= Matlab_end_time
-% % %     
-% % %     [status, missing_granule, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
+% % %     [status, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
+while granule_start_time_guess <= oinfo(iOrbit).end_time
+    
+    
+    [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] ...
+        = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess);  
     
     % If the status is ~= 0 there was a problem with the granule at this
-    % time if, in fact, on existed so skip and continue with the search.
+    % time if, in fact, one existed so skip and continue with the search.
 
     if status == 0
         
@@ -47,6 +50,14 @@ start_time = granule_start_time_guess;
             % time to get the time of the next granule and continue searching.
             
             granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+            
+            % Is this time passed the end of the run.
+            
+            if granule_start_time_guess > Matlab_end_time
+                status = 999;
+                return
+            end
+
         else
             
             % Found the start of the next orbit, save the time and return.

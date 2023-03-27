@@ -78,7 +78,7 @@ if indices.current.oescan ~= orbit_length
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populated_problem_list( 115, oinfo(iOrbit).ginfo(iGranule));
+    status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule));
 end
 
 % Write ossan, oescan,... to oinfo

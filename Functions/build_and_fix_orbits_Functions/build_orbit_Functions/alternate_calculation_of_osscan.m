@@ -5,6 +5,13 @@
 % compare the result obtained above using the canonical orbit. This
 % snippet is also used in get_osscan_etc_NO_sli.
 
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global Matlab_start_time Matlab_end_time
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global print_diagnostics save_just_the_facts
+global amazon_s3_run
+global formatOut
 
 % Check the start line in the current orbit determined determined from
 % the latitude in the canonical orbit with an estimate of the start
@@ -27,7 +34,7 @@ if lines_to_skip == 0
     end
 else
     if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
-        fprint('Wanted to skip %i lines but the only permissible values are 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
+        fprintf('Wanted to skip %i lines but the only permissible values are 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
         
         lines_to_skip = 0;
         

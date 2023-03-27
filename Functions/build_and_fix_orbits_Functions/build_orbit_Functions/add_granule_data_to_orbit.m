@@ -78,7 +78,7 @@ switch add_type
         scan_lines_to_read = gescan - gsscan + 1;
 
     otherwise
-        fprint('You entered %s but only ''current'' or ''pirate'' are acceptable./n', add_type)
+        fprintf('You entered %s but only ''current'' or ''pirate'' are acceptable./n', add_type)
         keyboard
 end
     latitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));

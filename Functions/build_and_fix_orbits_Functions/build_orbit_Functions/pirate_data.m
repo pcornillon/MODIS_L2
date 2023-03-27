@@ -60,19 +60,11 @@ if isempty(data_file_list)
     fprintf('*** No data granule found for %s but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.\n', datestr(temp_time))
     
     status = populate_problem_list( 122, oinfo(iOrbit).ginfo(1).metadata_name);
-else
-    osscan = oinfo(iOrbit).ginfo(iGranule).pirate_osscan;
-    oescan = oinfo(iOrbit).ginfo(iGranule).pirate_oescan;
-    
-    gsscan = oinfo(iOrbit).ginfo(iGranule).pirate_gsscan;
-    gescan = oinfo(iOrbit).ginfo(iGranule).pirate_gescan;
-    
-    scan_lines_to_read = gescan - gsscan + 1;
-    
+else        
     fi_granule = [data_file_list(1).folder '/' data_file_list(1).name];
     
-    [latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-        = add_granule_data_to_orbit( fi_granule, osscan, oescan, gsscan, gescan, ...
+    [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+        = add_granule_data_to_orbit( 'pirate', fi_granule, osscan, oescan, gsscan, gescan, ...
         latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
 end
 

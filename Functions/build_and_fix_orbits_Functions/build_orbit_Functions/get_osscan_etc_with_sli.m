@@ -139,17 +139,22 @@ if ~isempty(indices.pirate.osscan)
     oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.current.gescan;
 end
 
-oinfo(iOrbit).ginfo(iGranule+1).osscan = indices.next.osscan;
-oinfo(iOrbit).ginfo(iGranule+1).oescan = indices.next.oescan;
+oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
+oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
 
-oinfo(iOrbit).ginfo(iGranule+1).gsscan = indices.next.gsscan;
-oinfo(iOrbit).ginfo(iGranule+1).gescan = indices.next.gescan;
+oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
+oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
 
-% Save the start & end time for the next orbit. This should be passed back
-% the main program. 
+% Save the start & end time for the next orbit as well as metadata
+% information for the first granule of the next orbit.
 
-oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
 oinfo(iOrbit+1).orbit_end_time = oinfo(iOrbit+1).orbit_start_time + secs_per_orbit;
+
+oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib;
+oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+
+oinfo(iOrbit+1).ginfo(1).start_time = oinfo(iOrbit).ginfo(iGranule).start_time;
+oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(iGranule).end_time;
 
 

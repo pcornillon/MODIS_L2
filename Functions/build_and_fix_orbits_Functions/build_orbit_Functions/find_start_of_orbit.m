@@ -1,4 +1,4 @@
-function [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess)
+function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess)
 % find_start_of_orbit - Does this granule cross the start of an orbit on descent - PCC
 %
 % Loop over granules starting at imlat_time in steps of 5 minutes until the
@@ -6,20 +6,24 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 % passed in.
 %
 % INPUT
-%   metadata_directory - the directory with the OBPG metadata files.
+%   metadata_directory - with metadata files in it or its subdirectories.
+%   granule_directory - same for data.
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 % OUTPUT
-%   status  : 0 - OK
-%           : 6 - 1st detector in data granule not 1st detector in group of 10.
-%           : 10 - missing granule.
-%           : 11 - more than 2 metadata files for a given time.
-%           : 100 - No granule with the start of an orbit found in time range.
+%   status - returned from find_next_granule_with_data 
+%   metadata_file_list - result of a dir function on the metadata directory
+%    returning at least one filename.
+%   metadata_file_list - result of a dir function on the data directory
+%    returning at least one filename.
+%   indices - a structure with osscan, oescan, gsscan and gescan for the
+%    current orbit, data to be pirated from the next orbit if relevant and,
+%    also if relevant, values for the next orbit. 
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_end_time
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
@@ -31,48 +35,45 @@ start_time = granule_start_time_guess;
 
 % Loop over granules until the start of an orbit is found.
 
-% % % while granule_start_time_guess <= Matlab_end_time
-% % %     [status, granule_start_time_guess] = get_granule_metadata( metadata_directory, granule_start_time_guess);
-while granule_start_time_guess <= oinfo(iOrbit).end_time
-    
+while granule_start_time_guess <= Matlab_end_time
     
     [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] ...
         = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess);  
     
-    % If the status is ~= 0 there was a problem with the granule at this
-    % time if, in fact, one existed so skip and continue with the search.
-
-    if status == 0
+    % If this granule contains the start of a new orbit save the info.
+    
+    if ~isempty(start_line_index)
+        % Found the start of the next orbit, save the time and return.
         
-        if isempty(start_line_index)
-            
-            % Not a new orbit granule; add 5 minutes to the previous value of
-            % time to get the time of the next granule and continue searching.
-            
-            granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
-            
-            % Is this time passed the end of the run.
-            
-            if granule_start_time_guess > Matlab_end_time
-                status = 999;
-                return
-            end
-
-        else
-            
-            % Found the start of the next orbit, save the time and return.
-            
-            oinfo(iOrbit).start_time = scan_line_times(start_line_index);
-            oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;
-            return
-        end
+        oinfo(iOrbit).start_time = scan_line_times(start_line_index);
+        oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;
+        return
+    end
+    
+    % If this granule is past the end of the previous orbit determine an
+    % approximate start and end time for the orbit and save them.
+    
+    if status == 201
+        % Get the possible location of this granule in the orbit. If the starts in
+        % the 101 scanline overlap region, two possibilities will be returned. We
+        % will choose the earlier, smaller scanline, of the two; choosing the later
+        % of the two would mean that we would only use the last few scanlines in
+        % the orbit, which should have already been done if nadir track of the
+        % previous granule crossed 78 S.
+        
+        target_lat_1 = nlat_t(5);
+        target_lat_2 = nlat_t(11);
+        
+        nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filename);
+        
+        oinfo(iOrbit).start_time = sltimes_avg(nnToUse(1));
+        oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;
+        return
     end
 end
 
 % If the start of an orbit was not found in the time range specified let
-% the calling program know.
-
-status = populate_problem_list( 100, []);
+% the person running the program know.
 
 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
 

@@ -24,5 +24,5 @@
 % END OF RUN
 %
 % 901 - find_next_granule_with_data - end of run (used to be -999).
-%
+% 
 % 911 - get_start_of_first_full_orbit - end of run.

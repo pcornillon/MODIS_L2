@@ -14,12 +14,8 @@ function [status, granule_start_time_guess] = get_granule_metadata( metadata_fil
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 % OUTPUT
-%   status  : 0 - OK
-%           : 6 - 1st detector in data granule not 1st detector in group of 10.
-% % % %           : 10 - missing granule.
-%           : 11 - more than 2 metadata files for a given time.
-%    requested.
-% % % %   missing_granule - Matlab date/time of granule if missing otherwise empty.
+%   status : 201 - No scanline start times for scanlines in this granule
+%          : 202 - 1st detector in data granule not 1st detector in group of 10.
 %   granule_start_time_guess - the matlab_time of the granule to start with. If scan
 %    times are obtained for this granule, granule_start_time_guess will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
@@ -66,7 +62,7 @@ if isempty(scan_line_times) == 0
 end
 
 if abs(mSec(10)-mSec(1)) > 0.01
-    fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Going to the next granule.', metadata_file_list(1).name)
+    fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10.', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     
     status = populate_problem_list( 202, oinfo(iOrbit).ginfo(iGranule).metadata_name);
@@ -85,8 +81,11 @@ num_scan_lines_in_granule = length(scan_line_times);
 % granule_start_time_guess drifting out of range.     
 
 if update_oinfo    
+    oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
+
     oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
     oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
+    
     oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
     
     granule_start_time_guess = scan_line_times(1);

@@ -21,16 +21,17 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 %
 % OUTPUT
 %   status  : 0 - OK
-%           : 101 - No data granule corresponding the metadata granule - return. 
+%           : 101 - No data granule corresponding the metadata granule - go
+%             to next granule.
 %           : 201 - estimated time past the end of the orbit - return.
 %           : 901 - estimated time past the end of the run - return.
 %      The following returned from calls to get_osscan_etc...
 %           : 111 - Adjacent orbits but osscan calculations disagree. Will
-%             use value based on end of previous granule and continue. 
+%             use value based on end of previous granule and continue.
 %           : 112 - Didn't skip either 1020, 1030, 1040 or 1050 scan lines.
 %             Set the # of lines to skip to 0 and continued.
 %           : 113 Calculated osscans do not agree. Will use the calculation
-%             based on the canonical orbit and continue. 
+%             based on the canonical orbit and continue.
 %           : 114 - (from ...with_sli) Length of orbit calculation does not
 %               agree with mandated length, nominally 40,271. oescan and
 %               gescan forced for an orbit of 40,271 and continued.
@@ -68,7 +69,7 @@ indices = [];
 
 metadata_file_list = [];
 
-if isempty(metadata_file_list)
+while 1==1
     
     granule_start_time_guess = granule_start_time_guess + 5 /(24 * 60);
     
@@ -79,11 +80,21 @@ if isempty(metadata_file_list)
         return
     end
     
-    % Is this time passed the end time of the orbit?
+    % Is this time passed the end time of the orbit? Only check if an orbit
+    % already exists from which the time has been calculated; i.e., only if
+    % oinfo exists. If it does but this is beyond the end of an orbit, then
+    % it is old information so clear oinfo to allow the search for the next
+    % granule to go on until either a granule is found or the end of the
+    % run is reached. 
     
-    if granule_start_time_guess > oinfo(iOrbit).end_time
-        status = 201;
-        return
+    if exist('oinfo')
+        if granule_start_time_guess > oinfo(iOrbit).end_time
+            status = 201;
+            
+            clear oinfo
+            
+            return
+        end
     end
     
     % Build the approximate filename for the next metadata and data granules
@@ -101,58 +112,61 @@ if isempty(metadata_file_list)
     else
         metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
     end
-else
     
-    % Is the data granule for this time present? If so, get the range
-    % of locations of scanlines in the orbit and the granule to use.
-    % Otherwise, add to problem list and continue search for a data
-    % granule; remember, a metadata granule was found so this should
-    % not occur.
+    % Was a metadata file found at this time?
     
-    if amazon_s3_run
-        % Here for s3. May need to fix this; not sure I will have combined
-        % in the name. Probably should set up to search for data or
-        % metadata file as we did for the not-s3 run.
-        % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+    if ~isempty(metadata_file_list)
+                
+        % Is the data granule for this time present? If so, get the range
+        % of locations of scanlines in the orbit and the granule to use.
+        % Otherwise, add to problem list and continue search for a data
+        % granule; remember, a metadata granule was found so this should
+        % not occur.
         
-        data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/' datestr(granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
-    else
-        data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-    end
-    
-    if isempty(data_file_list)
-        % Reset metadata_file_list to empty since no data granule
-        % exists for this time, even though a metadata granule does.
+        if amazon_s3_run
+            % Here for s3. May need to fix this; not sure I will have combined
+            % in the name. Probably should set up to search for data or
+            % metadata file as we did for the not-s3 run.
+            % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+            
+            data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/' datestr(granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+        else
+            data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+        end
         
-        metadata_file_list = [];
-        
-        fprintf('No data granule corresponding the metadata granule %s. Return.\n', oinfo(iOrbit).ginfo(iGranle).metadata_granule_name)
-        
-        status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranle).metadata_granule_name);
-    else
-        % Populate oinfo with data granule name.
-        
-        oinfo(iOrbit).ginfo(iGranule).data_name = [data_file_list(1).folder '/' data_file_list(1).name];
-        
-        % Get the metadata for this granule.
-        
-        [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
-        
-        % If status not equal to zero, do not use this granule; i.e., look
-        % for next granule with data; do not return.
-        
-        if status == 0
-            if isempty(start_line_index)
-                [status, indices] = get_osscan_etc_NO_sli( orbit_status);
-            else
-                [status, indices] = get_osscan_etc_with_sli( orbit_status);
+        if isempty(data_file_list)
+            % Reset metadata_file_list to empty since no data granule
+            % exists for this time, even though a metadata granule does.
+            
+            metadata_file_list = [];
+            
+            fprintf('No data granule corresponding to metadata granule %s. Return.\n', oinfo(iOrbit).ginfo(iGranle).metadata_granule_name)
+            
+            status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranle).metadata_granule_name);
+        else
+            % Populate oinfo with data granule name.
+            
+            oinfo(iOrbit).ginfo(iGranule).data_name = [data_file_list(1).folder '/' data_file_list(1).name];
+            
+            % Get the metadata for this granule.
+            
+            [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
+            
+            % If status not equal to zero, either problems with start times
+            % or 1st detector, not 1st detector in group of 10. Neither of
+            % these should happen, but, just in case...
+            
+            if status == 0
+                if isempty(start_line_index)
+                    [status, indices] = get_osscan_etc_NO_sli( orbit_status);
+                else
+                    [status, indices] = get_osscan_etc_with_sli( orbit_status);
+                end
+                
+                % Found a granule with metadata, return. 
+                
+               return
             end
-            
-            % bad status values here are 111, 121, 221 or 231. .osscan,
-            % .oescan,... will not be set for current, next or pirate,
-            % which means that the data from this granule will not be use.
-            
-            return
         end
     end
 end

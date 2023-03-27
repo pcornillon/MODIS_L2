@@ -1,4 +1,4 @@
-function granule_start_time_guess = get_start_of_first_full_orbit( metadata_directory)
+function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit( metadata_directory, granules_directory)
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
 % This function starts by searching for the first metadata granule at or
@@ -13,6 +13,22 @@ function granule_start_time_guess = get_start_of_first_full_orbit( metadata_dire
 % OUTPUT
 %   granule_start_time_guess - time of the start of the granule with the
 %    start of the next orbit.
+% INPUT
+%   metadata_directory - with metadata files in it or its subdirectories.
+%   granule_directory - same for data.
+%   granule_start_time_guess - the matlab_time of the granule to start with.
+%
+% OUTPUT
+%   status  : 911 - end of run.
+%           : Value returnd from find_start_of_orbit.
+%   metadata_file_list - result of a dir function on the metadata directory
+%    returning at least one filename.
+%   metadata_file_list - result of a dir function on the data directory
+%    returning at least one filename.
+%   indices - a structure with osscan, oescan, gsscan and gescan for the
+%    current orbit, data to be pirated from the next orbit if relevant and,
+%    also if relevant, values for the next orbit. 
+%   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
 global oinfo iOrbit iGranule iProblem problem_list
@@ -63,7 +79,6 @@ while isempty(file_list)
         % Here for s3. May need to fix this; not sure I will have combined 
         % in the name. Probably should set up to search for data or
         % metadata file as we did for the not-s3 run.
-        file_list = dir( [metadata_directory datestr(Matlab_start_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(Matlab_start_time, formatOut.yyyymmddThh) '*']);
         file_list = dir( [metadata_directory datestr(Matlab_start_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(Matlab_start_time, formatOut.yyyymmdd) '*']);
     elseif isempty(strfind(metadata_directory,'combined'))
         % Here if looking for a metadata file - notice the underscore after MODIS.
@@ -94,13 +109,13 @@ granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,0);
 % Next, find the ganule at the beginning of the first complete orbit
 % starting with the first granule found in the time range.
 
-[status, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granule_start_time_guess);
+[status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess);
 
-% Abort this run if a major problem occurs at this point.
-
-if status ~= 0
-    fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
-        orbit_info(iOrbit).granule_info(iGranule).metadata_name, datestr(granule_start_time_guess), datestr(Matlab_start_time), datestr(Matlab_end_time))
-    return
-end
+% % % % Abort this run if a major problem occurs at this point.
+% % % 
+% % % if status ~= 0
+% % %     fprintf('*** Major problem with metadata file %s at date/time %s or no start of an orbit in the specified range %s to %s. Aborting.\n', ...
+% % %         orbit_info(iOrbit).granule_info(iGranule).metadata_name, datestr(granule_start_time_guess), datestr(Matlab_start_time), datestr(Matlab_end_time))
+% % %     return
+% % % end
 

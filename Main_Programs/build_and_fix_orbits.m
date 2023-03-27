@@ -264,7 +264,7 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-granule_start_time_guess = get_start_of_first_full_orbit( metadata_directory);
+[~, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit( metadata_directory, granules_directory);
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
@@ -274,36 +274,20 @@ while granule_start_time_guess <= Matlab_end_time
     
     time_to_process_this_orbit = tic;
     
-    oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
-    
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
     
-    if status == 100 
-        % Will get here if search for a new orbit fails. This should not
-        % happen, but might at the end of the time range. Simply end the job. 
-        
-        return
-    end
-    
-    if status == 110
-        fprintf('*****\n*****\nMajor problem. Status %i. Terminating the run.\n\n', status)
-        keyboard
-        return
-    end
-    
     if status > 0
-        if status == 200
-            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).start_time))
-        else
-            fprintf('*****\nStatus %i for orbit %s. Do not process this orbit.\n\n', status, oinfo(iOrbit).name)
+        fprintf('Just returned from build_orbit with status #%i. Hopefull either 201 or > 900.\n', status)
+        
+        if status > 900
+            fprintf('End of run.\n')
+            return
         end
         
-        % Decrement the orbit counter since we have already startd an orbit
-        % but will not be processing it; it has already been processed or
-        % there is a problem with it.
-        
-        iOrbit = iOrbit - 1;
+        if status == 201
+            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).start_time))
+        end
     else
         
         %% Next fix the mask if requested.
@@ -430,11 +414,6 @@ while granule_start_time_guess <= Matlab_end_time
         if print_diagnostics
             fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
         end
-        
-% % %         % Add 5 minutes to the previous value of time to get the time of the
-% % %         % next granule and continue searching.
-% % %         
-% % %         granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     end
     
     % Increment orbit counter and reset granule counter to 1.

@@ -78,7 +78,7 @@ if continue_orbit
         indices.current.oescan = orbit_length;
         indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
         
-        status = populated_problem_list( 114, oinfo(iOrbit).ginfo(iGranule));
+        status = populate_problem_list( 114, oinfo(iOrbit).ginfo(iGranule));
     end
     
     % Determine how many scan lines are needed to bring the length of this

@@ -44,10 +44,6 @@ target_lat_2 = nlat_t(11);
 nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filename);
 
 indices.current.osscan = nnToUse(1);
-indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
-
-indices.current.gsscan = 1;
-indices.current.gescan = num_scan_lines_in_granule - 1;
 
 % This case is the simplest, the number of scanlines required to complete
 % this orbit--go to the start of the next orbit + 101 scanlines for overlap
@@ -59,33 +55,12 @@ indices.case = 1;
 
 if continue_orbit
     
-    % Check the start line in the current orbit determined determined from
-    % the latitude in the canonical orbit with an estimate of the start
-    % line based on the time between the beginning of this granule and the
-    % end of the previous one. This is just a sanity check on the
-    % calculaiton. Start by getting the number of lines to skip if any.
-        
-    lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
+    % The following is a snippet of code to generate osscan using the start
+    % time of this granule and the end time of the previous granule and to
+    % compare the result obtained above using the canonical orbit. This
+    % snippet is also used in get_osscan_etc_NO_sli.
     
-    % The lines to skip should be either 1020, 1030, 1040 or 1050 -- I
-    % think, so, if less than 1000, set to zero and add to problem_list.
-    
-    if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
-        fprint('Wanted to skip %i lines but the only permissible values are multiles of 1020, 1030, 1040 or 1050. Setting lines to skip to 0.\n', lines_to_skip)
-        lines_to_skip = 0;
-        
-        status = populate_problem_list( 111, []);
-    end
-
-    osscan_test = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
-
-    if indices.current.osscan ~= osscan_test
-        fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule. \n', ...
-            oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
-        
-        status = populate_problem_list( 211, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-        return
-    end
+    alternate_calculation_of_osscan
     
     % Add 101 to osscan + sli to get 100 scanline overlap of this orbit
     % with the next one plus an additional line, hence 101, to allow
@@ -99,11 +74,11 @@ if continue_orbit
     indices.current.gescan = start_line_index - 1;
     
     if indices.current.oescan ~= orbit_length
-        fprintf('Calculated end of orbit is %i, which does no agree with the mandated orbit length, nominally 40,271\n', indices.current.oescan, orbit_length)
+        fprintf('Calculated end of orbit is %i, which does no agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
         indices.current.oescan = orbit_length;
         indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
         
-        status = populated_problem_list( 61, oinfo(iOrbit).ginfo(iGranule));
+        status = populated_problem_list( 114, oinfo(iOrbit).ginfo(iGranule));
     end
     
     % Determine how many scan lines are needed to bring the length of this
@@ -170,10 +145,11 @@ oinfo(iOrbit).ginfo(iGranule+1).oescan = indices.next.oescan;
 oinfo(iOrbit).ginfo(iGranule+1).gsscan = indices.next.gsscan;
 oinfo(iOrbit).ginfo(iGranule+1).gescan = indices.next.gescan;
 
-% Save the start time for the next orbit. This will be passed
-% back to the main program.
+% Save the start & end time for the next orbit. This should be passed back
+% the main program. 
 
-oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
 oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+oinfo(iOrbit+1).orbit_start_time = scan_line_times(start_line_index);
+oinfo(iOrbit+1).orbit_end_time = oinfo(iOrbit+1).orbit_start_time + secs_per_orbit;
 
 

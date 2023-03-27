@@ -21,10 +21,22 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 %
 % OUTPUT
 %   status  : 0 - OK
-%           : 6 - 1st detector in data granule not 1st detector in group of 10.
-%           : 10 - missing granule.
-%           : 11 - more than 2 metadata files for a given time.
-%    requested.
+%           : 101 - No data granule corresponding the metadata granule - return. 
+%           : 201 - estimated time past the end of the orbit - return.
+%           : 901 - estimated time past the end of the run - return.
+%      The following returned from calls to get_osscan_etc...
+%           : 111 - Adjacent orbits but osscan calculations disagree. Will
+%             use value based on end of previous granule and continue. 
+%           : 112 - Didn't skip either 1020, 1030, 1040 or 1050 scan lines.
+%             Set the # of lines to skip to 0 and continued.
+%           : 113 Calculated osscans do not agree. Will use the calculation
+%             based on the canonical orbit and continue. 
+%           : 114 - (from ...with_sli) Length of orbit calculation does not
+%               agree with mandated length, nominally 40,271. oescan and
+%               gescan forced for an orbit of 40,271 and continued.
+%           : 125 - (from ...NO_sli) Length of orbit calculation does not
+%               agree with mandated length, nominally 40,271. oescan and
+%               gescan forced for an orbit of 40,271 and continued.
 %   granule_start_time_guess - the matlab_time of the granule to start with. If scan
 %    times are obtained for this granule, granule_start_time_guess will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.

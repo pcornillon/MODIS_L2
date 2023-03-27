@@ -45,10 +45,6 @@ target_lat_2 = nlat_t(11);
 nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
 
 indices.current.osscan = nnToUse(1);
-indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
-
-indices.current.gsscan = 1;
-indices.current.gescan = num_scan_lines_in_granule - 1;
 
 % Check the above if this is NOT the first granule found in a new orbit.
 
@@ -58,26 +54,31 @@ indices.current.gescan = num_scan_lines_in_granule - 1;
 % nnToUse(1). 
 
 if iGranule > 1
-    lines_to_skip = floor( abs((indices.current.start_time - oinfo(iOrbit).ginfo(end-1).end_time) + 0.05) / secs_per_scan_line);
-        
-    % Check that the number of lines to skip is a multiple of 10. If not, force it to be.
     
-    if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
-        fprint('Wanted to skip %i lines but the only permissible values are multiles of 1020, 1030, 1040 or 1050. Setting lines to skip to 0.\n', lines_to_skip)
-        lines_to_skip = 0;
-        
-        status = populate_problem_list( 121, []);
-    end
+    % The following is a snippet of code to generate osscan using the start
+    % time of this granule and the end time of the previous granule and to
+    % compare the result obtained above using the canonical orbit. This
+    % snippet is also used in get_osscan_etc_NO_sli.
     
-    osscan_test = oinfo(iOrbit).ginfo(iGranule-1).oescan + lines_to_skip;
+    alternate_calculation_of_osscan
+    
+end
 
-    if indices.current.osscan ~= osscan_test
-        fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule. \n', ...
-            indices.current.name, indices.current.osscan, osscan_test)
-        
-        status = populate_problem_list( 231, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-        return
-    end
+% And for the rest of oescan, gsscan and gescan.
+
+indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
+
+indices.current.gsscan = 1;
+indices.current.gescan = num_scan_lines_in_granule - 1;
+
+% Is the length of the orbit correct? If not force it to be so.
+
+if indices.current.oescan ~= orbit_length
+    fprintf('Calculated end of orbit is %i, which does not agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
+    indices.current.oescan = orbit_length;
+    indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
+    
+    status = populated_problem_list( 115, oinfo(iOrbit).ginfo(iGranule));
 end
 
 % Write ossan, oescan,... to oinfo

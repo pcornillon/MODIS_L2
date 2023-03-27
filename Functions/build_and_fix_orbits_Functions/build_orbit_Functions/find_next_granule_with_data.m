@@ -113,8 +113,8 @@ else
         % Here for s3. May need to fix this; not sure I will have combined
         % in the name. Probably should set up to search for data or
         % metadata file as we did for the not-s3 run.
+        % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
         
-% s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
         data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/' datestr(granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
     else
         data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
@@ -129,7 +129,11 @@ else
         fprintf('No data granule corresponding the metadata granule %s. Return.\n', oinfo(iOrbit).ginfo(iGranle).metadata_granule_name)
         
         status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranle).metadata_granule_name);
-    else        
+    else
+        % Populate oinfo with data granule name.
+        
+        oinfo(iOrbit).ginfo(iGranule).data_name = [data_file_list(1).folder '/' data_file_list(1).name];
+        
         % Get the metadata for this granule.
         
         [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);

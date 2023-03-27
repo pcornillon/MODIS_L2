@@ -10,6 +10,9 @@
 % 114 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 115 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %
+% 121 - add_granule_data_to_orbit - Error reading data granule. Will not populate from this granule. 
+% 122 - add_granule_data_to_orbit - No data granule found but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.
+%
 % ACTION REQUIRED ON RETURN
 %
 % 201 - get_granule_metadata - end of orbit (100)

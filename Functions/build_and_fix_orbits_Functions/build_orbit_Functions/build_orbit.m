@@ -142,15 +142,23 @@ fprintf('Working on orbit #%i: %s.\n', iOrbit, oinfo(iOrbit).name)
 
 start_time_to_build_this_orbit = tic;
 
-oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
+% Are we starting an orbit without having read a metadata granule for this
+% orbit? If so, read the next metadata granule and begin populating this
+% orbit.
 
-% Add the time for 10 scan lines to the time of the last scan line. That's
-% because we want the time at the end of the last scan and, since the come
-% in groups of 10, the time of each of the last 10 scans will be the same
-% corresponding to the start of the mirror rotation for this group of 10;
-% we want the time when the next group of 10 starts.
+if isempty(oinfo(iOrbit).ginfo(1).osscan)
+    [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess);
+end
 
-oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
+% % % oinfo(iOrbit).ginfo(1).start_time = scan_line_times(1) * secs_per_day;
+% % % 
+% % % % Add the time for 10 scan lines to the time of the last scan line. That's
+% % % % because we want the time at the end of the last scan and, since the come
+% % % % in groups of 10, the time of each of the last 10 scans will be the same
+% % % % corresponding to the start of the mirror rotation for this group of 10;
+% % % % we want the time when the next group of 10 starts.
+% % % 
+% % % oinfo(iOrbit).ginfo(1).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
 
 % Initialize orbit arrays.
 
@@ -165,26 +173,87 @@ scan_seconds_from_start = single(nan(1,orbit_length));
 
 granule_start_time_guess_save = granule_start_time_guess;
 
-% Orbit start and end numbers; i.e., the orbit variables will be
-% populated from osscan through oescan.
-
-oinfo(iOrbit).ginfo(iGranule).osscan = 1;
-oinfo(iOrbit).ginfo(iGranule).oescan = num_scan_lines_in_granule - start_line_index + 1;
-
-% Granule start and end numbers; i.e., the input arrays will be read
-% from gsscan through gescan.
-
-oinfo(iOrbit).ginfo(iGranule).gsscan = start_line_index;
-oinfo(iOrbit).ginfo(iGranule).gescan = num_scan_lines_in_granule;
+% % % % Orbit start and end numbers; i.e., the orbit variables will be
+% % % % populated from osscan through oescan.
+% % % 
+% % % oinfo(iOrbit).ginfo(iGranule).osscan = 1;
+% % % oinfo(iOrbit).ginfo(iGranule).oescan = num_scan_lines_in_granule - start_line_index + 1;
+% % % 
+% % % % Granule start and end numbers; i.e., the input arrays will be read
+% % % % from gsscan through gescan.
+% % % 
+% % % oinfo(iOrbit).ginfo(iGranule).gsscan = start_line_index;
+% % % oinfo(iOrbit).ginfo(iGranule).gescan = num_scan_lines_in_granule;
 
 % Read the data for the first granule in this orbit.
 
-[status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = add_granule_data_to_orbit( granules_directory, check_attributes, ...
+osscan = oinfo(iOrbit).ginfo(iGranule).osscan;
+oescan = oinfo(iOrbit).ginfo(iGranule).oescan;
+
+gsscan = oinfo(iOrbit).ginfo(iGranule).gsscan;
+gescan = oinfo(iOrbit).ginfo(iGranule).gescan;
+
+scan_lines_to_read = gescan - gsscan + 1;
+
+% % % status = build_granule_filename( granules_directory, check_attributes);
+
+fi_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
+
+% Populate the orbit with data from this granule.
+
+% % % [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+% % %     = add_granule_data_to_orbit( granules_directory, check_attributes, ...
+% % %     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
+% % % 
+% % % oinfo(iOrbit).ginfo(iGranule).status = status;
+
+[latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+    = add_granule_data_to_orbit( fi_granule, osscan, oescan, gsscan, gescan, ...
     latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
 
-oinfo(iOrbit).ginfo(iGranule).status = status;
+% In the rare--I hope--event when the first granule found in a new orbit
+% also contains the start of the next orbit, i.e., .pirate_osscan is not
+% empty, pirate data from the next orbit and return.
 
+if ~isempty(oinfo(iOrbit).ginfo(1).pirate_osscan)
+% % %     % Get file list for data granule at the next time step.
+% % %     
+% % %     temp_time = granule_start_time_guess + 5 / (24 * 60);
+% % %     
+% % %     if amazon_s3_run
+% % %         % Here for s3. May need to fix this; not sure I will have combined
+% % %         % in the name. Probably should set up to search for data or
+% % %         % metadata file as we did for the not-s3 run.
+% % %         % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+% % %         
+% % %         data_file_list = dir( [granules_directory datestr(temp_time, formatOut.yyyy) '/' datestr(temp_time, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+% % %     else
+% % %         data_file_list = dir( [granules_directory datestr(temp_time, formatOut.yyyy) '/AQUA_MODIS.' datestr(temp_time, formatOut.yyyymmddThhmm) '*']);
+% % %     end
+% % %     
+% % %     if isempty(data_file_list)
+% % %         fprintf('*** No data granule found for %s but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.\n', datestr(temp_time))
+% % %         
+% % %         status = populate_problem_list( 122, oinfo(iOrbit).ginfo(1).metadata_name);
+% % %     else
+% % %         osscan = oinfo(iOrbit).ginfo(iGranule).pirate_osscan;
+% % %         oescan = oinfo(iOrbit).ginfo(iGranule).pirate_oescan;
+% % %         
+% % %         gsscan = oinfo(iOrbit).ginfo(iGranule).pirate_gsscan;
+% % %         gescan = oinfo(iOrbit).ginfo(iGranule).pirate_gescan;
+% % %         
+% % %         scan_lines_to_read = gescan - gsscan + 1;
+% % %                 
+% % %         fi_granule = [data_file_list(1).folder '/' data_file_list(1).name];
+% % %         
+% % %         [latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+% % %             = add_granule_data_to_orbit( fi_granule, osscan, oescan, gsscan, gescan, ...
+% % %             latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
+% % %         
+% % %         return
+% % %     end
+end
+ 
 % % % % Increment the granule start date/time by 5 minutes and begin looping over
 % granules to populate the next orbit.
 

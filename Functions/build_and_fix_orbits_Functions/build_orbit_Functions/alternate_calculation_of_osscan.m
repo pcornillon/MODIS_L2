@@ -28,6 +28,7 @@ if lines_to_skip == 0
 else
     if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
         fprint('Wanted to skip %i lines but the only permissible values are 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
+        
         lines_to_skip = 0;
         
         status = populate_problem_list( 112, []);

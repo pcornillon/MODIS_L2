@@ -64,7 +64,7 @@ while granule_start_time_guess <= Matlab_end_time
         target_lat_1 = nlat_t(5);
         target_lat_2 = nlat_t(11);
         
-        nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filename);
+        nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
         
         oinfo(iOrbit).start_time = sltimes_avg(nnToUse(1));
         oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;

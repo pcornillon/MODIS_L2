@@ -91,7 +91,7 @@ if continue_orbit
     % reading the entire granule and set a flag to tell the function to get
     % the remaining lines to complete the orbit from the next granule.
     
-    if (oescan + 1 - osscan) > num_scan_lines_in_granule
+    if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule
         
         % This case is arises if the additional 101 scanlines need to
         % complete the current orbit result in more scanlines being

@@ -158,9 +158,9 @@ while 1==1
             
             if status == 0
                 if isempty(start_line_index)
-                    [status, indices] = get_osscan_etc_NO_sli( orbit_status);
+                    [status, indices] = get_osscan_etc_NO_sli;
                 else
-                    [status, indices] = get_osscan_etc_with_sli( orbit_status);
+                    [status, indices] = get_osscan_etc_with_sli(1);
                 end
                 
                 % Found a granule with metadata, return. 

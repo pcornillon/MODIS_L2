@@ -25,6 +25,7 @@ function nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filenam
 %   nnToUse - the indices, either 1 (and 3 if 3 intersections) or 2, to use.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 

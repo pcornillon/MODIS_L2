@@ -1,5 +1,4 @@
-function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
-    = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess)
+function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] = build_orbit( granule_start_time_guess)
 % build_orbit - build the next unprocessed orbit from data granules - PCC
 % 
 % Starting with OBPG metadata file for a granule that includes the start of
@@ -24,9 +23,6 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %                : 10 - missing granule.
 %                : 11 - more than 2 metadata files for a given time. 
 %                : 100 - No granule with the start of an orbit found in time range. 
-%   granules_directory - the base directory for the input files.
-%   metadata_directory - the base directory for the location of the
-%   output_file_directory - directory into which the results will be written. 
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %   orbit_start_time - matlab time of first scan line in the orbit to be built.
 %   oinfo - structure with orbit information.
@@ -69,6 +65,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   scan_seconds_from_start - seconds since start of orbit to this granule.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
@@ -91,8 +88,12 @@ iGranule = 1;
 
 check_attributes = 1;
 
-orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit).ginfo(1).metadata_name) '_' ...
-    datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+% Get the NASA orbit number and build he name for this orbit. Will use the
+% NASA orbit number where the descending satellite crosses 78 S.
+
+orbit_number = ncreadatt( orbit_info(iOrbit).granule_info(iGranule).metadata_name,'/','orbit_number');
+
+orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
 
 oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
     datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
@@ -103,7 +104,7 @@ if exist(oinfo(iOrbit).name) == 2
     
     fprintf('--- Have already processed %s. Going to the next orbit. \n', oinfo(iOrbit).name)
     
-    [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess);
+    [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( granule_start_time_guess);
         
     scan_seconds_from_start = 0;
     
@@ -137,7 +138,7 @@ granule_start_time_guess_save = granule_start_time_guess;
 % started.
 
 if isempty(oinfo(iOrbit).ginfo(1).osscan)
-    [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess);
+    [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( granule_start_time_guess);
 end
 
 % Read the data for the first granule in this orbit.
@@ -188,7 +189,7 @@ while granule_start_time_guess <= oinfo(iOrbit).end_time
     % Get metadata information for the next granule-find_next... increments
     % granule_start_time... by 5 minutes.
         
-    [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess);
+    [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( granule_start_time_guess);
 
     % Status returned from find_next_granule_with_data is either 0 - all OK, 
     % 201 - granule start time exceeded the end of orbit time without

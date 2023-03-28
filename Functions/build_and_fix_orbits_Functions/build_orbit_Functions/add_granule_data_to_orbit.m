@@ -8,11 +8,6 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 % remainder of the processing.
 %
 % INPUT
-% % % %   granules_directory - the name of the directory with the granules.
-% % % %   data_file_list - the list of filenames corresponding to this granule
-% % % %    --hopefully, just one filename on the list.
-% % % %   check_attributes - 1 to read the global attributes for the data granule
-% % % %    and check that they exist and/or are reasonable.
 %   fi_granule - name of granule from which to read the relevant scan lines.
 %   osscan - starting scan line in orbit for data from this granule.
 %   oescan - ending scan line in orbit for data from this granule.
@@ -40,6 +35,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   scan_seconds_from_start - seconds for from the start of the orbit.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels

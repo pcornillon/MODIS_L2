@@ -1,5 +1,5 @@
 function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = pirate_data( granules_directory, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
+    = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
     scan_seconds_from_start, granule_start_time_guess)
 % pirate_data - reads data from next granule and puts it in orbit - PCC.
 % 
@@ -32,6 +32,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %    the current granule.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length

@@ -25,6 +25,7 @@ function [status, indices] = get_osscan_etc_NO_sli
 %   indices - a structure with the discovered indices.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time

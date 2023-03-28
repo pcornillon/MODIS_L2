@@ -25,6 +25,7 @@ function [status, indices] = get_osscan_etc_with_sli( continue_orbit)
 %   indices - a structure with the discovered indices.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
@@ -41,7 +42,7 @@ global print_diagnostics
 target_lat_1 = nlat_t(5);
 target_lat_2 = nlat_t(11);
 
-nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filename);
+nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule));
 
 indices.current.osscan = nnToUse(1);
 
@@ -131,7 +132,7 @@ oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
 oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
 oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
 
-if ~isempty(indices.pirate.osscan)
+if isfield(oinfo.ginfo, 'private_osscan')
     oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.current.osscan;
     oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.current.oescan;
     

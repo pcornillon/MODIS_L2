@@ -1,4 +1,4 @@
-function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess)
+function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( granule_start_time_guess)
 % find_start_of_orbit - Does this granule cross the start of an orbit on descent - PCC
 %
 % Loop over granules starting at imlat_time in steps of 5 minutes until the
@@ -6,8 +6,6 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 % passed in.
 %
 % INPUT
-%   metadata_directory - with metadata files in it or its subdirectories.
-%   granule_directory - same for data.
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 % OUTPUT
@@ -22,6 +20,7 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_end_time
@@ -38,7 +37,7 @@ start_time = granule_start_time_guess;
 while granule_start_time_guess <= Matlab_end_time
     
     [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] ...
-        = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess);  
+        = find_next_granule_with_data( granule_start_time_guess);  
     
     % If this granule contains the start of a new orbit save the info.
     

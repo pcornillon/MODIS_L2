@@ -1,4 +1,4 @@
-function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit( metadata_directory, granules_directory)
+function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit( granules_directory)
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
 % This function starts by searching for the first metadata granule at or
@@ -31,6 +31,7 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
@@ -103,13 +104,14 @@ mm = str2num(file_list(1).name(nn+15:nn+16));
 dd = str2num(file_list(1).name(nn+17:nn+18));
 HH = str2num(file_list(1).name(nn+19+index_offset:nn+20+index_offset));
 MM = str2num(file_list(1).name(nn+21+index_offset:nn+22+index_offset));
+SS = str2num(file_list(1).name(nn+23+index_offset:nn+24+index_offset));
 
-granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,0);
+granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,SS);
 
 % Next, find the ganule at the beginning of the first complete orbit
 % starting with the first granule found in the time range.
 
-[status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( metadata_directory, granules_directory, granule_start_time_guess);
+[status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( granule_start_time_guess);
 
 % % % % Abort this run if a major problem occurs at this point.
 % % % 

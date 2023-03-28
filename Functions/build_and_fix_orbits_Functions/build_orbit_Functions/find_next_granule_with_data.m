@@ -1,4 +1,4 @@
-function [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( metadata_directory, granules_directory, granule_start_time_guess)
+function [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( granule_start_time_guess)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -15,8 +15,6 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 % range for this run, it will increment the granule time and...
 %
 % INPUT
-%   metadata_directory - the directory with the OBPG metadata files.
-%   granules_directory - base directory for the granule data.
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 % OUTPUT
@@ -53,6 +51,7 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 %
 % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
@@ -87,11 +86,11 @@ while 1==1
     % granule to go on until either a granule is found or the end of the
     % run is reached. 
     
-    if exist('oinfo')
+    if ~isempty(oinfo)
         if granule_start_time_guess > oinfo(iOrbit).end_time
             status = 201;
             
-            clear oinfo
+            oinfo = [];
             
             return
         end
@@ -150,7 +149,8 @@ while 1==1
             
             % Get the metadata for this granule.
             
-            [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
+            
+            [[status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
             
             % If status not equal to zero, either problems with start times
             % or 1st detector, not 1st detector in group of 10. Neither of

@@ -1,17 +1,9 @@
-function [oinfo problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, ...
-    start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
+function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
 %
 % INPUT
-%   granules_directory - the base directory for the input files.
-%   metadata_directory - the base directory for the location of the
-%    metadata files copied from the OBPG files.
-%   fixit_directory - the directory for files required by this script to
-%    correct the cloud mask and the bow-tie effect.
-%   output_file_directory - the base directory for the output files. Note
-%    that this must be the full directory name,netCDF doesn't like ~/.
 %   start_date_time - build orbits with the first orbit to be built
 %    including this time specified as: [YYYY, MM, DD, HH, Min, 00].
 %   end_date_time - last orbit to be built includes this time.
@@ -41,6 +33,15 @@ function [oinfo problem_list] = build_and_fix_orbits( granules_directory, metada
 %                : 100 - No granule with the start of an orbit found in time range.
 %
 % EXAMPLE
+%
+%   granules_directory - the base directory for the input files.
+%   metadata_directory - the base directory for the location of the
+%    metadata files copied from the OBPG files.
+%   fixit_directory - the directory for files required by this script to
+%    correct the cloud mask and the bow-tie effect.
+%   output_file_directory - the base directory for the output files. Note
+%    that this must be the full directory name,netCDF doesn't like ~/.
+%
 %   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 %   metadata_directory = 'Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 %   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
@@ -61,6 +62,7 @@ function [oinfo problem_list] = build_and_fix_orbits( granules_directory, metada
 
 clear global
 
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
@@ -73,7 +75,7 @@ global amazon_s3_run
 
 % Initialize return variables.
 
-if ~exist('metadata_directory')
+if isempty(metadata_directory)
     metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
     granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/';  % Test run.
     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
@@ -264,7 +266,7 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-[~, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit( metadata_directory, granules_directory);
+[~, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
@@ -275,7 +277,7 @@ while granule_start_time_guess <= Matlab_end_time
     time_to_process_this_orbit = tic;
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
-        = build_orbit( granules_directory, metadata_directory, output_file_directory, granule_start_time_guess);
+        = build_orbit( granule_start_time_guess);
     
     if status > 0
         fprintf('Just returned from build_orbit with status #%i. Hopefull either 201 or > 900.\n', status)

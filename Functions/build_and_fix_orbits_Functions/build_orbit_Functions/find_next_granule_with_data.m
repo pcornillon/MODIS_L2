@@ -1,4 +1,4 @@
-function [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( granule_start_time_guess)
+function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -36,12 +36,12 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 %           : 125 - (from ...NO_sli) Length of orbit calculation does not
 %               agree with mandated length, nominally 40,271. oescan and
 %               gescan forced for an orbit of 40,271 and continued.
-%   granule_start_time_guess - the matlab_time of the granule to start with. If scan
-%    times are obtained for this granule, granule_start_time_guess will be set to the
-%    first scan of the granule; otherwise the value passed in will be returned.
 %   metadata_file_list - list of granule metadata files found at time passed in.
 %   data_file_list - list of granule data files found at time passed in.
 %   indices - a structure with the discovered indices.
+%   granule_start_time_guess - the matlab_time of the granule to start with. If scan
+%    times are obtained for this granule, granule_start_time_guess will be set to the
+%    first scan of the granule; otherwise the value passed in will be returned.
 %
 
 % Granule file names:
@@ -56,7 +56,8 @@ global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
-global print_diagnostics save_just_the_facts
+global print_diagnostics save_just_the_facts debug
+global print_diagnostics save_just_the_facts debug
 global amazon_s3_run
 global formatOut
 
@@ -70,13 +71,16 @@ indices = [];
 metadata_file_list = [];
 
 while 1==1
-    
-    granule_start_time_guess = granule_start_time_guess + 5 /(24 * 60);
-    
+        
     % Is this time passed the end of the run.
     
     if granule_start_time_guess > Matlab_end_time
-        status = 901;
+        if print_diagnostics
+            fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+        end
+        
+        status = populate_problem_list( 901, 'End of run');
+
         return
     end
     
@@ -89,15 +93,19 @@ while 1==1
     
     if ~isempty(oinfo)
         if granule_start_time_guess > oinfo(iOrbit).end_time
-            status = 201;
+            if print_diagnostics
+                fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(oinfo(iOrbit).end_time))
+            end
             
             oinfo = [];
             
+            status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)]);
+
             return
         end
     end
     
-    % Build the approximate filename for the next metadata and data granules
+    % Build the output filename for the next metadata and data granules
     % and do a directory listing on each.
     
     % If the dir request is the same for both amazon_s3 and local, I can
@@ -175,7 +183,7 @@ while 1==1
                     
                     if ~isfield( oinfo, 'name')
                         if print_diagnostics
-                            fprintf('Need to determine if the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
+                            fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
                         end
                         
                         status = generate_output_filename('no_sli');

@@ -66,7 +66,7 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
-global print_diagnostics save_just_the_facts
+global print_diagnostics save_just_the_facts debug
 global formatOut
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 global Matlab_start_time Matlab_end_time
@@ -90,6 +90,8 @@ if isempty(metadata_directory)
     get_gradients = 0;  % Test run.
     save_core = 1;  % Test run.
     print_diagnostics = 1;  % Test run.
+    
+    debug = 1;
     
     % Remove the previous version of this file.
     
@@ -272,7 +274,13 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 iOrbit = 1;
 iGranule = 0;
 
-granule_start_time_guess = get_start_of_first_full_orbit;
+[status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit;
+
+% If end of run, return; not a very productive run.
+
+if status > 900
+    return
+end
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 

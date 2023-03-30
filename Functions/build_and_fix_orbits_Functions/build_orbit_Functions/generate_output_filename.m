@@ -32,7 +32,7 @@ global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes
 global Matlab_start_time Matlab_end_time
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 global latlim
-global print_diagnostics
+global print_diagnostics save_just_the_facts debug
 global formatOut
 
 status = 0;
@@ -55,7 +55,7 @@ switch build_type
         nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
         
         oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
-        oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit;
+        oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
         
         if sltimes_avg(nnToUse(1)) > time_of_NASA_orbit_change
              oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number;
@@ -87,7 +87,7 @@ switch build_type
             end
             
             oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
-            oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit;
+            oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_orbit;
             
             oinfo(iOrbit+1).orbit_number = oinfo(iOrbit+1).ginfo(1).NASA_orbit_number;
             

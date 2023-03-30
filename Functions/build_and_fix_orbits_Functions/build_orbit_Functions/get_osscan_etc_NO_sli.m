@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_NO_sli
+function [status, indices] = get_osscan_etc_NO_sli(temp_filename)
 % get_osscan_etc_NO_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -20,6 +20,8 @@ function [status, indices] = get_osscan_etc_NO_sli
 % % % %   orbit_status - 'new_orbit' to start an orbit from scratch, 'continue_orbit',
 % % % %    to get the indices to complete the current orbit and beginninggranule_start_time_guess
 % % % %    building the next one.
+%   temp_filename - filename of metadata file on which we are working.
+%
 % OUTPUT
 %   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
@@ -29,7 +31,7 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 global latlim
 global print_diagnostics
 
@@ -79,15 +81,15 @@ if indices.current.oescan ~= orbit_length
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule));
+    status = populate_problem_list( 115, temp_filename);
 end
-
-% Write ossan, oescan,... to oinfo
-
-oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
-oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
-
-oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
-oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
+% % % 
+% % % % Write ossan, oescan,... to oinfo
+% % % 
+% % % oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
+% % % oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
+% % % 
+% % % oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
+% % % oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
 
 

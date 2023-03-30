@@ -13,6 +13,8 @@
 % 121 - add_granule_data_to_orbit - Error reading data granule. Will not populate from this granule. 
 % 122 - add_granule_data_to_orbit - No data granule found but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.
 %
+% 131 - generate_output_filename - Calculation of end times do not agree.
+%
 % ACTION REQUIRED ON RETURN
 %
 % 201 - get_granule_metadata - end of orbit (100)
@@ -20,7 +22,10 @@
 % 211 - get_granule_metadata - No scanline start times for scanlines in this granule. This should never happen - skip this granule.
 % 212 - get_granule_metadata - 1st scan line in the granule not the first in a 10 detector array. This should never happen - skip this granule.
 %
+% 231 - generate_output_filename - Problem determining the end time of an orbit. 
 % 
+% 241 - build_orbit - orbit name not built for iOrbit>1. Very bad. Abort.
+%
 % END OF RUN
 %
 % 901 - find_next_granule_with_data - end of run (used to be -999).

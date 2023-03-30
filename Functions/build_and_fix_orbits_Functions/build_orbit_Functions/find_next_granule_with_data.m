@@ -53,15 +53,16 @@ function [status, granule_start_time_guess, metadata_file_list, data_file_list, 
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 global print_diagnostics save_just_the_facts
 global amazon_s3_run
 global formatOut
 
 % Initialize return variables.
 
+status = [];
 indices = [];
 
 % Start of loop searching for next granule.
@@ -102,15 +103,7 @@ while 1==1
     % If the dir request is the same for both amazon_s3 and local, I can
     % reduce the following down to just one line.
     
-    if amazon_s3_run
-        % Here for s3. May need to fix this; not sure I will have combined
-        % in the name. Probably should set up to search for data or
-        % metadata file as we did for the not-s3 run.
-        
-        metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-    else
-        metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-    end
+	metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
     
     % Was a metadata file found at this time?
     
@@ -123,11 +116,6 @@ while 1==1
         % not occur.
         
         if amazon_s3_run
-            % Here for s3. May need to fix this; not sure I will have combined
-            % in the name. Probably should set up to search for data or
-            % metadata file as we did for the not-s3 run.
-            % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
-            
             data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/' datestr(granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
         else
             data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
@@ -135,37 +123,92 @@ while 1==1
         
         if isempty(data_file_list)
             % Reset metadata_file_list to empty since no data granule
-            % exists for this time, even though a metadata granule does.
+            % exists for this time, even though a metadata granule does,
+            % flag and keep searching.
             
             metadata_file_list = [];
             
-            fprintf('No data granule corresponding to metadata granule %s. Return.\n', oinfo(iOrbit).ginfo(iGranle).metadata_granule_name)
+            fprintf('No data granule found for template: %s. Return.\n', ['/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*'])
             
-            status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranle).metadata_granule_name);
+            status = populate_problem_list( 101, ['/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
         else
-            % Populate oinfo with data granule name.
-            
-            oinfo(iOrbit).ginfo(iGranule).data_name = [data_file_list(1).folder '/' data_file_list(1).name];
+            data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
+            metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
             
             % Get the metadata for this granule.
             
-            
-            [[status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
+            [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
             
             % If status not equal to zero, either problems with start times
             % or 1st detector, not 1st detector in group of 10. Neither of
-            % these should happen, but, just in case...
+            % these should happen so we will assume that this granule is
+            % bad and go to the next one. 
             
             if status == 0
+                
+                iGranule = iGranule + 1;
+                
+                % Populate oinfo for this granule for info. oinfo(iOrbit).name 
+                % has not been defined yet but will be shortly using some
+                % of these values. 
+
+                oinfo(iOrbit).ginfo(iGranule).data_name = data_temp_filename;
+                
+                oinfo(iOrbit).ginfo(iGranule).metadata_name = metadata_temp_filename;
+                oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
+                
+                oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
+                oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
+                
+                oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
+                
+                oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
+
                 if isempty(start_line_index)
-                    [status, indices] = get_osscan_etc_NO_sli;
+                    [~, indices] = get_osscan_etc_NO_sli(metadata_temp_filename);
+                    
+                    % If this is the first granule read for this orbit, it
+                    % means that the previous orbit ended with a missing
+                    % file so we need to get the output filename. To do
+                    % this, we will find the start time of this orbit based
+                    % on the latitude of the first scan line in this granule.
+                    
+                    if ~isfield( oinfo, 'name')
+                        if print_diagnostics
+                            fprintf('Need to determine if the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
+                        end
+                        
+                        status = generate_output_filename('no_sli');
+                    end
                 else
-                    [status, indices] = get_osscan_etc_with_sli(1);
+                    [~, indices] = get_osscan_etc_with_sli(metadata_temp_filename);
+                        
+                    status = generate_output_filename('sli');                    
+                end                
+                    
+                % And now for scan line indices.
+                
+                oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
+                oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
+                
+                oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
+                oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
+                
+                if isfield(oinfo(iOrbit).ginfo, 'pirate_osscan')
+                    oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.pirate.osscan;
+                    oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.pirate.oescan;
+                    
+                    oinfo(iOrbit).ginfo(iGranule).pirate_gsscan = indices.pirate.gsscan;
+                    oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.pirate.gescan;
                 end
                 
-                % Found a granule with metadata, return. 
-                
-               return
+                if isfield(oinfo(iOrbit).ginfo, 'next_osscan')
+                    oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
+                    oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
+                    
+                    oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
+                    oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
+                end
             end
         end
     end

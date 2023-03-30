@@ -37,7 +37,8 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
 switch add_type
@@ -86,6 +87,6 @@ end
     
     sstref(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
     
-    scan_seconds_from_start(osscan:oescan) = single(scan_line_times(gsscan:gescan) - oinfo(iOrbit).orbit_start_time) * secs_per_day;
+    scan_seconds_from_start(osscan:oescan) = single(scan_line_times(gsscan:gescan) - oinfo(iOrbit).start_time) * secs_per_day;
 end
 

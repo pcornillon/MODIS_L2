@@ -259,11 +259,15 @@ end
 
 %% Read Lat,Lon and write the geolocation file.
 
-time_before_write_geo = toc;
-if single_granule
-    [Status, latitude, longitude] = nscans( file_in, base_dir);
-end
-time_to_write_geo = toc - time_before_write_geo;
+% I have no idea what the following lines do. Looks like they are left over
+% from when I was processing one granule at a time so can probably safely
+% skip here.
+
+% % time_before_write_geo = toc;
+% % if single_granule
+% %     [Status, latitude, longitude] = nscans( file_in, base_dir);
+% % end
+% % time_to_write_geo = toc - time_before_write_geo;
 
 %% Load the SST, flags_sst and Quality fields for the test image
 
@@ -737,8 +741,8 @@ nnReduced = find(FracArea<Thresholds.FracArea | (Eccentricity>=Thresholds.Eccent
 length_nnReduced = length(nnReduced);
 
 % % kk = strfind(file_in, '/');
-if isempty(nnReduced) == 1
-    disp(['No candidate objects found in: ' file_in(kk(end)+1:end) '. Skipping to the next granule.'])
+if isempty(nnReduced)
+    disp(['No candidate objects found in: ' file_in '. Skipping to the next granule.'])
 % %     [Status] = Write_Enhanced_MODIS_SST_Mask( file_in, new_mask_base_dir, int8(Final_Mask), ...
 % %         Old_Reference_Temperature_Flag, New_Reference_Temperature_Flag, qual_2_or_worse, time_coverage_start, GlobalAttributes);
 % % 

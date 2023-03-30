@@ -6,7 +6,7 @@
 % snippet is also used in get_osscan_etc_NO_sli.
 
 global oinfo iOrbit iGranule iProblem problem_list
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 
 % Make sure that there is a previous granule to use for this alternate
 % calculation. If it does not exist, skip this check.

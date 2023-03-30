@@ -12,20 +12,19 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 % orbit is missing.
 %
 % INPUT
-%    the reason for it being skipped (same codes as status):
-%    problem_code: 0 - OK
-%                : 1 - couldn't find the data granule.
-%                : 2 - didn't find number_of_lines global attribute.
-%                : 3 - number of pixels global attribute not equal to 1354.
-%                : 4 - number of scan lines global attribute not between 2020 and 2050.
-%                : 5 - couldn't find the metadata file copied from OBPG data.
-%                : 6 - 1st detector in data granule not 1st detector in group of 10. 
-%                : 10 - missing granule.
-%                : 11 - more than 2 metadata files for a given time. 
-%                : 100 - No granule with the start of an orbit found in time range. 
-%   granule_start_time_guess - the matlab_time of the granule to start with.
-%   orbit_start_time - matlab time of first scan line in the orbit to be built.
-%   oinfo - structure with orbit information.
+% % % %    the reason for it being skipped (same codes as status):
+% % % %    problem_code: 0 - OK
+% % % %                : 1 - couldn't find the data granule.
+% % % %                : 2 - didn't find number_of_lines global attribute.
+% % % %                : 3 - number of pixels global attribute not equal to 1354.
+% % % %                : 4 - number of scan lines global attribute not between 2020 and 2050.
+% % % %                : 5 - couldn't find the metadata file copied from OBPG data.
+% % % %                : 6 - 1st detector in data granule not 1st detector in group of 10. 
+% % % %                : 10 - missing granule.
+% % % %                : 11 - more than 2 metadata files for a given time. 
+% % % %                : 100 - No granule with the start of an orbit found in time range. 
+% % % %   start_time - matlab time of first scan line in the orbit to be built.
+% % % %   oinfo - structure with orbit information.
 %   granule_start_time_guess - estimated start time for the next granule.
 %
 % OUTPUT
@@ -45,69 +44,76 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   qual_sst - the array for the SST quality fields in this orbit.
 %   flags_sst - the array for the SST flags in this orbit.
 %   sstref - the array for the reference SST field in this orbit.
-%   orbit_start_time - matlab time of first scan line of the next orbit.
-%   granule - structure function with information about granules that went 
-%    into this orbit. Fields:
-%       metadata_name - name of input granule
-%       start_time - time (GMT) of start of granule.
-%       end_time - time (GMT) of end of granul (actually should be very
-%        close to the start time of the next orbit.
-%       data_granule_name - filename for the data granule.
-%       osscan - the scan number corresponding to the first scan in the
-%        orbit from this granule. This may not be the first scan in the 
-%        granule if this is a new orbit.
-%       oescan - the scan number corresponding to the last scan in the orbit
-%        from this granule. 
-%       gsscan - the first scan number in this granule copied to the orbit.
-%       gescan - the last scan number in this granule copied to the orbit.
-%       status - the return status associated with this granule. 
-%   oinfo - updated structure wit orbit info.
+%   start_time - matlab time of first scan line of the next orbit.
+% % % %   granule - structure function with information about granules that went 
+% % % %    into this orbit. Fields:
+% % % %       metadata_name - name of input granule
+% % % %       start_time - time (GMT) of start of granule.
+% % % %       end_time - time (GMT) of end of granul (actually should be very
+% % % %        close to the start time of the next orbit.
+% % % %       data_granule_name - filename for the data granule.
+% % % %       osscan - the scan number corresponding to the first scan in the
+% % % %        orbit from this granule. This may not be the first scan in the 
+% % % %        granule if this is a new orbit.
+% % % %       oescan - the scan number corresponding to the last scan in the orbit
+% % % %        from this granule. 
+% % % %       gsscan - the first scan number in this granule copied to the orbit.
+% % % %       gescan - the last scan number in this granule copied to the orbit.
+% % % %       status - the return status associated with this granule. 
+% % % %   oinfo - updated structure wit orbit info.
 %   scan_seconds_from_start - seconds since start of orbit to this granule.
+%   granule_start_time_guess - estimated start time for the next granule.
 %
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 global print_diagnostics save_just_the_facts
 global formatOut
-
-% Initialize return variables.
-
-latitude = single(nan);
-longitude = single(nan);
-SST_In = single(nan);
-qual_sst = int8(nan);
-flags_sst = int16(nan);
-sstref = single(nan);
 
 % Initialize parameters
 
 iGranule = 1;
 
-check_attributes = 1;
+% Is there an orbit name for this orbit. If not, very bad, quit.
 
-% Get the NASA orbit number and build he name for this orbit. Will use the
-% NASA orbit number where the descending satellite crosses 78 S.
+if ~isfield(oinfo, 'name')
+    fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
+    
+    status = populate_problem_list( 241, 'No orbit name.');
+    return
+end
 
-orbit_number = ncreadatt( orbit_info(iOrbit).granule_info(iGranule).metadata_name,'/','orbit_number');
-
-orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
-
-oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
-    datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
+% % %     
+% % % orbit_number = ncreadatt( oinfo(iOrbit).ginfo(1).metadata_name,'/','orbit_number');
+% % % 
+% % % orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(orbit_number) '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+% % % 
+% % % oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
+% % %     datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
 
 %% Skip this orbit if it exist already.
 
 if exist(oinfo(iOrbit).name) == 2
     
+    % Initialize return variables to simple nans; will return to calling
+    % program when the start of the next orbit is found.
+    
+    latitude = single(nan);
+    longitude = single(nan);
+    SST_In = single(nan);
+    qual_sst = int8(nan);
+    flags_sst = int16(nan);
+    sstref = single(nan);
+    
+    scan_seconds_from_start = 0;
+    
     fprintf('--- Have already processed %s. Going to the next orbit. \n', oinfo(iOrbit).name)
     
     [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( granule_start_time_guess);
-        
-    scan_seconds_from_start = 0;
-    
+            
     return
 end
 
@@ -141,23 +147,13 @@ if isempty(oinfo(iOrbit).ginfo(1).osscan)
     [status, granule_start_time_guess, metadata_file_list, data_file_list, indices] = find_next_granule_with_data( granule_start_time_guess);
 end
 
-% Read the data for the first granule in this orbit.
-
-osscan = oinfo(iOrbit).ginfo(iGranule).osscan;
-oescan = oinfo(iOrbit).ginfo(iGranule).oescan;
-
-gsscan = oinfo(iOrbit).ginfo(iGranule).gsscan;
-gescan = oinfo(iOrbit).ginfo(iGranule).gescan;
-
-scan_lines_to_read = gescan - gsscan + 1;
-
 fi_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
 
 % Populate the orbit with data from this granule.
 
 [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = add_granule_data_to_orbit( fi_granule, osscan, oescan, gsscan, gescan, ...
-    latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
+    = add_granule_data_to_orbit( 'current', fi_granule, latitude, longitude, SST_In, ...
+    qual_sst, flags_sst, sstref, scan_seconds_from_start);
 
 if status ~= 0
     return
@@ -167,8 +163,10 @@ end
 % also contains the start of the next orbit, i.e., .pirate_osscan is not
 % empty, pirate data from the next orbit and return.
 
-if ~isempty(oinfo(iOrbit).ginfo(1).pirate_osscan)
-    fprintf('Pirating data on the first call for orbit #%i, granule: \s\n', oinfo(iOrbit).orbit_number, oinfo(iOrbit).ginfo(iGranule).metadata_name)
+if isfield(oinfo(iOrbit).ginfo, 'pirate_osscan')
+    if print_diagnostics
+        fprintf('Pirating data on the first call for orbit #%i, granule: \s\n', oinfo(iOrbit).orbit_number, oinfo(iOrbit).ginfo(iGranule).metadata_name)
+    end 
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
         = pirate_data( granules_directory, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
@@ -205,7 +203,7 @@ while granule_start_time_guess <= oinfo(iOrbit).end_time
         fi_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
         
         [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-            = add_granule_data_to_orbit( 'current', fi_granule, osscan, oescan, gsscan, gescan, ...
+            = add_granule_data_to_orbit( 'current', fi_granule, ...
             latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
         
         % And the data to pirate data if we need to do this.

@@ -64,7 +64,8 @@ clear global
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 global print_diagnostics save_just_the_facts
 global formatOut
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
@@ -131,9 +132,6 @@ end
 
 %% Initialize some variables.
 
-iOrbit = 1;
-iGranule = 1;
-
 npixels = 1354;
 
 latlim = -78;
@@ -142,11 +140,13 @@ secs_per_day = 86400;
 secs_per_orbit = 5933.56;
 secs_per_scan_line = 0.1477112;
 
+time_of_NASA_orbit_change = 30000;
+
 orbit_length = 40271;
 
-problem_list.iProblem = 0;
-problem_list.filename{1} = '';
-problem_list.code(1) = nan;
+iProblem = 0;
+% % % problem_list.filename{1} = '';
+% % % problem_list.code(1) = nan;
 
 % Formats used in building filenames.
 
@@ -266,7 +266,13 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-[~, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
+% Start by looking for the first granule after Matlab_start_time with a 
+% descending nadir track crossing latlim, nominally 73 S.
+
+iOrbit = 1;
+iGranule = 0;
+
+granule_start_time_guess = get_start_of_first_full_orbit;
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
@@ -280,14 +286,16 @@ while granule_start_time_guess <= Matlab_end_time
         = build_orbit( granule_start_time_guess);
     
     if status > 0
-        fprintf('Just returned from build_orbit with status #%i. Hopefull either 201 or > 900.\n', status)
-        
+        if print_diagnostics
+            fprintf('Just returned from build_orbit with status #%i. Hopefull either 201 or > 900.\n', status)
+        end
+    
         if status > 900
             fprintf('End of run.\n')
             return
         end
         
-        if status == 201
+        if (status == 201) & print_diagnostics
             fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).start_time))
         end
     else
@@ -299,7 +307,7 @@ while granule_start_time_guess <= Matlab_end_time
         if fix_mask
             start_time_to_fix_mask = tic;
             
-            [Final_Mask] = fix_MODIS_mask_full_orbit( orbit_file_name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
+            [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
             
             oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
             

@@ -35,7 +35,7 @@ nn1 = closest_point( canonical_nlat, target_lat_1, 0.02);
 nn2 = closest_point( canonical_nlat, target_lat_2, 0.02);
 
 if isempty(nn1) | isempty(nn2)
-    fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
+    fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', input_filename, nlat_t(1));
     
     status = populate_problem_list( 101, input_filename);
     return

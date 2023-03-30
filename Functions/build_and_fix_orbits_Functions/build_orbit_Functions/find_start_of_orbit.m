@@ -25,6 +25,8 @@ global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_end_time
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
+global print_diagnostics save_just_the_facts
 
 start_time = granule_start_time_guess;
 
@@ -41,39 +43,40 @@ while granule_start_time_guess <= Matlab_end_time
     
     % If this granule contains the start of a new orbit save the info.
     
-    if ~isempty(start_line_index)
-        % Found the start of the next orbit, save the time and return.
-        
-        oinfo(iOrbit).start_time = scan_line_times(start_line_index);
-        oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;
-        return
-    end
+% % %     if ~isempty(start_line_index)
+% % %         % Found the start of the next orbit, save the time and return.
+% % %         
+% % %         oinfo(iOrbit).start_time = scan_line_times(start_line_index);
+% % %         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit;
+% % %         return
+% % %     end
     
-    % If this granule is past the end of the previous orbit determine an
-    % approximate start and end time for the orbit and save them.
-    
-    if status == 201
-        % Get the possible location of this granule in the orbit. If the starts in
-        % the 101 scanline overlap region, two possibilities will be returned. We
-        % will choose the earlier, smaller scanline, of the two; choosing the later
-        % of the two would mean that we would only use the last few scanlines in
-        % the orbit, which should have already been done if nadir track of the
-        % previous granule crossed 78 S.
-        
-        target_lat_1 = nlat_t(5);
-        target_lat_2 = nlat_t(11);
-        
-        nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-        
-        oinfo(iOrbit).start_time = sltimes_avg(nnToUse(1));
-        oinfo(iOrbit).end_time = oinfo(iOrbit).orbit_start_time + secs_per_orbit;
-        return
-    end
+% % %     % If this granule is past the end of the previous orbit determine an
+% % %     % approximate start and end time for the orbit and save them.
+% % %     
+% % %     if status == 201
+% % %         % Get the possible location of this granule in the orbit. If it starts in
+% % %         % the 101 scanline overlap region, two possibilities will be returned. We
+% % %         % will choose the earlier, smaller scanline, of the two; choosing the later
+% % %         % of the two would mean that we would only use the last few scanlines in
+% % %         % the orbit, which should have already been done if nadir track of the
+% % %         % previous granule crossed 78 S.
+% % %         
+% % %         target_lat_1 = nlat_t(5);
+% % %         target_lat_2 = nlat_t(11);
+% % %         
+% % %         nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+% % %         
+% % %         oinfo(iOrbit).start_time = sltimes_avg(nnToUse(1));
+% % %         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit;
+% % %         return
+% % %     end
 end
 
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.
 
-fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
-
+if print_diagnostics 
+    fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+end
 

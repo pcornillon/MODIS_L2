@@ -33,7 +33,7 @@ if iGranule > 1
         end
     else
         if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
-            fprintf('Wanted to skip %i lines but the only permissible values are 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
+            fprintf('Wanted to skip %i lines but the only permissible values are an integer multiple of 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
             
             lines_to_skip = 0;
             

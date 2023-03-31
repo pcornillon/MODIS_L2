@@ -7,6 +7,7 @@
 
 global oinfo iOrbit iGranule iProblem problem_list
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
+global print_diagnostics save_just_the_facts debug
 
 % Make sure that there is a previous granule to use for this alternate
 % calculation. If it does not exist, skip this check.
@@ -30,6 +31,10 @@ if iGranule > 1
             indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1;
             
             status = populate_problem_list( 111, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+            
+            if debug
+                keyboard
+            end
         end
     else
         if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
@@ -38,6 +43,10 @@ if iGranule > 1
             lines_to_skip = 0;
             
             status = populate_problem_list( 112, []);
+            
+            if debug
+                keyboard
+            end
         end
         
         osscan_test = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
@@ -47,6 +56,10 @@ if iGranule > 1
                 oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
             
             status = populate_problem_list( 113, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+            
+            if debug
+                keyboard
+            end
         end
     end
 end

@@ -1,4 +1,4 @@
-function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit( granules_directory)
+function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
 % This function starts by searching for the first metadata granule at or
@@ -7,7 +7,7 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 % satellite passes latlim, nominally 78 S.
 %
 % INPUT
-%   granule_start_time_guess - the time to start searching for exisitng metadata granules.
+%   none
 %
 % OUTPUT
 %   status  : 911 - end of run.
@@ -48,6 +48,7 @@ global amazon_s3_run
 % specified start time. In the while loop increment by one hour.
 
 file_list = [];
+% % % status = 0;
 
 granule_start_time_guess = floor(Matlab_start_time*24) / 24 - 1 / 24;
 
@@ -57,12 +58,11 @@ while isempty(file_list)
     if granule_start_time_guess > Matlab_end_time
         fprintf('Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
         
-        status = populate_problem_list( 911, []);
+        status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)]);
         return
     end
     
     file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
-
 end
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
@@ -87,4 +87,23 @@ granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,SS);
 % Next, find the ganule at the beginning of the first complete orbit
 % starting with the first granule found in the time range.
 
-[status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_start_of_orbit( granule_start_time_guess);
+start_line_index = [];
+
+while granule_start_time_guess <= Matlab_end_time
+    
+    [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+ 
+    if ~isempty(start_line_index)
+        break
+    end
+end
+
+% If the start of an orbit was not found in the time range specified let
+% the person running the program know.
+
+if status == 901 
+    if print_diagnostics
+        fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+    end
+end
+

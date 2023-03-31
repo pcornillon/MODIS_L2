@@ -27,6 +27,7 @@ global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_
 global formatOut
 global latlim
 global amazon_s3_run
+global print_diagnostics save_just_the_facts debug
 
 % Initialize some variables.
 

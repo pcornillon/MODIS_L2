@@ -36,7 +36,7 @@ global print_diagnostics
 
 status = 0;
 
-% Get the possible location of this granule in the orbit. If the starts in
+% Get the possible location of this granule in the orbit. If it starts in
 % the 101 scanline overlap region, two possibilities will be returned. We
 % will choose the earlier, smaller scanline, of the two; choosing the later
 % of the two would mean that we would only use the last few scanlines in
@@ -57,8 +57,6 @@ indices.current.osscan = nnToUse(1);
 % extract them from the current granule.
 
 indices.case = 1;
-
-% % % if continue_orbit
 
 % The following is a snippet of code to generate osscan using the start
 % time of this granule and the end time of the previous granule and to
@@ -121,45 +119,8 @@ if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_gra
     indices.pirate.gsscan = 1;
     indices.pirate.gescan = orbit_length - indices.pirate.osscan + 1;
 end
-% % % end
 
 indices.next.osscan = 1;
 indices.next.oescan = num_scan_lines_in_granule - start_line_index + 1;
 indices.next.gsscan = start_line_index;
 indices.next.gescan = num_scan_lines_in_granule;
-
-% % % % Write ossan, oescan,... to oinfo
-% % %
-% % % oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
-% % % oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
-% % %
-% % % oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
-% % % oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
-% % %
-% % % if isfield(oinfo.ginfo, 'private_osscan')
-% % %     oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.current.osscan;
-% % %     oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.current.oescan;
-% % %
-% % %     oinfo(iOrbit).ginfo(iGranule).pirate_gsscan = indices.current.gsscan;
-% % %     oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.current.gescan;
-% % % end
-% % %
-% % % oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
-% % % oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
-% % %
-% % % oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
-% % % oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
-% % %
-% % % % Save the start & end time for the next orbit as well as metadata
-% % % % information for the first granule of the next orbit.
-% % %
-% % % oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
-% % % oinfo(iOrbit+1).orbit_end_time = oinfo(iOrbit+1).start_time + secs_per_orbit;
-% % %
-% % % oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib;
-% % % oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(iGranule).metadata_name;
-% % %
-% % % oinfo(iOrbit+1).ginfo(1).start_time = oinfo(iOrbit).ginfo(iGranule).start_time;
-% % % oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(iGranule).end_time;
-% % %
-

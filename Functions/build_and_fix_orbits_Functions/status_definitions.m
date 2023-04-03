@@ -9,6 +9,7 @@
 % 113 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - Calculated start location of scan line in orbit does not agree between the two methods used. Will use the calculation based on the canonical orbit. 
 % 114 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 115 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
+% 116 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli -  Should only find one value for the number of lines to skip but found either 0 or more than 1.
 %
 % 121 - add_granule_data_to_orbit - Error reading data granule. Will not populate from this granule. 
 % 122 - add_granule_data_to_orbit - No data granule found but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.

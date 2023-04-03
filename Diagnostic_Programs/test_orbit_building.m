@@ -34,12 +34,14 @@ nlon_t = single(ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line
 dd2 = diff(nlon_t);
 nn2 = find(abs(dd2)> 1);
 nlon_t(1:nn2) = nlon_t(1:nn2) + 360;
-plot( nlon_t, nlat_t, 'r')
+plot( nlon_t, nlat_t, 'r', linewidth=2)
 
 % Annotate the plot a bit.
 
 grid on
 plot([-200 300], -78 * [1 1], 'm', linewidth=2)
+plot([-200 300], nlat_t(1) * [1 1], 'g', linewidth=2)
+plot([-200 300], nlat_t(end) * [1 1], 'c', linewidth=2)
 
-plot( nlon_typical(start_line_index), nlat_avg(start_line_index), 'ok', markerfacecolor='b', markersize=5)
-plot( nlon_typical(nnToUse), nlat_avg(nnToUse), 'ok', markerfacecolor='r', markersize=5)
+plot( nlon_t(1), nlat_t(1), 'ok', markerfacecolor='r', markersize=10)
+plot( nlon_t(start_line_index), nlat_t(start_line_index), 'ok', markerfacecolor='b', markersize=10)

@@ -74,7 +74,7 @@ end
 indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
 
 indices.current.gsscan = 1;
-indices.current.gescan = num_scan_lines_in_granule - 1;
+indices.current.gescan = num_scan_lines_in_granule;
 
 % Is the length of the orbit correct? If not force it to be so.
 

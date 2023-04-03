@@ -68,6 +68,7 @@ indices = [];
 
 % Start of loop searching for next granule.
 
+start_time = granule_start_time_guess;
 metadata_file_list = [];
 
 while 1==1

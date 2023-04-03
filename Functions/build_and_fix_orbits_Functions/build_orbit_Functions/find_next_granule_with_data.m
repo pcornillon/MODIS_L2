@@ -63,7 +63,7 @@ global formatOut
 
 % Initialize return variables.
 
-status = [];
+status = 0;
 indices = [];
 
 % Start of loop searching for next granule.
@@ -166,8 +166,8 @@ while 1==1
                 oinfo(iOrbit).ginfo(iGranule).metadata_name = metadata_temp_filename;
                 oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
                 
-                oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1) * secs_per_day;
-                oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) * secs_per_day + secs_per_scan_line * 10;
+                oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
+                oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) + (secs_per_scan_line * 10) /  secs_per_day;
                 
                 oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
                 

@@ -35,12 +35,12 @@ global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_
 global latlim
 global print_diagnostics
 
-% Get the possible location of this granule in the orbit. If the starts in
-% the 101 scanline overlap region, two possibilities will be returned. We
-% will choose the earlier, smaller scanline, of the two; choosing the later
-% of the two would mean that we would only use the last few scanlines in
-% the orbit, which should have already been done if nadir track of the
-% previous granule crossed 78 S. 
+% Get the possible location of this granule in the orbit. If it starts in
+% the 101 scanline overlap region, two possibilities will be returned. The
+% earlier one of the two, smaller scanline, will be chosen; choosing the 
+% later of the two would mean that only the last few scanlines of the orbit
+% would be used in the orbit, which should have already been done if nadir
+% track of the previous granule crossed 78 S. 
 
 target_lat_1 = nlat_t(5);
 target_lat_2 = nlat_t(11);
@@ -76,7 +76,7 @@ indices.current.gescan = num_scan_lines_in_granule - 1;
 
 % Is the length of the orbit correct? If not force it to be so.
 
-if indices.current.oescan ~= orbit_length
+if indices.current.oescan > orbit_length
     fprintf('Calculated end of orbit is %i, which does not agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;

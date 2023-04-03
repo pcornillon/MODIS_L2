@@ -12,54 +12,52 @@ global print_diagnostics save_just_the_facts debug
 % Make sure that there is a previous granule to use for this alternate
 % calculation. If it does not exist, skip this check.
 
-if iGranule > 1
-    % Check the start line in the current orbit determined determined from
-    % the latitude in the canonical orbit with an estimate of the start
-    % line based on the time between the beginning of this granule and the
-    % end of the previous one. This is just a sanity check on the
-    % calculaiton. Start by getting the number of lines to skip if any.
-    
-    lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
-    
-    % The lines to skip should be either 0, 1020, 1030, 1040 or 1050. First
-    % check to see if it is zero, the most probable case.
-    
-    if lines_to_skip == 0
-        if indices.current.osscan ~= (oinfo(iOrbit).ginfo(iGranule-1).oescan + 1)
-            fprintf('Adjacent orbits but osscan calculated from canonical orbit is %i for %s. Setting osscan to previous %i+1.\n', indices.current.osscan, oinfo(iOrbit).ginfo(iGranule).metadata_name,oinfo(iOrbit).ginfo(iGranule-1).oescan)
-            
-            indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1;
-            
-            status = populate_problem_list( 111, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-            
-            if debug
-                keyboard
-            end
-        end
-    else
-        if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
-            fprintf('Wanted to skip %i lines but the only permissible values are an integer multiple of 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
-            
-            lines_to_skip = 0;
-            
-            status = populate_problem_list( 112, []);
-            
-            if debug
-                keyboard
-            end
-        end
+% Check the start line in the current orbit determined determined from
+% the latitude in the canonical orbit with an estimate of the start
+% line based on the time between the beginning of this granule and the
+% end of the previous one. This is just a sanity check on the
+% calculaiton. Start by getting the number of lines to skip if any.
+
+lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
+
+% The lines to skip should be either 0, 1020, 1030, 1040 or 1050. First
+% check to see if it is zero, the most probable case.
+
+if lines_to_skip == 0
+    if indices.current.osscan ~= (oinfo(iOrbit).ginfo(iGranule-1).oescan + 1)
+        fprintf('Adjacent orbits but osscan calculated from canonical orbit is %i for %s. Setting osscan to previous %i+1.\n', indices.current.osscan, oinfo(iOrbit).ginfo(iGranule).metadata_name,oinfo(iOrbit).ginfo(iGranule-1).oescan)
         
-        osscan_test = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
+        indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1;
         
-        if indices.current.osscan ~= osscan_test
-            fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule.  Using osscan from canonical orbit\n', ...
-                oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
-            
-            status = populate_problem_list( 113, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-            
-            if debug
-                keyboard
-            end
+        status = populate_problem_list( 111, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+        
+        if debug
+            keyboard
+        end
+    end
+else
+    if isempty(lines_to_skip == [1:39]'*[1020:10:1050])
+        fprintf('Wanted to skip %i lines but the only permissible values are an integer multiple of 0, 1020, 1030, 1040 or 1050. Setting lines_to_skip to 0.\n', lines_to_skip)
+        
+        lines_to_skip = 0;
+        
+        status = populate_problem_list( 112, []);
+        
+        if debug
+            keyboard
+        end
+    end
+    
+    osscan_test = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
+    
+    if indices.current.osscan ~= osscan_test
+        fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule.  Using osscan from canonical orbit\n', ...
+            oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
+        
+        status = populate_problem_list( 113, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+        
+        if debug
+            keyboard
         end
     end
 end

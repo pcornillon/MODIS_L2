@@ -35,6 +35,8 @@ global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_
 global latlim
 global print_diagnostics
 
+status = 0;
+
 % Get the possible location of this granule in the orbit. If it starts in
 % the 101 scanline overlap region, two possibilities will be returned. The
 % earlier one of the two, smaller scanline, will be chosen; choosing the 

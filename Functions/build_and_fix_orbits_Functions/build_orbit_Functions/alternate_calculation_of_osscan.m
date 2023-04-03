@@ -18,7 +18,7 @@ global print_diagnostics save_just_the_facts debug
 % end of the previous one. This is just a sanity check on the
 % calculaiton. Start by getting the number of lines to skip if any.
 
-lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) + 0.05) / secs_per_scan_line);
+lines_to_skip = floor( abs((oinfo(iOrbit).ginfo(iGranule).start_time - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
 
 % The lines to skip should be either 0, 1020, 1030, 1040 or 1050. First
 % check to see if it is zero, the most probable case.

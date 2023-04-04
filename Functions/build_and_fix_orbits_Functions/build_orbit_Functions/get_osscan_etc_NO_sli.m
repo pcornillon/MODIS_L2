@@ -58,7 +58,7 @@ indices.current.osscan = nnToUse(1);
 % previous granule did not cross 78 S, the number of lines to skip will be
 % nnToUse(1). 
 
-if iGranule > 1
+% % % if iGranule > 1
     
     % The following is a snippet of code to generate osscan using the start
     % time of this granule and the end time of the previous granule and to
@@ -67,7 +67,7 @@ if iGranule > 1
     
     alternate_calculation_of_osscan
     
-end
+% % % end
 
 % And for the rest of oescan, gsscan and gescan.
 
@@ -85,13 +85,3 @@ if indices.current.oescan > orbit_length
     
     status = populate_problem_list( 115, temp_filename);
 end
-% % % 
-% % % % Write ossan, oescan,... to oinfo
-% % % 
-% % % oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
-% % % oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
-% % % 
-% % % oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
-% % % oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
-
-

@@ -172,9 +172,9 @@ while 1==1
                 oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
                 
                 oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
-
+                                
                 if isempty(start_line_index)
-                    [~, indices] = get_osscan_etc_NO_sli(metadata_temp_filename);
+                    [~, indices] = get_osscan_etc_NO_sli;
                     
                     % If this is the first granule read for this orbit, it
                     % means that the previous orbit ended with a missing
@@ -190,7 +190,7 @@ while 1==1
                         status = generate_output_filename('no_sli');
                     end
                 else
-                    [~, indices] = get_osscan_etc_with_sli(metadata_temp_filename);
+                    [~, indices] = get_osscan_etc_with_sli;
                         
                     status = generate_output_filename('sli');                    
                 end                

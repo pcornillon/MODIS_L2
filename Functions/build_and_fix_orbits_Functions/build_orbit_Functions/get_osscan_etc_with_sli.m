@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_with_sli(temp_filename)
+function [status, indices] = get_osscan_etc_with_sli
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -20,7 +20,7 @@ function [status, indices] = get_osscan_etc_with_sli(temp_filename)
 % % % %   continue_orbit - 1 to get the indices to complete the current orbit and
 % % % %    begin building the next one, 0 to get the indices to begin building
 % % % %    the next orbit only.
-%   temp_filename - name of metadata file on which we are working.
+% % % %   temp_filename - name of metadata file on which we are working.
 %
 % OUTPUT
 %   status - if 65 do not populate orbit for this granule.
@@ -46,6 +46,7 @@ status = 0;
 target_lat_1 = nlat_t(5);
 target_lat_2 = nlat_t(11);
 
+temp_filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 nnToUse = get_scanline_index( target_lat_1, target_lat_2, temp_filename);
 
 indices.current.osscan = nnToUse(1);

@@ -44,6 +44,8 @@ global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_
 global print_diagnostics save_just_the_facts
 global formatOut
 
+status = 0;
+
 % Initialize parameters
 
 iGranule = 1;
@@ -77,7 +79,7 @@ if exist(oinfo(iOrbit).name) == 2
     
     start_line_index = [];
     
-    while granule_start_time_guess <= oinfo(iOrbit).ginfo(iGranule).end_time
+    while granule_start_time_guess <= oinfo(iOrbit).end_time
         
         [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         

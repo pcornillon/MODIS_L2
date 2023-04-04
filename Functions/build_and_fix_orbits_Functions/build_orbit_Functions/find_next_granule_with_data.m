@@ -98,10 +98,10 @@ while 1==1
                 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(oinfo(iOrbit).end_time))
             end
             
-            oinfo = [];
-            
             status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)]);
 
+            oinfo = [];
+            
             return
         end
     end
@@ -203,7 +203,7 @@ while 1==1
                 oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
                 oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
                 
-                if isfield(oinfo(iOrbit).ginfo, 'pirate_osscan')
+                if isfield(indices, 'pirate')
                     oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.pirate.osscan;
                     oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.pirate.oescan;
                     
@@ -211,12 +211,17 @@ while 1==1
                     oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.pirate.gescan;
                 end
                 
-                if isfield(oinfo(iOrbit).ginfo, 'next_osscan')
+                if isfield(indices, 'next')
                     oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
                     oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
                     
                     oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
                     oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
+                    
+                    % Return here because the start of a new orbit has been
+                    % found.
+                    
+                    return
                 end
             end
         end

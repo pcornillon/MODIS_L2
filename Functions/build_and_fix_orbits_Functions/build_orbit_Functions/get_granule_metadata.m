@@ -33,6 +33,7 @@ global print_diagnostics save_just_the_facts debug
 
 status = 0;
 start_line_index = [];
+nlat_t = [];
 
 % Build temporaty filename.
 

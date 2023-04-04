@@ -276,6 +276,8 @@ iGranule = 0;
 
 [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit;
 
+iOrbit = iOrbit + 1;
+
 % If end of run, return; not a very productive run.
 
 if status > 900

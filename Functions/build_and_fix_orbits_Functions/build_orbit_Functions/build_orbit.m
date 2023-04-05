@@ -187,7 +187,7 @@ while granule_start_time_guess <= oinfo(iOrbit).end_time
         
         % And the data to pirate data if we need to do this.
         
-        if ~isempty(oinfo(iOrbit).ginfo(iGranule).pirate_osscan)            
+        if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
             [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
                 = pirate_data( granules_directory, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
                 scan_seconds_from_start, granule_start_time_guess);

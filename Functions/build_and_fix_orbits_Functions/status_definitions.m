@@ -4,6 +4,19 @@
 %
 % 101 - find_next_granule_with_data - data granule missing but metadata granule present. Will skip to next granule. 
 %
+% 111 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - More than 1
+%       possibility for the number of lines to skip was found, it should be
+%       1. The values found were averaged and rounded to the nearest integer.
+% 112 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - The number of
+%       lines to skip was not a multiple of 0, 2020, 2030, 2040 or 2050.  
+% 113 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - The estimated
+%       orbit start time based on this granule differs by the equivalent of
+%       more than 7 scan lines from that estimated on the granule when this
+%       orbit was defined.
+% 114 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
+% 115 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
+% 116 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli -  Should only find one value for the number of lines to skip but found either 0 or more than 1.
+
 % 111 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - Adjacent orbits but osscan calculations disagree. Will use value based on end of previous granule.
 % 112 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - Didn't want to skip 1020, 1030, 1040 or 1050 scanlines. Setting lines to skip to 0.
 % 113 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - Calculated start location of scan line in orbit does not agree between the two methods used. Will use the calculation based on the canonical orbit. 

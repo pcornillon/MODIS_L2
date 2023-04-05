@@ -526,7 +526,7 @@ end
 
 % Date and time of the start of this orbit sconds since 1/1/1970
 
-time_coverage_start = datenum(oinfo(iOrbit).orbit_start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
+time_coverage_start = datenum(oinfo(iOrbit).start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
 
 nccreate( output_filename, 'DateTime', 'Datatype', 'double', 'Format', 'netcdf4')
 
@@ -558,8 +558,8 @@ if ~isempty(nGranules)
             
             % Load the granule filenams into variable filenames.
             
-            nn = strfind(oinfo(iOrbit).ginfo(jGranule).data_granule_name, 'AQUA_MODIS.');
-            filename = oinfo(iOrbit).ginfo(jGranule).data_granule_name(nn:end);
+            nn = strfind(oinfo(iOrbit).ginfo(jGranule).data_name, 'AQUA_MODIS.');
+            filename = oinfo(iOrbit).ginfo(jGranule).data_name(nn:end);
             filenames = [filenames; filename];
             
             % Next load the start and end times of this granule.

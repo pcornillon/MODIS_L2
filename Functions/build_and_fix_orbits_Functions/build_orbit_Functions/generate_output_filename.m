@@ -52,7 +52,7 @@ switch build_type
         target_lat_1 = nlat_t(5);
         target_lat_2 = nlat_t(11);
         
-        nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+        nnToUse = get_scanline_index( target_lat_1, target_lat_2);
         
         oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
@@ -130,6 +130,7 @@ switch build_type
         
         oinfo(iOrbit+1).ginfo(1).start_time = oinfo(iOrbit).ginfo(end).start_time;
         oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
+        
     otherwise
         fprintf('build_type passed in as %s, must be either ''sli'', or ''no_sli''.\n', build_type)
         

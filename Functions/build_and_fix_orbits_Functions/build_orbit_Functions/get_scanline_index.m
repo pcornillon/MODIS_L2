@@ -1,4 +1,4 @@
-function nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filename)
+function nnToUse = get_scanline_index( target_lat_1, target_lat_2)
 % get_scanline_index - gets the index for the scanline corresponding to the time passed in - PCC 
 %  
 % This function looks for the location of a target latitude in the
@@ -17,9 +17,6 @@ function nnToUse = get_scanline_index( target_lat_1, target_lat_2, input_filenam
 %    shouled be at least 5 scanlines after the 1st point if the 1st point
 %    is the 5th or later point in a group of 10 scans corresponding to a 10
 %    detector set.
-%   input_filename - the name of the file from which the two latitude
-%    points were extracted. Uses this in an error message if there is a
-%    problem.
 %
 % OUTPUT
 %   nnToUse - the indices, either 1 (and 3 if 3 intersections) or 2, to use.
@@ -35,9 +32,9 @@ nn1 = closest_point( canonical_nlat, target_lat_1, 0.02);
 nn2 = closest_point( canonical_nlat, target_lat_2, 0.02);
 
 if isempty(nn1) | isempty(nn2)
-    fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', input_filename, nlat_t(1));
+    fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
     
-    status = populate_problem_list( 101, input_filename);
+    status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranule).metadata_name);
     return
 end
 

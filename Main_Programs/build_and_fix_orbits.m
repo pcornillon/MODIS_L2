@@ -92,6 +92,7 @@ global amazon_s3_run
 %       end_time
 %       metadata_global_attrib
 %       scans_in_this_granule
+%       osscan_diff - difference in # of scan lines for the location of the start of this granule in the orbit from two different ways of estimating it.  
 %       osscan
 %       oescan
 %       gsscan
@@ -118,6 +119,8 @@ oinfo.ginfo.start_time = [];
 oinfo.ginfo.end_time = [];
 oinfo.ginfo.metadata_global_attrib = [];
 oinfo.ginfo.scans_in_this_granule = [];
+
+oinfo.ginfo.osscan_diff = [];
 
 oinfo.ginfo.osscan = [];
 oinfo.ginfo.oescan = [];
@@ -502,7 +505,6 @@ while granule_start_time_guess <= Matlab_end_time
     % Increment orbit counter and reset granule counter to 1.
     
     iOrbit = iOrbit + 1;
-    iGranule = 1;
 end
 
 fprintf('   Time for this run: %8.1f seconds or, in minutes, %5.1f\n', toc(tic_build_start), toc(tic_build_start/60))

@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_NO_sli(temp_filename)
+function [status, indices] = get_osscan_etc_NO_sli
 % get_osscan_etc_NO_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -17,10 +17,6 @@ function [status, indices] = get_osscan_etc_NO_sli(temp_filename)
 % locations from which to copy the data in the current granule.
 %
 % INPUT
-% % % %   orbit_status - 'new_orbit' to start an orbit from scratch, 'continue_orbit',
-% % % %    to get the indices to complete the current orbit and beginninggranule_start_time_guess
-% % % %    building the next one.
-%   temp_filename - filename of metadata file on which we are working.
 %
 % OUTPUT
 %   status - if 65 do not populate orbit for this granule.
@@ -37,6 +33,8 @@ global print_diagnostics
 
 status = 0;
 
+indices.case = 0;
+
 % Get the possible location of this granule in the orbit. If it starts in
 % the 101 scanline overlap region, two possibilities will be returned. The
 % earlier one of the two, smaller scanline, will be chosen; choosing the 
@@ -47,43 +45,21 @@ status = 0;
 target_lat_1 = nlat_t(5);
 target_lat_2 = nlat_t(11);
 
-nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-
-% Check to see if the location of this granule results in the same start
-% time for the orbit if that has already been determined.
-
-if ~isempty(oinfo(iOrbit).start_time)
-    temp_start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
-    
-    start_time_difference = (temp_start_time - oinfo(iOrbit).start_time) * secs_per_day; 
-    if abs(start_time_difference) > 1.5
-        fprintf('Start times differ by more than 1.5 s. The start time for the orbit based on this granule minus that for the 1st granule found in the orbit is %f s\n', ...
-            start_time_difference)
-        
-        status = populate_problem_list( 119, 'Start times don''t agree.');
-    end
-end
+nnToUse = get_scanline_index( target_lat_1, target_lat_2);
 
 indices.current.osscan = nnToUse(1);
 
-% Check the above if this is NOT the first granule found in a new orbit.
+% alternate_calculation_of_osscan will update the starting location of
+% scan lines for this granule in the current orbit if a starting time for
+% the orbit has already been found. It will also make that the two
+% different ways of determining the location of the scan lines from this
+% granule agree with each other within limits. The snippet of code also
+% calculates the lines to skip and does various tests on this value. If
+% this is the 1st granule found for this orbit, no need to determine
+% missing lines from a previous granule, the value above will be used.
 
-% Get lines to skip for missing granules. Will, hopefully, be 0 if no
-% granules skipped. If this is the first granule in a new orbit and the
-% previous granule did not cross 78 S, the number of lines to skip will be
-% nnToUse(1). 
-
-% % % if iGranule > 1
+alternate_calculation_of_osscan
     
-    % The following is a snippet of code to generate osscan using the start
-    % time of this granule and the end time of the previous granule and to
-    % compare the result obtained above using the canonical orbit. This
-    % snippet is also used in get_osscan_etc_NO_sli.
-    
-    alternate_calculation_of_osscan
-    
-% % % end
-
 % And for the rest of oescan, gsscan and gescan.
 
 indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
@@ -98,5 +74,5 @@ if indices.current.oescan > orbit_length
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 115, temp_filename);
+    status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule).metadata_name);
 end

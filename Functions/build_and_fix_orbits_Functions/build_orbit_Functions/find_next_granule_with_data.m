@@ -224,10 +224,11 @@ while 1==1
                     oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
                     
                     % Return here because the start of a new orbit has been
-                    % found.
-                    
-                    return
+                    % found.                    
                 end
+                
+                return
+                
             end
         end
     end

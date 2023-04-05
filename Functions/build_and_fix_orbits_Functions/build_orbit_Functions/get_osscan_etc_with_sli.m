@@ -49,6 +49,21 @@ target_lat_2 = nlat_t(11);
 temp_filename = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 nnToUse = get_scanline_index( target_lat_1, target_lat_2, temp_filename);
 
+% Check to see if the location of this granule results in the same start
+% time for the orbit if that has already been determined.
+
+if ~isempty(oinfo(iOrbit).start_time)
+    temp_start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
+    
+    start_time_difference = (temp_start_time - oinfo(iOrbit).start_time) * secs_per_day; 
+    if abs(start_time_difference) > 1.5
+        fprintf('Start times differ by more than 1.5 s. The start time for the orbit based on this granule minus that for the 1st granule found in the orbit is %f s\n', ...
+            start_time_difference)
+        
+        status = populate_problem_list( 119, 'Start times don''t agree.');
+    end
+end
+
 indices.current.osscan = nnToUse(1);
 
 % This case is the simplest, the number of scanlines required to complete
@@ -72,10 +87,10 @@ alternate_calculation_of_osscan
 % the index of the start line for the next orbit so, instead of
 % sli-1 need an extra -1.
 
-indices.current.oescan = indices.current.osscan + (start_line_index - 2) + 101;
+indices.current.oescan = indices.current.osscan + start_line_index + 101 - 1;
 
 indices.current.gsscan = 1;
-indices.current.gescan = start_line_index - 1;
+indices.current.gescan = start_line_index + 101 - 1;
 
 if indices.current.oescan ~= orbit_length
     fprintf('Calculated end of orbit is %i, which does no agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
@@ -115,7 +130,7 @@ if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_gra
     % resulting in going past the end of this granule (with the
     % start of an orbit in it).
     
-    indices.pirate.osscan = indices.oescan + 1;
+    indices.pirate.osscan = indices.current.oescan + 1;
     indices.pirate.oescan = orbit_length;
     indices.pirate.gsscan = 1;
     indices.pirate.gescan = orbit_length - indices.pirate.osscan + 1;

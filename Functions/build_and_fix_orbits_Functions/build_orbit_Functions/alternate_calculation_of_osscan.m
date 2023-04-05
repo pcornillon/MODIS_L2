@@ -125,7 +125,7 @@ if iGranule > 1
     % different amount of time separating scans on this orbit compared with
     % the canonical orbit.
     
-    if abs(indices.current.osscan - osscan_test) > 1
+    if abs(indices.current.osscan - osscan_test) > 3
         fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule.  Using osscan from canonical orbit\n', ...
             oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
         

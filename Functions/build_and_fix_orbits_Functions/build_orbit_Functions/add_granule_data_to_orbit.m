@@ -41,9 +41,11 @@ global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
+status = 0;
+
 switch add_type
     case 'current'
-        if isempty(osscan = oinfo(iOrbit).ginfo(iGranule).osscan)
+        if isempty(oinfo(iOrbit).ginfo(iGranule).osscan)
             fprintf('No osscan data in oinfo(%i).ginfo(%i).oscan for granule %s. This should never happen.\n', iOrbit, iGranule, oinfo(iOrbit).ginfo(iGranule).metadata_name)
             
             status = populate_problem_list( 203, oinfo(iOrbit).ginfo(iGranule).osscan);
@@ -59,7 +61,7 @@ switch add_type
         scan_lines_to_read = gescan - gsscan + 1;
         
     case 'pirate'
-        if isempty(osscan = oinfo(iOrbit).ginfo(iGranule).pirate_osscan)
+        if isempty(oinfo(iOrbit).ginfo(iGranule).pirate_osscan)
             fprintf('No osscan data in oinfo(%i).ginfo(%i).pirate_osscan for granule %s. This should never happen.\n', iOrbit, iGranule, oinfo(iOrbit).ginfo(iGranule).metadata_name)
             
             status = populate_problem_list( 204, oinfo(iOrbit).ginfo(iGranule).osscan);

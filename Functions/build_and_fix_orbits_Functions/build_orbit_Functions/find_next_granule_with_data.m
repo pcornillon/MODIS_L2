@@ -92,7 +92,8 @@ while 1==1
     % granule to go on until either a granule is found or the end of the
     % run is reached. 
     
-    if ~isempty(oinfo)
+% % %     if ~isempty(oinfo(iOrbit))
+    if length(oinfo) == iOrbit
         if granule_start_time_guess > oinfo(iOrbit).end_time
             if print_diagnostics
                 fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(oinfo(iOrbit).end_time))
@@ -100,7 +101,11 @@ while 1==1
             
             status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)]);
 
-            oinfo = [];
+            oinfo(iOrbit) = [];
+            
+            if debug
+                keyboard
+            end
             
             return
         end
@@ -182,7 +187,7 @@ while 1==1
                     % this, we will find the start time of this orbit based
                     % on the latitude of the first scan line in this granule.
                     
-                    if ~isfield( oinfo, 'name')
+                    if isempty(oinfo(iOrbit).name)
                         if print_diagnostics
                             fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
                         end

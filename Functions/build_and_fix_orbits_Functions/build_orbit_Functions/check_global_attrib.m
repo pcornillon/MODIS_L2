@@ -35,15 +35,15 @@ nscans_range = [2019 2051];
 
 % Read the global attributes from the granule file.
 
-oinfo(iOrbit).data_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).data_granule_name);
+oinfo(iOrbit).data_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).data_name);
 
 % Perform tests on some of the global variables. 
 
 if isempty(strcmp(oinfo(iOrbit).data_global_attrib.Dimensions(1).Name, 'number_of_lines'))
     fprintf('Didn''t find an attribute for ''%s'' in %s. Skipping this granule. Error code 2.\n', ...
-        oinfo(iOrbit).data_global_attrib.Dimensions(1).Name, oinfo(iOrbit).ginfo(iGranule).data_granule_name)
+        oinfo(iOrbit).data_global_attrib.Dimensions(1).Name, oinfo(iOrbit).ginfo(iGranule).data_name)
     
-    status = populate_problem_list( 2, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
+    status = populate_problem_list( 2, oinfo(iOrbit).ginfo(iGranule).data_name);
     return
 end
 
@@ -54,18 +54,18 @@ npixels_attr = oinfo(iOrbit).data_global_attrib.Dimensions(2).Length;
 
 if npixels_attr ~= npixels
     fprintf('There are %i pixels/scan line in granule: %s but there should be 1354. Skipping this granule. Error code 3.\n', ...
-        npixels, oinfo(iOrbit).ginfo(iGranule).data_granule_name)
+        npixels, oinfo(iOrbit).ginfo(iGranule).data_name)
     
-    status = populate_problem_list( 3, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
+    status = populate_problem_list( 3, oinfo(iOrbit).ginfo(iGranule).data_name);
     return
 end
 
 
 if (nscans < nscans_range(1)) | (nscans > nscans_range(2))
     fprintf('There are %i scan lines in this granule: %s but the number of scan lines should be between %i and %i. Skipping this granule. Error code 4.\n', ...
-        nscans, oinfo(iOrbit).ginfo(iGranule).data_granule_name, nscans_range)
+        nscans, oinfo(iOrbit).ginfo(iGranule).data_name, nscans_range)
    
-    status = populate_problem_list( 4, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
+    status = populate_problem_list( 4, oinfo(iOrbit).ginfo(iGranule).data_name);
     return
 end
 
@@ -91,9 +91,9 @@ end
 
 if not_found
     fprintf('Whoa, didn''t find ''time_coverage_start'' in the attributes for: %s. This should never happen. Skipping this granule. Error code 5.\n', ...
-        oinfo(iOrbit).ginfo(iGranule).data_granule_name)
+        oinfo(iOrbit).ginfo(iGranule).data_name)
     
-    status = populate_problem_list( 5, oinfo(iOrbit).ginfo(iGranule).data_granule_name);
+    status = populate_problem_list( 5, oinfo(iOrbit).ginfo(iGranule).data_name);
     return
 end
 

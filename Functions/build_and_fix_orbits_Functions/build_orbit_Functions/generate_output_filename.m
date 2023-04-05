@@ -87,7 +87,7 @@ switch build_type
             end
             
             oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
-            oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_orbit;
+            oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_day;
             
             oinfo(iOrbit+1).orbit_number = oinfo(iOrbit+1).ginfo(1).NASA_orbit_number;
             
@@ -99,6 +99,7 @@ switch build_type
 
             % And the metadata for this granule at the start of the next orbit.
             
+            oinfo(iOrbit+1).ginfo(1).data_name = oinfo(iOrbit).ginfo(end).data_name;
             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
             oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
             oinfo(iOrbit+1).ginfo(1).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
@@ -111,7 +112,7 @@ switch build_type
         % Here for granule found at the start of an orbit.
     
         oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
-        oinfo(iOrbit+1).end_time = oinfo(iOrbit).start_time + secs_per_orbit;
+        oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_day;
         oinfo(iOrbit+1).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit+1).orbit_number) ...
@@ -122,6 +123,7 @@ switch build_type
         
         % And the metadata for this granule at the start of the next orbit.
         
+        oinfo(iOrbit+1).ginfo(1).data_name = oinfo(iOrbit).ginfo(end).data_name;
         oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
         oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
         oinfo(iOrbit+1).ginfo(1).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;

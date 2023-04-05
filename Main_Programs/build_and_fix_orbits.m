@@ -62,6 +62,7 @@ function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_
 
 clear global
 
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
@@ -73,6 +74,60 @@ global Matlab_start_time Matlab_end_time
 global sst_range sst_range_grid_size
 global med_op
 global amazon_s3_run
+
+% Structure of oinfo
+%
+% oinfo.
+%   name
+%   start_time
+%   end_time
+%   orbit_number
+%   data_global_attrib ?
+%
+% oinfo.ginfo.
+%       metadata_name
+%       data_name
+%       NASA_orbit_number
+%       start_time
+%       end_time
+%       metadata_global_attrib
+%       scans_in_this_granule
+%       osscan
+%       oescan
+%       gsscan
+%       gescan
+%       pirate_osscan
+%       pirate_oescan
+%       pirate_gsscan
+%       pirate_gescan
+
+% Initial oinfo structure. Need to do this to be able to check for the
+% existence of a field. Specifically, if the field has not been created and
+% isempty is done on it, it will fail. 
+
+oinfo.name = [];
+oinfo.start_time = [];
+oinfo.end_time = [];
+oinfo.orbit_number = [];
+oinfo.data_global_attrib = [];
+
+oinfo.ginfo.metadata_name = [];
+oinfo.ginfo.data_name = [];
+oinfo.ginfo.NASA_orbit_number = [];
+oinfo.ginfo.start_time = [];
+oinfo.ginfo.end_time = [];
+oinfo.ginfo.metadata_global_attrib = [];
+oinfo.ginfo.scans_in_this_granule = [];
+
+oinfo.ginfo.osscan = [];
+oinfo.ginfo.oescan = [];
+oinfo.ginfo.gsscan = [];
+oinfo.ginfo.gescan = [];
+
+oinfo.ginfo.pirate_osscan = [];
+oinfo.ginfo.pirate_oescan = [];
+oinfo.ginfo.pirate_gsscan = [];
+oinfo.ginfo.pirate_gescan = [];
 
 % Initialize return variables.
 
@@ -297,7 +352,7 @@ while granule_start_time_guess <= Matlab_end_time
     
     if status > 0
         if print_diagnostics
-            fprintf('Just returned from build_orbit with status #%i. Hopefull either 201 or > 900.\n', status)
+            fprintf('Just returned from build_orbit with status #%i. Hopefull either 251 or > 900.\n', status)
         end
     
         if status > 900
@@ -305,8 +360,16 @@ while granule_start_time_guess <= Matlab_end_time
             return
         end
         
-        if (status == 201) & print_diagnostics
+        if (status == 251) & print_diagnostics
             fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).start_time))
+        end
+        
+        if (status == 201) & print_diagnostics
+            fprintf('Not sure what this error is for. Sort it out if it comes up %s\n', datestr(oinfo(iOrbit).start_time))
+            
+            if debug
+                keyboard
+            end
         end
     else
         

@@ -49,14 +49,15 @@ target_lat_2 = nlat_t(11);
 
 nnToUse = get_scanline_index( target_lat_1, target_lat_2, oinfo(iOrbit).ginfo(iGranule).metadata_name);
 
-% Get the average time between scans.
+% Check to see if the location of this granule results in the same start
+% time for the orbit if that has already been determined.
 
-if exist(oinfo(iOrbit).start_time)
+if ~isempty(oinfo(iOrbit).start_time)
     temp_start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
     
     start_time_difference = (temp_start_time - oinfo(iOrbit).start_time) * secs_per_day; 
-    if abs(start_time_difference) > 0.2
-        fprintf('Start times differ by more than 0.2 s. The start time for the orbit based on this granule minus that for the 1st granule found in the orbit is %f s\n', ...
+    if abs(start_time_difference) > 1.5
+        fprintf('Start times differ by more than 1.5 s. The start time for the orbit based on this granule minus that for the 1st granule found in the orbit is %f s\n', ...
             start_time_difference)
         
         status = populate_problem_list( 119, 'Start times don''t agree.');

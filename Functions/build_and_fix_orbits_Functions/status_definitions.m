@@ -26,6 +26,7 @@
 % 231 - generate_output_filename - Problem determining the end time of an orbit. 
 % 
 % 241 - build_orbit - orbit name not built for iOrbit>1. Very bad. Abort.
+% 251 - build_orbit - This orbit already built, have skipped to the start of the next orbit. 
 %
 % END OF RUN
 %

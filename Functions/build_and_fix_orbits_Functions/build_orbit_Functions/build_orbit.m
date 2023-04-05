@@ -52,7 +52,7 @@ iGranule = 1;
 
 % Is there an orbit name for this orbit. If not, very bad, quit.
 
-if ~isfield(oinfo, 'name')
+if isempty(oinfo(iOrbit).name)
     fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
     
     status = populate_problem_list( 241, 'No orbit name.');
@@ -86,6 +86,11 @@ if exist(oinfo(iOrbit).name) == 2
         if ~isempty(start_line_index)
             break
         end
+    end
+    
+    % If no problems set status to 251 ==> this orbit already built.
+    if status == 0
+        status = 251;
     end
     
     return
@@ -137,7 +142,7 @@ end
 % also contains the start of the next orbit, i.e., .pirate_osscan is not
 % empty, pirate data from the next orbit and return.
 
-if isfield(oinfo(iOrbit).ginfo, 'pirate_osscan')
+if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
     if print_diagnostics
         fprintf('Pirating data on the first call for orbit #%i, granule: \s\n', oinfo(iOrbit).orbit_number, oinfo(iOrbit).ginfo(iGranule).metadata_name)
     end 
@@ -156,7 +161,7 @@ end
 
 while granule_start_time_guess <= oinfo(iOrbit).end_time
     
-    iGranule = iGranule + 1;
+%     iGranule = iGranule + 1;
     
     % Get metadata information for the next granule-find_next... increments
     % granule_start_time... by 5 minutes.

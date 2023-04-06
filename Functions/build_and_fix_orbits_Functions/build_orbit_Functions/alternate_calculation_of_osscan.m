@@ -77,7 +77,7 @@ if iGranule > 1
     osscan_diff = indices.current.osscan - osscan_test;
     
     if abs(osscan_diff) > 7
-        fprintf('Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule.  Using osscan from canonical orbit\n', ...
+        fprintf('---- Problem with start of scanline granules in this orbit for granule %s\n    %i calcuated based on canonical orbit, %i calcuated based on previous granule.\n    Using osscan determined from end of previous granule\n', ...
             oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.osscan, osscan_test)
         
         status = populate_problem_list( 114, oinfo(iOrbit).ginfo(iGranule).metadata_name);

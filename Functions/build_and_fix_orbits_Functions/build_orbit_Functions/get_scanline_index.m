@@ -38,15 +38,28 @@ if isempty(nn1) | isempty(nn2)
     return
 end
 
-% If the 2nd point comes farther along in the orbit than the 1st point then
-% the 1st (or 3rd if there is one) point(s) are the appropriate ones,
-% otherwist the 2nd point is.
+% % % % If the 2nd point comes farther along in the orbit than the 1st point then
+% % % % the 1st (or 3rd if there is one) point(s) are the appropriate ones,
+% % % % otherwist the 2nd point is.
+% % % 
+% % % if nn2(1) > nn1(1)
+% % %     nnToUse = nn1(1);
+% % %     if length(nn1) == 3
+% % %         nnToUse(2) = nn1(3);
+% % %     end
+% % % else
+% % %     nnToUse = nn1(2);
+% % % end
 
-if nn2(1) > nn1(1)
-    nnToUse = nn1(1);
-    if length(nn1) == 3
-        nnToUse(2) = nn1(3);
-    end
-else
-    nnToUse = nn1(2);
+% Use the starting point that results in the lowest sum of squares between
+% the granule nadir track and the canonical orbit.
+
+for i=1:length(nn1)
+    npts = min( [nn1(i)+length(nlat_t)-1, 40271]) - nn1(i) + 1;
+    
+    ddsumsq(i) = sum((nlat_t(1:npts)' - nlat_avg(nn1(i):nn1(i)+npts-1)).^2);
 end
+
+[val, mm] = min(ddsumsq);
+
+nnToUse = nn1(mm);

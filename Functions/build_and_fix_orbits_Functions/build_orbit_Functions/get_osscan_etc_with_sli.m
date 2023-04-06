@@ -71,7 +71,7 @@ alternate_calculation_of_osscan
 % the index of the start line for the next orbit so, instead of
 % sli-1 need an extra -1.
 
-indices.current.oescan = indices.current.osscan + start_line_index + 101 - 1;
+indices.current.oescan = indices.current.osscan + start_line_index - 1 + 101 - 1;
 
 indices.current.gsscan = 1;
 indices.current.gescan = start_line_index + 101 - 1;

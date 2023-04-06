@@ -92,7 +92,6 @@ while 1==1
     % granule to go on until either a granule is found or the end of the
     % run is reached. 
     
-% % %     if ~isempty(oinfo(iOrbit))
     if length(oinfo) == iOrbit
         if granule_start_time_guess > oinfo(iOrbit).end_time
             if print_diagnostics
@@ -193,11 +192,25 @@ while 1==1
                         end
                         
                         status = generate_output_filename('no_sli');
+                        
+                        % status should never be 231 so returning if it is;
+                        % again, it should NEVER happen.
+                        
+                        if status == 231
+                            return
+                        end
                     end
                 else
                     [~, indices] = get_osscan_etc_with_sli;
                         
-                    status = generate_output_filename('sli');                    
+                    status = generate_output_filename('sli');  
+                    
+                    % status should never be 231 so returning if it is;
+                    % again, it should NEVERN happen.
+                    
+                    if status == 231
+                        return
+                    end
                 end                
                     
                 % And now for scan line indices.

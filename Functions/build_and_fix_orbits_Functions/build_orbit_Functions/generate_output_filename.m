@@ -106,6 +106,7 @@ switch build_type
             
             oinfo(iOrbit+1).ginfo(1).start_time = oinfo(iOrbit).ginfo(end).start_time;
             oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
+            oinfo(iOrbit+1).ginfo(1).scans_in_this_granule = oinfo(iOrbit).ginfo(end).scans_in_this_granule;
         end
             
     case 'sli'

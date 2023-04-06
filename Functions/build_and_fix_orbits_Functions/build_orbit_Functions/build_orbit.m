@@ -173,8 +173,8 @@ while granule_start_time_guess <= oinfo(iOrbit).end_time
     % finding a granule with a start time in it or 901 end of run. If
     % status = 201 or 901 break out of this loop.
     
-    if status ~= 0
-        break
+    if sum(status == [231 901])
+        return
     else
         
         % Populate the orbit with data from this granule.

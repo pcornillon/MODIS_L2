@@ -141,7 +141,7 @@ if isempty(metadata_directory)
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
     output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
     start_date_time = [2010 6 19 5 0 0]; % Test run.
-    end_date_time = [2010 6 19 11 15 0 ];  % Test run.
+    end_date_time = [2010 6 19 12 30 0 ];  % Test run.
     fix_mask = 0;  % Test run.
     fix_bowtie = 1;  % Test run.
     regrid_sst = 0;  % Test run.
@@ -336,9 +336,10 @@ iGranule = 0;
 
 iOrbit = iOrbit + 1;
 
-% If end of run, return; not a very productive run.
+% If end of run, return; not a very productive run. status=231 is a coding
+% error should never happen.
 
-if status > 900
+if (status > 900) | (status == 231)
     return
 end
 
@@ -353,18 +354,15 @@ while granule_start_time_guess <= Matlab_end_time
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granule_start_time_guess);
     
-    if status > 0
-        if print_diagnostics
-            fprintf('Just returned from build_orbit with status #%i. Hopefull either 251 or > 900.\n', status)
-        end
-    
+    if status > 0    
         if status > 900
             fprintf('End of run.\n')
             return
         end
-        
-        if (status == 251) & print_diagnostics
-            fprintf('Orbit already processed, skipping to the next orbit starting at %s\n', datestr(oinfo(iOrbit).start_time))
+
+        if status == 231
+            fprintf('Status returned from build_orbit as 231. This should never happen; it is a coding error. Terminating this run.\n')
+            return
         end
         
         if (status == 201) & print_diagnostics

@@ -65,11 +65,12 @@ global formatOut
 
 status = 0;
 indices = [];
+data_file_list = [];
+metadata_file_list = [];
 
 % Start of loop searching for next granule.
 
 start_time = granule_start_time_guess;
-metadata_file_list = [];
 
 while 1==1
         
@@ -95,17 +96,10 @@ while 1==1
     if length(oinfo) == iOrbit
         if granule_start_time_guess > oinfo(iOrbit).end_time
             if print_diagnostics
-                fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(oinfo(iOrbit).end_time))
+                fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
             end
             
             status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)]);
-
-            oinfo(iOrbit) = [];
-            
-            if debug
-                keyboard
-            end
-            
             return
         end
     end
@@ -244,6 +238,10 @@ while 1==1
                 
             end
         end
+    else
+        % Here is no granule for this time; need to increment time step.
+        
+        granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     end
 end
 

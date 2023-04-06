@@ -23,7 +23,7 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %   regrid_MODIS_orbits( fi_in, [])
 
 global iOrbit oinfo iGranule problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_orbit nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 
 % Initialize return variables.
@@ -80,20 +80,29 @@ num_steps = num_detectors - 1;
 %   2) lines with nadir values ascending from 75 S to 75 N,
 %   3) lines with nadir values north of 75 N east-to-west and
 %   4) lines with nadir values from 75 N descending to 75 S.
+%
+% latitude will be empty where there are missing granules. Fill them in
+% with the canonical orbit.
 
-latn = latitude(677,:);  % Latitude of the nadir track. 
+% % % latn = latitude(677,:);  % Latitude of the nadir track. 
+
+nn = find(isnan(nlat_orbit) == 1);
+
+if ~isempty(nn)
+    nlat_orbit(nn) = nlat_avg(nn-1);
+end
 
 % First the part near the beginning of the orbit.
 
 north_lat_limit = 75;
 south_lat_limit = -75;
 
-nn = find(latn(1:floor(nscans/4)) < south_lat_limit); 
+nn = find(nlat_orbit(1:floor(nscans/4)) < south_lat_limit); 
 
 region_start(1) = 1;
 region_end(1) = floor(nn(end)/10) * 10;
 
-nn = find(latn(1:end) > north_lat_limit);
+nn = find(nlat_orbit(1:end) > north_lat_limit);
 
 region_start(2) = region_end(1) + 1;
 region_end(2) = floor(nn(1) / 10) * 10;

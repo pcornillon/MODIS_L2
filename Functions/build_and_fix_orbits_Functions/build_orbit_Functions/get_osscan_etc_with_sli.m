@@ -39,10 +39,12 @@ status = 0;
 % the orbit, which should have already been done if nadir track of the
 % previous granule crossed 78 S.
 
-target_lat_1 = nlat_t(5);
-target_lat_2 = nlat_t(11);
+% % % target_lat_1 = nlat_t(5);
+% % % target_lat_2 = nlat_t(11);
+% % % 
+% % % nnToUse = get_scanline_index( target_lat_1, target_lat_2);
 
-nnToUse = get_scanline_index( target_lat_1, target_lat_2);
+nnToUse = get_scanline_index;
 
 indices.current.osscan = nnToUse(1);
 

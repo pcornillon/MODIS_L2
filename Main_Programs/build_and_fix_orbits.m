@@ -65,7 +65,7 @@ clear global
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_orbit nlat_avg
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
 global print_diagnostics save_just_the_facts debug
 global formatOut
@@ -141,7 +141,8 @@ if isempty(metadata_directory)
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
     output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
     start_date_time = [2010 6 19 5 0 0]; % Test run.
-    end_date_time = [2010 6 19 12 30 0 ];  % Test run.
+%     end_date_time = [2010 6 19 12 30 0 ];  % Test run.
+    end_date_time = [2010 6 21 12 30 0 ];  % Test run.
     fix_mask = 0;  % Test run.
     fix_bowtie = 1;  % Test run.
     regrid_sst = 0;  % Test run.
@@ -354,7 +355,7 @@ while granule_start_time_guess <= Matlab_end_time
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granule_start_time_guess);
     
-    if status > 0    
+    if status > 0
         if status > 900
             fprintf('End of run.\n')
             return
@@ -365,14 +366,22 @@ while granule_start_time_guess <= Matlab_end_time
             return
         end
         
-        if (status == 201) & print_diagnostics
-            fprintf('Not sure what this error is for. Sort it out if it comes up %s\n', datestr(oinfo(iOrbit).start_time))
-            
-            if debug
-                keyboard
-            end
-        end
+% % %         if (status == 201) & print_diagnostics
+% % %             fprintf('Run ended. Exiting.\n', ' ')
+% % %             return
+% % %         end
     else
+        
+        % latitude will be empty where there are missing granules. Fill them in
+        % with the canonical orbit.
+        
+        nlat_orbit = latitude(677,:);
+        
+        nn = find(isnan(nlat_orbit) == 1);
+        
+        if ~isempty(nn)
+            nlat_orbit(nn) = nlat_avg(nn);
+        end 
         
         %% Next fix the mask if requested.
         

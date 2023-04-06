@@ -49,10 +49,12 @@ switch build_type
         % the orbit, which should have already been done if nadir track of the
         % previous granule crossed 78 S.
         
-        target_lat_1 = nlat_t(5);
-        target_lat_2 = nlat_t(11);
+% % %         target_lat_1 = nlat_t(5);
+% % %         target_lat_2 = nlat_t(11);
+% % %         
+% % %         nnToUse = get_scanline_index( target_lat_1, target_lat_2);
         
-        nnToUse = get_scanline_index( target_lat_1, target_lat_2);
+        nnToUse = get_scanline_index;
         
         oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;

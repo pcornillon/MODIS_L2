@@ -41,7 +41,7 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %   3/26/2022 - PCC - Major modifications to include other variables.
 
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_orbit nlat_avg
 global print_diagnostics save_just_the_facts
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
 
@@ -454,7 +454,7 @@ ncwriteatt( output_filename, 'nadir_latitude', 'long_name', 'Nadir latitude')
 ncwriteatt( output_filename, 'nadir_latitude', 'standard_name', 'nadir_latitude')
 ncwriteatt( output_filename, 'nadir_latitude', 'units', 'degrees_north')
 
-ncwrite(  output_filename, 'nadir_latitude', latitude(nadir_x,:))
+ncwrite(  output_filename, 'nadir_latitude', nlat_orbit)
 
 % left_swath_edge_trackline_latitude
 

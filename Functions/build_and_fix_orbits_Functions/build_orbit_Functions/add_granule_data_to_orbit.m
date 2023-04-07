@@ -37,7 +37,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
 

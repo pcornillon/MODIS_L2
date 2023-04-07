@@ -135,14 +135,31 @@ oinfo.ginfo.pirate_gescan = [];
 % Initialize return variables.
 
 if isempty(metadata_directory)
-    metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-    granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/';  % Test run.
-    fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
-    logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
-    output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
-    start_date_time = [2010 6 19 5 0 0]; % Test run.
-%     end_date_time = [2010 6 19 12 30 0 ];  % Test run.
-    end_date_time = [2010 6 21 12 30 0 ];  % Test run.
+    test1 = 0;
+    test2 = 1;
+    
+    if test1
+        metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+        granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/';  % Test run.
+        fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
+        logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
+        output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test1/';  % Test run.
+        start_date_time = [2010 6 19 5 0 0]; % Test run.
+        %     end_date_time = [2010 6 19 12 30 0 ];  % Test run.
+        end_date_time = [2010 6 21 12 30 0 ];  % Test run.
+    end
+    
+    if test2
+        metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_depleted/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+        granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_depleted/MODIS_R2019/combined/';  % Test run.
+        fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_depleted/';   % Test run.
+        logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
+        output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test2/';  % Test run.
+        start_date_time = [2010 6 19 5 0 0]; % Test run.
+        %     end_date_time = [2010 6 19 12 30 0 ];  % Test run.
+        end_date_time = [2010 6 21 12 30 0 ];  % Test run.
+    end
+    
     fix_mask = 0;  % Test run.
     fix_bowtie = 1;  % Test run.
     regrid_sst = 0;  % Test run.

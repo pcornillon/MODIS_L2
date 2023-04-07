@@ -27,7 +27,8 @@ global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global print_diagnostics save_just_the_facts
 global formatOut
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global latlim orbit_length
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
 global Matlab_start_time Matlab_end_time
 global sst_range sst_range_grid_size
 global med_op

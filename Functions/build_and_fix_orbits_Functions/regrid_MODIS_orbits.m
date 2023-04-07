@@ -24,7 +24,8 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 
 global iOrbit oinfo iGranule problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nlat_orbit nlat_avg
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
+global latlim npixels
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
 
 % Initialize return variables.
 

@@ -18,7 +18,7 @@
 % granule and the end time of the previous granule. 
 
 global oinfo iOrbit iGranule iProblem problem_list
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
 global print_diagnostics save_just_the_facts debug
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 
@@ -39,7 +39,19 @@ if iGranule > 1
     possible_values = reshape([num_possible' * base_lines], length(base_lines)*length(num_possible), 1);
     possible_values = [0; possible_values];
     
+    found_one = 0;
+        
     nn = find( min(abs(lines_to_skip - possible_values)) == abs(lines_to_skip - possible_values));
+
+    if found_one == 0
+        fprintf('Didn''t skip the right number of scan lines./n')
+        
+%         status = populate_problem_list( 111, ['Wants to skip ' num2str(lines_to_skip) ' lines.']);
+        
+        if debug
+            keyboard
+        end
+    end
     
     if length(nn) ~= 1
         fprintf('Should only find one value of the number of lines to skip, but found %i. This should never happen but will round to the mean of the values if it does./n', length(nn))

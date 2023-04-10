@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_with_sli
+function [status, indices] = get_osscan_etc_with_sli(indices)
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -27,45 +27,10 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
 global print_diagnostics
 
 status = 0;
-
-% Get the possible location of this granule in the orbit. If it starts in
-% the 101 scanline overlap region, two possibilities will be returned. We
-% will choose the earlier, smaller scanline, of the two; choosing the later
-% of the two would mean that we would only use the last few scanlines in
-% the orbit, which should have already been done if nadir track of the
-% previous granule crossed 78 S.
-
-% % % target_lat_1 = nlat_t(5);
-% % % target_lat_2 = nlat_t(11);
-% % % 
-% % % nnToUse = get_scanline_index( target_lat_1, target_lat_2);
-
-nnToUse = get_scanline_index;
-
-indices.current.osscan = nnToUse(1);
-
-% This case is the simplest, the number of scanlines required to complete
-% this orbit--go to the start of the next orbit + 101 scanlines for overlap
-% with next orbit--exist in this granule. Generate the relevant information
-% for the location of scanlines in the current and next orbits and where to
-% extract them from the current granule.
-
-indices.case = 1;
-
-% alternate_calculation_of_osscan will update the starting location of
-% scan lines for this granule in the current orbit if a starting time for
-% the orbit has already been found. It will also make that the two
-% different ways of determining the location of the scan lines from this
-% granule agree with each other within limits. The snippet of code also
-% calculates the lines to skip and does various tests on this value. If
-% this is the 1st granule found for this orbit, no need to determine
-% missing lines from a previous granule, the value above will be used.
-
-alternate_calculation_of_osscan
 
 % Add 101 to osscan + sli to get 100 scanline overlap of this orbit
 % with the next one plus an additional line, hence 101, to allow
@@ -73,10 +38,14 @@ alternate_calculation_of_osscan
 % the index of the start line for the next orbit so, instead of
 % sli-1 need an extra -1.
 
+% And for the rest of oescan, gsscan and gescan.
+
 indices.current.oescan = indices.current.osscan + start_line_index - 1 + 101 - 1;
 
 indices.current.gsscan = 1;
 indices.current.gescan = start_line_index + 101 - 1;
+
+% Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan ~= orbit_length
     fprintf('Calculated end of orbit is %i, which does no agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
@@ -98,13 +67,13 @@ end
 
 if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule
     
-    % This case is arises if the additional 101 scanlines need to
-    % complete the current orbit result in more scanlines being
-    % required from the current granule than are available in it. In
-    % this case, scanlines will need to be pirated from the next
-    % granule, if it exists. This section gets the starting and ending
-    % scanlines to be filled from the next granule as well as the
-    % starting and ending scanlines to use from that granule.
+    % This case arises if the additional 101 scan lines need to complete
+    % the current orbit result in more scanl ines being required from
+    % the current granule than are available in it. In this case, scan
+    % lines will need to be pirated from the next granule, if it
+    % exists. This section gets the starting and ending scanlines to be
+    % filled from the next granule as well as the starting and ending
+    % scanlines to use from that granule.
     
     indices.case = 2;
     

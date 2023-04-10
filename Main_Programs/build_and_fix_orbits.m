@@ -66,7 +66,7 @@ clear global
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_orbit nlat_avg
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
 global print_diagnostics save_just_the_facts debug
 global formatOut
 global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
@@ -135,29 +135,31 @@ oinfo.ginfo.pirate_gescan = [];
 % Initialize return variables.
 
 if isempty(metadata_directory)
-    test1 = 0;
-    test2 = 1;
+    test_num = 3;
     
-    if test1
-        metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-        granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/';  % Test run.
-        fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
-        logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
-        output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test1/';  % Test run.
-        start_date_time = [2010 6 19 5 0 0]; % Test run.
-        %     end_date_time = [2010 6 19 12 30 0 ];  % Test run.
-        end_date_time = [2010 6 21 12 30 0 ];  % Test run.
-    end
+    fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
+    logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
+    start_date_time = [2010 6 19 5 0 0]; % Test run.
+    end_date_time = [2010 6 21 12 30 0 ];  % Test run.
     
-    if test2
-        metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_depleted/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-        granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_depleted/MODIS_R2019/combined/';  % Test run.
-        fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_depleted/';   % Test run.
-        logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
-        output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test2/';  % Test run.
-        start_date_time = [2010 6 19 5 0 0]; % Test run.
-        %     end_date_time = [2010 6 19 12 30 0 ];  % Test run.
-        end_date_time = [2010 6 21 12 30 0 ];  % Test run.
+    switch test_num
+        case 1
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/combined/';  % Test run.
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test1/';  % Test run.
+            
+        case 2
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/combined/';  % Test run.
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test2/';  % Test run.
+            
+        case 3
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/combined/';  % Test run.
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test3/';  % Test run.
+        
+        otherwise
+            fprintf('Test case must be either 1, 2 or 3; you entered %i.\n', test_num)
     end
     
     fix_mask = 0;  % Test run.
@@ -218,6 +220,8 @@ secs_per_day = 86400;
 secs_per_orbit = 5933.56;
 secs_per_scan_line = 0.1477112;
 
+secs_per_granule_minus_10 = [298.3760  299.8540];
+
 time_of_NASA_orbit_change = 30000;
 
 orbit_length = 40271;
@@ -246,6 +250,22 @@ formatOut.yyyymmddThh = 'yyyymmddTHH';
 formatOut.yyyymmddhhmmss = 'yyyymmddHHMMSS';
 formatOut.yyyymmddhhmm = 'yyyymmddHHMM';
 formatOut.yyyymmddhh = 'yyyymmddHH';
+
+% Get the possible number of scan lines to skip. Must be either 0, or some
+% combination of an integer multiple of 2030 and of 2040.
+
+j = 1;
+possible_num_scan_lines_skip(1,j) = 0;
+possible_num_scan_lines_skip(2,j) = 0;
+possible_num_scan_lines_skip(3,j) = 0;
+for aa=1:20
+    for bb=1:20
+        j = j + 1;
+        possible_num_scan_lines_skip(1,j) = aa;
+        possible_num_scan_lines_skip(2,j) = bb;
+        possible_num_scan_lines_skip(3,j) = aa * 2030 + bb * 2040;
+    end
+end
 
 %% Check input parameters to make sure they are OK.
 

@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_NO_sli
+function [status, indices] = get_osscan_etc_NO_sli(indices)
 % get_osscan_etc_NO_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -27,40 +27,54 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
 global latlim
 global print_diagnostics
+
+% time for 2030 and 2040 scans from 5 to end-5: 298.3760  299.8540
+% 2040 scan line granule every 10 or 11 granules. 
 
 status = 0;
 
 indices.case = 0;
 
-% Get the possible location of this granule in the orbit. If it starts in
-% the 101 scanline overlap region, two possibilities will be returned. The
-% earlier one of the two, smaller scanline, will be chosen; choosing the 
-% later of the two would mean that only the last few scanlines of the orbit
-% would be used in the orbit, which should have already been done if nadir
-% track of the previous granule crossed 78 S. 
+% % % if iGranule == 1
+% % %     % Get the possible location of this granule in the orbit. If it starts in
+% % %     % the 101 scanline overlap region, two possibilities will be returned. The
+% % %     % earlier one of the two, smaller scanline, will be chosen; choosing the
+% % %     % later of the two would mean that only the last few scanlines of the orbit
+% % %     % would be used in the orbit, which should have already been done if nadir
+% % %     % track of the previous granule crossed 78 S.
+% % %     
+% % %     nnToUse = get_scanline_index;
+% % %     indices.current.osscan = nnToUse(1);
+% % % else
+% % %     % Get the number of scan lines to skip and make sure that it is an
+% % %     % acceptable value.
+% % %     
+% % %     lines_to_skip = floor( abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
+% % %     [val, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
+% % %     
+% % %     if val ~= 0
+% % %         fprintf('...Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
+% % %             lines_to_skip, oinfo(iOrbit).ginfo(iGranule).metadata_name, possible_num_scan_lines_skip(3,nn))
+% % %         
+% % %         status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+% % %     end
+% % %     
+% % %     indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
+% % % end
 
-% % % target_lat_1 = nlat_t(5);
-% % % target_lat_2 = nlat_t(11);
+% % % % alternate_calculation_of_osscan will update the starting location of
+% % % % scan lines for this granule in the current orbit if a starting time for
+% % % % the orbit has already been found. It will also make that the two
+% % % % different ways of determining the location of the scan lines from this
+% % % % granule agree with each other within limits. The snippet of code also
+% % % % calculates the lines to skip and does various tests on this value. If
+% % % % this is the 1st granule found for this orbit, no need to determine
+% % % % missing lines from a previous granule, the value above will be used.
 % % % 
-% % % nnToUse = get_scanline_index( target_lat_1, target_lat_2);
-
-nnToUse = get_scanline_index;
-
-indices.current.osscan = nnToUse(1);
-
-% alternate_calculation_of_osscan will update the starting location of
-% scan lines for this granule in the current orbit if a starting time for
-% the orbit has already been found. It will also make that the two
-% different ways of determining the location of the scan lines from this
-% granule agree with each other within limits. The snippet of code also
-% calculates the lines to skip and does various tests on this value. If
-% this is the 1st granule found for this orbit, no need to determine
-% missing lines from a previous granule, the value above will be used.
-
-alternate_calculation_of_osscan
+% % % alternate_calculation_of_osscan
     
 % And for the rest of oescan, gsscan and gescan.
 

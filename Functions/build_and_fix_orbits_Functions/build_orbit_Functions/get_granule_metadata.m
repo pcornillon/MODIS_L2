@@ -23,7 +23,7 @@ function [status, granule_start_time_guess] = get_granule_metadata( metadata_fil
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
 global formatOut
 global latlim
 global amazon_s3_run
@@ -73,6 +73,15 @@ if abs(mSec(10)-mSec(1)) > 0.01
     
     status = populate_problem_list( 202, temp_filename);
     return
+end
+
+% Make sure that the scan_line_times are good.
+
+dt = (scan_line_times(end-5) - scan_line_times(5)) * 86400;
+if min(abs(dt - secs_per_granule_minus_10)) > 0.01
+    fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
+    
+    status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.']);
 end
 
 % Does the descending nadir track crosses latlim?

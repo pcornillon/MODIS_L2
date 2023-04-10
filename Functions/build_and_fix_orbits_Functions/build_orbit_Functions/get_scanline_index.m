@@ -13,11 +13,6 @@ function nnToUse = get_scanline_index
 % will be returned. 
 %
 % INPUT
-% % % %   targe_lat_1 - the latitude of the 1st point (in time). 
-% % % %   targe_lat_2 - the latitude of the 2nd point (in time). This point
-% % % %    shouled be at least 5 scanlines after the 1st point if the 1st point
-% % % %    is the 5th or later point in a group of 10 scans corresponding to a 10
-% % % %    detector set.
 %
 % OUTPUT
 %   nnToUse - the indices, either 1 (and 3 if 3 intersections) or 2, to use.
@@ -31,9 +26,7 @@ canonical_nlat = nlat_avg;
 target_lat_1 = nlat_t(5);
 
 nn = closest_point( canonical_nlat, target_lat_1, 0.02);
-% % % nn2 = closest_point( canonical_nlat, target_lat_2, 0.02);
 
-% % % if isempty(nn) | isempty(nn2)
 if isempty(nn)
     fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
     
@@ -41,26 +34,14 @@ if isempty(nn)
     return
 end
 
-% % % % If the 2nd point comes farther along in the orbit than the 1st point then
-% % % % the 1st (or 3rd if there is one) point(s) are the appropriate ones,
-% % % % otherwist the 2nd point is.
-% % % 
-% % % if nn2(1) > nn(1)
-% % %     nnToUse = nn(1);
-% % %     if length(nn) == 3
-% % %         nnToUse(2) = nn(3);
-% % %     end
-% % % else
-% % %     nnToUse = nn(2);
-% % % end
-
 % Use the starting point that results in the lowest sum of squares between
 % the granule nadir track and the canonical orbit. Only consider the first
 % two crossings, the 3rd one will be too close to the end and should have
 % been found in an intersection of the nadir track with 73 S, although this
-% could be a problem in some rare cases.
+% could be a problem in some rare cases. Also, the 3rd one should also be a
+% good fit but based onn a lot less scan lines since these are exactly one
+% orbit from those in the beginning of the orbit.
 
-% % % for i=1:length(nn)
 for i=1:2
     npts = min( [nn(i)+length(nlat_t)-1, 40271]) - nn(i) + 1;
     

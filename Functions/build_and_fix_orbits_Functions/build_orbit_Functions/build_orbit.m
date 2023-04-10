@@ -46,13 +46,19 @@ global formatOut
 
 status = 0;
 
-% Initialize parameters
+% Initialize return variables to simple nans; will return to calling
+% program when the start of the next orbit is found.
+
+latitude = single(nan);
+longitude = single(nan);
+SST_In = single(nan);
+qual_sst = int8(nan);
+flags_sst = int16(nan);
+sstref = single(nan);
+
+scan_seconds_from_start = 0;% Initialize parameters
 
 iGranule = 1;
-
-% % % % Did the previous orbit end without finding a granule for the start of the
-% % % % next (well, this one) orbit? If not, begin populating this orbit. If so,
-% % % % start looking for a granule with data in it for the next orbit.
 
 % Are we starting an orbit without having read a metadata granule for it?
 % If so, read the next metadata granule and begin populating this orbit. 
@@ -64,9 +70,14 @@ if length(oinfo) < iOrbit
     iGranule = 0;
     
     [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    
+    % Return if end of run.
+    
+    if status > 900
+        fprintf('End of run.\n')
+        return
+    end
 end
-
-% % % if length(oinfo) == iOrbit
 
 % Is there an orbit name for this orbit. If not, very bad, quit.
 
@@ -80,18 +91,6 @@ end
 %% Skip this orbit if it exist already.
 
 if exist(oinfo(iOrbit).name) == 2
-    
-    % Initialize return variables to simple nans; will return to calling
-    % program when the start of the next orbit is found.
-    
-    latitude = single(nan);
-    longitude = single(nan);
-    SST_In = single(nan);
-    qual_sst = int8(nan);
-    flags_sst = int16(nan);
-    sstref = single(nan);
-    
-    scan_seconds_from_start = 0;
     
     fprintf('--- Have already processed %s. Going to the next orbit. \n', oinfo(iOrbit).name)
     
@@ -133,17 +132,6 @@ scan_seconds_from_start = single(nan(1,orbit_length));
 
 granule_start_time_guess_save = granule_start_time_guess;
 
-% % %     % Are we starting an orbit without having read a metadata granule for this
-% % %     % orbit? If so, read the next metadata granule and begin populating this
-% % %     % orbit. This could happen if the previous orbit ended with an empty
-% % %     % granule; i.e., the loop over the orbit ended because the granule start
-% % %     % time exceeded the end time of the orbit determined when the orbit first
-% % %     % started.
-% % %
-% % %     if isempty(oinfo(iOrbit).ginfo(1).osscan)
-% % %         [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
-% % %     end
-
 fi_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
 
 % Populate the orbit with data from this granule.
@@ -170,12 +158,6 @@ if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
         scan_seconds_from_start, granule_start_time_guess);
 end
 
-% % % % Increment the granule start date/time by 5 minutes and begin looping over
-% % % % granules to populate the next orbit.
-% % %
-% % % granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
-
-% % % end
 %% Loop over the remainder of granules in this orbit.
 
 while granule_start_time_guess <= oinfo(iOrbit).end_time

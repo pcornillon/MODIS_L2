@@ -55,7 +55,7 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
 global print_diagnostics save_just_the_facts debug
 global print_diagnostics save_just_the_facts debug
 global amazon_s3_run
@@ -73,7 +73,7 @@ metadata_file_list = [];
 start_time = granule_start_time_guess;
 
 while 1==1
-        
+    
     % Is this time passed the end of the run.
     
     if granule_start_time_guess > Matlab_end_time
@@ -82,7 +82,7 @@ while 1==1
         end
         
         status = populate_problem_list( 901, 'End of run');
-
+        
         return
     end
     
@@ -91,7 +91,7 @@ while 1==1
     % oinfo exists. If it does but this is beyond the end of an orbit, then
     % it is old information so clear oinfo to allow the search for the next
     % granule to go on until either a granule is found or the end of the
-    % run is reached. 
+    % run is reached.
     
     if length(oinfo) == iOrbit
         if granule_start_time_guess > oinfo(iOrbit).end_time
@@ -110,12 +110,12 @@ while 1==1
     % If the dir request is the same for both amazon_s3 and local, I can
     % reduce the following down to just one line.
     
-	metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+    metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
     
     % Was a metadata file found at this time?
     
     if ~isempty(metadata_file_list)
-                
+        
         % Is the data granule for this time present? If so, get the range
         % of locations of scanlines in the orbit and the granule to use.
         % Otherwise, add to problem list and continue search for a data
@@ -149,16 +149,16 @@ while 1==1
             % If status not equal to zero, either problems with start times
             % or 1st detector, not 1st detector in group of 10. Neither of
             % these should happen so we will assume that this granule is
-            % bad and go to the next one. 
+            % bad and go to the next one.
             
             if status == 0
                 
                 iGranule = iGranule + 1;
                 
-                % Populate oinfo for this granule for info. oinfo(iOrbit).name 
+                % Populate oinfo for this granule for info. oinfo(iOrbit).name
                 % has not been defined yet but will be shortly using some
-                % of these values. 
-
+                % of these values.
+                
                 oinfo(iOrbit).ginfo(iGranule).data_name = data_temp_filename;
                 
                 oinfo(iOrbit).ginfo(iGranule).metadata_name = metadata_temp_filename;
@@ -170,9 +170,56 @@ while 1==1
                 oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
                 
                 oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
-                                
+                
+                if iGranule == 1
+                    % Even though this granule contains the start of an orbit, it is still
+                    % the first granule in this orbit. This can happen if all of the other
+                    % granules in the orbit are missing.
+                    %
+                    % Get the possible location of this granule in the orbit. If it starts in
+                    % the 101 scanline overlap region, two possibilities will be returned. The
+                    % earlier one of the two, smaller scanline, will be chosen; choosing the
+                    % later of the two would mean that only the last few scanlines of the orbit
+                    % would be used in the orbit, which should have already been done if nadir
+                    % track of the previous granule crossed 78 S.
+                    
+                    nnToUse = get_scanline_index;
+                    indices.current.osscan = nnToUse(1);
+                else
+                    % Get the number of scan lines to skip and make sure that it is an
+                    % acceptable value.
+                    
+                    lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
+                    [val, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
+                    
+                    if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0
+                        fprintf('...Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
+                            oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
+                        
+                        status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+                    end
+                    
+                    indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
+                end
+                
+                if isempty(oinfo(iOrbit).name)
+                    if print_diagnostics
+                        fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
+                    end
+                    
+                    status = generate_output_filename('no_sli');
+                    
+                    % status should never be 231 so returning if it is;
+                    % again, it should NEVER happen.
+                    
+                    if status == 231
+                        return
+                    end
+                end
+                
                 if isempty(start_line_index)
-                    [~, indices] = get_osscan_etc_NO_sli;
+                    [~, indices] = get_osscan_etc_NO_sli(indices);
+                    % % %                 [~, indices] = get_osscan_etc;
                     
                     % If this is the first granule read for this orbit, it
                     % means that the previous orbit ended with a missing
@@ -180,24 +227,24 @@ while 1==1
                     % this, we will find the start time of this orbit based
                     % on the latitude of the first scan line in this granule.
                     
-                    if isempty(oinfo(iOrbit).name)
-                        if print_diagnostics
-                            fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
-                        end
-                        
-                        status = generate_output_filename('no_sli');
-                        
-                        % status should never be 231 so returning if it is;
-                        % again, it should NEVER happen.
-                        
-                        if status == 231
-                            return
-                        end
-                    end
+% % %                     if isempty(oinfo(iOrbit).name)
+% % %                         if print_diagnostics
+% % %                             fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
+% % %                         end
+% % %                         
+% % %                         status = generate_output_filename('no_sli');
+% % %                         
+% % %                         % status should never be 231 so returning if it is;
+% % %                         % again, it should NEVER happen.
+% % %                         
+% % %                         if status == 231
+% % %                             return
+% % %                         end
+% % %                     end
                 else
-                    [~, indices] = get_osscan_etc_with_sli;
-                        
-                    status = generate_output_filename('sli');  
+                    [~, indices] = get_osscan_etc_with_sli(indices);
+                    
+                    status = generate_output_filename('sli');
                     
                     % status should never be 231 so returning if it is;
                     % again, it should NEVERN happen.
@@ -205,9 +252,9 @@ while 1==1
                     if status == 231
                         return
                     end
-                end                
-                    
-                % And now for scan line indices.
+                end
+                
+                % And now popoulate oinfo for scan line indices.
                 
                 oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
                 oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
@@ -231,17 +278,16 @@ while 1==1
                     oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
                     
                     % Return here because the start of a new orbit has been
-                    % found.                    
+                    % found.
                 end
                 
                 return
                 
             end
         end
-    else
-        % Here is no granule for this time; need to increment time step.
-        
-        granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     end
+    % Here is no granule for this time; need to increment time step.
+        
+    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 end
 

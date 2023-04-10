@@ -32,6 +32,8 @@
 %
 % 131 - generate_output_filename - Calculation of end times do not agree.
 %
+% 141 - get_granule_metadata - mirror rotation rate seems to have changed.
+%
 % ACTION REQUIRED ON RETURN
 %
 % 201 - get_granule_metadata - end of orbit (100)

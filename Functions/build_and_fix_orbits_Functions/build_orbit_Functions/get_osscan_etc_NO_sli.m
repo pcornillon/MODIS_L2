@@ -23,13 +23,29 @@ function [status, indices] = get_osscan_etc_NO_sli(indices)
 %   indices - a structure with the discovered indices.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
+global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
-global print_diagnostics
+global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 % time for 2030 and 2040 scans from 5 to end-5: 298.3760  299.8540
 % 2040 scan line granule every 10 or 11 granules. 
@@ -37,44 +53,6 @@ global print_diagnostics
 status = 0;
 
 indices.case = 0;
-
-% % % if iGranule == 1
-% % %     % Get the possible location of this granule in the orbit. If it starts in
-% % %     % the 101 scanline overlap region, two possibilities will be returned. The
-% % %     % earlier one of the two, smaller scanline, will be chosen; choosing the
-% % %     % later of the two would mean that only the last few scanlines of the orbit
-% % %     % would be used in the orbit, which should have already been done if nadir
-% % %     % track of the previous granule crossed 78 S.
-% % %     
-% % %     nnToUse = get_scanline_index;
-% % %     indices.current.osscan = nnToUse(1);
-% % % else
-% % %     % Get the number of scan lines to skip and make sure that it is an
-% % %     % acceptable value.
-% % %     
-% % %     lines_to_skip = floor( abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
-% % %     [val, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
-% % %     
-% % %     if val ~= 0
-% % %         fprintf('...Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
-% % %             lines_to_skip, oinfo(iOrbit).ginfo(iGranule).metadata_name, possible_num_scan_lines_skip(3,nn))
-% % %         
-% % %         status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule).metadata_name);
-% % %     end
-% % %     
-% % %     indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
-% % % end
-
-% % % % alternate_calculation_of_osscan will update the starting location of
-% % % % scan lines for this granule in the current orbit if a starting time for
-% % % % the orbit has already been found. It will also make that the two
-% % % % different ways of determining the location of the scan lines from this
-% % % % granule agree with each other within limits. The snippet of code also
-% % % % calculates the lines to skip and does various tests on this value. If
-% % % % this is the 1st granule found for this orbit, no need to determine
-% % % % missing lines from a previous granule, the value above will be used.
-% % % 
-% % % alternate_calculation_of_osscan
     
 % And for the rest of oescan, gsscan and gescan.
 
@@ -86,9 +64,12 @@ indices.current.gescan = num_scan_lines_in_granule;
 % Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan > orbit_length
-    fprintf('Calculated end of orbit is %i, which does not agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
+    if print_diagnostics
+        fprintf('...Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of %f S. On occasion they sum to 40,060. This orbit (%s) is one of these. Forcing it to 40,160.\n', latlim, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    end
+    
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    status = populate_problem_list( 115, ['Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of ' num2str(latlim) ' S. On occasion they sum to 40,060. This orbit (' oinfo(iOrbit).ginfo(iGranule).metadata_name ') is one of these. Forcing it to 40,160.']);
 end

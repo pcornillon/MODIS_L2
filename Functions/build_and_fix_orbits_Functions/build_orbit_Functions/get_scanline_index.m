@@ -1,5 +1,4 @@
 function nnToUse = get_scanline_index
-% % % function nnToUse = get_scanline_index( target_lat_1, target_lat_2)
 % get_scanline_index - gets the index for the scanline corresponding to the time passed in - PCC 
 %  
 % This function looks for the location of a target latitude in the
@@ -18,9 +17,29 @@ function nnToUse = get_scanline_index
 %   nnToUse - the indices, either 1 (and 3 if 3 intersections) or 2, to use.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
+global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
+global sst_range sst_range_grid_size
+
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 canonical_nlat = nlat_avg;
 target_lat_1 = nlat_t(5);
@@ -28,9 +47,9 @@ target_lat_1 = nlat_t(5);
 nn = closest_point( canonical_nlat, target_lat_1, 0.02);
 
 if isempty(nn)
-    fprintf('Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
+    fprintf('*** Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
     
-    status = populate_problem_list( 101, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    status = populate_problem_list( 101, ['Latitudes don''t appear to be right for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. First latitude is ' num2str(nlat_t(1))])
     return
 end
 
@@ -72,9 +91,9 @@ end
 nnToUse = bb(cc);
 
 if nnToUse < 10
-    fprintf('Be careful get_scanline_index found a starting index of %i. Is setting nnToUse to 1.\n', nnToUse)
+    fprintf('...Be careful get_scanline_index found a starting index of %i. Is setting nnToUse to 1.\n', nnToUse)
      
-    status = populate_problem_list( 102, oinfo(iOrbit).ginfo(iGranule).metadata_name);   
+    status = populate_problem_list( 102, ['Be careful, for granule ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' get_scanline_index found a starting index of num2str(nnToUse). Is setting nnToUse to 1.']);   
     
     nnToUse = 1;
 end

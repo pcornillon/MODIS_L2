@@ -20,14 +20,29 @@ function [status, granule_start_time_guess] = get_granule_metadata( metadata_fil
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
-global amazon_s3_run
-global print_diagnostics save_just_the_facts debug
+global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 % Initialize some variables.
 
@@ -63,7 +78,7 @@ if isempty(scan_line_times)
     fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     
-    status = populate_problem_list( 201, temp_filename);
+    status = populate_problem_list( 201, temp_filename, granule_start_time_guess);
     return
 end
 
@@ -71,7 +86,7 @@ if abs(mSec(10)-mSec(1)) > 0.01
     fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Should not get here.\n', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
     
-    status = populate_problem_list( 202, temp_filename);
+    status = populate_problem_list( 202, temp_filename, granule_start_time_guess);
     return
 end
 
@@ -79,9 +94,11 @@ end
 
 dt = (scan_line_times(end-5) - scan_line_times(5)) * 86400;
 if min(abs(dt - secs_per_granule_minus_10)) > 0.01
-    fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
+    if print_diagnostics
+        fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
+    end
     
-    status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.']);
+    status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.'], granule_start_time_guess);
 end
 
 % Does the descending nadir track crosses latlim?

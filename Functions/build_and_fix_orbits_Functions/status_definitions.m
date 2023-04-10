@@ -16,8 +16,7 @@
 %       orbit start time based on this granule differs by the equivalent of
 %       more than 7 scan lines from that estimated on the granule when this
 %       orbit was defined.
-% 114 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
-% 115 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
+% 115 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 116 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli -  Should only find one value for the number of lines to skip but found either 0 or more than 1.
 
 % 111 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - Adjacent orbits but osscan calculations disagree. Will use value based on end of previous granule.

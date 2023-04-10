@@ -1,4 +1,4 @@
-function status = populate_problem_list( status, problem_filename)
+function status = populate_problem_list( status, problem_filename, granule_start_time_guess)
 % populate_problem_list - updates problem_list for this error/warning code - PCC
 %
 % This function get the index to use for this error/warning from
@@ -11,6 +11,7 @@ function status = populate_problem_list( status, problem_filename)
 %   status - the error/warning code to use. 
 %   problem_filename - the name of the metadata or data file associated
 %    with the error/waring. This name can be empty.
+%   granule_start_time_guess - time of start of granule. Optional.
 %
 % OUTPUT
 %   status - the status code passed in.
@@ -22,6 +23,10 @@ iProblem = iProblem + 1;
 
 problem_list(iProblem).filename = problem_filename;
 problem_list(iProblem).code = status;
+
+if exist('granule_start_time_guess')
+    problem_list(iProblem).granule_start_time = granule_start_time_guess;
+end
 
 % In what function did the error occur?
 

@@ -62,18 +62,30 @@ function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_
 
 clear global
 
+% globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_orbit nlat_avg
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
-global print_diagnostics save_just_the_facts debug
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length npixels
-global Matlab_start_time Matlab_end_time
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
 global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
 global med_op
-global amazon_s3_run
+ 
 
 % Structure of oinfo
 %
@@ -135,7 +147,7 @@ oinfo.ginfo.pirate_gescan = [];
 % Initialize return variables.
 
 if isempty(metadata_directory)
-    test_num = 3;
+    test_num = 1;
     
     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
@@ -185,6 +197,8 @@ if exist('save_core') ~= 0
     end
 end
 
+print_times = 1;
+
 if exist('print_diag') ~= 0
     if print_diag == 1
         print_diagnostics = 1;
@@ -222,13 +236,11 @@ secs_per_scan_line = 0.1477112;
 
 secs_per_granule_minus_10 = [298.3760  299.8540];
 
-time_of_NASA_orbit_change = 30000;
+index_of_NASA_orbit_change = 11052;
 
 orbit_length = 40271;
 
 iProblem = 0;
-% % % problem_list.filename{1} = '';
-% % % problem_list.code(1) = nan;
 
 % Formats used in building filenames.
 
@@ -394,19 +406,14 @@ while granule_start_time_guess <= Matlab_end_time
     
     if status > 0
         if status > 900
-            fprintf('End of run.\n')
+            fprintf('Exiting.\n')
             return
         end
 
         if status == 231
             fprintf('Status returned from build_orbit as 231. This should never happen; it is a coding error. Terminating this run.\n')
             return
-        end
-        
-% % %         if (status == 201) & print_diagnostics
-% % %             fprintf('Run ended. Exiting.\n', ' ')
-% % %             return
-% % %         end
+        end        
     else
         
         % latitude will be empty where there are missing granules. Fill them in
@@ -431,7 +438,7 @@ while granule_start_time_guess <= Matlab_end_time
             
             oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
             
-            if print_diagnostics
+            if print_time
                 fprintf('   Time to fix the mask for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_fix_mask)
             end
         else
@@ -477,7 +484,7 @@ while granule_start_time_guess <= Matlab_end_time
             
             oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
             
-            if print_diagnostics
+            if print_times
                 fprintf('   Time to address bowtie for this orbit: %6.1f seconds.\n',  oinfo(iOrbit).time_to_address_bowtie)
             end
         else
@@ -520,7 +527,7 @@ while granule_start_time_guess <= Matlab_end_time
             
             oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
             
-            if print_diagnostics
+            if print_times
                 fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient, 5)
             end
         else
@@ -541,7 +548,7 @@ while granule_start_time_guess <= Matlab_end_time
         
         oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
-        if print_diagnostics
+        if print_times
             fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
         end
     end

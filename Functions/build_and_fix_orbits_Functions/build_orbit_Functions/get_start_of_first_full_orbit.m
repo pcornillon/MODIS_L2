@@ -22,17 +22,29 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global print_diagnostics save_just_the_facts
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
-global latlim orbit_length
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
-global Matlab_start_time Matlab_end_time
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
 global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
 global med_op
-global amazon_s3_run
 
 % granule_start_time_guess is the time, a dummy variable, for the approximate
 % start time of a granule. It will be incremented by 5 minutes/granule as
@@ -49,7 +61,6 @@ global amazon_s3_run
 % specified start time. In the while loop increment by one hour.
 
 file_list = [];
-% % % status = 0;
 
 granule_start_time_guess = floor(Matlab_start_time*24) / 24 - 1 / 24;
 
@@ -57,9 +68,9 @@ while isempty(file_list)
     granule_start_time_guess = granule_start_time_guess + 1/24;
     
     if granule_start_time_guess > Matlab_end_time
-        fprintf('Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+        fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
         
-        status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)]);
+        status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
         return
     end
     
@@ -104,7 +115,7 @@ end
 
 if status == 901 
     if print_diagnostics
-        fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+        fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
     end
 end
 

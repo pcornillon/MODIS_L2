@@ -23,12 +23,29 @@ function [status, indices] = get_osscan_etc_with_sli(indices)
 %   indices - a structure with the discovered indices.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
+global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
+global sst_range sst_range_grid_size
+
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
-global print_diagnostics
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 status = 0;
 
@@ -48,11 +65,14 @@ indices.current.gescan = start_line_index + 101 - 1;
 % Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan ~= orbit_length
-    fprintf('Calculated end of orbit is %i, which does no agree with the mandated orbit length, %i. Forcing it to agree.\n', indices.current.oescan, orbit_length)
+    if print_diagnostics
+        fprintf('...Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of %f S. On occasion they sum to 40,060. This orbit (%s) is one of these. Forcing to 40,160.\n', latlim, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    end
+    
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 114, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    status = populate_problem_list( 115, ['Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of ' num2str(latlim) ' S. On occasion they sum to 40,060. This orbit (' oinfo(iOrbit).ginfo(iGranule).metadata_name ') is one of these. Forcing to 40,160.']);
 end
 
 % Determine how many scan lines are needed to bring the length of this

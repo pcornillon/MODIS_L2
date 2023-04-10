@@ -26,14 +26,29 @@ function status = generate_output_filename(build_type)
 %    orbit.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
-global latlim
-global print_diagnostics save_just_the_facts debug
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
+global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 status = 0;
 
@@ -54,10 +69,10 @@ switch build_type
         oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
         
-        if sltimes_avg(nnToUse(1)) > time_of_NASA_orbit_change
-             oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number;
-        else
+        if nnToUse(1) > index_of_NASA_orbit_change
              oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number - 1;
+        else
+             oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number;
         end
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit).orbit_number) ...
@@ -69,42 +84,6 @@ switch build_type
         % If this granule also contains the start of an orbit all of the
         % reamining granules in the orbit are missing. 
         
-% % %         if ~isempty(start_line_index)
-% % %             
-% % %             % Calculate end_time aother way and check.
-% % %             
-% % %             temp_end_time_2 = scan_line_times(start_line_index) - secs_per_scan_line;
-% % %             
-% % %             if abs(temp_end_time_2 - oinfo(iOrbit).end_time) > 10 * secs_per_scan_line
-% % %                 fprintf('Calculated orbit end times differ by %f s. Choosing time based on start_line_index.\n', temp_end_time_2 - oinfo(iOrbit).end_time)
-% % %                 
-% % %                 oinfo(iOrbit).end_time = temp_end_time_2;
-% % %                 
-% % %                 status = populate_problem_list( 131, oinfo(iOrbit).name);
-% % %             end
-% % %             
-% % %             oinfo(iOrbit+1).start_time = scan_line_times(start_line_index);
-% % %             oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_day;
-% % %             
-% % %             oinfo(iOrbit+1).orbit_number = oinfo(iOrbit+1).ginfo(1).NASA_orbit_number;
-% % %             
-% % %             orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit+1).orbit_number) ...
-% % %                 '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
-% % %             
-% % %             oinfo(iOrbit+1).name = [output_file_directory datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
-% % %                 datestr(oinfo(iOrbit+1).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];            
-% % % 
-% % %             % And the metadata for this granule at the start of the next orbit.
-% % %             
-% % %             oinfo(iOrbit+1).ginfo(1).data_name = oinfo(iOrbit).ginfo(end).data_name;
-% % %             oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
-% % %             oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
-% % %             oinfo(iOrbit+1).ginfo(1).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
-% % %             
-% % %             oinfo(iOrbit+1).ginfo(1).start_time = oinfo(iOrbit).ginfo(end).start_time;
-% % %             oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
-% % %             oinfo(iOrbit+1).ginfo(1).scans_in_this_granule = oinfo(iOrbit).ginfo(end).scans_in_this_granule;
-% % %         end
             
     case 'sli'
         % Here for granule found at the start of an orbit.
@@ -130,7 +109,7 @@ switch build_type
         oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
         
     otherwise
-        fprintf('build_type passed in as %s, must be either ''sli'', or ''no_sli''.\n', build_type)
+        fprintf('*** build_type passed in as %s, must be either ''sli'', or ''no_sli''.\n', build_type)
         
         status = populate_problem_list( 231, oinfo(iOrbit).name);
 end

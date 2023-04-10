@@ -51,15 +51,29 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 %
 % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_num_scan_lines_skip secs_per_granule_minus_10
-global print_diagnostics save_just_the_facts debug
-global print_diagnostics save_just_the_facts debug
-global amazon_s3_run
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
+global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 % Initialize return variables.
 
@@ -81,7 +95,7 @@ while 1==1
             fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
         end
         
-        status = populate_problem_list( 901, 'End of run');
+        status = populate_problem_list( 901, ['*** No start of an orbit in the specified range ' datestr(start_time) ' to ' datestr(Matlab_end_time)], granule_start_time_guess);
         
         return
     end
@@ -99,7 +113,7 @@ while 1==1
                 fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
             end
             
-            status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)]);
+            status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
             return
         end
     end
@@ -132,12 +146,14 @@ while 1==1
             % Reset metadata_file_list to empty since no data granule
             % exists for this time, even though a metadata granule does,
             % flag and keep searching.
+                        
+            if print_diagnostics
+                fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_file_list(1).folder, metadata_file_list(1).name )
+            end
             
-            metadata_file_list = [];
+            status = populate_problem_list( 101, ['No data granule found corresponding to ' metadata_file_list(1).folder '/' metadata_file_list(1).name '.'], granule_start_time_guess);
             
-            fprintf('No data granule found for template: %s. Return.\n', ['/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*'])
-            
-            status = populate_problem_list( 101, ['/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+            metadata_file_list = [];            
         else
             data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
             metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
@@ -196,17 +212,13 @@ while 1==1
                         fprintf('...Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
                             oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
                         
-                        status = populate_problem_list( 115, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+                        status = populate_problem_list( 115, ['Number of lines to skip for granule %s, ' num2str(lines_to_skip) ' is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
                     end
                     
                     indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
                 end
                 
                 if isempty(oinfo(iOrbit).name)
-                    if print_diagnostics
-                        fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
-                    end
-                    
                     status = generate_output_filename('no_sli');
                     
                     % status should never be 231 so returning if it is;
@@ -219,28 +231,6 @@ while 1==1
                 
                 if isempty(start_line_index)
                     [~, indices] = get_osscan_etc_NO_sli(indices);
-                    % % %                 [~, indices] = get_osscan_etc;
-                    
-                    % If this is the first granule read for this orbit, it
-                    % means that the previous orbit ended with a missing
-                    % file so we need to get the output filename. To do
-                    % this, we will find the start time of this orbit based
-                    % on the latitude of the first scan line in this granule.
-                    
-% % %                     if isempty(oinfo(iOrbit).name)
-% % %                         if print_diagnostics
-% % %                             fprintf('Need to determine the orbit number if the first granule in this orbit is mid-orbit. Am in find_next_granule_with_data.\n')
-% % %                         end
-% % %                         
-% % %                         status = generate_output_filename('no_sli');
-% % %                         
-% % %                         % status should never be 231 so returning if it is;
-% % %                         % again, it should NEVER happen.
-% % %                         
-% % %                         if status == 231
-% % %                             return
-% % %                         end
-% % %                     end
                 else
                     [~, indices] = get_osscan_etc_with_sli(indices);
                     

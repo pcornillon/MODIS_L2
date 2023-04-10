@@ -36,13 +36,29 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   granule_start_time_guess - estimated start time for the next granule.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global Matlab_start_time Matlab_end_time
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
-global print_diagnostics save_just_the_facts
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
+global latlim
+global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 status = 0;
 
@@ -82,9 +98,11 @@ end
 % Is there an orbit name for this orbit. If not, very bad, quit.
 
 if isempty(oinfo(iOrbit).name)
-    fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
+    if print_diagnostics
+        fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
+    end
     
-    status = populate_problem_list( 241, 'No orbit name.');
+    status = populate_problem_list( 241, ['No orbit name for orbit ' num2str(iOrbit)], granule_start_time_guess);
     return
 end
 
@@ -198,6 +216,6 @@ end
 
 oinfo(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
 
-if print_diagnostics
+if print_times
     fprintf('   Time to build this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_build_orbit)
 end

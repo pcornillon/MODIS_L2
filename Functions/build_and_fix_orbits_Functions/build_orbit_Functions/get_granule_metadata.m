@@ -125,7 +125,7 @@ if ~isempty(mm)
     % crossing so, in the following, testing on the first scan line and the
     % last scan line in the granule is safe--and easy.
     
-    if sign(nlat_t(1)-latlim) ~= sign(nlat_t(end)-latlim)
+    if sign(nlat_t(mm(1))-latlim) ~= sign(nlat_t(mm(end))-latlim)
         
         nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
         start_line_index = floor(nn(1) / 10) * 10 + 5;

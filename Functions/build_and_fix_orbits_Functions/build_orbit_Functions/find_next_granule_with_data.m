@@ -88,6 +88,8 @@ start_time = granule_start_time_guess;
 
 while 1==1
     
+    start_line_index = [];
+
     % Is this time passed the end of the run.
     
     if granule_start_time_guess > Matlab_end_time

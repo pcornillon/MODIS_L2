@@ -179,9 +179,7 @@ end
 %% Loop over the remainder of granules in this orbit.
 
 while granule_start_time_guess <= oinfo(iOrbit).end_time
-    
-    %     iGranule = iGranule + 1;
-    
+        
     % Get metadata information for the next granule-find_next... increments
     % granule_start_time... by 5 minutes.
     

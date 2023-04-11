@@ -32,19 +32,31 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %    the current granule.
 %
 
+% globals for the run as a whole.
+
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length
+global print_diagnostics print_times debug
+global npixels
+
+% globals for build_orbit part.
+
+global save_just_the_facts amazon_s3_run
 global formatOut
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global index_of_NASA_orbit_change possible_num_scan_lines_skip
+global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
-global amazon_s3_run
+global sst_range sst_range_grid_size
+
+global oinfo iOrbit iGranule iProblem problem_list
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global Matlab_start_time Matlab_end_time
+
+% globals used in the other major functions of build_and_fix_orbits.
+
+global med_op
 
 status = 0;
-
-% Get file list for data granule at the next time step.
-
-temp_time = granule_start_time_guess + 5 / (24 * 60);
 
 if amazon_s3_run
     % Here for s3. May need to fix this; not sure I will have combined
@@ -52,13 +64,13 @@ if amazon_s3_run
     % metadata file as we did for the not-s3 run.
     % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
     
-    data_file_list = dir( [granules_directory datestr(temp_time, formatOut.yyyy) '/' datestr(temp_time, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+    data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
 else
-    data_file_list = dir( [granules_directory datestr(temp_time, formatOut.yyyy) '/AQUA_MODIS.' datestr(temp_time, formatOut.yyyymmddThhmm) '*']);
+    data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr( granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
 end
 
 if isempty(data_file_list)
-    fprintf('*** No data granule found for %s but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.\n', datestr(temp_time))
+    fprintf('*** No data granule found for %s but pirate_osscan is not empty. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
     
     status = populate_problem_list( 122, oinfo(iOrbit).ginfo(1).metadata_name);
 else        

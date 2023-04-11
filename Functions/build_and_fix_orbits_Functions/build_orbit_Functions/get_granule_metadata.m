@@ -1,5 +1,5 @@
 function [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, update_oinfo, granule_start_time_guess)
-% find_start_of_orbit - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
+% get_granule_metadata - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 %
 % Read the latitude of the nadir track for this granule and determine
 % whether or not it crosses latlim, nominally 78 S. It also checks to make

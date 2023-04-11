@@ -110,7 +110,7 @@ while 1==1
     % run is reached.
     
     if length(oinfo) == iOrbit
-        if granule_start_time_guess > oinfo(iOrbit).end_time
+        if granule_start_time_guess > (oinfo(iOrbit).end_time + 60 / secs_per_day)
             if print_diagnostics
                 fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
             end

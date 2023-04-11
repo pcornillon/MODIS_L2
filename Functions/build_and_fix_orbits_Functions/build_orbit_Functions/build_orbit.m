@@ -114,7 +114,7 @@ if exist(oinfo(iOrbit).name) == 2
     
     start_line_index = [];
         
-    while granule_start_time_guess <= oinfo(iOrbit).end_time
+    while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
         [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         
@@ -124,6 +124,7 @@ if exist(oinfo(iOrbit).name) == 2
     end
     
     % If no problems set status to 251 ==> this orbit already built.
+
     if status == 0
         status = 251;
     end
@@ -168,23 +169,31 @@ end
 
 if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
     if print_diagnostics
-        fprintf('Pirating data on the first call for orbit #%i, granule: \s\n', oinfo(iOrbit).orbit_number, oinfo(iOrbit).ginfo(iGranule).metadata_name)
+        fprintf('Pirating data on the first call for orbit #%i, granule: %s\n', oinfo(iOrbit).orbit_number, oinfo(iOrbit).ginfo(iGranule).metadata_name)
     end
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-        = pirate_data( granules_directory, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
+        = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
         scan_seconds_from_start, granule_start_time_guess);
 end
 
 %% Loop over the remainder of granules in this orbit.
+% Added 1 minute to the end time to avoid an orbit being ended because it
+% is very close to the end time or there were 2030 scans in the last
+% granule instead of 2040. (I'm not sure if the last thing is really a
+% problem.)
 
-while granule_start_time_guess <= oinfo(iOrbit).end_time
+while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
     % Get metadata information for the next granule-find_next... increments
     % granule_start_time... by 5 minutes.
     
     [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
+% % %     if iGranule == 20
+% % %         keyboard
+% % %     end
+
     % Status returned from find_next_granule_with_data is either 0 - all OK,
     % 201 - granule start time exceeded the end of orbit time without
     % finding a granule with a start time in it or 901 end of run. If
@@ -209,6 +218,15 @@ while granule_start_time_guess <= oinfo(iOrbit).end_time
                 = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
                 scan_seconds_from_start, granule_start_time_guess);
         end
+    end
+
+    % When the granule start time is very near the estimated end time of
+    % the orbit this script gets a bit confused and sometimes keeps reading
+    % granules after a new orbit has been found. This results in the
+    % program bombing. The next lines deal with this. 
+    
+    if ~isempty(start_line_index)
+        break
     end
 end
 

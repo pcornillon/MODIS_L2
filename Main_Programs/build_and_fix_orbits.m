@@ -58,10 +58,6 @@ function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_
 % To do a test run, capture the lines in 'if test_values' group and execute
 % them at the Matlab command line prompt.
 
-% Make sure that there are no global variables in the workspace.
-
-clear global
-
 % globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory

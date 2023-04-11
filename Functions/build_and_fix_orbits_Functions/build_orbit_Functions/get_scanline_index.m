@@ -80,9 +80,9 @@ for i=1:3
     if bb(i) > 0
         j = j + 1;
         
-        npts = min( [bb(j)+length(nlat_t)-1, 40271]) - bb(j) + 1;
+        npts = min( [bb(i)+length(nlat_t)-1, 40271]) - bb(i) + 1;
         
-        ddsumsq(j) = sum((nlat_t(1:npts)' - nlat_avg(bb(j):bb(j)+npts-1)).^2);
+        ddsumsq(j) = sum((nlat_t(1:npts)' - nlat_avg(bb(i):bb(i)+npts-1)).^2);
     end
 end
 

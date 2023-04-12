@@ -30,7 +30,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -77,7 +77,7 @@ num_scan_lines_in_granule = length(scan_line_times);
 if isempty(scan_line_times)
     fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
-    
+
     status = populate_problem_list( 201, temp_filename, granule_start_time_guess);
     return
 end
@@ -85,7 +85,7 @@ end
 if abs(mSec(10)-mSec(1)) > 0.01
     fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Should not get here.\n', metadata_file_list(1).name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
-    
+
     status = populate_problem_list( 202, temp_filename, granule_start_time_guess);
     return
 end
@@ -97,7 +97,7 @@ if min(abs(dt - secs_per_granule_minus_10)) > 0.01
     if print_diagnostics
         fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
     end
-    
+
     status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.'], granule_start_time_guess);
 end
 
@@ -107,36 +107,65 @@ nlat_t = single(ncread( temp_filename, '/scan_line_attributes/clat'));
 
 % Get the separation of along-track nadir pixels. Add one separation at the
 % end of the track for this granule so that the size of the difference
-% vector and along-track vector are the same; need this to find the minimum. 
+% vector and along-track vector are the same; need this to find the minimum.
 
 diff_nlat = [diff(nlat_t); nlat_t(end)-nlat_t(end-1)];
 
-% Find groups of scan line nadir values within 0.1 of latlim; will end up
-% with up to 3 groups for 3 different crossings of 78 S.
+% Find groups of scan line nadir values within 0.1 of latlim; could end up
+% with up 2 different crossings of 78 S, but this is very rare if it ever
+% happens, but, just in case,...
 
-mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
+% % % mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
+aa = find(abs(nlat_t-latlim)<0.1);
 
-if ~isempty(mm)
-    
-    % Make sure that the nadir track actually crossed latlim. This addresses 
-    % the problem of a nadir track that ends before or starts just after
-    % crossing latlim. On the canonical orbit there are 3473 scan lines
-    % separationg the descending node crossing of 73 S from the ascending
-    % crossing so, in the following, testing on the first scan line and the
-    % last scan line in the granule is safe--and easy.
-    
-    if sign(nlat_t(mm(1))-latlim) ~= sign(nlat_t(mm(end))-latlim)
-        
-        nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
-        start_line_index = floor(nn(1) / 10) * 10 + 5;
-        
-        % Next check to see if the 11th point from here is closer to
-        % latlim, if it is use it but first make sure that there are at
-        % least 11 more scan lines left in the orbit after start_line_index.
-        
-        if (start_line_index + 10) < num_scan_lines_in_granule
-            if abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
-                start_line_index = start_line_index + 10;
+% If no crossing found return.
+
+if ~isempty(aa)
+
+    % If more than 10 scan lines separate groups of scan lines found near 78 S
+    % break them up and analyze separately for direction.
+
+    diffaa = diff(aa);
+    bb = find(diffaa >10);
+
+    mm = [];
+    if isempty(bb)
+        % Only one group
+
+        if nlat_t(aa(end)) < nlat_t(aa(1))
+            mm = aa;
+        end
+    else
+        % Two groups
+        if nlat_t(aa(bb)) < nlat_t(aa(1))
+            mm = aa(1:bb);
+        else
+            mm = aa(bb+1:end);
+        end
+    end
+
+    if ~isempty(mm)
+
+        % Make sure that the nadir track actually crossed latlim. This addresses
+        % the problem of a nadir track that ends before or starts just after
+        % crossing latlim. On the canonical orbit there are 3473 scan lines
+        % separationg the descending node crossing of 73 S from the ascending
+        % crossing so, in the following, testing on the first scan line and the
+        % last scan line in the granule is safe--and easy.
+
+        if sign(nlat_t(mm(1))-latlim) ~= sign(nlat_t(mm(end))-latlim)
+
+            nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
+            start_line_index = floor(nn(1) / 10) * 10 + 5;
+
+            % Next check to see if the 11th point from here is closer to
+            % latlim, if it is use it but first make sure that there are at
+            % least 11 more scan lines left in the orbit after start_line_index.
+
+            if (start_line_index + 10) < num_scan_lines_in_granule
+                if abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
+                    start_line_index = start_line_index + 10;
+                end
             end
         end
     end

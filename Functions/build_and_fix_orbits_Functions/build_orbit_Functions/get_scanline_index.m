@@ -41,9 +41,18 @@ global Matlab_start_time Matlab_end_time
 
 global med_op
 
+nnToUse = [];
+
 canonical_nlat = nlat_avg;
 target_lat_1 = nlat_t(5);
 
+if isnan(target_lat_1)
+    fprintf('*** Latitude for nlat_t(5) is nan for %s. This should not happen. Skipping this granule.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name);
+    
+    status = populate_problem_list( 103, ['Latitude for nlat_t(5) is nan for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. This should not happen. Skipping this granule.']);
+    return
+end
+    
 nn = closest_point( canonical_nlat, target_lat_1, 0.02);
 
 if isempty(nn)

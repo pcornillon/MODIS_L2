@@ -2,10 +2,12 @@
 %
 % INFORMATIONAL, NO ACTION REQUIRED ON RETURN.
 %
-% 101 - find_next_granule_with_data - data granule missing but metadata
+% 101 - get_scanline_index - data granule missing but metadata
 %       granule present. Will skip to next granule.  
 % 102 - find_next_granule_with_data - starting index less than 10. Setting
 %       to 1. Not sure if this is correct.
+% 103 - get_scanline_index - Latitude for nlat_t(5) is nan. This should not
+%       happen. Skipping this granule. 
 %
 % 111 - get_osscan_etc_with_sli, get_osscan_etc_NO_sli - More than 1
 %       possibility for the number of lines to skip was found, it should be

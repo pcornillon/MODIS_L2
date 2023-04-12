@@ -139,7 +139,9 @@ if ~isempty(aa)
         % Two groups
         if nlat_t(aa(bb)) < nlat_t(aa(1))
             mm = aa(1:bb);
-        else
+        end
+
+        if nlat_t(aa(end)) < nlat_t(aa(bb+1))
             mm = aa(bb+1:end);
         end
     end

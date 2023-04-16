@@ -1,4 +1,4 @@
-function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -18,6 +18,10 @@ function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_
 %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
 %
 % OUTPUT
+%   none
+%
+% IMPORTANT VARIABLES.
+%
 %   orbit_into - structure with information about each orbit.
 %   problem_list - structure with list of filenames for skipped file and
 %    the reason for it being skipped (same codes as status):
@@ -34,6 +38,9 @@ function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_
 %
 % EXAMPLE
 %
+% First, some variables that need to be defined. These will be defined as
+% global variables prior to calling this function.
+%
 %   granules_directory - the base directory for the input files.
 %   metadata_directory - the base directory for the location of the
 %    metadata files copied from the OBPG files.
@@ -42,18 +49,21 @@ function [oinfo problem_list] = build_and_fix_orbits( start_date_time, end_date_
 %   output_file_directory - the base directory for the output files. Note
 %    that this must be the full directory name,netCDF doesn't like ~/.
 %
-%   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
-%   metadata_directory = 'Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-%   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/';   % Test run.
-%   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-%   output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';  % Test run.
-%   [oinfo problem_list] = build_and_fix_orbits(  granules_directory, metadata_directory, fixit_directory, ...
-%    logs_directory, output_file_directory, [2010 1 1 0 0 0], [2010 12 31 23 59 59], 1, 1, 1, 1, 1, 1);
+% Build orbits for 25 February through to 1 April  2010 and fix the bow-tie
+% but nothing else.
 %
-%  To do just the test orbit, specify the start time somewhere in that orbit and
-%  the end time about 5 minutes after the start time; e.g.,
-%  [oinfo problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, ...
-%   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1, 1, 1);
+%   global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+%   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+%   metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+%   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
+%   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
+%   output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+% 
+%   build_and_fix_orbits( [2010 2 25 0 0 0], [2010 4 1 0 0 0], 0, 1, 0, 0, 1, 1);
+%
+%  For test runs, the function will define the location of the various
+%  directories as well as parameters needed for the run. Nothing is passed
+%  into the function.
 %
 % To do a test run, capture the lines in 'if test_values' group and execute
 % them at the Matlab command line prompt.
@@ -262,10 +272,7 @@ formatOut.yyyymmddhh = 'yyyymmddHH';
 % Get the possible number of scan lines to skip. Must be either 0, or some
 % combination of an integer multiple of 2030 and of 2040.
 
-j = 1;
-possible_num_scan_lines_skip(1,j) = 0;
-possible_num_scan_lines_skip(2,j) = 0;
-possible_num_scan_lines_skip(3,j) = 0;
+j = 0;
 for aa=0:20
     for bb=0:20
         j = j + 1;

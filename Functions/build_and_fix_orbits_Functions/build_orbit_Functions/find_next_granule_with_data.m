@@ -170,7 +170,6 @@ while 1==1
             % bad and go to the next one.
 
             if status == 0
-
                 iGranule = iGranule + 1;
 
                 % Populate oinfo for this granule for info. oinfo(iOrbit).name
@@ -219,7 +218,7 @@ while 1==1
                         fprintf('...Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
                             oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
 
-                        status = populate_problem_list( 115, ['Number of lines to skip for granule %s, ' num2str(lines_to_skip) ' is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
+                        status = populate_problem_list( 115, ['Number of lines to skip for granule, ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
                     end
 
                     indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
@@ -285,6 +284,9 @@ while 1==1
                     end
 
                     return
+                else
+                    iGranule = iGranule - 1
+                    ;
                 end
             end
         end

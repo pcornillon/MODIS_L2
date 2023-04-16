@@ -29,7 +29,7 @@ date
 
 weight_error = 0;
 
-generate_separations_and_angles
+% generate_separations_and_angles
 
 %% Initialize some variables.
 

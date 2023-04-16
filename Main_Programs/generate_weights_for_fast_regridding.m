@@ -1,5 +1,5 @@
 function weight_error = generate_weights_for_fast_regridding( ancillary_data_dir, base_dir_logs, base_dir_out, start_date_time, scan_line)
-% build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
+% generate_weights_for_fast_regridding - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
 %

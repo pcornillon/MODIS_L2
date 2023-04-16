@@ -68,9 +68,18 @@ end
 % been found in an intersection of the nadir track with 73 S, although this
 % could be a problem in some rare cases. Also, the 3rd one should also be a
 % good fit but based onn a lot less scan lines since these are exactly one
-% orbit from those in the beginning of the orbit.
+% orbit from those in the beginning of the orbit. In very rare cases, there
+% is just one intersection. This will happen if nlat_t(5) > max(nlat_avg)
+% or, I guess, less than min(nlat_avg). I found one case for this for
+% granule: AQUA_MODIS_20020814T161005_L2_SST_OBPG_extras.nc4
 
-for i=1:2
+if length(nn) == 1
+    fprintf('Only one intersection of nlat_t(5) found with nlat_avg for %s. Continuing.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name )
+
+    status = populate_problem_list( 104, ['Only one intersection of nlat_t(5) found with nlat_avg for ' oinfo(iOrbit).ginfo(iGranule).metadata_name]);
+end
+
+for i=1:min(length(nn), 2)
     npts = min( [nn(i)+length(nlat_t)-1, 40271]) - nn(i) + 1;
     
     ddsumsq(i) = sum((nlat_t(1:npts)' - nlat_avg(nn(i):nn(i)+npts-1)).^2);

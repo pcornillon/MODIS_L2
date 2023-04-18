@@ -22,21 +22,22 @@ vout = griddata( left_lon, left_lat, vin, left_regridded_lon, left_regridded_lat
 
 nn = find((wt~=0) & (isnan(wt) == 0));
 
-w = wt(nn);
-wi = wit(nn);
+% % w = wt(nn);
+% % wi = wit(nn);
 
-[iPt, jPt] = ind2sub(size(vout), nn);
+[iPt, jPt] = ind2sub(size(vout), wit(nn));
 iGrid = (iPt + 2) - rem(iPt+1,5);
 jGrid = (jPt + 2) - rem(jPt+1,5);
 
 for k=1:length(nn)
     numVals(iGrid(k), jGrid(k)) = numVals(iGrid(k), jGrid(k)) + 1;
     if numVals(iGrid(k), jGrid(k)) <= 5
-        weights(numVals(iGrid(k),jGrid(k)), iGrid(k), jGrid(k)) = w(k);
-        locations(numVals(iGrid(k),jGrid(k)), iGrid(k), jGrid(k)) = wi(k);
+        weights(numVals(iGrid(k),jGrid(k)), iGrid(k), jGrid(k)) = wt(nn(k));
+        locations(numVals(iGrid(k),jGrid(k)), iGrid(k), jGrid(k)) = wit(nn(k));
     end
 end
 
+toc
     
 % % % for i=6:5:size(vin,1)-5
 % % %     for j=6:5:size(vin,2)-5
@@ -59,6 +60,4 @@ end
 % % %         end
 % % %     end
 % % % end
-
-toc
 

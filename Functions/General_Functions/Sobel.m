@@ -1,4 +1,4 @@
-function [ImageOutX ImageOutY] = Sobel( ImageIn)
+function [grad_x grad_y, grad_mag] = Sobel( ImageIn, get_mag)
 %
 % Apply the Sobel operator to an image.
 %
@@ -8,8 +8,8 @@ function [ImageOutX ImageOutY] = Sobel( ImageIn)
 %
 % OUTPUT
 % 
-%  ImageOutX - the gradient in the x direction.
-%  ImageOutY - ...
+%  grad_x - the gradient in the x direction.
+%  grad_y - ...
 %
 
 % Remember that the first dimension increases downward in the array
@@ -39,12 +39,18 @@ if ~strcmp(class(ImageIn),'uint16')
 end
 
 tt = conv2( ImageIn, SX);
-ImageOutX = tt(2:end-1,2:end-1) / 8;
+grad_x = tt(2:end-1,2:end-1) / 8;
 
 tt = conv2( ImageIn, SY);
-ImageOutY = tt(2:end-1,2:end-1) / 8;
+grad_y = tt(2:end-1,2:end-1) / 8;
 
 %ImageOutA = conv2( ImageIn, SA);
 %ImageOutB = conv2( ImageIn, SB);
+
+if exist('get_mag')
+    grad_mag = sqrt(grad_x.^2 + grad_y.^2);
+else
+    grad_mag = nan;
+end
 
 return

@@ -59,7 +59,10 @@ for iC=1:kMax
     tt = locations_temp(non_zero_weights);
     
     SST_temp = zeros([nElements, nScans]);
-    SST_temp(non_zero_weights(isnan(tt)==0)) = weights_temp(non_zero_weights(isnan(tt)==0)) .* SST_In(tt(isnan(tt)==0));
+%     SST_temp(non_zero_weights(isnan(tt)==0)) = weights_temp(non_zero_weights(isnan(tt)==0)) .* SST_In(tt(isnan(tt)==0));
+
+    mm = find( (isnan(tt)==0) & (tt~=0));
+    SST_temp(non_zero_weights(mm)) = weights_temp(non_zero_weights(mm)) .* SST_In(tt(mm));
     
     SST_Out = SST_Out + SST_temp;
 end

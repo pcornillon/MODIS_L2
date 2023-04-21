@@ -1,4 +1,4 @@
-function [SST_Out] = fast_interpolate_SST_linear( weights, locations, SST_In)
+function [SST_Out] = fast_interpolate_SST_linear( weights_in, locations, SST_In)
 % fast_interpolate_SST_linear - interpolate to regridded orbit - PCC
 %  
 % EXAMPLE: 
@@ -10,7 +10,19 @@ function [SST_Out] = fast_interpolate_SST_linear( weights, locations, SST_In)
 %
 
 [nElements, nScans] = size(SST_In);
-[nMax, mElements, mScans] = size(weights);
+[nMax, mElements, mScans] = size(weights_in);
+
+% Normalize the weights array.
+
+kMax = nMax;
+
+% % % norm_factor = sum(weights_in, 1, 'omitnan');
+norm_factor = sum(weights_in(1:kMax,:,:), 1, 'omitnan');
+
+% % % for i=1:nMax
+for i=1:kMax
+    weights(i,:,:) = weights_in(i,:,:) ./ norm_factor;
+end
 
 % Check number of elements/scan line; should be the same for weights and sst.
 
@@ -38,14 +50,16 @@ weights = weights(:,:,1:nScans);
 
 SST_Out = zeros([nElements, nScans]);
 
-for iC=1:nMax
+% % % for iC=1:nMax
+for iC=1:kMax
     weights_temp = weights(iC,:,:);
     locations_temp = locations(iC,:,:);
     
     non_zero_weights = find(weights_temp ~= 0);
+    tt = locations_temp(non_zero_weights);
     
     SST_temp = zeros([nElements, nScans]);
-    SST_temp(non_zero_weights) = weights_temp(non_zero_weights) .* SST_In(locations_temp(non_zero_weights));
+    SST_temp(non_zero_weights(isnan(tt)==0)) = weights_temp(non_zero_weights(isnan(tt)==0)) .* SST_In(tt(isnan(tt)==0));
     
     SST_Out = SST_Out + SST_temp;
 end

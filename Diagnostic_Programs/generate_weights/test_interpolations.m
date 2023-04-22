@@ -14,35 +14,19 @@
 %  the original SSTs and summed.
 %
 
-test = [2 3];
+test = 3;
 laptop = 0;
-region = 2;
+region = 1;
+generate_weights = 0;
+do_a_list = 1;
 
-% Method = 'linear';
-Method = 'nearest';
+Method = 'linear';
+% Method = 'nearest';
 
 % Turn off warnings for duplicate values in griddata.
 
 id = 'MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId';
 warning('off',id)
-
-% Read the data from the file if it is not already in memory.
-
-if ~exist('fi_orbit')
-    if laptop
-        fi_orbit = '~/Desktop/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
-    else
-        fi_orbit = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
-    end
-    
-    SST_In = ncread(fi_orbit, 'SST_In');
-    lat = ncread(fi_orbit, 'latitude');
-    lon = ncread(fi_orbit, 'longitude');
-    regridded_lon = ncread(fi_orbit, 'regridded_longitude');
-    regridded_lat = ncread(fi_orbit, 'regridded_latitude');
-end
-
-clear yy*
 
 % Carve out the area of interest.
 
@@ -60,166 +44,326 @@ switch region
         jEnd = 2550;
 end
 
-xx = SST_In(iStart:iEnd,jStart:jEnd);
-latxx = lat(iStart:iEnd,jStart:jEnd);
-lonxx = lon(iStart:iEnd,jStart:jEnd);
-regridded_latxx = regridded_lat(iStart:iEnd,jStart:jEnd);
-regridded_lonxx = regridded_lon(iStart:iEnd,jStart:jEnd);
+filelist = dir('/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS*');
 
-yy = griddata( lonxx, latxx, xx, regridded_lonxx, regridded_latxx, 'linear');
-
-[nPixels, nScanlines] = size(xx);
-
-locs1 = zeros(numel(xx),5);
-
-weights = zeros(5,nPixels,nScanlines);
-locations = zeros(5,nPixels,nScanlines);
-
-if test ~= 10
-    for iTest=test
-        iGrid = 0;
-        for iScans=1:nScanlines
-            tic
-            for iPixel=1:nPixels
-                
-                iGrid = iGrid + 1;
-                
-                pixloc(iGrid) = iPixel;
-                scaloc(iGrid) = iScans;
-                
-                xxp = zeros(size(xx));
-                
-                switch iTest
-                    case 1
-                        xxp(iPixel,iScans) =  xx(iPixel,iScans);
-                        yy1(iGrid,:,:) = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
-                        
-                    case 2
-                        xxp(iPixel,iScans) =  1;
-                        yy2(iGrid,:,:) = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
-                        
-                        nn = find( yy2(iGrid,:,:) ~= 0);
-                        if ~isempty(nn)
-                            for iNum=1:length(nn)
-                                locs1(iGrid,iNum) = nn(iNum);
-                            end
-                        end
-                        
-                    case 3
-                        xxp(iPixel,iScans) =  1;
-                        yy3(:,:) = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
-                        
-                        nn = find( yy3(:,:) ~= 0);
-                        if ~isempty(nn)
-                            for iNum=1:length(nn)
-                                [a, b] = ind2sub(size(xx),nn(iNum));
-%                                 if weights(iNum,a,b) ~= 0
-%                                     keyboard
-%                                 end
-                                
-                                weights(iNum,a,b) = yy3(a,b);
-                                locations(iNum,a,b) = sub2ind(size(xx), iPixel, iScans);
-                            end
-                        end
-                end
-                
-                
-            end
-            
-            fprintf('%f s to process iPixel %i\n', toc, iScans)
+for iFile=1:20:200
+    jFile = iFile;
+    
+    % Read the data from the file if it is not already in memory.
+    
+    while 1==1
+        % if ~exist('fi_orbit')
+        if laptop
+            fi_orbit = '~/Desktop/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
+        else
+            %         fi_orbit = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
+            fi_orbit = [filelist(jFile).folder '/' filelist(jFile).name];
         end
         
-        % Sum the arrays and plot
+        SST_In = ncread(fi_orbit, 'SST_In');
         
-        switch iTest
-            case 1
-                yy1s = squeeze(sum(yy1,1,'omitnan'));
+        xx = SST_In(iStart:iEnd,jStart:jEnd);
+        nn = find(xx~=0);
+        if length(nn) ~= numel(xx)
+            break
+        end
+        jFile = jFile + 1;
+    end
+    
+    fprintf('%i) Working on %s\n', iFile, fi_orbit)
+    
+    lat = ncread(fi_orbit, 'latitude');
+    lon = ncread(fi_orbit, 'longitude');
+    regridded_lon = ncread(fi_orbit, 'regridded_longitude');
+    regridded_lat = ncread(fi_orbit, 'regridded_latitude');
+    % end
+    
+    
+    clear yy*
+        
+    xx = SST_In(iStart:iEnd,jStart:jEnd);
+    latxx = lat(iStart:iEnd,jStart:jEnd);
+    lonxx = lon(iStart:iEnd,jStart:jEnd);
+    regridded_latxx = regridded_lat(iStart:iEnd,jStart:jEnd);
+    regridded_lonxx = regridded_lon(iStart:iEnd,jStart:jEnd);
+    
+    [nPixels, nScanlines] = size(xx);
+    
+    % Plot the input field and its Sobel gradient.
+    
+    figure(iFile)
+    clf
+    
+    numPlots = 3 + length(test);
+    
+    subplot(2,numPlots,1)
+    imagesc(xx')
+    set(gca,fontsize=20)
+    title('xx', fontsize=30)
+    colorbar
+    
+    [~, ~, gmagxx] = Sobel(xx, 1);
+    
+    subplot(2,numPlots,numPlots+1)
+    
+    imagesc(gmagxx(2:end-1,2:end-1)')
+    set(gca,fontsize=20)
+    title('\nabla{xx}', fontsize=30)
+    colorbar
+    
+    % Now do griddata on the entire array and plot it and its gradient.
+    
+    yylinear = griddata( lonxx, latxx, xx, regridded_lonxx, regridded_latxx, 'linear');
+    
+    subplot(2,numPlots,2)
+    
+    imagesc(yylinear')
+    set(gca,fontsize=20)
+    title('yy - Linear', fontsize=30)
+    colorbar
+    
+    % Use this colorbar for the rest of the SST plots.
+    
+    CLIM_SST = get(gca,'clim');
+    CLIM_SST(1) = floor(CLIM_SST(1));
+    CLIM_SST(2) = ceil(CLIM_SST(2));
+    caxis(CLIM_SST)
+    
+    subplot(2,numPlots,1)
+    caxis(CLIM_SST)
+    
+    [~, ~, gmaglinear] = Sobel(yylinear, 1);
+    
+    subplot(2,numPlots,numPlots+2)
+    
+    imagesc(gmaglinear(2:end-1,2:end-1)')
+    set(gca,fontsize=20)
+    title('\nabla{yy} - Linear', fontsize=30)
+    colorbar
+    
+    % Use this colorbar for the rest of the gradient plots.
+    
+    CLIM_gradient = get(gca,'clim');
+    CLIM_gradient(1) = floor(CLIM_gradient(1));
+    CLIM_gradient(2) = ceil(CLIM_gradient(2));
+    caxis(CLIM_gradient)
+    
+    subplot(2,numPlots,numPlots+1)
+    caxis(CLIM_gradient)
+    
+    % Repeat but griddata with nearest neighbor
+    
+    yynearest = griddata( lonxx, latxx, xx, regridded_lonxx, regridded_latxx, 'nearest');
+    
+    subplot(2,numPlots,3)
+    
+    imagesc(yynearest')
+    set(gca,fontsize=20)
+    title('yy - Nearest Neighbor', fontsize=30)
+    colorbar
+    caxis(CLIM_SST)
+    
+    [~, ~, gmagnearest] = Sobel(yynearest, 1);
+    
+    subplot(2,numPlots,numPlots+3)
+    
+    imagesc(gmagnearest(2:end-1,2:end-1)')
+    set(gca,fontsize=20)
+    title('\nabla{yy} - Nearest Neighbor', fontsize=30)
+    colorbar
+    caxis(CLIM_gradient)
+    
+    % Initialize parameters needed for the run.
+    
+    iPlot = 3;
+    iFig = 100;
+    
+    locs1 = zeros(numel(xx),5);
+    
+    weights = zeros(5,nPixels,nScanlines);
+    locations = zeros(5,nPixels,nScanlines);
+    Num = zeros(nPixels,nScanlines);
+    
+    if test ~= 10
+        for iTest=test
+            
+            if generate_weights
                 
-                figure(1)
-                clf
-                imagesc(yy1s')
+                iGrid = 0;
                 
-            case 2
-                for iGrid=1:size(yy2,1)
-                    yy2p(iGrid,:,:) = zeros(size(xx));
-
-                    nn = find(locs1(iGrid,:) > 0);
-                    if ~isempty(nn)
-                        for iNum=nn
-                            [a, b] = ind2sub(size(xx),locs1(iGrid,iNum));
-                            yy2p(iGrid,a,b) = squeeze(yy2(iGrid,a,b)) .* xx(ind2sub(size(xx),iGrid));
+                for iScans=1:nScanlines
+                    tic
+                    for iPixel=1:nPixels
+                        
+                        iGrid = iGrid + 1;
+                        
+                        xxp = zeros(size(xx));
+                        
+                        switch iTest
+                            case 1
+                                xxp(iPixel,iScans) =  xx(iPixel,iScans);
+                                yy1(iGrid,:,:) = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
+                                
+                            case 2
+                                xxp(iPixel,iScans) =  1;
+                                yy2(iGrid,:,:) = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
+                                
+                                nn = find( yy2(iGrid,:,:) ~= 0);
+                                if ~isempty(nn)
+                                    for iNum=1:length(nn)
+                                        locs1(iGrid,iNum) = nn(iNum);
+                                    end
+                                end
+                                
+                            case 3
+                                xxp(iPixel,iScans) =  1;
+                                yy3(:,:) = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
+                                
+                                nn = find( yy3(:,:) ~= 0);
+                                if ~isempty(nn)
+                                    for iNum=1:length(nn)
+                                        Num(nn(iNum)) = Num(nn(iNum)) + 1;
+                                        k = Num(nn(iNum));
+                                        
+                                        [a, b] = ind2sub(size(yy3),nn(iNum));
+                                        weights(k,a,b) = yy3(nn(iNum));
+                                        locations(k,a,b) = sub2ind(size(xx), iPixel, iScans);
+                                    end
+                                end
                         end
                     end
                 end
-                yy2s = squeeze(sum(yy2p,1,'omitnan'));
                 
-                figure(2)
-                clf
-                imagesc(yy2s')
+                fprintf('%f s to process iPixel %i\n', toc, iScans)
+            else
+                % Get weights and locations
                 
-            case 3
-%                 yy3s = fast_interpolate_SST_linear( weights, locations, xx);
-                
-                SST_Out = zeros(size(xx));
-                
-                for iC=1:size(weights,1)
-                    weights_temp = squeeze(weights(iC,:,:));
-                    locations_temp = squeeze(locations(iC,:,:));
+                load ~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/weights/test_weights
+            end
+            
+            % Sum the arrays and plot
+            
+            switch iTest
+                case 1
+                    yy1s = squeeze(sum(yy1,1,'omitnan'));
                     
-                    good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
-                    tt = locations_temp(good_weights);
+                    figure(iFig+1)
+                    clf
+                    imagesc(yy1s')
+                    set(gca,fontsize=20)
+                    title('yy1', fontsize=30)
                     
-                    SST_temp = zeros(size(xx));
-%                     SST_temp(good_weights(isnan(tt)==0)) = weights_temp(good_weights(isnan(tt)==0)) .* SST_In(tt(isnan(tt)==0));
-                    SST_temp(good_weights) = weights_temp(good_weights) .* SST_In(tt);
+                    [~, ~, gmag1] = Sobel(yy1s, 1);
                     
-%                     mm = find( (isnan(tt)==0) & (tt~=0));
-%                     SST_temp(good_weights(mm)) = weights_temp(good_weights(mm)) .* SST_In(tt(mm));
+                    figure(iFig+21)
+                    imagesc(gmag1')
+                    set(gca,fontsize=20)
+                    title('\nabla{yy1}', fontsize=30)
                     
-                    SST_Out = SST_Out + SST_temp;
-                end
-%                 
-%                 figure(3)
-%                 clf
-%                 imagesc(SST_Out')
-
+                case 2
+                    for iGrid=1:size(yy2,1)
+                        yy2p(iGrid,:,:) = zeros(size(xx));
+                        
+                        nn = find(locs1(iGrid,:) > 0);
+                        if ~isempty(nn)
+                            for iNum=nn
+                                [a, b] = ind2sub(size(xx),locs1(iGrid,iNum));
+                                yy2p(iGrid,a,b) = squeeze(yy2(iGrid,a,b)) .* xx(ind2sub(size(xx),iGrid));
+                            end
+                        end
+                    end
+                    yy2s = squeeze(sum(yy2p,1,'omitnan'));
+                    
+                    iPlot = iPlot + 1;
+                    subplot(2,numPlots,iPlot)
+                    
+                    imagesc(yy2s')
+                    set(gca,fontsize=20)
+                    title('yy2', fontsize=30)
+                    colorbar
+                    caxis(CLIM_SST)
+                    
+                    [~, ~, gmag2] = Sobel(yy2s, 1);
+                    
+                    subplot(2,numPlots,numPlots+iPlot)
+                    
+                    imagesc(gmag2(2:end-1,2:end-1)')
+                    set(gca,fontsize=20)
+                    title('\nabla{yy2}', fontsize=30)
+                    colorbar
+                    caxis(CLIM_gradient)
+                    
+                case 3
+                    %                 yy3s = fast_interpolate_SST_linear( weights, locations, xx);
+                    
+                    yy3s = zeros(size(xx));
+                    
+                    for iC=1:size(weights,1)
+                        weights_temp = squeeze(weights(iC,:,:));
+                        locations_temp = squeeze(locations(iC,:,:));
+                        
+                        good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
+                        tt = locations_temp(good_weights);
+                        
+                        yy3s(good_weights) = yy3s(good_weights) + xx(tt) .* weights_temp(good_weights);
+                    end
+                    
+                    iPlot = iPlot + 1;
+                    subplot(2,numPlots,iPlot)
+                    
+                    imagesc(yy3s')
+                    set(gca,fontsize=20)
+                    title('yy3', fontsize=30)
+                    colorbar
+                    caxis(CLIM_SST)
+                    
+                    [~, ~, gmag3] = Sobel(yy3s, 1);
+                    
+                    subplot(2,numPlots,numPlots+iPlot)
+                    
+                    imagesc(gmag3(2:end-1,2:end-1)')
+                    set(gca,fontsize=20)
+                    title('\nabla{yy3}', fontsize=30)
+                    colorbar
+                    caxis(CLIM_gradient)
+            end
         end
-    end
-else
-    iGrid = 0;
-    for iPixel=1:nPixels
-        tic
-        
-        sep_lat_along_scan = lat(1:end-1,iPixel) - lat(2:end,iPixel);
-        sep_lon_along_scan = cosd(lat(1:end-1,iPixel)) .* (lon(1:end-1,iPixel) - lon(2:end,iPixel));
-
-        sep_lat_along_track_in = lat(iPixel,1:end-1) - lat(iPixel,2:end);
-        sep_lon_along_track_in = cosd(lat(iPixel,1:end-1)) .* (lon(iPixel,1:end-1) - lon(iPixel,2:end));
-
-        seps_along_track_in = sqrt( sep_lat_along_track_in.^2 + sep_lon_along_track_in.^2) * 111;
-        dist_along_track_in = cumsum(seps_along_track_in);
-        
-        sep_lat_along_track_regridded = regridded_lat(iPixel,1:end-1) - regridded_lat(iPixel,2:end);
-        sep_lon_along_track_regridded = cosd(regridded_lat(iPixel,1:end-1)) .* (regridded_lon(iPixel,1:end-1) - regridded_lon(iPixel,2:end));
-        
-        seps_along_track_regridded = sqrt( sep_lat_along_track_regridded.^2 + sep_lon_along_track_regridded.^2) * 111;
-        dist_along_track_regridded = cumsum(seps_along_track_regridded);
-        
-        for iScans=1:nScanlines
-            iGrid = iGrid + 1;
-            dist_along_track = sqrt( (lat(iPixel,1:end-1)-lat(10,2:end)).^2 + (cosd(lat(10,1:end-1)) .* (lon(10,1:end-1)-lon(10,2:end)))).^2
-        end
-        
-        
+    else
         iGrid = 0;
-        for Pixel=1:nPixels
+        for iPixel=1:nPixels
             tic
+            
+            sep_lat_along_scan = lat(1:end-1,iPixel) - lat(2:end,iPixel);
+            sep_lon_along_scan = cosd(lat(1:end-1,iPixel)) .* (lon(1:end-1,iPixel) - lon(2:end,iPixel));
+            
+            sep_lat_along_track_in = lat(iPixel,1:end-1) - lat(iPixel,2:end);
+            sep_lon_along_track_in = cosd(lat(iPixel,1:end-1)) .* (lon(iPixel,1:end-1) - lon(iPixel,2:end));
+            
+            seps_along_track_in = sqrt( sep_lat_along_track_in.^2 + sep_lon_along_track_in.^2) * 111;
+            dist_along_track_in = cumsum(seps_along_track_in);
+            
+            sep_lat_along_track_regridded = regridded_lat(iPixel,1:end-1) - regridded_lat(iPixel,2:end);
+            sep_lon_along_track_regridded = cosd(regridded_lat(iPixel,1:end-1)) .* (regridded_lon(iPixel,1:end-1) - regridded_lon(iPixel,2:end));
+            
+            seps_along_track_regridded = sqrt( sep_lat_along_track_regridded.^2 + sep_lon_along_track_regridded.^2) * 111;
+            dist_along_track_regridded = cumsum(seps_along_track_regridded);
+            
             for iScans=1:nScanlines
                 iGrid = iGrid + 1;
-                dist_along_track = sqrt( (lat(10,1:end-1)-lat(10,2:end)).^2 + (cosd(lat(10,1:end-1)) .* (lon(10,1:end-1)-lon(10,2:end)))).^2
+                dist_along_track = sqrt( (lat(iPixel,1:end-1)-lat(10,2:end)).^2 + (cosd(lat(10,1:end-1)) .* (lon(10,1:end-1)-lon(10,2:end)))).^2
+            end
+            
+            
+            iGrid = 0;
+            for Pixel=1:nPixels
+                tic
+                for iScans=1:nScanlines
+                    iGrid = iGrid + 1;
+                    dist_along_track = sqrt( (lat(10,1:end-1)-lat(10,2:end)).^2 + (cosd(lat(10,1:end-1)) .* (lon(10,1:end-1)-lon(10,2:end)))).^2
+                end
             end
         end
     end
 end
-            
-            
+
+

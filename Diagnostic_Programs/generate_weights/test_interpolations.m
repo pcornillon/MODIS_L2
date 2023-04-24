@@ -18,10 +18,12 @@ set(0,'DefaultFigureWindowStyle','docked')
 set(groot,'DefaultFigureColormap',jet)
 
 test = 4;
-laptop = 0;
+laptop = 1;
 region = 2;
 generate_weights = 1;
 test_file = 1;
+
+iFile_offset = 1;
 
 debug = 0;
 
@@ -106,7 +108,7 @@ for iFile=files_to_do
     
     % Plot the input field and its Sobel gradient.
     
-    figure(iFile)
+    figure(iFile+iFile_offset)
     clf
     
     numPlots = 3 + length(test);
@@ -197,8 +199,8 @@ for iFile=files_to_do
     iPlot = 3;
     iFig = 100;
     
-    in_size = 11;
-    out_size = 11;
+    in_size = 7;
+    out_size = 7;
     
     locs1 = zeros(numel(xx),5);
     

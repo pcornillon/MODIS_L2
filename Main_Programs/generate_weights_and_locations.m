@@ -88,9 +88,9 @@ for iFile=1:file_step:numfiles
     
     % Intialize output arrays.
     
-    weights = single(zeros(7,size(latitude,1),size(latitude,2)));
-    locations = single(zeros(7,size(latitude,1),size(latitude,2)));
-    Num = int16(zeros(7,size(latitude,1),size(latitude,2)));
+    weights = single(zeros(6,size(latitude,1),size(latitude,2)));
+    locations = single(zeros(6,size(latitude,1),size(latitude,2)));
+    Num = int16(zeros(6,size(latitude,1),size(latitude,2)));
     
     % Now get the weights and locations
     

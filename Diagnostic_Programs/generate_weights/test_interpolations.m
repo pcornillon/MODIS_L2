@@ -59,10 +59,10 @@ switch region
         jEnd = 2555;
     
     case 3
-        iStart = 1311;
-        iEnd = 1350;
-        jStart = 2521;
-        jEnd = 2555;
+        iStart = 1;
+        iEnd = 10;
+        jStart = 1;
+        jEnd = 40271;
         
     case 4
         iStart = 1;
@@ -88,10 +88,11 @@ for iFile=files_to_do
         
         if test_file
             if laptop
-                fi_orbit = '~/Desktop/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
+%                 fi_orbit = '~/Desktop/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
+                fi_orbit = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_41616_20100301T000736_L2_SST.nc4';
             else
 %                 fi_orbit = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
-                fi_orbit = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_41616_20100301T000736_L2_SST.nc4';
+                fi_orbit = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_41616_20100301T000736_L2_SST.nc4';
             end
         else
             fi_orbit = [filelist(jFile).folder '/' filelist(jFile).name];

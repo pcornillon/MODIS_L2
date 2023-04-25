@@ -53,7 +53,8 @@ for iFile=1:file_step:numfiles
         filename_in = [filelist(jFile).folder '/' filelist(jFile).name];
         
         nn = strfind(filename_in, 'orbit_');
-        filename_out = ['~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/weights/' filename_in(nn+7:end) '_weights'];
+        mm = strfind(filename_in, '.nc4');
+        filename_out = ['~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/weights/' filename_in(nn+7:mm-1) '_weights.mat'];
         
         if exist(filename_out)
             jFile = jFile + 1;

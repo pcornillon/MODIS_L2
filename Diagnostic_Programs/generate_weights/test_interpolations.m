@@ -30,8 +30,10 @@ debug = 0;
 Method = 'linear';
 % Method = 'nearest';
 
-in_size = 12;
-out_size = 12;
+in_size_x = 3;
+in_size_y = 12;
+out_size_x = 3;
+out_size_y = 12;
 
 iPlot = 3;
 iFig = 100;
@@ -265,30 +267,30 @@ for iFile=files_to_do
                                 
                             case 4
                                 
-                                isi = max([1 iPixel-in_size]);
-                                iei = min([iPixel+in_size nPixels]);
+                                isi = max([1 iPixel-in_size_x]);
+                                iei = min([iPixel+in_size_x nPixels]);
                                 
-                                jsi = max([1 iScan-in_size]);
-                                jei = min([iScan+in_size nScanlines]);
+                                jsi = max([1 iScan-in_size_y]);
+                                jei = min([iScan+in_size_y nScanlines]);
                                 
-                                iso = max([1 iPixel-out_size]);
-                                ieo = min([iPixel+out_size nPixels]);
+                                iso = max([1 iPixel-out_size_x]);
+                                ieo = min([iPixel+out_size_x nPixels]);
                                 
-                                jso = max([1 iScan-out_size]);
-                                jeo = min([iScan+out_size nScanlines]);
+                                jso = max([1 iScan-out_size_y]);
+                                jeo = min([iScan+out_size_y nScanlines]);
                                 
                                 vin = zeros(iei-isi+1, jei-jsi+1);
                                 
-                                if iei <= 2*in_size
-                                    jPixel = iei - in_size;
+                                if iei <= 2*in_size_x
+                                    jPixel = iei - in_size_x;
                                 else
-                                    jPixel = in_size + 1;
+                                    jPixel = in_size_x + 1;
                                 end
                                 
-                                if jei <= 2*in_size
-                                    jScan = jei - in_size;
+                                if jei <= 2*in_size_y
+                                    jScan = jei - in_size_y;
                                 else
-                                    jScan = in_size + 1;
+                                    jScan = in_size_y + 1;
                                 end
                                 
                                 vin(jPixel,jScan) = 1;

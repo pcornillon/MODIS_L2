@@ -27,8 +27,10 @@ function generate_weights_and_locations(pattern_in, num_in_range)
 Method = 'linear';
 % Method = 'nearest';
 
-in_size = 12;
-out_size = 12;
+in_size_x = 3;
+in_size_y = 12;
+out_size_x = 3;
+out_size_y = 12;
 
 % Turn off warnings for duplicate values in griddata.
 
@@ -142,28 +144,30 @@ for iFile=1:file_step:numfiles
             
             % Get the indices for the subregion to grid.
             
-            isi = max([1 iPixel-in_size]);
-            iei = min([iPixel+in_size nPixels]);
+            isi = max([1 iPixel-in_size_x]);
+            iei = min([iPixel+in_size_x nPixels]);
             
-            jsi = max([1 iScan-in_size]);
-            jei = min([iScan+in_size nScanlines]);
-                        
-            iso = max([1 iPixel-out_size]);
-            ieo = min([iPixel+out_size nPixels]);
+            jsi = max([1 iScan-in_size_y]);
+            jei = min([iScan+in_size_y nScanlines]);
             
-            jso = max([1 iScan-out_size]);
-            jeo = min([iScan+out_size nScanlines]);
-                        
-            if iei <= 2*in_size
-                jPixel = iei - in_size;
+            iso = max([1 iPixel-out_size_x]);
+            ieo = min([iPixel+out_size_x nPixels]);
+            
+            jso = max([1 iScan-out_size_y]);
+            jeo = min([iScan+out_size_y nScanlines]);
+            
+            vin = zeros(iei-isi+1, jei-jsi+1);
+            
+            if iei <= 2*in_size_x
+                jPixel = iei - in_size_x;
             else
-                jPixel = in_size + 1;
+                jPixel = in_size_x + 1;
             end
             
-            if jei <= 2*in_size
-                jScan = jei - in_size;
+            if jei <= 2*in_size_y
+                jScan = jei - in_size_y;
             else
-                jScan = in_size + 1;
+                jScan = in_size_y + 1;
             end
             
             % Define the input array to regrid - all zeros except for one

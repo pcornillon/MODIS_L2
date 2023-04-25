@@ -19,7 +19,7 @@ function generate_weights_and_locations(pattern_in, num_in_range)
 %  none - the results are saved in a mat file.
 %
 % EXAMPLE
-%   generate_weights_and_locations(pattern_in, '20100301T', 3)
+%   generate_weights_and_locations('20100301T', 3)
 %
 
 % Define some variables
@@ -179,7 +179,12 @@ for iFile=1:file_step:numfiles
             
             % Regrid.
             
-            vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
+            lon_temp = double(longitude(isi:iei,jsi:jei));
+            lat_temp = double(latitude(isi:iei,jsi:jei));
+            regridded_lon_temp = double(regridded_longitude(iso:ieo,jso:jeo));
+            regridded_lat_temp = double(regridded_latitude(iso:ieo,jso:jeo));
+
+            vout = griddata( lon_temp, lat_temp, vin, regridded_lon_temp, regridded_lat_temp);
             
             nn = find( (vout ~= 0) & (isnan(vout) == 0) );
             
@@ -211,13 +216,11 @@ for iFile=1:file_step:numfiles
                     locations(k,a(iNum),b(iNum)) = sub2ind(size(latitude), iPixel, iScan);
                 end
             end
-            
-%             if mod(iScan, 50) == 0
-%                 fprintf('%f s to process iScans %i-%i\n', toc, iScan-50+1, iScan)
-            fprintf('%f s to process iPixel %i\n', toc, iPixel)
-            tic
-%             end
         end
+        
+        fprintf('%f s to process iPixel %i\n', toc, iPixel)
+        tic
+
     end
     
     fprintf('Took %f s to process for the entire run.\n', toc(tStart))

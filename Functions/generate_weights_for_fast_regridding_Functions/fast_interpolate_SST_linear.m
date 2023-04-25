@@ -34,20 +34,6 @@ function [SST_Out] = fast_interpolate_SST_linear( weights, locations, SST_In)
 [nElements, nScans] = size(SST_In);
 [nMax, mElements, mScans] = size(weights);
 
-nMax = 6;
-
-% % % % Normalize the weights array.
-% % % 
-% % % kMax = nMax;
-% % % 
-% % % norm_factor = sum(weights, 1, 'omitnan');
-% % % norm_factor = sum(weights(1:kMax,:,:), 1, 'omitnan');
-
-% % % for i=1:nMax
-% % for i=1:kMax
-% %     weights(i,:,:) = weights(i,:,:) ./ norm_factor;
-% % end
-
 % Check number of elements/scan line; should be the same for weights and sst.
 
 if mElements > nElements
@@ -66,36 +52,21 @@ if mScans < nScans
     return
 end
 
-% % % % Truncate weights array to same number of scan lines as SST array.
-% % % 
-% % % weights = weights(:,:,1:nScans);
-
 % Now regrid.
 
 SST_Out = zeros([nElements, nScans]);
 
-% % % for iC=1:kMax
-% % %     weights_temp = weights(iC,:,:);
-% % %     locations_temp = locations(iC,:,:);
-% % %     
-% % %     non_zero_weights = find(weights_temp ~= 0);
-% % %     tt = locations_temp(non_zero_weights);
-% % %     
-% % %     SST_temp = zeros([nElements, nScans]);
-% % % %     SST_temp(non_zero_weights(isnan(tt)==0)) = weights_temp(non_zero_weights(isnan(tt)==0)) .* SST_In(tt(isnan(tt)==0));
-% % % 
-% % %     mm = find( (isnan(tt)==0) & (tt~=0));
-% % %     SST_temp(non_zero_weights(mm)) = weights_temp(non_zero_weights(mm)) .* SST_In(tt(mm));
-% % %     
-% % %     SST_Out = SST_Out + SST_temp;
-% % % end
-
 for iC=1:nMax
     weights_temp = squeeze(weights(iC,:,:));
-    locations_temp = squeeze(locations(iC,:,:));
     
-    good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
-    tt = locations_temp(good_weights);
+    mm = find((weights_temp(:) ~= 0) & (isnan(weights_temp(:)) == 0) );
     
-    SST_Out(good_weights) = SST_Out(good_weights) + SST_In(tt) .* weights_temp(good_weights);
+    if length(mm) > 0
+        locations_temp = squeeze(locations(iC,:,:));
+    
+        good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
+        tt = locations_temp(good_weights);
+        
+        SST_Out(good_weights) = SST_Out(good_weights) + SST_In(tt) .* weights_temp(good_weights);
+    end
 end

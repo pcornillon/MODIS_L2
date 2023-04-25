@@ -19,16 +19,22 @@ set(groot,'DefaultFigureColormap',jet)
 
 test = 4;
 laptop = 1;
-region = 2;
+region = 1;
 generate_weights = 1;
 test_file = 1;
 
-iFile_offset = 1;
+iFile_offset = 0;
 
 debug = 0;
 
 Method = 'linear';
 % Method = 'nearest';
+
+in_size = 12;
+out_size = 12;
+
+iPlot = 3;
+iFig = 100;
 
 % Turn off warnings for duplicate values in griddata.
 
@@ -45,8 +51,12 @@ switch region
         jEnd = 2600;
         
     case 2
+        %         iStart = 1311;
+        %         iEnd = 1340;
+        %         jStart = 2521;
+        %         jEnd = 2555;
         iStart = 1311;
-        iEnd = 1340;
+        iEnd = 1350;
         jStart = 2521;
         jEnd = 2555;
 end
@@ -196,17 +206,13 @@ for iFile=files_to_do
     
     % Initialize parameters needed for the run.
     
-    iPlot = 3;
-    iFig = 100;
-    
-    in_size = 7;
-    out_size = 7;
-    
     locs1 = zeros(numel(xx),5);
     
     weights = zeros(5,nPixels,nScanlines);
     locations = zeros(5,nPixels,nScanlines);
     Num = zeros(nPixels,nScanlines);
+    
+    start_timer = tic;
     
     if test ~= 10
         for iTest=test
@@ -215,9 +221,11 @@ for iFile=files_to_do
                 
                 iGrid = 0;
                 
-                for iScan=1:nScanlines
+                %                 for iScan=1:nScanlines
+                %                     tic
+                for iPixel=1:nPixels
                     tic
-                    for iPixel=1:nPixels
+                    for iScan=1:nScanlines
                         
                         iGrid = iGrid + 1;
                         
@@ -256,29 +264,12 @@ for iFile=files_to_do
                                 end
                                 
                             case 4
-                                % % %                                 xxp(iPixel,iScan) =  1;
-                                % % %                                 yy3 = griddata( lonxx, latxx, xxp, regridded_lonxx, regridded_latxx, Method);
-                                % % %
-                                % % %                                 nn = find( (yy3 ~= 0) & (isnan(yy3) == 0) );
-                                % % %                                 if ~isempty(nn)
-                                % % %                                     for iNum=1:length(nn)
-                                % % %                                         Num(nn(iNum)) = Num(nn(iNum)) + 1;
-                                % % %                                         k = Num(nn(iNum));
-                                % % %
-                                % % %                                         [a, b] = ind2sub(size(yy3),nn(iNum));
-                                % % %                                         weights(k,a,b) = yy3(nn(iNum));
-                                % % %                                         locations(k,a,b) = sub2ind(size(xx), iPixel, iScan);
-                                % % %                                     end
-                                % % %                                 end
                                 
                                 isi = max([1 iPixel-in_size]);
                                 iei = min([iPixel+in_size nPixels]);
                                 
                                 jsi = max([1 iScan-in_size]);
                                 jei = min([iScan+in_size nScanlines]);
-                                
-                                isim1 = isi - 1;
-                                jsim1 = jsi - 1;
                                 
                                 iso = max([1 iPixel-out_size]);
                                 ieo = min([iPixel+out_size nPixels]);
@@ -324,49 +315,9 @@ for iFile=files_to_do
                                     
                                     sol = sub2ind(size(xx), a, b);
                                     
-%                                     if iPixel==14 & iScan ==21
-%                                         keyboard
-%                                     end
-                                    
-                                    if debug
-                                        figure(2)
-                                        clf
-                                        subplot(2,1,1)
-                                        vout = zeros(size(xx));
-                                        vout(iso:ieo, jso:jeo) = yy4;
-                                        imagesc(vout')
-                                        rectangle(position=[isi jsi 23 23], edgecolor='w')
-                                        hold on
-                                        plot( iPixel, iScan, 'ok', markerfacecolor='w', markersize=10)
-                                        colorbar
-                                        set(gca,fontsize=20)
-                                        title(['(' num2str(iPixel) ', ' num2str(iScan) ')'], fontsize=30)                                        
-                                    end
-                                    
                                     for iNum=1:length(sol)
                                         Num(sol(iNum)) = Num(sol(iNum)) + 1;
                                         k = Num(sol(iNum));
-                                        
-                                        if debug
-                                            fprintf('%i) Num(sol(iNum))=%i; (%i, %i)\n', iNum, k, a(iNum), b(iNum));
-                                            
-                                            subplot(2,1,2)
-                                            imagesc(Num')
-                                            colorbar
-                                            set(gca,fontsize=20)
-                                            
-                                            whatNext = input('<cr> for next one, k for keyboard: ','s');
-                                            if strcmp(whatNext, 'k')
-                                                keyboard
-                                            end
-                                        end
-                                        
-                                        % % %                                                 [a, b] = ind2sub(size(yy4),nn(iNum));
-                                        % % %                                                 a = a + isi;
-                                        % % %                                                 b = b + jsi;
-                                        
-                                        % % %                                                 a = iot(iNum) + isi - 1;
-                                        % % %                                                 b = jot(iNum) + jsi - 1;
                                         
                                         weights(k,a(iNum),b(iNum)) = yy4(nn(iNum));
                                         locations(k,a(iNum),b(iNum)) = sub2ind(size(xx), iPixel, iScan);
@@ -374,7 +325,7 @@ for iFile=files_to_do
                                 end
                         end
                     end
-                    fprintf('%f s to process iScan %i\n', toc, iScan)
+                    fprintf('%f s to process iPixel %i\n', toc, iScan)
                 end
             else
                 % Get weights and locations
@@ -435,19 +386,18 @@ for iFile=files_to_do
                     caxis(CLIM_gradient)
                     
                 case {3, 4}
-                    %                 yy3s = fast_interpolate_SST_linear( weights, locations, xx);
-                    
-                    yy3s = zeros(size(xx));
-                    
-                    for iC=1:size(weights,1)
-                        weights_temp = squeeze(weights(iC,:,:));
-                        locations_temp = squeeze(locations(iC,:,:));
-                        
-                        good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
-                        tt = locations_temp(good_weights);
-                        
-                        yy3s(good_weights) = yy3s(good_weights) + xx(tt) .* weights_temp(good_weights);
-                    end
+                    yy3s = fast_interpolate_SST_linear( weights, locations, xx);
+%                     yy3s = zeros(size(xx));
+%                     
+%                     for iC=1:size(weights,1)
+%                         weights_temp = squeeze(weights(iC,:,:));
+%                         locations_temp = squeeze(locations(iC,:,:));
+%                         
+%                         good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
+%                         tt = locations_temp(good_weights);
+%                         
+%                         yy3s(good_weights) = yy3s(good_weights) + xx(tt) .* weights_temp(good_weights);
+%                     end
                     
                     iPlot = iPlot + 1;
                     subplot(2,numPlots,iPlot)
@@ -505,6 +455,54 @@ for iFile=files_to_do
             end
         end
     end
+    fprintf('Time for this run: %f s\n', toc(start_timer))
 end
 
+% Plot point with a problem.
+
+extra_plot = 0;
+if extra_plot
+    
+    % Set some parameters.
+    
+    xoffset = 0.004;
+    yoffset = 0;
+    
+    [a, b] = ind2sub( size(latxx), nn);
+    [a'; b']
+
+    % Get the points of interest on the input array
+    
+    nn = find( abs(latxx - regridded_latxx(26,10))<0.015 &  abs(lonxx - regridded_lonxx(26,10))<0.2 );
+    
+    xxtest = xx(nn);
+    lattest = latxx(nn);
+    lontest = lonxx(nn);
+    regridded_lattest = regridded_latxx(26,10);
+    regridded_lontest = regridded_lonxx(26,10);
+    
+    % Now plot them
+    
+    figure
+    clf
+
+    plot(lontest,lattest,'.k',markersize=20)
+    hold on
+    plot( regridded_lontest, regridded_lattest , 'ok', markerfacecolor='c', markersize=20)
+    grid on
+    plot( regridded_lontest, regridded_lattest , '.k')
+
+    % Connect the dots.
+    
+    plot( [lonxx(27,5) lonxx(26,5)], [latxx(27,5) latxx(26,5)], 'k')
+    plot( [lonxx(27,5) lonxx(26,11)], [latxx(27,5) latxx(26,11)], 'k')
+    plot( [lonxx(26,11) lonxx(26,5)], [latxx(26,11) latxx(26,5)], 'k')
+    
+    % Add numbers of grid points to the plot.
+    
+    for i=1:length(a)
+        text( lonxx(a(i),b(i))+xoffset, latxx(a(i),b(i))+yoffset, [num2str(a(i)) ', ' num2str(b(i))])
+    end
+end
+    
 

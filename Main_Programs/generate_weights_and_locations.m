@@ -18,6 +18,17 @@ function generate_weights_and_locations(pattern_in, num_in_range)
 % OUTPUT
 %  none - the results are saved in a mat file.
 %
+% EXAMPLE
+%   generate_weights_and_locations(pattern_in, '20100301T', 3)
+%
+
+% Define some variables
+
+Method = 'linear';
+% Method = 'nearest';
+
+in_size = 12;
+out_size = 12;
 
 % Turn off warnings for duplicate values in griddata.
 
@@ -35,7 +46,7 @@ file_step = floor(numfiles / num_in_range);
 
 for iFile=1:file_step:numfiles
     jFile = iFile;
-        
+    
     while 1==1
         filename_in = [filelist(jFile).folder '/' filelist(jFile).name];
         
@@ -55,12 +66,14 @@ for iFile=1:file_step:numfiles
     
     fprintf('Working on %s\n', filename_in)
     % Read in the data for this file.
-            
-    latitude = ncread(filename_in, 'latitude');
-    regridded_latitude = ncread(filename_in, 'regridded_latitude');
-    longitude = ncread(filename_in, 'longitude');
-    regridded_longitude = ncread(filename_in, 'regridded_longitude');
     
+    latitude = single(ncread(filename_in, 'latitude'));
+    regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
+    longitude = single(ncread(filename_in, 'longitude'));
+    regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
+    
+    [nPixels, nScanlines] = size(latitude);
+
     % Make sure that there are not nan's in the input.
     
     nn = find(isnan(latitude)==1);
@@ -73,51 +86,134 @@ for iFile=1:file_step:numfiles
     
     % Intialize output arrays.
     
-    weights = single(nan(7,size(latitude,1),size(latitude,2)));
-    locations = single(nan(7,size(latitude,1),size(latitude,2)));
+    weights = single(zeros(7,size(latitude,1),size(latitude,2)));
+    locations = single(zeros(7,size(latitude,1),size(latitude,2)));
+    Num = int16(zeros(7,size(latitude,1),size(latitude,2)));
     
     % Now get the weights and locations
     
     tStart = tic;
     
-    for iPix=4:size(latitude,1)-4
+    % % %     for iPix=4:size(latitude,1)-4
+    % % %         tic
+    % % %         for iScan=4:size(latitude,2)-4
+    % % %
+    % % %             isi = iPix-3;
+    % % %             iei = iPix+3;
+    % % %
+    % % %             jsi = iScan-3;
+    % % %             jei = iScan+3;
+    % % %
+    % % %             iso = max([1 iPix-15]);
+    % % %             ieo = min([iPix+15 size(latitude,1)]);
+    % % %
+    % % %             jso = max([1 iScan-15]);
+    % % %             jeo = min([iScan+15 size(latitude,2)]);
+    % % %
+    % % %             vin = zeros(7,7);
+    % % %             vin(4,4) = 1;
+    % % %
+    % % %             vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
+    % % %
+    % % %             [iot, jot] = find(vout>0);
+    % % %             sol = sub2ind(size(vout), iot, jot);
+    % % %
+    % % %             so = sub2ind(size(latitude), iso+iot-1, jso+jot-1);
+    % % %
+    % % %             [wo, wio] = sort(vout(sol), 'desc');
+    % % %
+    % % %             num_to_process = min([9 length(sol)]);
+    % % %             % %             fprintf('More than 9 hist for (iPix, iScan) = (%i, %i)\n', iPix, iScan)
+    % % %             % %         else
+    % % %
+    % % %             for k=1:num_to_process
+    % % %                 weights( k, iPix, iScan) = vout(sol(wio(k)));
+    % % %                 locations( k, iPix, iScan) = so(wio(k));
+    % % %             end
+    % % %         end
+    % % %         fprintf('Took %5.2f s to process for iPix = %i\n', toc, iPix)
+    % % %     end
+    
+    % % %     for iScan=1:nScanlines
+    % % %         tic
+    for iPixel=1:nPixels
         tic
-        for iScan=4:size(latitude,2)-4
+        for iScan=1:nScanlines
             
-            isi = iPix-3;
-            iei = iPix+3;
+            % Get the indices for the subregion to grid.
             
-            jsi = iScan-3;
-            jei = iScan+3;
+            isi = max([1 iPixel-in_size]);
+            iei = min([iPixel+in_size nPixels]);
             
-            iso = max([1 iPix-15]);
-            ieo = min([iPix+15 size(latitude,1)]);
+            jsi = max([1 iScan-in_size]);
+            jei = min([iScan+in_size nScanlines]);
+                        
+            iso = max([1 iPixel-out_size]);
+            ieo = min([iPixel+out_size nPixels]);
             
-            jso = max([1 iScan-15]);
-            jeo = min([iScan+15 size(latitude,2)]);
+            jso = max([1 iScan-out_size]);
+            jeo = min([iScan+out_size nScanlines]);
+                        
+            if iei <= 2*in_size
+                jPixel = iei - in_size;
+            else
+                jPixel = in_size + 1;
+            end
             
-            vin = zeros(7,7);
-            vin(4,4) = 1;
+            if jei <= 2*in_size
+                jScan = jei - in_size;
+            else
+                jScan = in_size + 1;
+            end
+            
+            % Define the input array to regrid - all zeros except for one
+            % point, which is set to 1. This point is in the center of the
+            % array except when near the edges.
+            
+            vin = zeros(iei-isi+1, jei-jsi+1);
+            vin(jPixel,jScan) = 1;
+            
+            % Regrid.
             
             vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
             
-            [iot, jot] = find(vout>0);
-            sol = sub2ind(size(vout), iot, jot);
+            nn = find( (vout ~= 0) & (isnan(vout) == 0) );
             
-            so = sub2ind(size(latitude), iso+iot-1, jso+jot-1);
-            
-            [wo, wio] = sort(vout(sol), 'desc');
-            
-            num_to_process = min([9 length(sol)]);
-            % %             fprintf('More than 9 hist for (iPix, iScan) = (%i, %i)\n', iPix, iScan)
-            % %         else
-            
-            for k=1:num_to_process
-                weights( k, iPix, iScan) = vout(sol(wio(k)));
-                locations( k, iPix, iScan) = so(wio(k));
+            if ~isempty(nn)
+                [iot, jot] = find( (vout ~= 0) & (isnan(vout) == 0) );
+                
+                % Get the subscripts for the found pixels in the input array.
+                
+                at = iot + isi - 1;
+                bt = jot + jsi - 1;
+                
+                a = max([ones(size(at')); at'])';
+                a = min([at'; ones(size(at')) * nPixels])';
+                
+                b = max([ones(size(bt')); bt'])';
+                b = min([bt'; ones(size(bt')) * nScanlines])';
+                
+                sol = sub2ind(size(latitude), a, b);
+                
+                % Add the weight values and location values to the weights
+                % and locations arrays at the point in output array
+                % affected by this input value.
+                
+                for iNum=1:length(sol)
+                    Num(sol(iNum)) = Num(sol(iNum)) + 1;
+                    k = Num(sol(iNum));
+                    
+                    weights(k,a(iNum),b(iNum)) = vout(nn(iNum));
+                    locations(k,a(iNum),b(iNum)) = sub2ind(size(latitude), iPixel, iScan);
+                end
             end
+            
+%             if mod(iScan, 50) == 0
+%                 fprintf('%f s to process iScans %i-%i\n', toc, iScan-50+1, iScan)
+            fprintf('%f s to process iPixel %i\n', toc, iPixel)
+            tic
+%             end
         end
-        fprintf('Took %5.2f s to process for iPix = %i\n', toc, iPix)
     end
     
     fprintf('Took %f s to process for the entire run.\n', toc(tStart))

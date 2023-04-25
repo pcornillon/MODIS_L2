@@ -472,8 +472,8 @@ end
 
 % Plot point with a problem.
 
-extra_plot = 0;
-if extra_plot
+extra_plot1 = 0;
+if extra_plot1
     
     % Set some parameters.
     
@@ -516,5 +516,26 @@ if extra_plot
         text( lonxx(a(i),b(i))+xoffset, latxx(a(i),b(i))+yoffset, [num2str(a(i)) ', ' num2str(b(i))])
     end
 end
+
+% Plot the location of pixels in geographic coordinates. break at line 330 for iNum=1:length(sol). 
+
+extra_plot2 = 0;
+if extra_plot2
+    figure
     
+    plot(lonxx(isi:iei,jsi:jei), latxx(isi:iei,jsi:jei), 'ok', markerfacecolor='k', markersize=10)
+    hold on
+    plot( regridded_lonxx(iso:ieo,jso:jeo), regridded_latxx(iso:ieo,jso:jeo), 'ok', markerfacecolor='c', markersize=10)
+    plot(lonxx(iei,jsi), latxx(iei,jsi), 'ok', markerfacecolor='g', markersize=10)
+    plot( regridded_lonxx(iso,jeo), regridded_latxx(iso,jso), 'ok', markerfacecolor='y', markersize=10)
+    plot( regridded_lonxx(iso,jso), regridded_latxx(iso,jso), 'ok', markerfacecolor='y', markersize=10)
+    plot( regridded_lonxx(ieo,jso), regridded_latxx(ieo,jso), 'ok', markerfacecolor='b', markersize=10)
+    kk = find(vin~=0);
+    [iplt, jplt] = ind2sub(size(vin), kk);
+    iplt = iplt + isi;
+    jplt = jplt + jsi;
+    [iplt jplt]
+    [isi iei; jsi jei; iso ieo; jso jeo]
+    plot(lonxx(iplt,jplt), latxx(iplt,jplt), 'ok', markerfacecolor='m', markersize=10)
+end
 

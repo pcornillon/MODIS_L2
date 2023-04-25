@@ -29,7 +29,7 @@ Method = 'linear';
 
 in_size_x = 3;
 in_size_y = 12;
-out_size_x = 3;
+out_size_x = 1;
 out_size_y = 12;
 
 % Turn off warnings for duplicate values in griddata.
@@ -214,6 +214,10 @@ for iFile=1:file_step:numfiles
                     
                     weights(k,a(iNum),b(iNum)) = vout(nn(iNum));
                     locations(k,a(iNum),b(iNum)) = sub2ind(size(latitude), iPixel, iScan);
+                    
+                    if locations(k,a(iNum),b(iNum)) > numel(latitude)
+                        keyboard
+                    end
                 end
             end
         end

@@ -18,7 +18,7 @@ set(0,'DefaultFigureWindowStyle','docked')
 set(groot,'DefaultFigureColormap',jet)
 
 test = 4;
-laptop = 1;
+laptop = 0;
 region = 4;
 generate_weights = 1;
 test_file = 1;

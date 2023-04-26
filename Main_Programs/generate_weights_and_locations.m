@@ -70,15 +70,15 @@ for iFile=1:file_step:numfiles
     fprintf('Working on %s\n', filename_in)
     % Read in the data for this file.
     
-% % %     latitude = single(ncread(filename_in, 'latitude'));
-% % %     regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
-% % %     longitude = single(ncread(filename_in, 'longitude'));
-% % %     regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
+    latitude = single(ncread(filename_in, 'latitude'));
+    regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
+    longitude = single(ncread(filename_in, 'longitude'));
+    regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
     
-    latitude = ncread(filename_in, 'latitude');
-    regridded_latitude = ncread(filename_in, 'regridded_latitude');
-    longitude = ncread(filename_in, 'longitude');
-    regridded_longitude = ncread(filename_in, 'regridded_longitude');
+% % %     latitude = ncread(filename_in, 'latitude');
+% % %     regridded_latitude = ncread(filename_in, 'regridded_latitude');
+% % %     longitude = ncread(filename_in, 'longitude');
+% % %     regridded_longitude = ncread(filename_in, 'regridded_longitude');
     
     [nPixels, nScanlines] = size(latitude);
 
@@ -94,58 +94,18 @@ for iFile=1:file_step:numfiles
     
     % Intialize output arrays.
     
-% % %     weights = single(zeros(6,size(latitude,1),size(latitude,2)));
+    weights = single(zeros(6,size(latitude,1),size(latitude,2)));
 % % %     locations = single(zeros(6,size(latitude,1),size(latitude,2)));
-% % %     Num = int16(zeros(6,size(latitude,1),size(latitude,2)));
+    Num = int16(zeros(6,size(latitude,1),size(latitude,2)));
     
-    weights = zeros(6,size(latitude,1),size(latitude,2));
-    locations = zeros(6,size(latitude,1),size(latitude,2));
-    Num = zeros(6,size(latitude,1),size(latitude,2));
+% % %     weights = zeros(6,size(latitude,1),size(latitude,2));
+    locations = int32(zeros(6,size(latitude,1),size(latitude,2)));
+% % %     Num = zeros(6,size(latitude,1),size(latitude,2));
     
     % Now get the weights and locations
     
     tStart = tic;
-    
-    % % %     for iPix=4:size(latitude,1)-4
-    % % %         tic
-    % % %         for iScan=4:size(latitude,2)-4
-    % % %
-    % % %             isi = iPix-3;
-    % % %             iei = iPix+3;
-    % % %
-    % % %             jsi = iScan-3;
-    % % %             jei = iScan+3;
-    % % %
-    % % %             iso = max([1 iPix-15]);
-    % % %             ieo = min([iPix+15 size(latitude,1)]);
-    % % %
-    % % %             jso = max([1 iScan-15]);
-    % % %             jeo = min([iScan+15 size(latitude,2)]);
-    % % %
-    % % %             vin = zeros(7,7);
-    % % %             vin(4,4) = 1;
-    % % %
-    % % %             vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
-    % % %
-    % % %             [iot, jot] = find(vout>0);
-    % % %             sol = sub2ind(size(vout), iot, jot);
-    % % %
-    % % %             so = sub2ind(size(latitude), iso+iot-1, jso+jot-1);
-    % % %
-    % % %             [wo, wio] = sort(vout(sol), 'desc');
-    % % %
-    % % %             num_to_process = min([9 length(sol)]);
-    % % %             % %             fprintf('More than 9 hist for (iPix, iScan) = (%i, %i)\n', iPix, iScan)
-    % % %             % %         else
-    % % %
-    % % %             for k=1:num_to_process
-    % % %                 weights( k, iPix, iScan) = vout(sol(wio(k)));
-    % % %                 locations( k, iPix, iScan) = so(wio(k));
-    % % %             end
-    % % %         end
-    % % %         fprintf('Took %5.2f s to process for iPix = %i\n', toc, iPix)
-    % % %     end
-    
+        
     % % %     for iScan=1:nScanlines
     % % %         tic
     for iPixel=1:nPixels
@@ -187,13 +147,13 @@ for iFile=1:file_step:numfiles
             
             % Regrid.
             
-% % %             lon_temp = double(longitude(isi:iei,jsi:jei));
-% % %             lat_temp = double(latitude(isi:iei,jsi:jei));
-% % %             regridded_lon_temp = double(regridded_longitude(iso:ieo,jso:jeo));
-% % %             regridded_lat_temp = double(regridded_latitude(iso:ieo,jso:jeo));
+            lon_temp = double(longitude(isi:iei,jsi:jei));
+            lat_temp = double(latitude(isi:iei,jsi:jei));
+            regridded_lon_temp = double(regridded_longitude(iso:ieo,jso:jeo));
+            regridded_lat_temp = double(regridded_latitude(iso:ieo,jso:jeo));
 
-% % %             vout = griddata( lon_temp, lat_temp, vin, regridded_lon_temp, regridded_lat_temp);
-            vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
+            vout = griddata( lon_temp, lat_temp, vin, regridded_lon_temp, regridded_lat_temp);
+% % %             vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
             
             nn = find( (vout ~= 0) & (isnan(vout) == 0) );
             

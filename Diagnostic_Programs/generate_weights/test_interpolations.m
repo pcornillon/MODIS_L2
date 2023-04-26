@@ -18,7 +18,7 @@ set(0,'DefaultFigureWindowStyle','docked')
 set(groot,'DefaultFigureColormap',jet)
 
 test = 4;
-laptop = 0;
+laptop = 1;
 region = 4;
 generate_weights = 1;
 test_file = 1;
@@ -66,8 +66,8 @@ switch region
         
     case 4
         iStart = 1;
-        iEnd = 250;
-        jStart = 40271-14;
+        iEnd = 1354;
+        jStart = 1;
         jEnd = 40271;
 end
 
@@ -288,9 +288,7 @@ for iFile=files_to_do
                                 
                                 jso = max([1 iScan-out_size_y]);
                                 jeo = min([iScan+out_size_y nScanlines]);
-                                
-                                vin = zeros(iei-isi+1, jei-jsi+1);
-                                
+                                                                
                                 if iei <= 2*in_size_x
                                     jPixel = iei - in_size_x;
                                 else
@@ -303,6 +301,7 @@ for iFile=files_to_do
                                     jScan = in_size_y + 1;
                                 end
                                 
+                                vin = zeros(iei-isi+1, jei-jsi+1);
                                 vin(jPixel,jScan) = 1;
                                 
                                 yy4 = griddata( lonxx(isi:iei,jsi:jei), latxx(isi:iei,jsi:jei), vin, regridded_lonxx(iso:ieo,jso:jeo), regridded_latxx(iso:ieo,jso:jeo));

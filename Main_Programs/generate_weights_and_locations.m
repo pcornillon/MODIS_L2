@@ -157,8 +157,6 @@ for iFile=1:file_step:numfiles
             jso = max([1 iScan-out_size_y]);
             jeo = min([iScan+out_size_y nScanlines]);
             
-            vin = zeros(iei-isi+1, jei-jsi+1);
-            
             if iei <= 2*in_size_x
                 jPixel = iei - in_size_x;
             else

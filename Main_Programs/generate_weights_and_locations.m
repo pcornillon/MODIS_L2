@@ -1,4 +1,4 @@
-function generate_weights_and_locations(pattern_in, num_in_range)
+function [filename_in, weights, locations] =generate_weights_and_locations(pattern_in, num_in_range)
 % generate_weights_and_locations - does this for inputs to fix bow-tie - PCC
 %
 % This function reads in the longitudes, latitude, regridded longitudes and
@@ -240,6 +240,6 @@ for iFile=1:file_step:numfiles
     
     % And save the results
     
-    save( filename_out, 'filename_in', 'weights', 'locations')
+    save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
     clear weights locations
 end

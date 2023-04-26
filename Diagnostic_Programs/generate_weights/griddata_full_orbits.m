@@ -39,8 +39,8 @@ fprintf('qual_out_nearest took %f s.\n', toc)
 
 % Save the results
 
-nn = find( fi_orbit, '.nc4');
-fileout = [fi_orbit(1:nn-1) '_regridded_sst.mat'];
+nn = strfind( fi_orbit, '.nc4');
+fileout = [fi_orbit(1:nn-1) '_regridded.mat'];
 
 save(fileout, 'sst_good_*', 'sst_out_*', 'qual_out_nearest');
 

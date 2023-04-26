@@ -70,10 +70,15 @@ for iFile=1:file_step:numfiles
     fprintf('Working on %s\n', filename_in)
     % Read in the data for this file.
     
-    latitude = single(ncread(filename_in, 'latitude'));
-    regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
-    longitude = single(ncread(filename_in, 'longitude'));
-    regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
+% % %     latitude = single(ncread(filename_in, 'latitude'));
+% % %     regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
+% % %     longitude = single(ncread(filename_in, 'longitude'));
+% % %     regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
+    
+    latitude = ncread(filename_in, 'latitude');
+    regridded_latitude = ncread(filename_in, 'regridded_latitude');
+    longitude = ncread(filename_in, 'longitude');
+    regridded_longitude = ncread(filename_in, 'regridded_longitude');
     
     [nPixels, nScanlines] = size(latitude);
 

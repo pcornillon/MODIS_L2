@@ -70,10 +70,15 @@ for iFile=1:file_step:numfiles
     fprintf('Working on %s\n', filename_in)
     % Read in the data for this file.
     
-    latitude = single(ncread(filename_in, 'latitude'));
-    regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
-    longitude = single(ncread(filename_in, 'longitude'));
-    regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
+% % %     latitude = single(ncread(filename_in, 'latitude'));
+% % %     regridded_latitude = single(ncread(filename_in, 'regridded_latitude'));
+% % %     longitude = single(ncread(filename_in, 'longitude'));
+% % %     regridded_longitude = single(ncread(filename_in, 'regridded_longitude'));
+    
+    latitude = ncread(filename_in, 'latitude');
+    regridded_latitude = ncread(filename_in, 'regridded_latitude');
+    longitude = ncread(filename_in, 'longitude');
+    regridded_longitude = ncread(filename_in, 'regridded_longitude');
     
     [nPixels, nScanlines] = size(latitude);
 
@@ -89,9 +94,13 @@ for iFile=1:file_step:numfiles
     
     % Intialize output arrays.
     
-    weights = single(zeros(6,size(latitude,1),size(latitude,2)));
-    locations = single(zeros(6,size(latitude,1),size(latitude,2)));
-    Num = int16(zeros(6,size(latitude,1),size(latitude,2)));
+% % %     weights = single(zeros(6,size(latitude,1),size(latitude,2)));
+% % %     locations = single(zeros(6,size(latitude,1),size(latitude,2)));
+% % %     Num = int16(zeros(6,size(latitude,1),size(latitude,2)));
+    
+    weights = zeros(6,size(latitude,1),size(latitude,2));
+    locations = zeros(6,size(latitude,1),size(latitude,2));
+    Num = zeros(6,size(latitude,1),size(latitude,2));
     
     % Now get the weights and locations
     
@@ -178,12 +187,13 @@ for iFile=1:file_step:numfiles
             
             % Regrid.
             
-            lon_temp = double(longitude(isi:iei,jsi:jei));
-            lat_temp = double(latitude(isi:iei,jsi:jei));
-            regridded_lon_temp = double(regridded_longitude(iso:ieo,jso:jeo));
-            regridded_lat_temp = double(regridded_latitude(iso:ieo,jso:jeo));
+% % %             lon_temp = double(longitude(isi:iei,jsi:jei));
+% % %             lat_temp = double(latitude(isi:iei,jsi:jei));
+% % %             regridded_lon_temp = double(regridded_longitude(iso:ieo,jso:jeo));
+% % %             regridded_lat_temp = double(regridded_latitude(iso:ieo,jso:jeo));
 
-            vout = griddata( lon_temp, lat_temp, vin, regridded_lon_temp, regridded_lat_temp);
+% % %             vout = griddata( lon_temp, lat_temp, vin, regridded_lon_temp, regridded_lat_temp);
+            vout = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
             
             nn = find( (vout ~= 0) & (isnan(vout) == 0) );
             
@@ -230,6 +240,6 @@ for iFile=1:file_step:numfiles
     
     % And save the results
     
-    save( filename_out, 'filename_in', 'weights', 'locations')
+    save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
     clear weights locations
 end

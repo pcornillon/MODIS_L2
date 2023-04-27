@@ -19,7 +19,7 @@ set(groot,'DefaultFigureColormap',jet)
 
 test = 4;
 laptop = 0;
-region = 1;
+region = 5;
 generate_weights = 1;
 test_file = 1;
 
@@ -32,11 +32,14 @@ Method = 'linear';
 
 in_size_x = 3;
 in_size_y = 12;
-out_size_x = 1;
+out_size_x = 3;
 out_size_y = 12;
+
+bad_griddata_threshold = 0.01;
 
 iPlot = 3;
 iFig = 100;
+iFig200 = 200;
 
 % Turn off warnings for duplicate values in griddata.
 
@@ -69,6 +72,12 @@ switch region
         iEnd = 1354;
         jStart = 1;
         jEnd = 40271;
+        
+    case 5
+        iStart = 111;
+        iEnd = 140;
+        jStart = 20751;
+        jEnd = 20790;
 end
 
 if ~test_file
@@ -91,8 +100,8 @@ for iFile=files_to_do
 %                 fi_orbit = '~/Desktop/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
                 fi_orbit = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_41616_20100301T000736_L2_SST.nc4';
             else
-                fi_orbit = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
-%                 fi_orbit = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_41616_20100301T000736_L2_SST.nc4';
+%                 fi_orbit = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_41675_20100305T012144_L2_SST.nc4';
+                fi_orbit = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_41616_20100301T000736_L2_SST.nc4';
             end
         else
             fi_orbit = [filelist(jFile).folder '/' filelist(jFile).name];
@@ -326,12 +335,32 @@ for iFile=files_to_do
                                     
                                     sol = sub2ind(size(xx), a, b);
                                     
+%                                     if iPixel==19 & iScan==11
+%                                         for kp=1:length(sol)
+%                                             fprintf('%i) Input loc (%i, %i). sol(i)=%i, (a(i), b(i))=(%i, %i)\n', kp, iPixel, iScan, sol(kp), a(kp), b(kp))
+%                                         end
+%                                         ttemp = 1;
+%                                     end
+                                    
                                     for iNum=1:length(sol)
-                                        Num(sol(iNum)) = Num(sol(iNum)) + 1;
-                                        k = Num(sol(iNum));
-                                        
-                                        weights(k,a(iNum),b(iNum)) = yy4(nn(iNum));
-                                        locations(k,a(iNum),b(iNum)) = sub2ind(size(xx), iPixel, iScan);
+                                        if abs(yy4(nn(iNum))) > bad_griddata_threshold
+                                            Num(sol(iNum)) = Num(sol(iNum)) + 1;
+                                            k = Num(sol(iNum));
+                                            
+                                            weights(k,a(iNum),b(iNum)) = yy4(nn(iNum));
+                                            locations(k,a(iNum),b(iNum)) = sub2ind(size(xx), iPixel, iScan);
+                                            
+                                            if a(iNum)==19 & b(iNum)==10
+                                                fprintf('%i) regridded loc: (%i, %i), input loc (%i, %i). weight=%f loc=%i, sst_in=%f\n', iNum, a(iNum), b(iNum), iPixel, iScan, weights(k,a(iNum),b(iNum)), locations(k,a(iNum),b(iNum)), xx(iPixel,iScan))
+                                            end
+                                        end
+                                    end
+                                    
+                                    qq = find(a(abs(yy4(nn)) > bad_griddata_threshold)==19 & b(abs(yy4(nn)) > bad_griddata_threshold)==10);
+                                    if ~isempty(qq)
+                                        iFig200 = iFig200 + 1;
+                                        debugPlot(iFig200, [162 163.5 86.80 86.86], lonxx, latxx, regridded_lonxx, regridded_latxx, iPixel, iScan, a(abs(yy4(nn)) > bad_griddata_threshold), b(abs(yy4(nn)) > bad_griddata_threshold))
+                                        keyboard
                                     end
                                 end
                         end
@@ -410,6 +439,7 @@ for iFile=files_to_do
 %                         yy3s(good_weights) = yy3s(good_weights) + xx(tt) .* weights_temp(good_weights);
 %                     end
                     
+                    figure(iFile+iFile_offset)
                     iPlot = iPlot + 1;
                     subplot(2,numPlots,iPlot)
                     
@@ -537,4 +567,3 @@ if extra_plot2
     [isi iei; jsi jei; iso ieo; jso jeo]
     plot(lonxx(iplt,jplt), latxx(iplt,jplt), 'ok', markerfacecolor='m', markersize=10)
 end
-

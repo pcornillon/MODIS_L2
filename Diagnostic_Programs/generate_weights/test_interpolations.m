@@ -74,10 +74,10 @@ switch region
         jEnd = 40271;
         
     case 5
-        iStart = 111;
-        iEnd = 140;
-        jStart = 20751;
-        jEnd = 20790;
+        iStart = 111-15;
+        iEnd = 140+15;
+        jStart = 20751-15;
+        jEnd = 20790+15;
 end
 
 if ~test_file

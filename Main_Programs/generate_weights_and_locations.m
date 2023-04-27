@@ -81,7 +81,27 @@ for iFile=1:file_step:numfiles
 % % %     regridded_longitude = ncread(filename_in, 'regridded_longitude');
     
     [nPixels, nScanlines] = size(latitude);
-
+    
+    % Define regions
+    
+    iAntarcticStart = 1;
+    iAntarcticEnd = 1990;
+    
+    iArcticStart = 20081;
+    iArcticEnd = 22070;
+    
+    region_start(1) = iAntarcticStart;
+    region_end(1) = iAntarcticEnd;
+    
+    region_start(2) = iAntarcticEnd + 1;
+    region_end(2) = iArcticStart - 1;
+    
+    region_start(3) = iArcticStart;
+    region_end(3) = iAntarcticEnd;
+    
+    region_start(4) = iAntarcticEnd + 1;
+    region_end(4) = size(longitude,2);
+    
     % Make sure that there are not nan's in the input.
     
     nn = find(isnan(latitude)==1);

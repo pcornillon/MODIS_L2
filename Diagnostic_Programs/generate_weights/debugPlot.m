@@ -51,16 +51,16 @@ function debugPlot(iFig, AXIS, lon, lat, rlon, rlat, i1, j1, rii, rji)
     
     % Add locations of input grid points in grid to the figure.
     
-    for ip=1:30
-        for jp=1:40
+    for ip=1:size(lon,1)
+        for jp=1:size(lon,2)
             text( lon(ip,jp)+0.02, lat(ip,jp), ['(' num2str(ip) ', ' num2str(jp) ')'], fontsize=15)
         end
     end
     
     % Add locations of regridded grid points in grid to the figure.
     
-    for ip=1:30
-        for jp=1:40
+    for ip=1:size(rlon,1)
+        for jp=1:size(rlon,2)
             text( rlon(ip,jp)+0.02, rlat(ip,jp), ['(' num2str(ip) ', ' num2str(jp) ')'], fontsize=15, color=[1 0 0])
         end
     end

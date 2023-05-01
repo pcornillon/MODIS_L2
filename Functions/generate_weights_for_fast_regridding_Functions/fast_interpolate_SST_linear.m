@@ -59,14 +59,20 @@ SST_Out = zeros([nElements, nScans]);
 for iC=1:nMax
     weights_temp = squeeze(weights(iC,:,:));
     
-    mm = find((weights_temp(:) ~= 0) & (isnan(weights_temp(:)) == 0) );
+    mm = find(weights_temp(:) ~= 0);
     
     if length(mm) > 0
         locations_temp = squeeze(locations(iC,:,:));
     
-        good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
+        good_weights = find( (weights_temp ~= 0) & (locations_temp ~= 0));
         tt = locations_temp(good_weights);
         
         SST_Out(good_weights) = SST_Out(good_weights) + SST_In(tt) .* weights_temp(good_weights);
     end
 end
+
+% Now set all pixels with nan as weights to nan, they are zero at this
+% point, which screws up calculations of gradients.
+
+nan_weights = find(isnan(weights_temp) == 1);
+SST_Out(nan_weights) = nan;

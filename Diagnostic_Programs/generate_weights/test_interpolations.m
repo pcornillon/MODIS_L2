@@ -17,6 +17,8 @@
 set(0,'DefaultFigureWindowStyle','docked')
 set(groot,'DefaultFigureColormap',jet)
 
+Polar = 0;
+
 test = 6;
 laptop = 0;
 region = 5;
@@ -24,6 +26,9 @@ generate_weights = 1;
 test_file = 1;
 
 iFile_offset = 0;
+if Polar
+    iFile_offset = 11;
+end
 
 debug = 0;
 
@@ -35,7 +40,12 @@ in_size_y = 33;
 out_size_x = 4;
 out_size_y = 33;
 
-sPix = 9;
+% in_size_x = 4;
+% in_size_y = 15;
+% out_size_x = 4;
+% out_size_y = 15;
+
+sPix = 14;
 sScan = 17;
 
 % bad_griddata_threshold = 0.01;
@@ -130,7 +140,6 @@ for iFile=files_to_do
     regridded_lat = ncread(fi_orbit, 'regridded_latitude');
     % end
     
-    
     clear yy*
     
     SST_In = SST_In_temp(iStart:iEnd,jStart:jEnd);
@@ -139,6 +148,11 @@ for iFile=files_to_do
     regridded_latitude = regridded_lat(iStart:iEnd,jStart:jEnd);
     regridded_longitude = regridded_lon(iStart:iEnd,jStart:jEnd);
     
+    if Polar
+        [longitude, latitude] = ll2psn(longitude, latitude);
+        [regridded_longitude, regridded_latitude] = ll2psn(regridded_longitude, regridded_latitude);
+    end
+
     [nPixels, nScanlines] = size(SST_In);
     
     % Plot the input field and its Sobel gradient.
@@ -151,7 +165,7 @@ for iFile=files_to_do
     subplot(2,numPlots,1)
     imagesc(SST_In')
     set(gca,fontsize=20)
-    title('SST_In', fontsize=30)
+    title('SST\_In', fontsize=30)
     colorbar
     
     [~, ~, gmagSST_In] = Sobel(SST_In, 1);
@@ -160,7 +174,7 @@ for iFile=files_to_do
     
     imagesc(gmagSST_In(2:end-1,2:end-1)')
     set(gca,fontsize=20)
-    title('\nabla{SST_In}', fontsize=30)
+    title('\nabla{SST\_In}', fontsize=30)
     colorbar
     
     % Do nearest neighbor griddata on the array to be fixed and plot it and its gradient.
@@ -353,18 +367,6 @@ for iFile=files_to_do
                                 
                                 mm = find( (yy4 ~= 0) & (isnan(yy4) == 0) );
                                 
-% % %                                 if ((iPixel == 49) & (iScan == 21)) | ...
-% % %                                         ((iPixel == 49) & (iScan == 16)) | ...
-% % %                                         ((iPixel == 50) & (iScan == 16)) | ...
-% % %                                         ((iPixel == 50) & (iScan == 20)) | ...
-% % %                                         ((iPixel == 50) & (iScan == 21)) | ...
-% % %                                         ((iPixel == 50) & (iScan == 22)) | ...
-% % %                                         ((iPixel == 48) & (iScan == 19)) | ...
-% % %                                         ((iPixel == 48) & (iScan == 16)) | ...
-% % %                                         ((iPixel == 48) & (iScan == 20)) | ...
-% % %                                         ((iPixel == 48) & (iScan == 21))
-% % %                                     keyboard
-% % %                                 end
                                 if ~isempty(mm)
                                     
                                     % First get the i, j location of the
@@ -464,17 +466,17 @@ for iFile=files_to_do
                                         fprintf('%i) Input loc (%i, %i). weight: %f, normalized weight: %f, (a(i), b(i))=(%i, %i)\n', kp, iPixel, iScan, yy5f(iot(kp),jot(kp)), yy5f(iot(kp),jot(kp))/SST_In(iPixel,iScan), iot(kp), jot(kp))
                                     end
                                     
-% % %                                     iFrame = iFrame + 1;
-% % %                                     yy5fs(iFrame,:,:) = yy5f;
-% % %                                     
-% % %                                     figure(iFrame+10)
-% % %                                     clf
-% % %                                     imagesc(yy5f')
-% % %                                     caxis([-27 -19])
-% % %                                     
-% % %                                     figure(15)
-% % %                                     imagesc(yy5')
-% % %                                     caxis([-27 -19])
+                                    iFrame = iFrame + 1;
+                                    yy5fs(iFrame,:,:) = yy5f;
+                                    
+                                    figure(iFrame+10)
+                                    clf
+                                    imagesc(yy5f')
+                                    caxis([-27 -19])
+                                    
+                                    figure(15)
+                                    imagesc(yy5')
+                                    caxis([-27 -19])
                                     
                                     keyboard
                                 end
@@ -518,12 +520,12 @@ for iFile=files_to_do
                                 % point, which is given a 1.
                                 
                                 vin = zeros(iei-isi+1, jei-jsi+1);
-                                vin(jPixel,jScan) = SST_In(iPixel,iScan);
+%                                 vin(jPixel,jScan) = SST_In(iPixel,iScan);
+                                vin(jPixel,jScan) = 1;	
                                 
                                 % Regrid this array to the new lats and lons.
                                 
-                                lont = longitude(isi:iei,jsi:jei);
-                                yy6 = griddata( lont, latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
+                                yy6 = griddata( longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), vin, regridded_longitude(iso:ieo,jso:jeo), regridded_latitude(iso:ieo,jso:jeo));
                                 
                                 % Now find all pixels impacted in the
                                 % subregion and map these to the full
@@ -540,11 +542,27 @@ for iFile=files_to_do
                                     at = iot + iso - 1;
                                     bt = jot + jso - 1;
                                     
+% % %                                     % DEBUG *******************************
+% % % 
+% % %                                     nn = find(at == sPix & bt == sScan);
+% % %                                     if ~isempty(nn)
+% % %                                         for kp=1:length(iot)
+% % %                                             fprintf('%i) Input loc (%i, %i). weight: %f, normalized weight: %f, (a(i), b(i))=(%i, %i)\n', kp, iPixel, iScan, yy6(iot(kp),jot(kp)), yy6(iot(kp),jot(kp))/SST_In(iPixel,iScan), at(kp), bt(kp))
+% % %                                         end
+% % % %                                         keyboard
+% % %                                     end
+% % %                                     
+% % %                                     % DEBUG *******************************
+                                    
                                     % Make sure that the location of pixels
                                     % in the full output array are not out
                                     % of bounds.
                                     
                                     kk = find((at > 0) & (at <= nPixels) & (bt > 0) & (bt <= nScanlines));
+                                    
+                                    if length(kk) ~= length(at)
+                                        fprintf('\n******************\n******************\n at or bt out of bounds for (iPixel, iScan) = (%i, %i)\n******************\n******************\n\n', iPixel, iScan)
+                                    end
                                     
                                     a = at(kk);
                                     b = bt(kk);
@@ -566,16 +584,16 @@ for iFile=files_to_do
                                             % Eliminate phantom hits from the list.
                                             
                                             if abs(yy6(iot(iNum),jot(iNum))) > bad_griddata_threshold
-% % %                                             if isnan(yy6(iot(iNum))) == 0
                                                 Num(sol(iNum)) = Num(sol(iNum)) + 1;
                                                 k = Num(sol(iNum));
                                                 
-                                                weights(k,a(iNum),b(iNum)) = yy6(iot(iNum),jot(iNum)) / SST_In(iPixel,iScan);
+%                                                 weights(k,a(iNum),b(iNum)) = yy6(iot(iNum),jot(iNum)) / SST_In(iPixel,iScan);
+                                                weights(k,a(iNum),b(iNum)) = yy6(iot(iNum),jot(iNum));
                                                 locations(k,a(iNum),b(iNum)) = sub2ind(size(SST_In), iPixel, iScan);
                                                 
-                                                if a(iNum)==sPix & b(iNum)==sScan
-                                                    fprintf('%i) regridded loc: (%i, %i), input loc (%i, %i). weight=%f loc=%i, sst_in=%f\n', iNum, a(iNum), b(iNum), iPixel, iScan, weights(k,a(iNum),b(iNum)), locations(k,a(iNum),b(iNum)), SST_In(iPixel,iScan))
-                                                end
+% % %                                                 if a(iNum)==sPix & b(iNum)==sScan
+% % %                                                     fprintf('%i) regridded loc: (%i, %i), input loc (%i, %i). weight=%f loc=%i, sst_in=%f\n', iNum, a(iNum), b(iNum), iPixel, iScan, weights(k,a(iNum),b(iNum)), locations(k,a(iNum),b(iNum)), SST_In(iPixel,iScan))
+% % %                                                 end
                                             end
                                         end
                                     end
@@ -605,7 +623,10 @@ for iFile=files_to_do
                     % location.
                     
                     sum_weights = squeeze(sum(weights,1));
-                    weights(sum_weights==0) = nan;
+                    [isum, jsum] = find(sum_weights == 0);
+                    for ksum=1:length(isum)
+                        weights(:,isum(ksum),jsum(ksum)) = nan;
+                    end
                     
                     % First, permute, I think that the sorting requires the column
                     % soted on to be the last dimension.
@@ -689,17 +710,6 @@ for iFile=files_to_do
                     
                 case {3, 4, 6}
                     yy3s = fast_interpolate_SST_linear( weights, locations, SST_In);
-                    %                     yy3s = zeros(size(SST_In));
-                    %
-                    %                     for iC=1:size(weights,1)
-                    %                         weights_temp = squeeze(weights(iC,:,:));
-                    %                         locations_temp = squeeze(locations(iC,:,:));
-                    %
-                    %                         good_weights = find( (weights_temp ~= 0) & (isnan(weights_temp) == 0) & (locations_temp ~= 0));
-                    %                         tt = locations_temp(good_weights);
-                    %
-                    %                         yy3s(good_weights) = yy3s(good_weights) + SST_In(tt) .* weights_temp(good_weights);
-                    %                     end
                     
                     figure(iFile+iFile_offset)
                     iPlot = iPlot + 1;
@@ -720,12 +730,7 @@ for iFile=files_to_do
                     title('\nabla{yy3}', fontsize=30)
                     colorbar
                     caxis(CLIM_gradient)
-                    
-                    dd = yylinear - yy3s;
-                    figure(4)
-                    imagesc(dd')
-                    caxis([-1 1])
-                    
+                                        
                 case 5
                     figure(iFile+iFile_offset)
                     iPlot = iPlot + 1;
@@ -792,46 +797,84 @@ end
 extra_plot1 = 0;
 if extra_plot1
     
-    % Set some parameters.
+    % %     % Set some parameters.
+    % %
+    % %     xoffset = 0.004;
+    % %     yoffset = 0;
+    % %
+    % %     [a, b] = ind2sub( size(latitude), nn);
+    % %     [a'; b']
+    % %
+    % %     % Get the points of interest on the input array
+    % %
+    % %     nn = find( abs(latitude - regridded_latitude(26,10))<0.015 &  abs(longitude - regridded_longitude(26,10))<0.2 );
+    % %
+    % %     SST_Intest = SST_In(nn);
+    % %     lattest = latitude(nn);
+    % %     lontest = longitude(nn);
+    % %     regridded_lattest = regridded_latitude(26,10);
+    % %     regridded_lontest = regridded_longitude(26,10);
+    % %
+    % %     % Now plot them
+    % %
+    % %     figure
+    % %     clf
+    % %
+    % %     plot(lontest,lattest,'.k',markersize=20)
+    % %     hold on
+    % %     plot( regridded_lontest, regridded_lattest , 'ok', markerfacecolor='c', markersize=20)
+    % %     grid on
+    % %     plot( regridded_lontest, regridded_lattest , '.k')
+    % %
+    % %     % Connect the dots.
+    % %
+    % %     plot( [longitude(27,5) longitude(26,5)], [latitude(27,5) latitude(26,5)], 'k')
+    % %     plot( [longitude(27,5) longitude(26,11)], [latitude(27,5) latitude(26,11)], 'k')
+    % %     plot( [longitude(26,11) longitude(26,5)], [latitude(26,11) latitude(26,5)], 'k')
+    % %
+    % %     % Add numbers of grid points to the plot.
+    % %
+    % %     for i=1:length(a)
+    % %         text( longitude(a(i),b(i))+xoffset, latitude(a(i),b(i))+yoffset, [num2str(a(i)) ', ' num2str(b(i))])
+    % %     end
+    
+    hold off
+    
+    plot(longitude(isi:iei,jsi:jei), latitude(isi:iei,jsi:jei), 'ok', markerfacecolor='y', markersize=10)
+    hold on
+    
+    plot(regridded_longitude(isi:iei,jsi:jei), regridded_latitude(isi:iei,jsi:jei), 'ok', markerfacecolor='g', markersize=10)
+    plot(regridded_longitude(sPix,sScan), regridded_latitude(sPix,sScan), 'ok', markerfacecolor='r', markersize=10)
+    [iPixel iScan]
+    plot(longitude(iPixel,iScan), latitude(iPixel,iScan), 'ok', markerfacecolor='b', markersize=10)
+    plot(longitude(iPixel,iScan+1), latitude(iPixel,iScan+1), 'ok', markerfacecolor='r', markersize=10)
+    plot(longitude(iPixel,iScan-1), latitude(iPixel,iScan-1), 'ok', markerfacecolor='r', markersize=10)
+    plot(longitude(iei,jsi), latitude(iei,jsi), 'ok', markerfacecolor='m', markersize=10)
+    plot(longitude(iei,jei), latitude(iei,jei), 'ok', markerfacecolor='k', markersize=10)
+    plot(longitude(isi,jsi), latitude(isi,jsi), 'ok', markerfacecolor='b', markersize=10)
+    plot(longitude(14,16), latitude(14,16), 'ok', markerfacecolor='m', markersize=10)
+    plot(regridded_longitude(14,17), regridded_latitude(14,17), 'ok', markerfacecolor='m', markersize=15)
+    plot(longitude(14,17), latitude(14,17), 'ok', markerfacecolor='b', markersize=15)
     
     xoffset = 0.004;
     yoffset = 0;
-    
-    [a, b] = ind2sub( size(latitude), nn);
-    [a'; b']
-    
-    % Get the points of interest on the input array
-    
-    nn = find( abs(latitude - regridded_latitude(26,10))<0.015 &  abs(longitude - regridded_longitude(26,10))<0.2 );
-    
-    SST_Intest = SST_In(nn);
-    lattest = latitude(nn);
-    lontest = longitude(nn);
-    regridded_lattest = regridded_latitude(26,10);
-    regridded_lontest = regridded_longitude(26,10);
-    
-    % Now plot them
-    
-    figure
-    clf
-    
-    plot(lontest,lattest,'.k',markersize=20)
-    hold on
-    plot( regridded_lontest, regridded_lattest , 'ok', markerfacecolor='c', markersize=20)
-    grid on
-    plot( regridded_lontest, regridded_lattest , '.k')
-    
-    % Connect the dots.
-    
-    plot( [longitude(27,5) longitude(26,5)], [latitude(27,5) latitude(26,5)], 'k')
-    plot( [longitude(27,5) longitude(26,11)], [latitude(27,5) latitude(26,11)], 'k')
-    plot( [longitude(26,11) longitude(26,5)], [latitude(26,11) latitude(26,5)], 'k')
-    
-    % Add numbers of grid points to the plot.
-    
-    for i=1:length(a)
-        text( longitude(a(i),b(i))+xoffset, latitude(a(i),b(i))+yoffset, [num2str(a(i)) ', ' num2str(b(i))])
+    for i=9:17
+        for j=17:47
+            text( longitude(i,j)+xoffset, latitude(i,j)+yoffset, [num2str(i) ', ' num2str(j)])
+        end
     end
+    
+    xoffset = -0.2;
+    yoffset = 0;
+    for i=9:17
+        for j=17:47
+            text( regridded_longitude(i,j)+xoffset, regridded_latitude(i,j)+yoffset, [num2str(i) ', ' num2str(j)], color=[1,0,0])
+        end
+    end
+    
+    [sPix sScan]
+    [iPixel iScan]
+    [isi iei;jsi jei; iso jso; ieo jeo]
 end
 
 % Plot the location of pixels in geographic coordinates. break at line 330 for iNum=1:length(sol).

@@ -22,7 +22,7 @@ function generate_weights_and_locations(pattern_in, num_in_range)
 %   generate_weights_and_locations('20100301T', 3)
 %
 
-test_run = 1;
+test_run = 0;
 
 % Define some variables
 
@@ -154,8 +154,8 @@ for iFile=1:file_step:numfiles
     
     % Get the data for this region.
     
-    [xin, yin] = ll2ps( lon(:, region_start(1):region_end(1)), lat(:, region_start(1):region_end(1)));
-    [xout, yout] = ll2ps( regridded_lon(:, region_start(1):region_end(1)), regridded_lat(:, region_start(1):region_end(1)));
+    [xin, yin] = ll2ps( lat(:, region_start(1):region_end(1)), lon(:, region_start(1):region_end(1)));
+    [xout, yout] = ll2ps( regridded_lat(:, region_start(1):region_end(1)), regridded_lon(:, region_start(1):region_end(1)));
     
     xin = double(xin);
     yin = double(yin);
@@ -276,10 +276,14 @@ for iFile=1:file_step:numfiles
         tic
     end
     
-    Num(:,1:iAntarcticEnd)  = tNum(:,1:iAntarcticEnd);
-    weights(:,:,1:iAntarcticEnd) = tweights(:,:,1:iAntarcticEnd);
-    locations(:,:,1:iAntarcticEnd) = tlocations(:,:,1:iAntarcticEnd);
+    Num(1:nPixels,1:iAntarcticEnd)  = tNum(:,1:iAntarcticEnd);
+    weights(:,1:nPixels,1:iAntarcticEnd) = tweights(:,:,1:iAntarcticEnd);
+    locations(:,1:nPixels,1:iAntarcticEnd) = tlocations(:,:,1:iAntarcticEnd);
+
+    % Intermediate save
     
+    save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
+
     %% Regions 2 and 3
     
     for iRegion=2,4
@@ -326,9 +330,13 @@ for iFile=1:file_step:numfiles
             tic
         end
         
-        Num(:,region_start(iRegion)+overlap:region_end(iRegion)-overlap)  = tNum(:,overlap:end-overlap);
-        weights(:,:,region_start(iRegion)+overlap:region_end(iRegion)-overlap) = tweights(:,:,overlap:end-overlap);
-        locations(:,:,region_start(iRegion)+overlap:region_end(iRegion)-overlap) = tlocations(:,:,overlap:end-overlap);
+        Num(1:nPixels,region_start(iRegion)+overlap:region_end(iRegion)-overlap)  = tNum(:,overlap:end-overlap);
+        weights(:,1:nPixels,region_start(iRegion)+overlap:region_end(iRegion)-overlap) = tweights(:,:,overlap:end-overlap);
+        locations(:,1:nPixels,region_start(iRegion)+overlap:region_end(iRegion)-overlap) = tlocations(:,:,overlap:end-overlap);
+        
+        % Intermediate save
+        
+        save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
     end
     
     %% Region 4
@@ -337,8 +345,8 @@ for iFile=1:file_step:numfiles
 
     % Get the data for this region.
     
-    [xin, yin] = double(ll2psn( lon(:, region_start(3):region_end(3)), lat(:, region_start(3):region_end(3))));
-    [xout, yout] = double(ll2psn( regridded_lon(:, region_start(3):region_end(3)), regridded_lat(:, region_start(3):region_end(3))));
+    [xin, yin] = ll2psn( lat(:, region_start(3):region_end(3)), lon(:, region_start(3):region_end(3)) );
+    [xout, yout] = ll2psn( regridded_lat(:, region_start(3):region_end(3)), regridded_lon(:, region_start(3):region_end(3)) );
 
     xin = double(xin);
     yin = double(yin);
@@ -378,9 +386,13 @@ for iFile=1:file_step:numfiles
         tic
     end
     
-    Num(:,region_start(3)+overlap:region_end(iRegion))  = tNum(:,overlap:end);
-    weights(:,:,region_start(3)+overlap:region_end(iRegion)) = tweights(:,:,overlap:end);
-    locations(:,:,region_start(3)+overlap:region_end(iRegion)) = tlocations(:,:,overlap:end);
+    Num(1:nPixels,region_start(3)+overlap:region_end(iRegion))  = tNum(:,overlap:end);
+    weights(:,1:nPixels,region_start(3)+overlap:region_end(iRegion)) = tweights(:,:,overlap:end);
+    locations(:,1:nPixels,region_start(3)+overlap:region_end(iRegion)) = tlocations(:,:,overlap:end);
+
+    % Intermediate save
+    
+    save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
     
     %% Sort the weights and locations arrays on the 1st dimension in descending order. 
     

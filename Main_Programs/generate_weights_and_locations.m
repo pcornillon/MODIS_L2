@@ -223,7 +223,7 @@ for iFile=1:file_step:numfiles
                 
                 [tNum, tweights, tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout, tNum, tweights, tlocations);
             end
-            fprintf('%f s to process iPixel %i\n', toc, iPixel)
+            fprintf('%f s to process iPixel %i for Region 3\n', toc, iPixel)
             tic
         end
         
@@ -284,7 +284,7 @@ for iFile=1:file_step:numfiles
                 
                 [tNum, tweights, tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout, tNum, tweights, tlocations);
             end
-            fprintf('%f s to process iPixel %i\n', toc, iPixel)
+            fprintf('%f s to process iPixel %i for Region %i\n', toc, iPixel, iRegion)
             tic
         end
         
@@ -355,7 +355,7 @@ for iFile=1:file_step:numfiles
             
             [tNum, tweights, tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout, tNum, tweights, tlocations);
         end
-        fprintf('%f s to process iPixel %i\n', toc, iPixel)
+        fprintf('%f s to process iPixel %i for Region 3.\n', toc, iPixel)
         tic
     end
     

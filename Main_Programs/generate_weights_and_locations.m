@@ -39,8 +39,6 @@ in_size_y = 33;
 out_size_x = 4;
 out_size_y = 33;
 
-bad_griddata_threshold = -1;
-
 % Turn off warnings for duplicate values in griddata.
 
 id = 'MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId';
@@ -229,9 +227,14 @@ for iFile=1:file_step:numfiles
             tic
         end
         
-        Num(1:nPixels,1:iAntarcticEnd)  = tNum(:,1:iAntarcticEnd);
-        weights(:,1:nPixels,1:iAntarcticEnd) = tweights(:,:,1:iAntarcticEnd);
-        locations(:,1:nPixels,1:iAntarcticEnd) = tlocations(:,:,1:iAntarcticEnd);
+        % Note that the 1st dimension of the output goes from 1 to nPixels,
+        % which is the size of the 1st dimension of the input for this
+        % section. For the test runs I was doing, the inputs for each
+        % section were constrained to the 1st nPixels of the data read in.
+        
+        Num(1:nPixels, 1:iAntarcticEnd)  = tNum(:, 1:iAntarcticEnd);
+        weights(:, 1:nPixels, 1:iAntarcticEnd) = tweights(:, :, 1:iAntarcticEnd);
+        locations(:, 1:nPixels, 1:iAntarcticEnd) = tlocations(:, :, 1:iAntarcticEnd);
         
         % Intermediate save
         
@@ -239,7 +242,7 @@ for iFile=1:file_step:numfiles
         
     end
     
-    %% Regions 2 and 3
+    %% Regions 2 and 4
     
     for iRegion=regions_to_process
         
@@ -285,16 +288,31 @@ for iFile=1:file_step:numfiles
             tic
         end
         
-        Num(1:nPixels,region_start(iRegion)-1+overlap:region_end(iRegion)-overlap)  = tNum(:,overlap:end-overlap);
-        weights(:,1:nPixels,region_start(iRegion)-1+overlap:region_end(iRegion)-overlap) = tweights(:,:,overlap:end-overlap);
-        locations(:,1:nPixels,region_start(iRegion)-1+overlap:region_end(iRegion)-overlap) = tlocations(:,:,overlap:end-overlap);
+        % Get the starting and ending scan lines to use from the input file
+        % and for the output file. Region 4 needs to go all the way to the
+        % end of the orbit so need to handle it a little differently.
+                
+        jStart_in = overlap;
+        jStart_out = region_start(iRegion) - 1 + overlap;
+        
+        if iRegion == 2
+            jEnd_in = size(tNum,2) - overlap;
+            jEnd_out = region_end(iRegion) - overlap;
+        else
+            jEnd_in = size(tNum,2);
+            jEnd_out = region_end(iRegion);
+        end
+        
+        Num(1:nPixels, jStart_out:jEnd_out)  = tNum(:, jStart_in:jEnd_in);
+        weights(:, 1:nPixels, jStart_out:jEnd_out) = tweights(:, jStart_in:jEnd_in);
+        locations(:, 1:nPixels, jStart_out:jEnd_out) = tlocations(:, jStart_in:jEnd_in) + 1354 * (region_start(iRegion) - 1);
         
         % Intermediate save
         
         save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
     end
     
-    %% Region 4
+    %% Region 3
     
     fprintf('Processing Region 4 of %s.\n', filename_in)
     
@@ -341,9 +359,12 @@ for iFile=1:file_step:numfiles
         tic
     end
     
-    Num(1:nPixels,region_start(3)-1+overlap:region_end(iRegion))  = tNum(:,overlap:end);
-    weights(:,1:nPixels,region_start(3)-1+overlap:region_end(iRegion)) = tweights(:,:,overlap:end);
-    locations(:,1:nPixels,region_start(3)-1+overlap:region_end(iRegion)) = tlocations(:,:,overlap:end);
+    jStart = region_start(3)-1+overlap;
+    jEnd = region_end(3)-overlap;
+    
+    Num(1:nPixels, jStart:jEnd)  = tNum(:, overlap:end-overlap);
+    weights(:, 1:nPixels, jStart:jEnd) = tweights(:, :, overlap:end-overlap);
+    locations(:, 1:nPixels, jStart:jEnd) = tlocations(:, :, overlap:end-overlap) + 1354 * (region_start(3) - 1);
     
     % Intermediate save
     

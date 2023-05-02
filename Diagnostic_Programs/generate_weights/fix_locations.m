@@ -22,6 +22,13 @@ for iFile=1:length(filelist)
     
     locations(:,:,1990:20080) = locs(:,:,1990:20080);
     
+    % Fix region 3.
+    
+    locs = ww.locations;
+    locs = locs + 1354 * (20080-40);
+    
+    locations(:,:,20080:end) = locs(:,:,20080:end);
+    
     % Fix region 4.
     
     locs = ww.locations;

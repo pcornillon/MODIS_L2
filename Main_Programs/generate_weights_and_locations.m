@@ -65,7 +65,7 @@ for iFile=1:file_step:numfiles
         
         nn = strfind(filename_in, 'orbit_');
         mm = strfind(filename_in, '.nc4');
-        filename_out = ['~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/weights/' filename_in(nn+7:mm-1) '_weights.mat'];
+        filename_out = ['~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/weights/' filename_in(nn+6:mm-1) '_weights.mat'];
         
         if exist(filename_out) & (restart == 0)
             jFile = jFile + 1;

@@ -99,6 +99,8 @@ for iFile=1:file_step:numfiles
         return
     end
     
+    regions_to_process = [2, 4];
+    
     if restart
         
         % Read in the weights and locations if this is a restart.

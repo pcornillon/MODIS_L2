@@ -306,8 +306,8 @@ for iFile=1:file_step:numfiles
         end
         
         Num(1:nPixels, jStart_out:jEnd_out)  = tNum(:, jStart_in:jEnd_in);
-        weights(:, 1:nPixels, jStart_out:jEnd_out) = tweights(:, jStart_in:jEnd_in);
-        locations(:, 1:nPixels, jStart_out:jEnd_out) = tlocations(:, jStart_in:jEnd_in) + 1354 * (region_start(iRegion) - 1);
+        weights(:, 1:nPixels, jStart_out:jEnd_out) = tweights(:, :, jStart_in:jEnd_in);
+        locations(:, 1:nPixels, jStart_out:jEnd_out) = tlocations(:, :, jStart_in:jEnd_in) + 1354 * (region_start(iRegion) - 1);
         
         % Intermediate save
         

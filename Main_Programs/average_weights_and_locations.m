@@ -14,6 +14,25 @@ for iScan=1:scans_to_read:40271
         weights_array(iFile,:,:) = squeeze(weights( 1, :, iScan:iScan+scans_to_read-1));
     end
     
-    wm = mean(w, 1, 'omitnan');
+    weights_array(weights_array==0) = nan;
+
+    median_weights = squeeze( median( weights_array, 1, 'omitnan'));
+        
+    which_level = zeros(size(median_weights));
+    
+    for iLevel=1:size(weights_array,1)
+        
+        which_weights = squeeze(weights_array(iLevel, :, :)) - median_weights;
+        
+        nn = find(which_weights == 0);
+        [jLevel, kLevel] = sub2ind(size(which_weights), nn);
+        
+        which_level(jLevel, kLevel) = iLevel;
+    end
+    
+    median_locations = zeros(size(
+    nn = find( which_level ~= 0 & isnan(which_level) == 0);
+        median_locations(nn) = locations(nn);
+    
 end
 

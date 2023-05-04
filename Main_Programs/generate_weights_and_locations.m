@@ -123,8 +123,8 @@ for iFile=1:file_step:numfiles
         % Intialize output arrays.
         
         Num = int16(zeros(size(lat)));
-        weights = single(zeros(6,size(lat,1),size(lat,2)));
-        locations = int32(zeros(6,size(lat,1),size(lat,2)));
+        weights = single(zeros(7,size(lat,1),size(lat,2)));
+        locations = int32(zeros(7,size(lat,1),size(lat,2)));
     end
     
     % If this is a test run, redefine the input array.
@@ -201,8 +201,8 @@ for iFile=1:file_step:numfiles
         % Intialize output arrays for this region.
         
         tNum = int16(zeros(size(xin)));
-        tweights = single(zeros(6, nPixels, nScanlines));
-        tlocations = int32(zeros(6, nPixels, nScanlines));
+        tweights = single(zeros(7, nPixels, nScanlines));
+        tlocations = int32(zeros(7, nPixels, nScanlines));
         
         for iPixel=1:nPixels
             tic
@@ -262,8 +262,8 @@ for iFile=1:file_step:numfiles
         % Intialize output arrays for this region.
         
         tNum = int16(zeros(size(xin)));
-        tweights = single(zeros(6, nPixels, nScanlines));
-        tlocations = int32(zeros(6, nPixels, nScanlines));
+        tweights = single(zeros(7, nPixels, nScanlines));
+        tlocations = int32(zeros(7, nPixels, nScanlines));
         
         for iPixel=1:nPixels
             tic
@@ -333,8 +333,8 @@ for iFile=1:file_step:numfiles
     % Intialize output arrays for this region.
     
     tNum = int16(zeros(size(xin)));
-    tweights = single(zeros(6, nPixels, nScanlines));
-    tlocations = int32(zeros(6, nPixels, nScanlines));
+    tweights = single(zeros(7, nPixels, nScanlines));
+    tlocations = int32(zeros(7, nPixels, nScanlines));
     
     for iPixel=1:nPixels
         tic

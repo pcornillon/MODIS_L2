@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = plot_with_markers( FigNo, x, y, Color, Size)
+function plot_with_markers( FigNo, x, y, Color, Size)
 % plot_with_markers - plot as hamburgers of color Color and size Siz - PCC
 %
 % Will start by holding the current plot and then plotting.
@@ -12,6 +12,10 @@ function [outputArg1,outputArg2] = plot_with_markers( FigNo, x, y, Color, Size)
 %
 % OUTPUT
 %   none
+
+figure(FigNo)
+
+hold on
 
 plot( x, y, 'ok', markerfacecolor=Color, markersize=Size)
 

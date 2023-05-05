@@ -180,8 +180,8 @@ if isempty(metadata_directory)
             fprintf('Test case must be either 1, 2 or 3; you entered %i.\n', test_num)
     end
     
-    fix_mask = 0;  % Test run.
-    fix_bowtie = 1;  % Test run.
+    fix_mask = 1;  % Test run.
+    fix_bowtie = 0;  % Test run.
     regrid_sst = 0;  % Test run.
     get_gradients = 0;  % Test run.
     save_core = 0;  % Test run.

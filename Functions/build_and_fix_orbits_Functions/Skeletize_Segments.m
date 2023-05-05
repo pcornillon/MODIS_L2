@@ -32,7 +32,8 @@ end
 % Get the skeleton array
 
 % % % tic
-initial_skel = bwskel(logical(Array_In),'MinBranchLength', MinBranchLength);
+% initial_skel = bwskel(logical(Array_In),'MinBranchLength', MinBranchLength);
+initial_skel = bwmorph(logical(Array_In),'skel', Inf);
 % % % disp(['Object: ' num2str(iObject) ' - time: ' num2str(toc)])
 
 % Get rid of spurs. Each skeketon pixel after applying bwskel will have at most

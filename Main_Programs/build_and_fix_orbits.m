@@ -437,11 +437,12 @@ while granule_start_time_guess <= Matlab_end_time
         if fix_mask
             start_time_to_fix_mask = tic;
             
-            [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, str2num(months));
+            [~, Month, ~, ~, ~, ~] = datevec(oinfo(iOrbit).start_time);
+            [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, Month);
             
             oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
             
-            if print_time
+            if print_times
                 fprintf('   Time to fix the mask for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_fix_mask)
             end
         else

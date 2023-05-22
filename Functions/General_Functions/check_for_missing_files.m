@@ -14,55 +14,63 @@ function missing_granules = check_for_missing_files( folder1, folder2, Year)
 %   missing_granules - granules in folder1 missing from folder2.
 %
 
+missing_granules = [];
+
 YearS = num2str(Year);
 
 base_dir = '/Volumes/Aqua-1/MODIS_R2019/';
 
 % Get the list of granules in the given year of folder1.
 
-eval(['! cd ' base_dir folder1 '/' YearS '/']);
-! ls > file_list.txt
+fi_in = [base_dir folder1 '/' YearS '/'];
+fi_out = [fi_in 'file_list.txt'];
+eval(['! ls ' fi_in ' > ' fi_out])
 
-% Now opend and read the file with the list of granules.
+% Now open and read the file with the list of granules for folder1.
 
-fileID = fopen(fi, 'r');
+fileID = fopen( fi_out, 'r');
 line = fgets(fileID);
 
 iFile = 0;
 while ischar(line)
     nn = strfind(line, '.nc');
-    xx = string(line(1:nn+2));
+    if ~isempty(nn)
+        xx = string(line(1:nn+2));
 
-    iFile = iFile + 1;
-    A(iFile) = xx;
+        iFile = iFile + 1;
+        A(iFile) = xx;
+    end
     
     line = fgets(fileID);
 end
 
-fclose(fileID)
+fclose(fileID);
 
 % Repeat for folder2.
 
-eval(['! cd ' base_dir folder2 '/' YearS '/']);
-! ls > file_list.txt
+fi_in = [base_dir folder2 '/' YearS '/'];
+fi_out = [fi_in 'file_list.txt'];
+eval(['! ls ' fi_in ' > ' fi_out])
 
-% Now opend and read the file with the list of granules.
+% Now open and read the file with the list of granules for folder2.
 
-fileID = fopen(fi, 'r');
+fileID = fopen(fi_out, 'r');
 line = fgets(fileID);
 
 iFile = 0;
 while ischar(line)
     nn = strfind(line, '.nc');
-    xx = string(line(1:nn+2));
+    if ~isempty(nn)
+        xx = string(line(1:nn+2));
 
-    iFile = iFile + 1;
-    B(iFile) = xx;
+        iFile = iFile + 1;
+        B(iFile) = xx;
+    end
     
     line = fgets(fileID);
 end
 
-fclose(fileID)
+fclose(fileID);
 
 % Now compare the lists
 
@@ -71,10 +79,14 @@ iMissing = 0;
 
 for iFile1=1:length(A)
     
+    AChar = char(A(iFile1));
+
     granule_found = 0;
     for iFile2=1:length(B)
         
-        if strcmp(A(nn+12:nn+27), B(nn+12:nn+27))
+        BChar = char(B(iFile2));
+
+        if strcmp( AChar(nn+11:nn+25), BChar(nn+11:nn+25))
             granule_found = 1;
             break
         end

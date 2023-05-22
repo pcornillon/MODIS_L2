@@ -100,4 +100,5 @@ for iFile1=1:length(A)
     end
 end
 
+fprintf('Found %i granules in %s but missing from $s for %s\n', folder1, folder2, YearS)
 

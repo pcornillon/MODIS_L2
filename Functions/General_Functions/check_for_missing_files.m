@@ -82,7 +82,7 @@ for iFile1=1:length(A)
     AChar = char(A(iFile1));
 
     granule_found = 0;
-    for iFile2=1:length(B)
+    for iFile2=max([1,iFile1-10]):length(B)
         
         BChar = char(B(iFile2));
 

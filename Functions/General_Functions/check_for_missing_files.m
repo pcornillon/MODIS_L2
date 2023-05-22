@@ -95,7 +95,7 @@ for iFile1=1:length(A)
     % Add this granule to the list if missing.
     
     if granule_found == 0
-        iMissing = iMissinng + 1;
+        iMissing = iMissing + 1;
         missing_granules(iMissing) = A(iFile);
     end
 end

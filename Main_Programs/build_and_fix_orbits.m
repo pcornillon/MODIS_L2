@@ -181,8 +181,8 @@ if isempty(metadata_directory)
     end
     
     fix_mask = 1;  % Test run.
-    fix_bowtie = 0;  % Test run.
-    regrid_sst = 0;  % Test run.
+    fix_bowtie = 1;  % Test run.
+    regrid_sst = 1;  % Test run.
     get_gradients = 0;  % Test run.
     save_core = 0;  % Test run.
     print_diagnostics = 1;  % Test run.

@@ -12,15 +12,16 @@
 
 [ret, computer_name] = system('hostname');
 
-computer_name = 'xxx';
-
 % base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
 if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')
-    diary_dir = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Logs/';
-    base_dir_in = '/Volumes/MODIS-AVHRR/MODIS_L2/';
+%     diary_dir = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Logs/';
+    diary_dir = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
+%     base_dir_in = '/Volumes/MODIS-AVHRR/MODIS_L2/';
+    base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
     
-    base_dir_out = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Data_from_OBPG_for_PO-DAAC/';
+%     base_dir_out = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Data_from_OBPG_for_PO-DAAC/';
+    base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 else
     %     diary_dir = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/Logs/';
 %     diary_dir = '/Users/petercornillon/MATLAB/Projects/Temp_for_MODIS_L2/Logs/';

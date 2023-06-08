@@ -14,7 +14,7 @@ function missing_granules = check_for_missing_files( folder1, folder2, Year)
 %   missing_granules - granules in folder1 missing from folder2.
 %
 
-missing_granules = [];
+missing_granules = string('');
 
 YearS = num2str(Year);
 
@@ -75,7 +75,7 @@ fclose(fileID);
 % Now compare the lists
 
 nn = strfind(A(1), 'AQUA_MODIS');
-iMissing = 0;
+iMissing = int16(0);
 
 for iFile1=1:length(A)
     
@@ -96,9 +96,9 @@ for iFile1=1:length(A)
     
     if granule_found == 0
         iMissing = iMissing + 1;
-        missing_granules(iMissing) = A(iFile);
+        missing_granules(iMissing) = A(iFile1);
     end
 end
 
-fprintf('Found %i granules in %s but missing from $s for %s\n', folder1, folder2, YearS)
+fprintf('Found %i granules in %s but missing from %s for %s\n', iMissing, string(folder1), string(folder2), string(YearS))
 

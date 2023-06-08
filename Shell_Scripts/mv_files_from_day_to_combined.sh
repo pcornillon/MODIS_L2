@@ -5,8 +5,8 @@
 #
 #  MAKE SURE TO CHANGE THE YEAR TO PROCESS IN THE FOLLOWING TWO LINES.
 
-folder1="/Volumes/Aqua-1/MODIS_R2019/day/2008/"
-folder2="/Volumes/Aqua-1/MODIS_R2019/combined/2008/"
+folder1="/Volumes/Aqua-1/MODIS_R2019/day/2021/"
+folder2="/Volumes/Aqua-1/MODIS_R2019/combined/2021/"
 
 for file in "$folder1"/*; do
     if [ -e "$folder2/$(basename "$file")" ]; then

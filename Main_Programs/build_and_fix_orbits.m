@@ -349,7 +349,7 @@ end
 
 if fix_bowtie
 %     load([fixit_directory 'weights_and_locations_from_31191.mat'])
-    load([fixit_directory 'weights_and_locations_from_41616.mat'])
+    load([fixit_directory 'weights_and_locations_41616_fixed.mat'])
 end
 
 % Gradient stuff

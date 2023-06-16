@@ -206,6 +206,7 @@ end
 
 print_times = 1;
 
+print_diagnostics = 0;
 if exist('print_diag') ~= 0
     if print_diag == 1
         print_diagnostics = 1;

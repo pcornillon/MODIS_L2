@@ -71,7 +71,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 % globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global print_diagnostics print_times debug
+global print_diagnostics print_times debug regridded_debug
 global npixels
 
 % globals for build_orbit part.
@@ -92,7 +92,6 @@ global Matlab_start_time Matlab_end_time
 
 global med_op
  
-
 % Structure of oinfo
 %
 % oinfo.
@@ -151,6 +150,8 @@ oinfo.ginfo.pirate_gsscan = [];
 oinfo.ginfo.pirate_gescan = [];
 
 % Initialize return variables.
+
+regridded_debug = 1;  % To determine and write alternate SST fields based on griddata.
 
 if isempty(metadata_directory)
     test_num = 1;
@@ -347,9 +348,8 @@ end
 % Fast regridding arrays.
 
 if fix_bowtie
-    %     load Orbit_Weights_and_Locations_11501.mat
-    %     clear fi_orbits fi_weights
-    load([fixit_directory 'weights_and_locations_from_31191.mat'])
+%     load([fixit_directory 'weights_and_locations_from_31191.mat'])
+    load([fixit_directory 'weights_and_locations_from_41616.mat'])
 end
 
 % Gradient stuff
@@ -482,6 +482,11 @@ while granule_start_time_guess <= Matlab_end_time
             [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
                 regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
             
+            
+            if regridded_debug
+                regridded_sst_alternate = griddata( longitude, latitude, SST_In_Masked, regridded_longitude, regridded_latitude);
+            end
+            
             if status ~= 0
                 fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo.name, status)
             end
@@ -547,7 +552,7 @@ while granule_start_time_guess <= Matlab_end_time
         %% Wrap-up for this orbit.
                 
         Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
-            regridded_sst, easting, northing, new_easting, new_northing, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
+            regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
             region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
         
         oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);

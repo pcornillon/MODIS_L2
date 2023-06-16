@@ -1,6 +1,6 @@
 function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, scan_seconds_from_start, ...
     regridded_longitude, regridded_latitude, regridded_sst, easting, northing, regridded_easting, regridded_northing, ...
-    along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
+    regridded_sst_alternate, along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
     region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients)
 % Write_SST_File - will create and write a file for the gradient/fronts workflow SST and mask data - PCC
 %
@@ -43,7 +43,7 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 % globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
-global print_diagnostics print_times debug
+global print_diagnostics print_times debug regridded_debug
 global npixels
 
 % globals for build_orbit part.
@@ -212,6 +212,25 @@ if fix_bowtie
         ncwriteatt( output_filename, 'regridded_sst',  'valid_max', 9000)
         
         ncwrite( output_filename, 'regridded_sst', regridded_sst)
+
+        if regridded_debug
+            % regridded_sst_alternate - the input SST masked with the alternate refined mask and then fixed for the bowtie effect.
+            
+            nccreate( output_filename, 'regridded_sst_alternate', 'Datatype', 'int16', ...
+                'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+                'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+                'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+            
+            ncwriteatt( output_filename, 'regridded_sst_alternate', 'long_name', 'regridded_sst_alternate')
+            ncwriteatt( output_filename, 'regridded_sst_alternate',  'standard_name', 'masked_alternat_sea_surface_temperature')
+            ncwriteatt( output_filename, 'regridded_sst_alternate', 'units', 'C')
+            ncwriteatt( output_filename, 'regridded_sst_alternate', 'add_offset', 0)
+            ncwriteatt( output_filename, 'regridded_sst_alternate', 'scale_factor', sstScaleFactor)
+            ncwriteatt( output_filename, 'regridded_sst_alternate',  'valid_min', -600)
+            ncwriteatt( output_filename, 'regridded_sst_alternate',  'valid_max', 9000)
+            
+            ncwrite( output_filename, 'regridded_sst_alternate', regridded_sst)
+        end
     end
     
     % regridded_longitude

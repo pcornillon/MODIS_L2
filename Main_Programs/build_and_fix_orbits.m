@@ -485,7 +485,7 @@ while granule_start_time_guess <= Matlab_end_time
             
             
             if regridded_debug
-                regridded_sst_alternate = griddata( longitude, latitude, SST_In_Masked, regridded_longitude, regridded_latitude);
+                regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
             end
             
             if status ~= 0

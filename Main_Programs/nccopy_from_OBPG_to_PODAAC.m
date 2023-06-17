@@ -78,10 +78,10 @@ for iYear=1:length(year_list) % Loop over years to process .....................
         
         file_in = [file_list(iFile).folder '/' file_list(iFile).name];
         
-        if mod(iFile,1000) == 0
-            fprintf('Processed file #%i - %s - Elapsed time %6.0f seconds. \n', iFile, convertCharsToStrings(file_in), toc)
-            tic
-        end
+%         if mod(iFile,1000) == 0
+%             fprintf('Processed file #%i - %s - Elapsed time %6.0f seconds. \n', iFile, convertCharsToStrings(file_in), toc)
+%             tic
+%         end
         
         % Has this file already been processed?
         
@@ -106,7 +106,7 @@ for iYear=1:length(year_list) % Loop over years to process .....................
             file_out = [base_dir_out YearS '/' good_filename_out];
             
             if exist(file_out) == 2
-                fprintf('%i: %s has already been processed; skipping to the next file. \n', iFile, convertCharsToStrings(file_list(iFile).name))
+%                 fprintf('%i: %s has already been processed; skipping to the next file. \n', iFile, convertCharsToStrings(file_list(iFile).name))
             else
                 
                 if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')

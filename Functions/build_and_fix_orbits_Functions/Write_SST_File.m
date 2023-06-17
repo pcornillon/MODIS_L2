@@ -229,7 +229,7 @@ if fix_bowtie
             ncwriteatt( output_filename, 'regridded_sst_alternate',  'valid_min', -600)
             ncwriteatt( output_filename, 'regridded_sst_alternate',  'valid_max', 9000)
             
-            ncwrite( output_filename, 'regridded_sst_alternate', regridded_sst)
+            ncwrite( output_filename, 'regridded_sst_alternate', regridded_sst_alternate)
         end
     end
     

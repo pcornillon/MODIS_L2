@@ -41,13 +41,25 @@ print_diag = 1;  % Test run.
 debug = 1;
 
 % 2009
-
-start_date_time = [2005 9 19 0 0 0]; % Test run.
-end_date_time = [2005 9 20 0 0 0 ];  % Test run.
-
-build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
+% 
+% start_date_time = [2005 9 19 0 0 0]; % Test run.
+% end_date_time = [2005 9 20 0 0 0 ];  % Test run.
+% 
+% build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
 
 % 2010
+
+clear global
+
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+
+granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+% output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
+
+fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
+logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
 
 start_date_time = [2010 6 19 0 0 0]; % Test run.
 end_date_time = [2010 6 20 0 0 0 ];  % Test run.
@@ -55,6 +67,17 @@ end_date_time = [2010 6 20 0 0 0 ];  % Test run.
 build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
 
 % 2010
+
+clear global
+
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+
+granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+% output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
+
+fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
 
 start_date_time = [2019 1 19 0 0 0]; % Test run.
 end_date_time = [2019 1 20 0 0 0 ];  % Test run.

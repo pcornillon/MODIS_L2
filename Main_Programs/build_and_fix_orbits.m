@@ -485,7 +485,18 @@ while granule_start_time_guess <= Matlab_end_time
             
             
             if regridded_debug
-                regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
+
+                mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
+                if length(mm) < numel(SST_In_Masked)
+                    clear xx
+                    xx(mm) = double(SST_In_Masked(mm));
+                    lonxx(mm) = double(longitude(mm));
+                    latxx(mm) = double(latitude(mm));
+                    
+                    regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
+                else
+                    regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
+                end
             end
             
             if status ~= 0

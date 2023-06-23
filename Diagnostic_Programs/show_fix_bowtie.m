@@ -1,4 +1,4 @@
-function show_fix_bowtie
+function [num_in, num_griddata, num_fast] = show_fix_bowtie
 % show_fix_bowtie - function that plots the actual bow-tie stuff - PCC
 %  
 
@@ -6,7 +6,7 @@ function show_fix_bowtie
 
 global fi
 global AXIS CAXIS_sst CAXIS_sst_diff_1 CAXIS_sst_diff_2 CAXIS_gm CAXIS_gm_diff
-global XLIM HIST_SST HIST_GM_1 HIST_GM_2 HIST_GM_3 COUNTS_LIM ZOOM_RANGE
+global XLIM YLIM HIST_SST HIST_GM_1 HIST_GM_2 HIST_GM_3 COUNTS_LIM ZOOM_RANGE
 global title_fontsize axis_fontsize
 global along_scan_seps_array along_track_seps_array
 
@@ -83,56 +83,24 @@ for iFile=1:length(filelist)
     
     %% Now get stats and plot
     
-    dd_in_fast = sst_in - sst_fast;
+    nn = find(isnan(sst_in) == 0);
+    num_in(iFile) = length(nn);
+    nn = find(isnan(sst_fast) == 0);
+    num_fast(iFile) = length(nn);
+    nn = find(isnan(sst_griddata) == 0);
+    num_griddata(iFile) = length(nn);
+    
+    fprintf('Number of elements in sst_in: %i, sst_griddata: %i, sst_fast: %i\n', num_in(iFile), num_griddata(iFile), num_fast(iFile))
+    
+    dd_in_griddata = sst_in - sst_griddata;
     dd_fast_griddata = sst_fast - sst_griddata;
-    
-%     % Plot sst differences betwee sst in and fast iterpolated version.
-%     figure(1)
-%     clf
-%     
-%     subplot(2,2,1)
-%     
-%     imagesc(sst_in')
-%     set(gca,fontsize=axis_fontsize)
-%     title('SST_{in}', fontsize=title_fontsize)
-%     axis(AXIS)
-%     caxis(CAXIS_sst)
-%     colorbar
-%     
-%     subplot(2,2,2)
-%     
-%     imagesc(sst_fast')
-%     set(gca,fontsize=axis_fontsize)
-%     title('SST_{fast}', fontsize=title_fontsize)
-%     axis(AXIS)
-%     caxis(CAXIS_sst)
-%     colorbar
-%     
-%     subplot(2,2,3)
-%     
-%     imagesc(dd_in_fast')
-%     set(gca,fontsize=axis_fontsize)
-%     title('In - Fast', fontsize=title_fontsize)
-%     axis(AXIS)
-%     caxis(CAXIS_sst_diff_1)
-%     colorbar
-%     
-%     % Plot sst differences betwee fast iterpolated and griddata version.
-%     subplot(2,2,4)
-%     
-%     imagesc(dd_fast_griddata')
-%     set(gca,fontsize=axis_fontsize)
-%     title('Fast - Griddata', fontsize=title_fontsize)
-%     axis(AXIS)
-%     caxis(CAXIS_sst_diff_2)
-%     colorbar
-    
+        
     % Histogram differences
     iFig = iFile * 10 + 1;
     figure(iFig)
     clf
     
-    hh = histogram(dd_in_fast, HIST_SST);
+    hh = histogram(dd_in_griddata, HIST_SST);
     hold on
     hh2 = histogram(dd_fast_griddata, HIST_SST);
     
@@ -141,13 +109,16 @@ for iFile=1:length(filelist)
     xlabel('^\circ C')
     ylabel('Counts')
     xlim(XLIM)
+    ylim(YLIM)
     title(['SST Differences for Orbit ' num2str(orbit_no)], fontsize=title_fontsize)
+    legend({'SST_{in} - SST_{gridata}' 'SST_{fast} - SST_{griddata}'})
+    
     
     % Stats on sst differences
     
-    sigma_in_fast = std(dd_in_fast(:),'omitnan');
+    sigma_in_griddata = std(dd_in_griddata(:),'omitnan');
     sigma_fast_griddata = std(dd_fast_griddata(:),'omitnan');
-    fprintf('100 * sigma_fast / sigma_griddata %3.0f%%\n', 100 * sigma_fast_griddata / sigma_in_fast)
+    fprintf('100 * sigma_fast / sigma_griddata %3.0f%%\n', 100 * sigma_fast_griddata / sigma_in_griddata)
     
     % Now get gradient magnitudes for each of the fields.
     
@@ -156,7 +127,7 @@ for iFile=1:length(filelist)
         along_track_seps_array(:,1:size(sst_fast,2)), ...
         along_scan_seps_array(:,1:size(sst_fast,2)));
     
-    % Get gradient magnitudes for zoomed in region
+    %% Get gradient magnitudes for zoomed in region
     
     gm_fast_z = gm_fast(ZOOM_RANGE(1):ZOOM_RANGE(2), ZOOM_RANGE(3):ZOOM_RANGE(4));
 
@@ -203,8 +174,8 @@ for iFile=1:length(filelist)
       
     sgtitle(['Gradient Magnitudes for Orbit ' num2str(orbit_no)], fontsize=30)
     
-    % And differences between sst in and the fast interpolation.
-    dd_gm_in_fast = gm_in_z - gm_fast_z;
+    %% And differences between sst in and the fast interpolation.
+    dd_gm_in_griddata = gm_in_z - gm_griddata_z;
     dd_gm_fast_griddata = gm_fast_z - gm_griddata_z;
     
     % Histogram the differences between gradient magnitudes.
@@ -212,10 +183,10 @@ for iFile=1:length(filelist)
     figure(iFig)
     clf
     
-    hhgm1 = histogram(dd_gm_in_fast, HIST_GM_1);
+    hhgm1 = histogram(dd_gm_in_griddata, HIST_GM_1);
     hold on
     hhgm2 = histogram(dd_gm_fast_griddata, HIST_GM_2);
-    legend({'|\nabla{SST\_in}| - |\nabla{SST\_fast}|' '|\nabla{SST\_fast}| - |\nabla{SST\_griddata}|'})
+    legend({'|\nabla{SST\_in}| - |\nabla{SST\_griddata}|' '|\nabla{SST\_fast}| - |\nabla{SST\_griddata}|'})
     set(gca,fontsize=axis_fontsize)
     xlabel('K/km')
     ylabel('Counts')
@@ -223,10 +194,10 @@ for iFile=1:length(filelist)
     title(['Gradient Magnitude Differences for Orbit ' num2str(orbit_no)], fontsize=title_fontsize)
     
     % And stats for these difference.
-    sigma_gm_in_fast = std(dd_gm_in_fast(:),'omitnan');
+    sigma_gm_in_griddata = std(dd_gm_in_griddata(:),'omitnan');
     sigma_gm_fast_griddata = std(dd_gm_fast_griddata(:),'omitnan');
     
-    fprintf('100 * sigma_gm_in_fast / sigma_gm_fast_griddata = %3.0f%%\n', 100 * sigma_gm_fast_griddata / sigma_gm_in_fast)
+    fprintf('100 * sigma_gm_in_griddata / sigma_gm_fast_griddata = %3.0f%%\n', 100 * sigma_gm_fast_griddata / sigma_gm_in_griddata)
 
     %% Next histogram gradients for various parts of the distance from nadir
     iFig = iFile * 10 + 4;

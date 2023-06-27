@@ -86,8 +86,8 @@ end
 [nums, sigmas] = show_fix_bowtie;
 
 [nums.num_in; nums.num_griddata; nums.num_fast]
-[sigmas.sigma_in_griddata; sigmas.sigma_fast_griddata]
-[sigmas.sigma_gm_in_griddata; sigmas.sigma_gm_fast_griddata; sigmas.sigma_gm_in_griddata_z; sigmas.sigma_gm_fast_griddata_z]
+[sigmas.sigma_in_griddata; sigmas.sigma_gm_in_griddata; sigmas.sigma_gm_in_griddata_z]
+[sigmas.sigma_fast_griddata; sigmas.sigma_gm_fast_griddata; sigmas.sigma_gm_fast_griddata_z]
 
 %% Print out figures
 

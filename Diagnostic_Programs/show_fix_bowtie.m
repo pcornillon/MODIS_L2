@@ -16,6 +16,7 @@ sst_in = ncread( fi, 'SST_In_Masked');
 sst_griddata = ncread( fi, 'regridded_sst_alternate');
 
 dd_in_griddata = sst_in - sst_griddata;
+sigmas.sigma_in_griddata = std(dd_in_griddata(:),'omitnan');
 
 % And get the gradient magnitudes and zoom in on the area of interest.
 
@@ -33,7 +34,11 @@ gm_in_z = gm_in(ZOOM_RANGE(1):ZOOM_RANGE(2), ZOOM_RANGE(3):ZOOM_RANGE(4));
 
 gm_griddata_z = gm_griddata(ZOOM_RANGE(1):ZOOM_RANGE(2), ZOOM_RANGE(3):ZOOM_RANGE(4));
 
-sigmas.sigma_gm_in_griddata(iFile) = std(dd_gm_in_griddata(:),'omitnan');
+dd_gm_in_griddata = gm_in - gm_griddata;
+dd_gm_in_griddata_z = gm_in_z - gm_griddata_z;
+
+sigmas.sigma_gm_in_griddata = std(dd_gm_in_griddata(:),'omitnan');
+sigmas.sigma_gm_in_griddata_z = std(dd_gm_in_griddata_z(:),'omitnan');
 
 % Get list of orbits with fixed weights and locations
 
@@ -93,7 +98,6 @@ for iFile=1:length(filelist)
     
     fprintf('Number of elements in sst_in: %i, sst_griddata: %i, sst_fast: %i\n', nums.num_in(iFile), nums.num_griddata(iFile), nums.num_fast(iFile))
     
-    dd_in_griddata = sst_in - sst_griddata;
     dd_fast_griddata = sst_fast - sst_griddata;
         
     % Histogram differences
@@ -114,12 +118,10 @@ for iFile=1:length(filelist)
     title(['SST Differences for Orbit ' num2str(orbit_no)], fontsize=title_fontsize)
     legend({'SST_{in} - SST_{gridata}' 'SST_{fast} - SST_{griddata}'})
     
-    
     % Stats on sst differences
     
-    sigmas.sigma_in_griddata(iFile) = std(dd_in_griddata(:),'omitnan');
     sigmas.sigma_fast_griddata(iFile) = std(dd_fast_griddata(:),'omitnan');
-    fprintf('100 * sigma_fast / sigma_griddata %3.0f%%\n', 100 * sigmas.sigma_fast_griddata(iFile) / sigmas.sigma_in_griddata(iFile))
+    fprintf('100 * sigma_fast / sigma_griddata %3.0f%%\n', 100 * sigmas.sigma_fast_griddata(iFile) / sigmas.sigma_in_griddata)
     
     % Now get gradient magnitudes for each of the fields.
     
@@ -128,6 +130,7 @@ for iFile=1:length(filelist)
         along_track_seps_array(:,1:size(sst_fast,2)), ...
         along_scan_seps_array(:,1:size(sst_fast,2)));
 
+    dd_gm_fast_griddata = gm_fast - gm_griddata;
     sigmas.sigma_gm_fast_griddata(iFile) = std(dd_gm_fast_griddata(:),'omitnan');
     
     %% Get gradient magnitudes for zoomed in region
@@ -178,7 +181,6 @@ for iFile=1:length(filelist)
     sgtitle(['Gradient Magnitudes for Orbit ' num2str(orbit_no)], fontsize=30)
     
     %% And differences between sst in and the fast interpolation.
-    dd_gm_in_griddata_z = gm_in_z - gm_griddata_z;
     dd_gm_fast_griddata_z = gm_fast_z - gm_griddata_z;
         
     % Histogram the differences between gradient magnitudes.
@@ -197,10 +199,9 @@ for iFile=1:length(filelist)
     title(['Gradient Magnitude Differences for Orbit ' num2str(orbit_no)], fontsize=title_fontsize)
     
     % And stats for these difference.
-    sigmas.sigma_gm_in_griddata_z(iFile) = std(dd_gm_in_griddata_z(:),'omitnan');
     sigmas.sigma_gm_fast_griddata_z(iFile) = std(dd_gm_fast_griddata_z(:),'omitnan');
     
-    fprintf('100 * sigmas.sigma_gm_in_griddata_z / sigmas.sigma_gm_fast_griddata_z = %3.0f%%\n', 100 * sigmas.sigma_gm_fast_griddata_z(iFile) / sigmas.sigma_gm_in_griddata_z(iFile))
+    fprintf('100 * sigmas.sigma_gm_in_griddata_z / sigmas.sigma_gm_fast_griddata_z = %3.0f%%\n', 100 * sigmas.sigma_gm_fast_griddata_z(iFile) / sigmas.sigma_gm_in_griddata_z)
 
     %% Next histogram gradients for various parts of the distance from nadir
     iFig = iFile * 10 + 4;

@@ -35,8 +35,8 @@ end
 
 % Initialize the final arrays with the second one read in.
 
-final_weights = wl2.weights;
-final_locations = wl2.locations;
+augmented_weights = wl3.weights;
+augmented_locations = wl3.locations;
 
 % Reshape weights and locations for later use.
 
@@ -71,8 +71,8 @@ for i=1:size(groups_of_2,1)
     fprintf('Percent of pixels with the same locations for all orbits used: %f\n', 100*length(nn)/numel(locsumsum))
     
     for ii=1:num_levels_to_keep
-        eval(['final_weights(ii,nn) = wghts' num2str(groups_of_2(i,1)) '(ii,nn);'])
-        eval(['final_locations(ii,nn) = locs' num2str(groups_of_2(i,1)) '(ii,nn);'])
+        eval(['augmented_weights(ii,nn) = wghts' num2str(groups_of_2(i,1)) '(ii,nn);'])
+        eval(['augmented_locations(ii,nn) = locs' num2str(groups_of_2(i,1)) '(ii,nn);'])
     end
 end
 
@@ -98,8 +98,8 @@ for i=1:size(groups_of_3,1)
     fprintf('Percent of pixels with the same locations for all orbits used: %f\n', 100*length(nn)/numel(locsumsum))
     
     for ii=1:num_levels_to_keep
-        eval(['final_weights(ii,nn) = wghts' num2str(groups_of_3(i,1)) '(ii,nn);'])
-        eval(['final_locations(ii,nn) = locs' num2str(groups_of_3(i,1)) '(ii,nn);'])
+        eval(['augmented_weights(ii,nn) = wghts' num2str(groups_of_3(i,1)) '(ii,nn);'])
+        eval(['augmented_locations(ii,nn) = locs' num2str(groups_of_3(i,1)) '(ii,nn);'])
     end
 end
 
@@ -122,7 +122,10 @@ nn = find(locsumsum == 0);
 fprintf('Percent of pixels with the same locations for all orbits used: %f\n', 100*length(nn)/numel(locsumsum))
 
 for ii=1:num_levels_to_keep
-    final_weights(ii,nn) = wghts1(ii,nn);
-    final_locations(ii,nn) = locs1(ii,nn);
+    augmented_weights(ii,nn) = wghts1(ii,nn);
+    augmented_locations(ii,nn) = locs1(ii,nn);
 end
 
+% Save the results
+
+save('~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/weights_and_locations_final_fixed.mat', 'augmented_weights', 'augmented_locations')

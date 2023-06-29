@@ -71,34 +71,30 @@ if ~isempty(iot)
         
         sol = sub2ind( SizeIn, a, b);
         
-        % Loop over all impacted pixels  saving their weight and location.
+        % Loop over all impacted pixels saving their weight and location.
         
         if nearest_neighbor == 1
             
-            % Num and weights not used for nearest neighbor interpolation.
+            % Make sure that there are between 1 and 5 values. Should
+            % really only be 1 but could be up to 3--I think.
             
-            Num = nan;
-            weights = nan;
-            
-            if length(a)~=1
-                fprintf('\n******************\n******************\n length(a)=%i but should be 1 for (iPixel, iScan) (%i, %i)\n******************\n******************\n\n', length(a), iPixel, iScan)
-                locations( 1, a, b) = nan;
-                return
-            else
-                locations( 1, a, b) = sub2ind( SizeIn, iPixel, iScan);
+            if length(a) > 4
+                fprintf('\n******************\n******************\n length(a)=%i for (iPixel, iScan) (%i, %i). Should be between 1 and 5, inclusive.\n******************\n******************\n\n', length(a), iPixel, iScan)
+                a = a(1:4);
+                b = b(1:4);
             end
-        else
-            for iNum=1:length(sol)
+        end
+        
+        for iNum=1:length(sol)
+            
+            % Eliminate phantom hits from the list.
+            
+            if abs(vout(iot(iNum),jot(iNum))) > -0.1
+                Num(sol(iNum)) = Num(sol(iNum)) + 1;
+                k = Num(sol(iNum));
                 
-                % Eliminate phantom hits from the list.
-                
-                if abs(vout(iot(iNum),jot(iNum))) > -0.1
-                    Num(sol(iNum)) = Num(sol(iNum)) + 1;
-                    k = Num(sol(iNum));
-                    
-                    weights(k,a(iNum),b(iNum)) = vout(iot(iNum),jot(iNum));
-                    locations(k,a(iNum),b(iNum)) = sub2ind( SizeIn, iPixel, iScan);
-                end
+                weights(k,a(iNum),b(iNum)) = vout(iot(iNum),jot(iNum));
+                locations(k,a(iNum),b(iNum)) = sub2ind( SizeIn, iPixel, iScan);
             end
         end
     end

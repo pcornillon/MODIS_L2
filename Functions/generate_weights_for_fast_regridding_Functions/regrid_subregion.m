@@ -1,4 +1,4 @@
-function [Num, weights, locations] = regrid_subregion( nPixels, nScanlines, SizeIn, iPixel, iScan, iso, jso, vout, Num, weights, locations)
+function [Num, weights, locations] = regrid_subregion( nPixels, nScanlines, SizeIn, iPixel, iScan, iso, jso, vout, Num, weights, locations, nearest_neighbor)
 % regrid_subregion - get weights and locations for this subregion - PCC
 %
 % This function receives the regridded array corresponding to a 1 at
@@ -27,6 +27,8 @@ function [Num, weights, locations] = regrid_subregion( nPixels, nScanlines, Size
 %   weights - the weights of the impacted pixel.
 %   locations - the locations in the output parent region of the impacted
 %    pixel.
+%   nearest_neighbor - 1 if these data are for nearest neighbor
+%    interpolation. 0 if linear interpolation.
 %
 % OUTPUT
 %   Num - the number of times this pixel has been impacted, updated for
@@ -71,16 +73,32 @@ if ~isempty(iot)
         
         % Loop over all impacted pixels  saving their weight and location.
         
-        for iNum=1:length(sol)
+        if nearest_neighbor == 1
             
-            % Eliminate phantom hits from the list.
+            % Num and weights not used for nearest neighbor interpolation.
             
-            if abs(vout(iot(iNum),jot(iNum))) > -0.1
-                Num(sol(iNum)) = Num(sol(iNum)) + 1;
-                k = Num(sol(iNum));
+            Num = nan;
+            weights = nan;
+            
+            if length(a)~=1
+                fprintf('\n******************\n******************\n length(a)=%i but should be 1 for (iPixel, iScan) (%i, %i)\n******************\n******************\n\n', length(a), iPixel, iScan)
+                locations( 1, a, b) = nan;
+                return
+            else
+                locations( 1, a, b) = sub2ind( SizeIn, iPixel, iScan);
+            end
+        else
+            for iNum=1:length(sol)
                 
-                weights(k,a(iNum),b(iNum)) = vout(iot(iNum),jot(iNum));
-                locations(k,a(iNum),b(iNum)) = sub2ind( SizeIn, iPixel, iScan);
+                % Eliminate phantom hits from the list.
+                
+                if abs(vout(iot(iNum),jot(iNum))) > -0.1
+                    Num(sol(iNum)) = Num(sol(iNum)) + 1;
+                    k = Num(sol(iNum));
+                    
+                    weights(k,a(iNum),b(iNum)) = vout(iot(iNum),jot(iNum));
+                    locations(k,a(iNum),b(iNum)) = sub2ind( SizeIn, iPixel, iScan);
+                end
             end
         end
     end

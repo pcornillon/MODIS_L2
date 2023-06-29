@@ -71,6 +71,8 @@ for iFile=1:length(filelist)
     weights = augmented_weights(:,:,1:nScans);
     locations = augmented_locations(:,:,1:nScans);
     
+% % %     nMax = 3;
+    
     % Now regrid.
     
     sst_fast = zeros([nElements, nScans]);
@@ -188,7 +190,7 @@ for iFile=1:length(filelist)
     figure(iFig)
     clf
     
-    hhgm1 = histogram(dd_gm_in_griddata_z, HIST_GM_1);
+    hhgm1 = histogram(dd_gm_in_griddata_z, HIST_GM_2);
     hold on
     hhgm2 = histogram(dd_gm_fast_griddata_z, HIST_GM_2);
     legend({'|\nabla{SST\_in}| - |\nabla{SST\_griddata}|' '|\nabla{SST\_fast}| - |\nabla{SST\_griddata}|'})
@@ -268,7 +270,8 @@ for iFile=1:length(filelist)
     ylabel('Counts')
     ylim(COUNTS_LIM)
     title(['Orbit ' num2str(orbit_no)], fontsize=title_fontsize)
-    text( -0.025, 275, ['Total Number: ', num2str(numdd)], fontsize=axis_fontsize)
+    text( -0.025, 0.9*COUNTS_LIM(2), ['#: ', num2str(numdd)], fontsize=axis_fontsize-2)
+    text( -0.025, 0.83*COUNTS_LIM(2), ['$\sigma$: ', num2str(sigmas.sigma_gm_fast_griddata(iFile),2)], interpreter='latex', fontsize=axis_fontsize)
     
     % And all of the fast-griddata fields in one plot.
     

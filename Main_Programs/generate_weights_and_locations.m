@@ -1,7 +1,7 @@
 function generate_weights_and_locations(pattern_in, num_in_range, restart)
 % generate_weights_and_locations - does this for inputs to fix bow-tie - PCC
 %
-% This function reads in the longitudes, latitude, regridded longitudes and
+% This function reads in the longitudes, latitudes, regridded longitudes and
 % regridded latitudes for an orbit. It then builds a 7x7 element array of
 % zeros with 1 in the middle, the array centered on an input pixel and scan
 % line location. It performs a griddata to the 31x31 regridded fields
@@ -60,6 +60,10 @@ file_step = floor(numfiles / num_in_range);
 for iFile=1:file_step:numfiles
     jFile = iFile;
     
+    % Starting with orbit associated with iFile, step through the orbits
+    % one by one searching for the first orbit for which weights and
+    % locations have not already been found.
+
     while 1==1
         filename_in = [filelist(jFile).folder '/' filelist(jFile).name];
         
@@ -80,7 +84,7 @@ for iFile=1:file_step:numfiles
     
     fprintf('Working on %s\n', filename_in)
     
-    % Read in the data for this file.
+    % Read in the data for this orbit.
     
     lat = single(ncread(filename_in, 'latitude'));
     regridded_lat = single(ncread(filename_in, 'regridded_latitude'));
@@ -122,9 +126,11 @@ for iFile=1:file_step:numfiles
         
         % Intialize output arrays.
         
-        Num = int16(zeros(size(lat)));
-        weights = single(zeros(7,size(lat,1),size(lat,2)));
-        locations = int32(zeros(7,size(lat,1),size(lat,2)));
+        Num          =  int16( zeros(   size(lat)));
+        weights      = single( zeros(7, size(lat,1), size(lat,2)));
+        locations    =  int32( zeros(7, size(lat,1), size(lat,2)));
+
+        locations_nn =  int32( zeros(   size(lat,1),size(lat,2)));
     end
     
     % If this is a test run, redefine the input array.
@@ -136,7 +142,7 @@ for iFile=1:file_step:numfiles
         regridded_lon = regridded_lon(1:50,:);
     end
     
-    % Make sure that there are not nan's in the input.
+    % Make sure that there are no nans in the input.
     
     nn = find(isnan(lat)==1);
     if ~isempty(nn)
@@ -179,7 +185,7 @@ for iFile=1:file_step:numfiles
     % Now get the weights and locations; start with the Antarctic region at
     % the beginning of the orbit.
     
-    %% Region 1
+    %% Region 1 - Southern Ocean, will convert lats and lons to a polar grid with ll2ps and determine weights and location from this coordinate system.
     
     % If this run is not to be restart, process from Region 1.
     
@@ -201,8 +207,10 @@ for iFile=1:file_step:numfiles
         % Intialize output arrays for this region.
         
         tNum = int16(zeros(size(xin)));
-        tweights = single(zeros(7, nPixels, nScanlines));
-        tlocations = int32(zeros(7, nPixels, nScanlines));
+        tweights =  single(zeros( 7, nPixels, nScanlines));
+        tlocations = int32(zeros( 7, nPixels, nScanlines));
+        
+        tlocations_nn = int32(zeros( nPixels, nScanlines));
         
         for iPixel=1:nPixels
             tic
@@ -216,14 +224,17 @@ for iFile=1:file_step:numfiles
                 vin = zeros(iei-isi+1, jei-jsi+1);
                 vin(jPixel,jScan) = 1;
                 
-                % Regrid this array to the new lats and lons.
+                % Regrid this array to the new lats and lons using the linear 
+                % method (vout) and the nearest neighbor method (vout_nn). 
                 
-                vout = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo));
+                vout    = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo), 'linear' );
+                vout_nn = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo), 'nearest');
                 
                 % Now find all pixels impacted in the subregion and map these to the full
                 % region. If no pixels in the output region are impacted, skip this part.
                 
-                [tNum, tweights, tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout, tNum, tweights, tlocations);
+                [ tNum,    tweights,    tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout,   tNum, tweights, tlocations      );
+                [    ~,           ~, tlocations_nn] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout_nn, nan,      nan, tlocations_nn, 1);
             end
             fprintf('%f s to process iPixel %i for Region 3\n', toc, iPixel)
             tic
@@ -234,13 +245,15 @@ for iFile=1:file_step:numfiles
         % section. For the test runs I was doing, the inputs for each
         % section were constrained to the 1st nPixels of the data read in.
         
-        Num(1:nPixels, 1:iAntarcticEnd)  = tNum(:, 1:iAntarcticEnd);
-        weights(:, 1:nPixels, 1:iAntarcticEnd) = tweights(:, :, 1:iAntarcticEnd);
-        locations(:, 1:nPixels, 1:iAntarcticEnd) = tlocations(:, :, 1:iAntarcticEnd);
+        Num(          1:nPixels, 1:iAntarcticEnd)  =      tNum(    :, 1:iAntarcticEnd);
+        weights(   :, 1:nPixels, 1:iAntarcticEnd) =   tweights( :, :, 1:iAntarcticEnd);
+        locations( :, 1:nPixels, 1:iAntarcticEnd) = tlocations( :, :, 1:iAntarcticEnd);
+        
+        locations_nn( 1:nPixels, 1:iAntarcticEnd) = tlocations_nn( :, 1:iAntarcticEnd);
         
         % Intermediate save
         
-        save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
+        save( filename_out, 'filename_in', 'weights', 'locations', 'locations_nn', '-v7.3')
         
     end
     
@@ -261,9 +274,11 @@ for iFile=1:file_step:numfiles
         
         % Intialize output arrays for this region.
         
-        tNum = int16(zeros(size(xin)));
-        tweights = single(zeros(7, nPixels, nScanlines));
-        tlocations = int32(zeros(7, nPixels, nScanlines));
+        tNum          =  int16( zeros( size(xin)));
+        tweights      = single( zeros( 7, nPixels, nScanlines));
+        tlocations    =  int32( zeros( 7, nPixels, nScanlines));
+
+        tlocations_nn =  int32( zeros(    nPixels, nScanlines));
         
         for iPixel=1:nPixels
             tic
@@ -279,12 +294,14 @@ for iFile=1:file_step:numfiles
                 
                 % Regrid this array to the new lats and lons.
                 
-                vout = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo));
-                
+                vout    = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo), 'linear' );
+                vout_nn = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo), 'nearest');
+               
                 % Now find all pixels impacted in the subregion and map these to the full
                 % region. If no pixels in the output region are impacted, skip this part.
                 
-                [tNum, tweights, tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout, tNum, tweights, tlocations);
+                [ tNum, tweights,    tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout,   tNum, tweights, tlocations      );
+                [    ~,        ~, tlocations_nn] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout_nn, nan,      nan, tlocations_nn, 1);
             end
             fprintf('%f s to process iPixel %i for Region %i\n', toc, iPixel, iRegion)
             tic
@@ -305,16 +322,18 @@ for iFile=1:file_step:numfiles
             jEnd_out = region_end(iRegion);
         end
         
-        Num(1:nPixels, jStart_out:jEnd_out)  = tNum(:, jStart_in:jEnd_in);
-        weights(:, 1:nPixels, jStart_out:jEnd_out) = tweights(:, :, jStart_in:jEnd_in);
-        locations(:, 1:nPixels, jStart_out:jEnd_out) = tlocations(:, :, jStart_in:jEnd_in) + 1354 * (region_start(iRegion) - 1);
+        Num(1:nPixels, jStart_out:jEnd_out)                   = tNum(     :, jStart_in:jEnd_in);
+        weights(   :, 1:nPixels, jStart_out:jEnd_out)      = tweights( :, :, jStart_in:jEnd_in);
+        locations( :, 1:nPixels, jStart_out:jEnd_out)    = tlocations( :, :, jStart_in:jEnd_in) + 1354 * (region_start(iRegion) - 1);
         
+        locations_nn( 1:nPixels, jStart_out:jEnd_out) = tlocations_nn(    :, jStart_in:jEnd_in) + 1354 * (region_start(iRegion) - 1);
+
         % Intermediate save
         
-        save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
+        save( filename_out, 'filename_in', 'weights', 'locations', 'locations_nn', '-v7.3')
     end
     
-    %% Region 3
+    %% Region 3 Arctic, will convert lats and lons to a polar grid with ll2psn and determine weights and location from this coordinate system.
     
     fprintf('Processing Region 4 of %s.\n', filename_in)
     
@@ -332,9 +351,11 @@ for iFile=1:file_step:numfiles
     
     % Intialize output arrays for this region.
     
-    tNum = int16(zeros(size(xin)));
-    tweights = single(zeros(7, nPixels, nScanlines));
-    tlocations = int32(zeros(7, nPixels, nScanlines));
+    tNum          = int16( zeros(size(xin)));
+    tweights      = single( zeros( 7, nPixels, nScanlines));
+    tlocations    =  int32( zeros( 7, nPixels, nScanlines));
+    
+    tlocations_nn =  int32(    zeros( nPixels, nScanlines));
     
     for iPixel=1:nPixels
         tic
@@ -350,12 +371,14 @@ for iFile=1:file_step:numfiles
             
             % Regrid this array to the new lats and lons.
             
-            vout = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo));
+            vout    = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo), 'linear' );
+            vout_nn = griddata( xin(isi:iei,jsi:jei), yin(isi:iei,jsi:jei), vin, xout(iso:ieo,jso:jeo), yout(iso:ieo,jso:jeo), 'nearest');
             
             % Now find all pixels impacted in the subregion and map these to the full
             % region. If no pixels in the output region are impacted, skip this part.
             
-            [tNum, tweights, tlocations] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout, tNum, tweights, tlocations);
+            [ tNum, tweights, tlocations]    = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout,   tNum, tweights, tlocations      );
+            [    ~,        ~, tlocations_nn] = regrid_subregion( nPixels, nScanlines, [nPixels nScanlines], iPixel, iScan, iso, jso, vout_nn, nan,      nan, tlocations_nn, 1);
         end
         fprintf('%f s to process iPixel %i for Region 3.\n', toc, iPixel)
         tic
@@ -364,13 +387,15 @@ for iFile=1:file_step:numfiles
     jStart = region_start(3)-1+overlap;
     jEnd = region_end(3)-overlap;
     
-    Num(1:nPixels, jStart:jEnd)  = tNum(:, overlap:end-overlap);
-    weights(:, 1:nPixels, jStart:jEnd) = tweights(:, :, overlap:end-overlap);
-    locations(:, 1:nPixels, jStart:jEnd) = tlocations(:, :, overlap:end-overlap) + 1354 * (region_start(3) - 1);
+    Num(          1:nPixels, jStart:jEnd) =       tNum(    :, overlap:end-overlap);
+    weights(   :, 1:nPixels, jStart:jEnd) =   tweights( :, :, overlap:end-overlap);
+    locations( :, 1:nPixels, jStart:jEnd) = tlocations( :, :, overlap:end-overlap) + 1354 * (region_start(3) - 1);
+    
+    locations_nn( 1:nPixels, jStart:jEnd) = tlocations_nn( :, overlap:end-overlap) + 1354 * (region_start(3) - 1);
     
     % Intermediate save
     
-    save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
+    save( filename_out, 'filename_in', 'weights', 'locations', 'locations_nn', '-v7.3')
     
     %% Sort the weights and locations arrays on the 1st dimension in descending order.
     
@@ -412,9 +437,9 @@ for iFile=1:file_step:numfiles
     
     %% Save the results
     
-    save( filename_out, 'filename_in', 'weights', 'locations', '-v7.3')
+    save( filename_out, 'filename_in', 'weights', 'locations', 'locations_nn', '-v7.3')
     
-    clear weights locations temp*
+    clear weights locations locations_nn temp*
     
     fprintf('Took %f s to process the entire run.\n', toc(tStart))
 end

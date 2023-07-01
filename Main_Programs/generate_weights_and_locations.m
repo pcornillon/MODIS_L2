@@ -49,7 +49,8 @@ warning('off',id)
 if test_run
     filelist = dir(['~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_*' pattern_in '*']);
 else
-    filelist = dir(['/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_*' pattern_in '*']);
+%     filelist = dir(['/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_*' pattern_in '*']);
+    filelist = dir(['~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/2019/01/AQUA_MODIS_orbit_*' pattern_in '*']);
 end
 numfiles = length(filelist);
 

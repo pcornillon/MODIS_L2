@@ -119,14 +119,17 @@ for iFile=1:file_step:numfiles
         
         % OK, now find what has already been processed.
         
-        nn = find(weights(1,677,:) > 0.3);
+        nn = find(weights(1,677,:) ~= 0);
         
-        if nn(end) < 3000
+        if nn(end) == 1990
             regions_to_process = [2, 4];
-        elseif nn(end) < 20200
+        elseif nn(end) == 20080
             regions_to_process = [4];
-        else
+        elseif nn(end) == total_number_of_scan_lines
             regions_to_process = [];
+        else
+            fprintf('Last scan line with data is: %i; should be either 1990, 20080 or %i\n', nn(end), total_number_of_scan_lines)
+            break
         end
     else
         
@@ -171,6 +174,11 @@ for iFile=1:file_step:numfiles
     
     iArcticStart = 20081;
     iArcticEnd = 22070;
+    
+    if (iAntarcticEnd ~= 1990) | (iArcticStart ~= 20081)
+        fprintf('You have changed the value of either iAntarcticEnd and/or iArcticStart. These values are used in restart above so need to change them there as well.\n')
+        break
+    end
     
     overlap = 40;
     

@@ -70,6 +70,7 @@ if ~isempty(iot)
         % Get the indices of the impacted  pixels in the full array.
         
         sol = sub2ind( SizeIn, a, b);
+        nLevels = length(sol);
         
         % Loop over all impacted pixels saving their weight and location.
         
@@ -77,15 +78,17 @@ if ~isempty(iot)
             
             % Make sure that there are between 1 and 5 values. Should
             % really only be 1 but could be up to 3--I think.
-            
-            if length(a) > 4
+                        
+            if length(a) > 6
                 fprintf('\n******************\n******************\n length(a)=%i for (iPixel, iScan) (%i, %i). Should be between 1 and 5, inclusive.\n******************\n******************\n\n', length(a), iPixel, iScan)
-                a = a(1:4);
-                b = b(1:4);
+                a = a(1:6);
+                b = b(1:6);
+                
+                nLevels = 6;
             end
         end
         
-        for iNum=1:length(sol)
+        for iNum=1:nLevels
             
             % Eliminate phantom hits from the list.
             

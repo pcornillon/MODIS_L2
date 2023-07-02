@@ -60,6 +60,9 @@ end
 numfiles = length(filelist);
 
 file_step = floor(numfiles / num_in_range);
+if file_step < 1
+    file_step = 1
+end
 
 % Read in the data
 

@@ -336,7 +336,7 @@ if in_loop == -1
         locations_temp = squeeze(locations(iC,:,:));
         
 % % %         non_zero_weights = find(weights_temp ~= 0);
-        non_zero_weights = find(locations_temp(non_zero_weights) == 0);
+        non_zero_weights = find((weights_temp ~= 0) & (isnan(weights_temp) == 0));
 
         SST_temp = zeros([nElements, nScans]);
         SST_temp(non_zero_weights) = weights_temp(non_zero_weights) .* SST_In(locations_temp(non_zero_weights));

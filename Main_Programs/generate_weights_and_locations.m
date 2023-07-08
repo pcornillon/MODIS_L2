@@ -54,8 +54,8 @@ Day = pattern_in(7:8);
 if test_run
     filelist = dir(['~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/AQUA_MODIS_orbit_*' pattern_in '*']);
 else
-    filelist = dir(['/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_*' pattern_in '*']);
-%     filelist = dir(['~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/' Year '/' Month '/AQUA_MODIS_orbit_*' pattern_in '*']);
+    % filelist = dir(['/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/03/AQUA_MODIS_orbit_*' pattern_in '*']);
+    filelist = dir(['~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/' Year '/' Month '/AQUA_MODIS_orbit_*' pattern_in '*']);
 end
 numfiles = length(filelist);
 
@@ -362,7 +362,7 @@ for iFile=1:file_step:numfiles
     
     %% Region 3 Arctic, will convert lats and lons to a polar grid with ll2psn and determine weights and location from this coordinate system.
     
-    fprintf('Processing Region 4 of %s.\n', filename_in)
+    fprintf('Processing Region 3 of %s.\n', filename_in)
     
     % Get the data for this region.
     

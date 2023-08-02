@@ -1,4 +1,4 @@
-% show_fix_bowtie_control - demo plots of impact of bow-tie and fixed version.
+% weights_vs_location_in_group_control - demo plots of impact of bow-tie and fixed version.
 %
 % Read sst input masked, fast regridded version and griddata version for an
 % obit. Determine the gradient magnitudes of these, then plot them and
@@ -163,7 +163,7 @@ end
 
 % Now call function to plot and determine stats.
 
-[nums, sigmas] = show_fix_bowtie;
+[nums, sigmas] = weights_vs_location_in_group;
 
 fprintf('\n\nNumber good pixels read in  %i; good griddata pixels %i\n', nums.num_in(1), nums.num_griddata(1))
 fprintf('\nNumber good fast pixels %i %i %i %i %i\n', nums.num_fast)

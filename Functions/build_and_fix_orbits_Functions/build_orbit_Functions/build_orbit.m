@@ -85,7 +85,8 @@ iGranule = 1;
 if length(oinfo) < iOrbit
     iGranule = 0;
     
-    [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
     % Return if end of run.
     
@@ -116,7 +117,8 @@ if exist(oinfo(iOrbit).name) == 2
         
     while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         
         if ~isempty(start_line_index)
             break
@@ -188,7 +190,8 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-find_next... increments
     % granule_start_time... by 5 minutes.
     
-    [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
 % % %     if iGranule == 20
 % % %         keyboard

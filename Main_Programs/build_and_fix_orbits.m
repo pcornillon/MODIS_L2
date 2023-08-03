@@ -1,4 +1,4 @@
-function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, get_gradients, save_core, print_diag)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -11,6 +11,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   fix_bowtie - if 1 fixes the bow-tie problem, otherwise bow-tie effect
 %    not fixed.
 %   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
+%   fast_regrid - 1 to use fast regridding.
 %   get_gradients - 1 to calculate eastward and northward gradients, 0
 %    otherwise.
 %   save_core - 1 to save only the core values, regridded lon, lat, SST,
@@ -59,7 +60,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
 %   output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
 % 
-%   build_and_fix_orbits( [2010 2 25 0 0 0], [2010 4 1 0 0 0], 0, 1, 0, 0, 1, 1);
+%   build_and_fix_orbits( [2010 2 25 0 0 0], [2010 4 1 0 0 0], 0, 1, 0, 1, 0, 1, 1);
+%   build_and_fix_orbits( [2010 6 19 0 0 0], [2010 6 24 0 0 0], 1, 1, 1, 0, 1, 1, 1);
 %
 %  For test runs, the function will define the location of the various
 %  directories as well as parameters needed for the run. Nothing is passed
@@ -151,7 +153,7 @@ oinfo.ginfo.pirate_gescan = [];
 
 % Initialize return variables.
 
-regridded_debug = 1;  % To determine and write alternate SST fields based on griddata.
+regridded_debug = 0;  % To determine and write alternate SST fields based on griddata.
 
 if isempty(metadata_directory)
     test_num = 1;
@@ -184,6 +186,7 @@ if isempty(metadata_directory)
     fix_mask = 1;  % Test run.
     fix_bowtie = 1;  % Test run.
     regrid_sst = 1;  % Test run.
+    fast_regrid = 1; % Test run
     get_gradients = 0;  % Test run.
     save_core = 0;  % Test run.
     print_diagnostics = 1;  % Test run.
@@ -348,9 +351,12 @@ end
 
 % Fast regridding arrays.
 
-if fix_bowtie
+if fix_bowtie & fast_regrid
 %     load([fixit_directory 'weights_and_locations_from_31191.mat'])
     load([fixit_directory 'weights_and_locations_41616_fixed.mat'])
+else
+    augmented_weights = [];
+    augmented_locations = [];
 end
 
 % Gradient stuff
@@ -386,7 +392,8 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 iOrbit = 1;
 iGranule = 0;
 
-[status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit;
+% % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit;
+[status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
 
 iOrbit = iOrbit + 1;
 
@@ -480,11 +487,12 @@ while granule_start_time_guess <= Matlab_end_time
             % regridding.
             % ******************************************************************************************
             
-            [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
-            
-            
-            if regridded_debug
+            % [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+            %     regrid_MODIS_orbits( regrid_sst, [],[], longitude, latitude, SST_In_Masked);
+                        
+            if regridded_debug == 1
+                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+                    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
 
                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
                 if length(mm) < numel(SST_In_Masked)
@@ -497,6 +505,11 @@ while granule_start_time_guess <= Matlab_end_time
                 else
                     regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
                 end
+            else
+                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ~, ~, ~, ~] = ...
+                    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+
+                regridded_sst_alternate = [];
             end
             
             if status ~= 0
@@ -538,7 +551,7 @@ while granule_start_time_guess <= Matlab_end_time
         if get_gradients
             start_time_to_determine_gradient = tic;
             
-            [grad_at_per_km, grad_as_per_km, grad_mag_per_km] = sobel_gradient_degrees_per_kilometer( ...
+            [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
                 regridded_sst, ...
                 along_track_seps_array(:,1:size(regridded_sst,2)), ...
                 along_scan_seps_array(:,1:size(regridded_sst,2)));

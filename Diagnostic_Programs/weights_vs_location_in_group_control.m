@@ -10,10 +10,12 @@ which_test = 4;
 % Define global variables
 
 global fi
-global AXIS CAXIS_sst CAXIS_sst_diff_1 CAXIS_sst_diff_2 CAXIS_gm CAXIS_gm_diff
+global plotem AXIS CAXIS_sst CAXIS_sst_diff_1 CAXIS_sst_diff_2 CAXIS_gm CAXIS_gm_diff
 global XLIM YLIM HIST_SST HIST_GM_1 HIST_GM_2 HIST_GM_3 COUNTS_LIM ZOOM_RANGE
 global title_fontsize axis_fontsize
 global along_scan_seps_array along_track_seps_array
+
+plotem = [0 1 1 0];
 
 title_fontsize = 24;
 axis_fontsize = 18;
@@ -26,7 +28,7 @@ gradient_filename = [fixit_directory 'Separation_and_Angle_Arrays.n4'];
 along_scan_seps_array = ncread(gradient_filename, 'along_scan_seps_array');
 along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
 
-% Orbits to process.
+% Orbit to process.
 
 switch which_test
     case 1
@@ -125,12 +127,12 @@ switch which_test
         CAXIS_gm = [0 0.4];
         CAXIS_gm_diff = [-0.05 0.05];
         XLIM = [-.2 .2];
-        YLIM = [0 1500000];
+        YLIM = [0 2000000];
         HIST_SST = [-1:0.01:1];
         HIST_GM_1 = [-.34:0.001:.5];
         HIST_GM_2 = [-.34:0.001:.5];
         HIST_GM_3 = [-.03:0.001:.03];
-        COUNTS_LIM = [0 300];
+        COUNTS_LIM = [0 5000];
         ZOOM_RANGE = [36 110 7601 8050];
         
     case 5
@@ -156,14 +158,14 @@ switch which_test
         HIST_GM_1 = [-.34:0.001:.5];
         HIST_GM_2 = [-.34:0.001:.5];
         HIST_GM_3 = [-.03:0.001:.03];
-        COUNTS_LIM = [0 300];
+        COUNTS_LIM = [0 5000];
         ZOOM_RANGE = [1141 1260 29691 29900];
         
 end
 
 % Now call function to plot and determine stats.
 
-[nums, sigmas] = weights_vs_location_in_group;
+[eq_crossing_primary, eq_crossing_index, sigmas] = weights_vs_location_in_group;
 
 fprintf('\n\nNumber good pixels read in  %i; good griddata pixels %i\n', nums.num_in(1), nums.num_griddata(1))
 fprintf('\nNumber good fast pixels %i %i %i %i %i\n', nums.num_fast)

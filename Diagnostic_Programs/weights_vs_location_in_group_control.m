@@ -165,15 +165,16 @@ end
 
 % Now call function to plot and determine stats.
 
-[eq_crossing_primary, eq_crossing_index, sigmas] = weights_vs_location_in_group;
+% [eq_crossing_primary, eq_crossing_index, sigmas] = weights_vs_location_in_group;
+[eq_crossing_primary, weights_meta, sigmas] = weights_vs_location_in_group;
 
-fprintf('\n\nNumber good pixels read in  %i; good griddata pixels %i\n', nums.num_in(1), nums.num_griddata(1))
-fprintf('\nNumber good fast pixels %i %i %i %i %i\n', nums.num_fast)
-fprintf('\nin-griddata: \x03c3(SST) %5.3f; \x03c3|\x2207SST| %5.3f; zoomed \x03c3|\x2207SST| %5.3f\n\n', sigmas.sigma_in_griddata, sigmas.sigma_gm_in_griddata, sigmas.sigma_gm_in_griddata_z)
-
-fprintf('fast-griddata    sst: %7.4f %7.4f %7.4f %7.4f %7.4f\n', sigmas.sigma_fast_griddata)
-fprintf('             \x03c3|\x2207SST|: %7.4f %7.4f %7.4f %7.4f %7.4f\n', sigmas.sigma_gm_fast_griddata)
-fprintf('  zoomed     \x03c3|\x2207SST|: %7.4f %7.4f %7.4f %7.4f %7.4f\n', sigmas.sigma_gm_fast_griddata_z)
+% % % fprintf('\n\nNumber good pixels read in  %i; good griddata pixels %i\n', nums.num_in(1), nums.num_griddata(1))
+% % % fprintf('\nNumber good fast pixels %i %i %i %i %i\n', nums.num_fast)
+% % % fprintf('\nin-griddata: \x03c3(SST) %5.3f; \x03c3|\x2207SST| %5.3f; zoomed \x03c3|\x2207SST| %5.3f\n\n', sigmas.sigma_in_griddata, sigmas.sigma_gm_in_griddata, sigmas.sigma_gm_in_griddata_z)
+% % % 
+% % % fprintf('fast-griddata    sst: %7.4f %7.4f %7.4f %7.4f %7.4f\n', sigmas.sigma_fast_griddata)
+% % % fprintf('             \x03c3|\x2207SST|: %7.4f %7.4f %7.4f %7.4f %7.4f\n', sigmas.sigma_gm_fast_griddata)
+% % % fprintf('  zoomed     \x03c3|\x2207SST|: %7.4f %7.4f %7.4f %7.4f %7.4f\n', sigmas.sigma_gm_fast_griddata_z)
 
 %% Print out figures
 

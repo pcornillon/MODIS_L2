@@ -1,4 +1,4 @@
-function [eq_crossing_primary, eq_crossing_index, sigmas] = weights_vs_location_in_group
+function [eq_crossing_primary, weights_meta, sigmas] = weights_vs_location_in_group
 % weights_vs_location_in_group - get stats for weights at different location in detector group - PCC
 %
 % The function will compare the fast regridding vs Matlab regridding for
@@ -93,6 +93,8 @@ iFig = 0;
 
 for iFile=1:length(filelist)
     
+    tic
+
     % Find the equatorial crossing of the ascending nadir track for the
     % orbit from which these weights and locations were obtained.
     
@@ -214,6 +216,14 @@ for iFile=1:length(filelist)
     dd_gm_fast_griddata = gm_fast - gm_griddata;
     sigmas.sigma_gm_fast_griddata(iFile) = std(dd_gm_fast_griddata(:),'omitnan');
     
+    % Get stats for SST on zoomed in region.
+    
+    sst_griddata_z = sst_griddata(ZOOM_RANGE(1):ZOOM_RANGE(2), ZOOM_RANGE(3):ZOOM_RANGE(4));
+    sst_fast_z = sst_fast(ZOOM_RANGE(1):ZOOM_RANGE(2), ZOOM_RANGE(3):ZOOM_RANGE(4));
+
+    dd_sst_fast_griddata_z = sst_fast_z - sst_griddata_z;
+    sigmas.sigma_fast_griddata_z(iFile) = std(dd_sst_fast_griddata_z(:),'omitnan');
+    
     %% Get gradient magnitudes for zoomed in region
     
     gm_fast_z = gm_fast(ZOOM_RANGE(1):ZOOM_RANGE(2), ZOOM_RANGE(3):ZOOM_RANGE(4));
@@ -261,7 +271,7 @@ for iFile=1:length(filelist)
         caxis(CAXIS_gm)
         colorbar
         
-        sgtitle(['Gradient Magnitudes for Orbit ' orbit_no, ' Primary: ' num2str(eq_crossing_primary) ', Weights: ' num2str(weights_meta(iFile).eq_crossing_index)], fontsize=30)
+        sgtitle(['Gradient Magnitudes for Orbit ' orbit_no, ' Primary: ' num2str(eq_crossing_primary) ', Weights: ' num2str(weights_meta(iFile).eq_crossing_index)], fontsize=30)    
     end
     
     %% And differences between sst in and the fast interpolation.
@@ -357,9 +367,9 @@ for iFile=1:length(filelist)
     xlabel('K/km')
     ylabel('Counts')
     ylim(COUNTS_LIM)
-    title(['Orbit ' orbit_no], fontsize=title_fontsize-3)
+    title([orbit_no ' : ' num2str(eq_crossing_primary) ' : ' num2str(weights_meta(iFile).eq_crossing_index)], fontsize=title_fontsize-3)
     text( -0.025, 0.9*COUNTS_LIM(2), ['#: ', num2str(numdd)], fontsize=axis_fontsize-7)
-    text( -0.025, 0.8*COUNTS_LIM(2), ['$\sigma$: ', num2str(sigmas.sigma_gm_fast_griddata(iFile),3)], interpreter='latex', fontsize=axis_fontsize-7)
+    text( -0.025, 0.8*COUNTS_LIM(2), ['$\sigma$: ', num2str(sigmas.sigma_gm_fast_griddata_z(iFile),3)], interpreter='latex', fontsize=axis_fontsize-7)
     
     % And all of the fast-griddata fields in one plot.
     
@@ -368,15 +378,84 @@ for iFile=1:length(filelist)
     
     imagesc((gm_griddata_z - gm_fast_z)')
     set(gca,fontsize=axis_fontsize-5)
-    title(['Orbit ' orbit_no], fontsize=title_fontsize-3)
+    title([orbit_no ' : ' num2str(eq_crossing_primary) ' : ' num2str(weights_meta(iFile).eq_crossing_index)], fontsize=title_fontsize-6)
     colorbar
     caxis(CAXIS_gm_diff)
+
+    toc
 end
 
 figure(1)
-sgtitle('|\nabla{SST\_griddata}| - |\nabla{SST\_fast}|', fontsize=30)
+sgtitle('Zoomed |\nabla{SST\_griddata}| - |\nabla{SST\_fast}|', fontsize=30)
 
 figure(2)
-sgtitle('|\nabla{SST\_griddata}| - |\nabla{SST\_fast}|', fontsize=30)
+sgtitle('Zoomed |\nabla{SST\_griddata}| - |\nabla{SST\_fast}|', fontsize=30)
 
+% Get statistics to plot.
+
+for iFile=1:length(filelist)
+    sigma_sst_fast_griddata_all(iFile) = sigmas.sigma_fast_griddata(iFile);
+    sigma_sst_fast_griddata_z(iFile) = sigmas.sigma_fast_griddata_z(iFile);
+
+    sigma_gm_fast_griddata_all(iFile) = sigmas.sigma_gm_fast_griddata(iFile);
+    sigma_gm_fast_griddata_z(iFile) = sigmas.sigma_gm_fast_griddata_z(iFile);
+
+    eq_index(iFile) = weights_meta(iFile).eq_crossing_index;
 end
+
+% And plot sigma of SST for the entire orbit first.
+
+figure(991)
+clf
+
+plot(eq_index-11048, sigma_sst_fast_griddata_all, 'ok', markerfacecolor='red', markersize=10)
+grid on
+hold on
+
+set(gca, fontsize=axis_fontsize)
+title('\sigma(SST_{fast}-SST_{griddata}) for Entire Orbit', fontsize=title_fontsize)
+xlabel('Scan Line Offset from 11048', fontsize=axis_fontsize)
+ylabel('\sigma(SST_{fast}-SST_{griddata})', fontsize=axis_fontsize)
+
+% Repeat for sigma of SST for the zoomed in portion.
+
+figure(992)
+clf
+
+plot(eq_index-11048, sigma_sst_fast_griddata_z, 'ok', markerfacecolor='red', markersize=10)
+grid on
+hold on
+
+set(gca, fontsize=axis_fontsize)
+title('\sigma(SST_{fast}-SST_{griddata}) for Zoomed Portion', fontsize=title_fontsize)
+xlabel('Scan Line Offset from 11048', fontsize=axis_fontsize)
+ylabel('\sigma(SST_{fast}-SST_{griddata})', fontsize=axis_fontsize)
+
+% And for sigma of SST gradient magnitude for the entire orbit.
+
+figure(993)
+clf
+
+plot(eq_index-11048, sigma_gm_fast_griddata_all, 'ok', markerfacecolor='red', markersize=10)
+grid on
+hold on
+
+set(gca, fontsize=axis_fontsize)
+title('\sigma(\nabla SST_{fast}-\nabla SST_{griddata}) for Entire Orbit', fontsize=title_fontsize)
+xlabel('Scan Line Offset from 11048', fontsize=axis_fontsize)
+ylabel('\sigma(\nabla SST_{fast}-\nabla SST_{griddata})', fontsize=axis_fontsize)
+
+% Finally for sigma of SST gradient magnitude for the zoomed in portion
+
+figure(994)
+clf
+
+plot(eq_index-11048, sigma_gm_fast_griddata_z, 'ok', markerfacecolor='red', markersize=10)
+grid on
+hold on
+
+set(gca, fontsize=axis_fontsize)
+title('\sigma(\nabla SST_{fast}-\nabla SST_{griddata}) for Zoomed Portion', fontsize=title_fontsize)
+xlabel('Scan Line Offset from 11048', fontsize=axis_fontsize)
+ylabel('\sigma(\nabla SST_{fast}-\nabla SST_{griddata})', fontsize=axis_fontsize)
+

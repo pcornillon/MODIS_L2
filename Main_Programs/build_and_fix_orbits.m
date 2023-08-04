@@ -509,6 +509,10 @@ while granule_start_time_guess <= Matlab_end_time
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ~, ~, ~, ~] = ...
                     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
 
+                easting = [];
+                northing = [];
+                new_easting = [];
+                new_northing = [];
                 regridded_sst_alternate = [];
             end
             

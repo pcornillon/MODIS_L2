@@ -150,8 +150,8 @@ tic_build_start = tic;
 
 %% Intialize control parameters for this file.
 
-do_first_iteration = 0;
-do_second_iteration = 0;
+do_first_iteration = 1;
+do_second_iteration = 1;
 do_final_smoothing = 1;
 write_netCDF_file = 1;
 
@@ -159,8 +159,10 @@ write_netCDF_file = 1;
 
 % Where the complete orbits are; months to use.
 
-month_start = 1;
-month_end = 1;
+% month_start = 1;
+% month_end = 1;
+month_start = 4;
+month_end = 6;
 
 month_list_temp = dir(base_dir_orbital_data);
 

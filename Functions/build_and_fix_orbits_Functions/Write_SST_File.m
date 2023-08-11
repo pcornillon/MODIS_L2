@@ -382,7 +382,8 @@ if get_gradients
         ncwriteatt( output_filename, 'along_scan_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
         ncwriteatt( output_filename, 'along_scan_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
         
-        ncwrite(  output_filename, 'along_scan_gradient', int32(along_scan_gradient * 1/gradientScaleFactor))
+        % ncwrite(  output_filename, 'along_scan_gradient', int32(along_scan_gradient * 1/gradientScaleFactor))
+        ncwrite(  output_filename, 'along_scan_gradient', int32(along_scan_gradient)
         
         % along_track_gradient
         
@@ -399,7 +400,8 @@ if get_gradients
         ncwriteatt( output_filename, 'along_track_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
         ncwriteatt( output_filename, 'along_track_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
         
-        ncwrite(  output_filename, 'along_track_gradient', int32(along_track_gradient * 1/gradientScaleFactor))
+        % ncwrite(  output_filename, 'along_track_gradient', int32(along_track_gradient * 1/gradientScaleFactor))
+        ncwrite(  output_filename, 'along_track_gradient', int32(along_track_gradient)
     end
     
     % Eastward gradient
@@ -417,7 +419,8 @@ if get_gradients
     ncwriteatt( output_filename, 'eastward_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
     ncwriteatt( output_filename, 'eastward_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
     
-    ncwrite(  output_filename, 'eastward_gradient', int32(grad_lon_per_km * 1/gradientScaleFactor))
+    % ncwrite(  output_filename, 'eastward_gradient', int32(grad_lon_per_km * 1/gradientScaleFactor))
+    ncwrite(  output_filename, 'eastward_gradient', int32(grad_lon_per_km)
     
     % along_track_gradient
     
@@ -434,7 +437,8 @@ if get_gradients
     ncwriteatt( output_filename, 'northward_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
     ncwriteatt( output_filename, 'northward_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
     
-    ncwrite(  output_filename, 'northward_gradient', int32(grad_lat_per_km * 1/gradientScaleFactor))
+    % ncwrite(  output_filename, 'northward_gradient', int32(grad_lat_per_km * 1/gradientScaleFactor))
+    ncwrite(  output_filename, 'northward_gradient', int32(grad_lat_per_km)
 end
 
 %% Now create and write out some of the less important  variables.

@@ -70,6 +70,28 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 % To do a test run, capture the lines in 'if test_values' group and execute
 % them at the Matlab command line prompt.
 
+% Following are command lines you need to run before calling this function.
+
+execute_these_lines = 0;
+
+if execute_these_lines
+    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+    granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+    metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+    fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
+    logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
+    output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+
+    % Or these
+
+    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+    granules_directory = '/home/pcornillon/Aqua/original_granules/';
+    metadata_directory = '/home/pcornillon/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+    fixit_directory = '/home/pcornillon/Aqua/metadata/';
+    logs_directory = '/home/pcornillon/Aqua/Logs/';
+    output_file_directory = '/home/pcornillon/Aqua/output/';
+end
+
 % globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory

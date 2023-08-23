@@ -384,7 +384,7 @@ end
 % Gradient stuff
 
 if get_gradients
-    gradient_filename = [fixit_directory 'Separation_and_Angle_Arrays.mat'];
+    gradient_filename = [fixit_directory 'abbreviated_Separation_and_Angle_Arrays.mat'];
     
     % track_angle = ncread( gradient_filename, 'track_angle');
     load(gradient_filename)

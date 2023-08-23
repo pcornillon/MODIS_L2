@@ -386,13 +386,14 @@ end
 if get_gradients
     gradient_filename = [fixit_directory 'Separation_and_Angle_Arrays.n4'];
     
-    track_angle = ncread( gradient_filename, 'track_angle');
+    % track_angle = ncread( gradient_filename, 'track_angle');
+    load(gradient_filename)
     cos_track_angle = cosd(track_angle);
     sin_track_angle = sin(track_angle);
     clear track_angle
     
-    along_scan_seps_array = ncread(gradient_filename, 'along_scan_seps_array');
-    along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
+    % along_scan_seps_array = ncread(gradient_filename, 'along_scan_seps_array');
+    % along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
 end
 
 %% Get the relative scan line start times and latitudes.

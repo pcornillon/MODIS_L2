@@ -8,7 +8,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %    including this time specified as: [YYYY, MM, DD, HH, Min, 00].
 %   end_date_time - last orbit to be built includes this time.
 %   fix_mask - if 1 fixes the mask. If absent, will set to 1.
-%   fix_bowtie - if 1 fixes the bow-tie problem, otherwise bow-tie effect
+%   fix_bowtie - if 1 fixes lzthe bow-tie problem, otherwise bow-tie effect
 %    not fixed.
 %   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
 %   fast_regrid - 1 to use fast regridding.
@@ -82,7 +82,7 @@ if execute_these_lines
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
     output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
 
-    % Or these
+    % For pcornillon@10.140.10.6
 
     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
     granules_directory = '/home/pcornillon/Aqua/original_granules/';
@@ -90,6 +90,15 @@ if execute_these_lines
     fixit_directory = '/home/pcornillon/Aqua/metadata/';
     logs_directory = '/home/pcornillon/Aqua/Logs/';
     output_file_directory = '/home/pcornillon/Aqua/output/';
+
+    % For ubuntu@10.140.10.115
+
+    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+    granules_directory = '~/Documents/Aqua/original_granules/';
+    metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+    fixit_directory = '~/Documents/Aqua/metadata/';
+    logs_directory = '~/Documents/Aqua/Logs/';
+    output_file_directory = '~/Documents/Aqua/output/';
 end
 
 % globals for the run as a whole.
@@ -332,10 +341,10 @@ if (Matlab_end_time < acceptable_start_time) | (Matlab_end_time > acceptable_end
     return
 end
 
-if strcmp(output_file_directory(1:2), '~/')
-    fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory)
-    return
-end
+% if strcmp(output_file_directory(1:2), '~/')
+%     fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory)
+%     return
+% end
 
 %% Passed checks on input parameters. Open a diary file for this run.
 

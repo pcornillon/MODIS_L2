@@ -14,7 +14,7 @@ base_md_url = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
 % Now loop over lists of data from OBPG
 
-for iYear=2002:202
+for iYear=2002:2022
 
     % Get the filename with the file with the input list for this year and open it. 
 
@@ -33,7 +33,7 @@ for iYear=2002:202
 
         iGranules = iGranules + 1;
 
-        if rem(iGranules, 1000) == 0
+        if rem(iGranules, 10000) == 0
             fprintf('Working on file #%i -- %s\n', iGranules, input_line)
         end
 

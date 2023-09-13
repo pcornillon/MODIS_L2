@@ -63,6 +63,7 @@ if amazon_s3_run
     % in the name. Probably should set up to search for data or
     % metadata file as we did for the not-s3 run.
     % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+    % Note that the * in the name is to allow for a slight difference in the seconds.
     
     data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
 else

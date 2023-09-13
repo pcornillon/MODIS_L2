@@ -139,6 +139,9 @@ while 1==1
         % not occur.
 
         if amazon_s3_run
+            % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
+            % Note that the * in the name is to allow for a slight difference in the seconds.
+
             data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/' datestr(granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
         else
             data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);

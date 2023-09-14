@@ -198,6 +198,16 @@ regridded_debug = 0;  % To determine and write alternate SST fields based on gri
 if isempty(metadata_directory)
     test_num = 4;
     
+    fix_mask = 1;  % Test run.
+    fix_bowtie = 1;  % Test run.
+    regrid_sst = 1;  % Test run.
+    fast_regrid = 1; % Test run
+    get_gradients = 0;  % Test run.
+    save_core = 0;  % Test run.
+    print_diagnostics = 1;  % Test run.
+    
+    debug = 1;
+
     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
     start_date_time = [2010 6 19 5 0 0]; % Test run.
@@ -230,20 +240,14 @@ if isempty(metadata_directory)
             start_date_time = [2010 4 19 0 0 0]; % Test run.
             end_date_time = [2010 4 19 23 59 59];  % Test run.
 
+            fast_regrid = 0; % Test run
+            get_gradients = 1;  % Test run.
+            save_core = 1;  % Test run.
+
         otherwise
             fprintf('Test case must be either 1, 2 or 3; you entered %i.\n', test_num)
     end
-    
-    fix_mask = 1;  % Test run.
-    fix_bowtie = 1;  % Test run.
-    regrid_sst = 1;  % Test run.
-    fast_regrid = 1; % Test run
-    get_gradients = 0;  % Test run.
-    save_core = 0;  % Test run.
-    print_diagnostics = 1;  % Test run.
-    
-    debug = 1;
-    
+        
     % Remove the previous version of this file.
     
 %     ! rm /Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/2010/06/AQUA_MODIS_orbit_43222_20100619T065429_L2_SST.nc4

@@ -91,10 +91,19 @@ if execute_these_lines
     logs_directory = '/home/pcornillon/Aqua/Logs/';
     output_file_directory = '/home/pcornillon/Aqua/output/';
 
-    % For ubuntu@10.140.10.115
+    % For ubuntu@10.140.10.115 and ubuntu@44.235.192.1
 
     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
     granules_directory = '~/Documents/Aqua/original_granules/';
+    metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+    fixit_directory = '~/Documents/Aqua/metadata/';
+    logs_directory = '~/Documents/Aqua/Logs/';
+    output_file_directory = '~/Documents/Aqua/output/';
+
+    % For ubuntu@44.235.192.1 using NASA s3 data
+
+    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+    granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
     metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
     fixit_directory = '~/Documents/Aqua/metadata/';
     logs_directory = '~/Documents/Aqua/Logs/';
@@ -187,7 +196,7 @@ oinfo.ginfo.pirate_gescan = [];
 regridded_debug = 0;  % To determine and write alternate SST fields based on griddata.
 
 if isempty(metadata_directory)
-    test_num = 1;
+    test_num = 4;
     
     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
@@ -210,6 +219,17 @@ if isempty(metadata_directory)
             granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/combined/';  % Test run.
             output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test3/';  % Test run.
         
+        case 4
+            metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+            granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+            output_file_directory = '~/Documents/Aqua/output/';
+
+            fixit_directory = '~/Documents/Aqua/metadata/';
+            logs_directory = '~/Documents/Aqua/Logs/';
+
+            start_date_time = [2010 4 19 0 0 0]; % Test run.
+            end_date_time = [2010 4 19 23 59 59];  % Test run.
+
         otherwise
             fprintf('Test case must be either 1, 2 or 3; you entered %i.\n', test_num)
     end

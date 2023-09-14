@@ -99,14 +99,47 @@ end
 
 scan_lines_to_read = gescan - gsscan + 1;
 
-latitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
-longitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/longitude', [1 gsscan], [npixels scan_lines_to_read]));
-SST_In(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sst', [1 gsscan], [npixels scan_lines_to_read]));
+if amazon_s3_run
+    
+    % Read from the data file
 
-qual_sst(:,osscan:oescan) = int8(ncread( fi_granule , '/geophysical_data/qual_sst', [1 gsscan], [npixels scan_lines_to_read]));
-flags_sst(:,osscan:oescan) = int16(ncread(fi_granule, '/geophysical_data/flags_sst', [1 gsscan], [npixels scan_lines_to_read]));
+    file_id = H5F.open( fi_granule, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 
-sstref(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
+    % latitude(:,osscan:oescan) = single(h5read( fi_granule , 'lat', [1 gsscan], [npixels scan_lines_to_read]));
+    data_id = H5D.open( file_id, 'lat');
+    data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    latitude(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
+
+    % longitude(:,osscan:oescan) = single(ncread( fi_granule , 'lon', [1 gsscan], [npixels scan_lines_to_read]));
+    data_id = H5D.open( file_id, 'lon');
+    data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    longitude(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
+
+    % SST_In(:,osscan:oescan) = single(ncread( fi_granule , 'sea_surface_temperature', [1 gsscan], [npixels scan_lines_to_read]));
+    data_id = H5D.open( file_id, 'sea_surface_temperature');
+    data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    SST_In(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
+
+    H5D.close(dataset_id)
+
+    % Read from the metadata file.
+
+    metadata_granule = oinfo(iOrbit).ginfo(iGranule).metadata_name;
+
+    qual_sst(:,osscan:oescan) = int8(ncread( metadata_granule , '/geophysical_data/qual_sst', [1 gsscan], [npixels scan_lines_to_read]));
+    flags_sst(:,osscan:oescan) = int16(ncread( metadata_granule, '/geophysical_data/flags_sst', [1 gsscan], [npixels scan_lines_to_read]));
+
+    sstref(:,osscan:oescan) = single(ncread( metadata_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
+else
+    latitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/latitude', [1 gsscan], [npixels scan_lines_to_read]));
+    longitude(:,osscan:oescan) = single(ncread( fi_granule , '/navigation_data/longitude', [1 gsscan], [npixels scan_lines_to_read]));
+    SST_In(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sst', [1 gsscan], [npixels scan_lines_to_read]));
+
+    qual_sst(:,osscan:oescan) = int8(ncread( fi_granule , '/geophysical_data/qual_sst', [1 gsscan], [npixels scan_lines_to_read]));
+    flags_sst(:,osscan:oescan) = int16(ncread(fi_granule, '/geophysical_data/flags_sst', [1 gsscan], [npixels scan_lines_to_read]));
+
+    sstref(:,osscan:oescan) = single(ncread( fi_granule , '/geophysical_data/sstref', [1 gsscan], [npixels scan_lines_to_read]));
+end
 
 scan_seconds_from_start(osscan:oescan) = single(scan_line_times(gsscan:gescan) - oinfo(iOrbit).start_time) * secs_per_day;
 end

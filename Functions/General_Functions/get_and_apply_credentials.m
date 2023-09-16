@@ -1,19 +1,37 @@
-function get_and_apply_credentials
+function get_and_apply_credentials(line_credentials)
 % get_and_apply_credentials - will get the credentials to read NASA data from s3 in AWS - PCC 
+%
+% Use Angelina's function to get the credentials if no credentials are
+% passed in otherwise, use the credentials passed in.
+%
+% INPUT
+%   line_credentials - empty to reassign the credentials otherwise use
+%    credentials obtained from the NASA Earth data search GUI.
+%
+% OUTPUT
+%   none
+%
 
-% Get the credentials and put them in a file in the main directory.
+% Get the credentials and put them in a file in the main directory if line_credentials is empty.
 
-! aws lambda invoke --function-name nasa_cred --payload file:///home/ubuntu/.modis_l2/pccc.json /home/ubuntu/credentials
+if isempty(line_credentials)
 
-% Open file with credentials and extract the needed stings.
+    ! aws lambda invoke --function-name nasa_cred --payload file:///home/ubuntu/.modis_l2/pccc.json /home/ubuntu/credentials
 
-fid = fopen('/home/ubuntu/credentials');
-line_credentials = fgetl(fid);
+    % Open file with credentials and extract the needed stings.
+
+    fid = fopen('/home/ubuntu/credentials');
+    line_credentials = fgetl(fid);
+
+    nn_offset = 0;
+else
+    nn_offset = 4;
+end
 
 nn = strfind( line_credentials , '"');
-access_key = line_credentials(nn(7)+1:nn(8)-1);
-secret_access_key = line_credentials(nn(11)+1:nn(12)-1);
-session_token = line_credentials(nn(15)+1:nn(16)-1);
+access_key = line_credentials(nn(7-nn_offset)+1:nn(8-nn_offset)-1);
+secret_access_key = line_credentials(nn(11-nn_offset)+1:nn(12-nn_offset)-1);
+session_token = line_credentials(nn(15-nn_offset)+1:nn(16-nn_offset)-1);
 
 % apply them
 

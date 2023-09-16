@@ -140,12 +140,72 @@ while 1==1
 
         if amazon_s3_run
             % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
-            % Need to do a dir on all the seconds in the appropriate minute; dir with a * is deadly slow!!! 
+            % Does the s3 data file for this metadata file exist? 
 
-            for iSec=0:9
-                data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyymmddhhmm) '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
-                if isempty(data_file_list) == 0
-                    break
+            [~, ~, ~, ~, ~, seconds] = datevec(granule_start_time_guess);
+            sint = floor(seconds);
+            sint_test = sint;
+            sint_testC = num2str(sint_test);
+            if sint_test < 10
+                sint_testC = ['0' sint_testC];
+                if sint_test ~= 0
+                    sint_testC = '00';
+                end
+            end
+
+            yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
+
+            data_file_list = exist( [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+                
+            % If the file does not exist search but decrementing and
+            % incrementing the last digit in the seconds until either find
+            % a file that exists or there is none at this minute.
+
+            if data_file_list == 0
+                found_one = 0;
+
+                % Search smaller seconds first since generally closer to
+                % zero so this should be faster.
+
+                while sint_test > 0
+                    sint_test = sint_test - 1;
+                    if sint_test < 10
+                        sint_testC = ['0' sint_testC];
+                        if sint_test ~= 0
+                            sint_testC = '00';
+                        end
+                    end
+
+                    data_file_list = exist( [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+
+                    if data_file_list
+                        found_one = 1;
+                        break
+                    end
+                end
+
+                if found_one == 0
+
+                    % Bummer, didn't find the file. Search incrementing seconds.
+
+                    sint_test = sint;
+
+                    while sint_test < 59
+                        sint_test = sint_test + 1;
+                        if sint_test < 10
+                            sint_testC = ['0' sint_testC];
+                            if sint_test ~= 0
+                                sint_testC = '00';
+                            end
+                        end
+
+                        data_file_list = exist( [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+
+                        if data_file_list
+                            found_one = 1;
+                            break
+                        end
+                    end
                 end
             end
         else

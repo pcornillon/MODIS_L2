@@ -10,7 +10,7 @@ function get_and_apply_credentials
 fid = fopen('/home/ubuntu/credentials');
 line_credentials = fgetl(fid);
 
-nn = strfind( line_ex , '"');
+nn = strfind( line_credentials , '"');
 access_key = line_credentials(nn(7)+1:nn(8)-1);
 secret_access_key = line_credentials(nn(11)+1:nn(12)-1);
 session_token = line_credentials(nn(15)+1:nn(16)-1);

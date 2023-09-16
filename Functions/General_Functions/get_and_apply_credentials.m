@@ -3,7 +3,7 @@ function get_and_apply_credentials
 
 % Get the credentials and put them in a file in the main directory.
 
-! aws lambda invoke --function-name nasa_cred --payload file://.modis_l2/pccc.json /home/ubuntu/credentials
+! aws lambda invoke --function-name nasa_cred --payload file:///home/ubuntu/.modis_l2/pccc.json /home/ubuntu/credentials
 
 % Open file with credentials and extract the needed stings.
 

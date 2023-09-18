@@ -13,7 +13,7 @@ function get_and_apply_credentials(line_credentials)
 %
 
 % Remove previous credentials and unset environmental variables.
-!rm /home/ubuntu/credentials
+% !rm /home/ubuntu/credentials
 
 unsetenv('AWS_ACCESS_KEY_ID')
 unsetenv('AWS_SECRET_ACCESS_KEY')

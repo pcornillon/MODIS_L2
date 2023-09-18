@@ -12,6 +12,14 @@ function get_and_apply_credentials(line_credentials)
 %   none
 %
 
+% Remove previous credentials and unset environmental variables.
+!rm /home/ubuntu/credentials
+
+unsetenv('AWS_ACCESS_KEY_ID')
+unsetenv('AWS_SECRET_ACCESS_KEY')
+unsetenv('AWS_SESSION_TOKEN')
+unsetenv('AWS_DEFAULT_REGION')
+
 % Get the credentials and put them in a file in the main directory if line_credentials is empty.
 
 if isempty(line_credentials)

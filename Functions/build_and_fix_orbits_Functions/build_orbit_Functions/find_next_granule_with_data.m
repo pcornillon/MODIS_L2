@@ -120,11 +120,8 @@ while 1==1
         end
     end
 
-    % Build the output filename for the next metadata and data granules
-    % and do a directory listing on each.
-
-    % If the dir request is the same for both amazon_s3 and local, I can
-    % reduce the following down to just one line.
+    % Search the minute (all second values) for a metadata file
+    % corresponding to the guess for the granule start time.
 
     metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
 
@@ -132,11 +129,15 @@ while 1==1
 
     if ~isempty(metadata_file_list)
 
+        % Get the metadata filename.
+
+        metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+        
         % Is the data granule for this time present? If so, get the range
         % of locations of scanlines in the orbit and the granule to use.
         % Otherwise, add to problem list and continue search for a data
         % granule; remember, a metadata granule was found so this should
-        % not occur.
+        % not occur. 
 
         if amazon_s3_run
             % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
@@ -155,13 +156,15 @@ while 1==1
 
             yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
 
-            data_file_list = exist( [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+            data_temp_filename = [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
+            data_file_list = exist(data_temp_filename);
                 
             % If the file does not exist search but decrementing and
             % incrementing the last digit in the seconds until either find
             % a file that exists or there is none at this minute.
 
-            if data_file_list == 0
+            if ~exist(data_temp_filename)
+
                 found_one = 0;
 
                 % Search smaller seconds first since generally closer to
@@ -169,6 +172,8 @@ while 1==1
 
                 while sint_test > 0
                     sint_test = sint_test - 1;
+                    sint_testC = num2str(sint_test);
+
                     if sint_test < 10
                         sint_testC = ['0' sint_testC];
                         if sint_test ~= 0
@@ -176,9 +181,9 @@ while 1==1
                         end
                     end
 
-                    data_file_list = exist( [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+                    data_temp_filename = [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
 
-                    if data_file_list
+                    if exist(data_temp_filename)
                         found_one = 1;
                         break
                     end
@@ -192,21 +197,25 @@ while 1==1
 
                     while sint_test < 59
                         sint_test = sint_test + 1;
+                        sint_testC = num2str(sint_test);
+
                         if sint_test < 10
                             sint_testC = ['0' sint_testC];
-                            if sint_test ~= 0
-                                sint_testC = '00';
-                            end
+                            % % % if sint_test ~= 0
+                            % % %     sint_testC = '00';
+                            % % % end
                         end
 
-                        data_file_list = exist( [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+                        data_temp_filename = [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
 
-                        if data_file_list
+                        if exist(data_temp_filename)
                             found_one = 1;
                             break
                         end
                     end
                 end
+            else
+                found_one = 1;
             end
         else
             data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
@@ -226,7 +235,7 @@ while 1==1
             metadata_file_list = [];
         else
             data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
-            metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+            % % % metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
 
             % Get the metadata for this granule.
 
@@ -353,12 +362,12 @@ while 1==1
 
                     return
                 else
-                    iGranule = iGranule - 1
-                    ;
+                    iGranule = iGranule - 1;
                 end
             end
         end
     end
+    
     % Here is no granule for this time; need to increment time step.
 
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);

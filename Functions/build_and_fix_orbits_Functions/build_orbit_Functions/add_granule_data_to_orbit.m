@@ -120,7 +120,7 @@ if amazon_s3_run
     data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
     SST_In(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
 
-    H5D.close(dataset_id)
+    H5D.close(data_id)
 
     % Read from the metadata file.
 

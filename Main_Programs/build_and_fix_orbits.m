@@ -132,8 +132,6 @@ global Matlab_start_time Matlab_end_time
 
 global s3_expiration_time
 
-s3_expiration_time = 0;
-
 % globals used in the other major functions of build_and_fix_orbits.
 
 global med_op
@@ -290,6 +288,11 @@ amazon_s3_run = 0;
 if strcmp( granules_directory(1:2), 's3') == 1
     fprintf('\n%s\n\n\n', 'This is an Amazon S3 run; will read data from s3 storage.')
     amazon_s3_run = 1;
+
+    % Get the credentials, will need them shortly.
+
+    s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+    s3_expiration_time = now;
 else
     fprintf('\n%s\n\n\n', 'This is not an Amazon S3 run; will read data from local disks.')
 end

@@ -150,7 +150,7 @@ while 1==1
 
                 % Do we need new credentials for the s3 file?
 
-                if (now - s3_expiration_time) < 5 / (60 * 24)
+                if (now - s3_expiration_time) > 55 / (60 * 24)
                     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
                 end
 
@@ -211,7 +211,7 @@ while 1==1
                 data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
 
                 % If a file was found save the filename.
-                
+
                 if ~isempty(data_file_list)
                     if length(data_file_list) == 1
                         data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];

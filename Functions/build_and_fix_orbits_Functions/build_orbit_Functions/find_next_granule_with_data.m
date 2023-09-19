@@ -182,10 +182,17 @@ while 1==1
 
                 data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
                 
+                % If the file does not exist check for a nighttime version of it.
+
+                if ~exist(data_temp_filename)
+                    data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+                end
+
                 % If the file does not exist search all seconds for this metadata minute.
 
                 if ~exist(data_temp_filename)
 
+                    data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
                     % % % found_one = 0;
 
                     yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
@@ -199,6 +206,11 @@ while 1==1
                         end
 
                         data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
+                        
+                        if ~exist(data_temp_filename)
+                            data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+                        end
+
                         if exist(data_temp_filename)
                             found_one = 1;
                             break

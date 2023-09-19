@@ -130,6 +130,10 @@ global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
+global s3_expiration_time
+
+s3_expiration_time = 0;
+
 % globals used in the other major functions of build_and_fix_orbits.
 
 global med_op

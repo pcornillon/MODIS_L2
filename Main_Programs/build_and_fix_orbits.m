@@ -200,11 +200,11 @@ regridded_debug = 0;  % To determine and write alternate SST fields based on gri
 if isempty(metadata_directory)
     
     
-    fprintf('You will be asked to select a test case from the following:/n')
-    fprintf('4) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data from s3.')
-    fprintf('5) Run on ubuntu is us-west-2 for 5/19/2010 0h to 5/19/2010 24h with data from s3.')
-    fprintf('6) Run on ubuntu is us-west-2 for 6/19/2010 0h to 6/19/2010 24h with data from s3.')
-    fprintf('7) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data local to this computer.')
+    fprintf('You will be asked to select a test case from the following:\n')
+    fprintf('4) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data from s3.\n')
+    fprintf('5) Run on ubuntu is us-west-2 for 5/19/2010 0h to 5/19/2010 24h with data from s3.\n')
+    fprintf('6) Run on ubuntu is us-west-2 for 6/19/2010 0h to 6/19/2010 24h with data from s3.\n')
+    fprintf('7) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data local to this computer.\n')
 
     test_num = input('Enter the test run number: ');
     

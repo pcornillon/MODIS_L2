@@ -234,7 +234,7 @@ if isempty(metadata_directory)
         case 4
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
-            output_file_directory = '~/Documents/Aqua/output/';
+            output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
 
             fixit_directory = '~/Documents/Aqua/metadata/';
             logs_directory = '~/Documents/Aqua/Logs/';

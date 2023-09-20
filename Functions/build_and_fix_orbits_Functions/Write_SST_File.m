@@ -600,8 +600,12 @@ if ~isempty(nGranules)
             
             % Load the granule filenams into variable filenames.
             
-            nn = strfind(oinfo(iOrbit).ginfo(jGranule).data_name, 'AQUA_MODIS.');
-            filename = oinfo(iOrbit).ginfo(jGranule).data_name(nn:end);
+            % % % nn = strfind(oinfo(iOrbit).ginfo(jGranule).data_name, 'AQUA_MODIS.');
+            % % % filename = oinfo(iOrbit).ginfo(jGranule).data_name(nn:end);
+            
+            nn = strfind(oinfo(iOrbit).ginfo(jGranule).data_name, '/');
+
+            filename = oinfo(iOrbit).ginfo(jGranule).data_name(nn(end)+1:end);
             filenames = [filenames; filename];
             
             % Next load the start and end times of this granule.

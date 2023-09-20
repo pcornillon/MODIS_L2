@@ -198,7 +198,15 @@ oinfo.ginfo.pirate_gescan = [];
 regridded_debug = 0;  % To determine and write alternate SST fields based on griddata.
 
 if isempty(metadata_directory)
-    test_num = 4;
+    
+    
+    fprintf('You will be asked to select a test case from the following:/n')
+    fprintf('4) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data from s3.')
+    fprintf('5) Run on ubuntu is us-west-2 for 5/19/2010 0h to 5/19/2010 24h with data from s3.')
+    fprintf('6) Run on ubuntu is us-west-2 for 6/19/2010 0h to 6/19/2010 24h with data from s3.')
+    fprintf('7) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data local to this computer.')
+
+    test_num = input('Enter the test run number: ');
     
     fix_mask = 1;  % Test run.
     fix_bowtie = 1;  % Test run.
@@ -234,6 +242,51 @@ if isempty(metadata_directory)
         case 4
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+            output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
+
+            fixit_directory = '~/Documents/Aqua/metadata/';
+            logs_directory = '~/Documents/Aqua/Logs/';
+
+            start_date_time = [2010 4 19 0 0 0]; % Test run.
+            end_date_time = [2010 4 19 23 59 59];  % Test run.
+
+            fast_regrid = 0; % Test run
+            get_gradients = 1;  % Test run.
+            save_core = 1;  % Test run.
+
+        case 5
+            metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+            granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+            output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
+
+            fixit_directory = '~/Documents/Aqua/metadata/';
+            logs_directory = '~/Documents/Aqua/Logs/';
+
+            start_date_time = [2010 5 19 0 0 0]; % Test run.
+            end_date_time = [2010 5 19 23 59 59];  % Test run.
+
+            fast_regrid = 0; % Test run
+            get_gradients = 1;  % Test run.
+            save_core = 1;  % Test run.
+
+        case 6
+            metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+            granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+            output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
+
+            fixit_directory = '~/Documents/Aqua/metadata/';
+            logs_directory = '~/Documents/Aqua/Logs/';
+
+            start_date_time = [2010 6 19 0 0 0]; % Test run.
+            end_date_time = [2010 6 19 23 59 59];  % Test run.
+
+            fast_regrid = 0; % Test run
+            get_gradients = 1;  % Test run.
+            save_core = 1;  % Test run.
+
+        case 7
+            metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+            granules_directory = '~/Documents/Aqua/original_granules/';
             output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
 
             fixit_directory = '~/Documents/Aqua/metadata/';

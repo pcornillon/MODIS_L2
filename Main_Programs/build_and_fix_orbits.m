@@ -290,7 +290,7 @@ if isempty(metadata_directory)
             granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
             output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
 
-            fixit_directory = '/Users/petercornillon/Dropbox/Data/fixit_directory';   % Test run.
+            fixit_directory = '/Users/petercornillon/Dropbox/Data/fixit_directory/';   % Test run.
             logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
 
             start_date_time = [2010 4 19 0 0 0]; % Test run.

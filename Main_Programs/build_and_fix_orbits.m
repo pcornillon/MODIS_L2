@@ -70,45 +70,45 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 % To do a test run, capture the lines in 'if test_values' group and execute
 % them at the Matlab command line prompt.
 
-% Following are command lines you need to run before calling this function.
-
-execute_these_lines = 0;
-
-if execute_these_lines
-    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-    granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
-    metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-    fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
-    logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-    output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
-
-    % For pcornillon@10.140.10.6
-
-    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-    granules_directory = '/home/pcornillon/Aqua/original_granules/';
-    metadata_directory = '/home/pcornillon/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
-    fixit_directory = '/home/pcornillon/Aqua/metadata/';
-    logs_directory = '/home/pcornillon/Aqua/Logs/';
-    output_file_directory = '/home/pcornillon/Aqua/output/';
-
-    % For ubuntu@10.140.10.115 and ubuntu@44.235.192.1
-
-    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-    granules_directory = '~/Documents/Aqua/original_granules/';
-    metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
-    fixit_directory = '~/Documents/Aqua/metadata/';
-    logs_directory = '~/Documents/Aqua/Logs/';
-    output_file_directory = '~/Documents/Aqua/output/';
-
-    % For ubuntu@44.235.192.1 using NASA s3 data
-
-    global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-    granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
-    metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
-    fixit_directory = '~/Documents/Aqua/metadata/';
-    logs_directory = '~/Documents/Aqua/Logs/';
-    output_file_directory = '~/Documents/Aqua/output/';
-end
+% % % % Following are command lines you need to run before calling this function.
+% % % 
+% % % execute_these_lines = 0;
+% % % 
+% % % if execute_these_lines
+% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+% % %     granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+% % %     metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+% % %     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
+% % %     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
+% % %     output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+% % % 
+% % %     % For pcornillon@10.140.10.6
+% % % 
+% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+% % %     granules_directory = '/home/pcornillon/Aqua/original_granules/';
+% % %     metadata_directory = '/home/pcornillon/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+% % %     fixit_directory = '/home/pcornillon/Aqua/metadata/';
+% % %     logs_directory = '/home/pcornillon/Aqua/Logs/';
+% % %     output_file_directory = '/home/pcornillon/Aqua/output/';
+% % % 
+% % %     % For ubuntu@10.140.10.115 and ubuntu@44.235.192.1
+% % % 
+% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+% % %     granules_directory = '~/Documents/Aqua/original_granules/';
+% % %     metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+% % %     fixit_directory = '~/Documents/Aqua/metadata/';
+% % %     logs_directory = '~/Documents/Aqua/Logs/';
+% % %     output_file_directory = '~/Documents/Aqua/output/';
+% % % 
+% % %     % For ubuntu@44.235.192.1 using NASA s3 data
+% % % 
+% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+% % %     granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+% % %     metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
+% % %     fixit_directory = '~/Documents/Aqua/metadata/';
+% % %     logs_directory = '~/Documents/Aqua/Logs/';
+% % %     output_file_directory = '~/Documents/Aqua/output/';
+% % % end
 
 % globals for the run as a whole.
 
@@ -201,10 +201,11 @@ if isempty(metadata_directory)
     
     
     fprintf('You will be asked to select a test case from the following:\n')
-    fprintf('4) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data from s3.\n')
-    fprintf('5) Run on ubuntu is us-west-2 for 5/19/2010 0h to 5/19/2010 24h with data from s3.\n')
-    fprintf('6) Run on ubuntu is us-west-2 for 6/19/2010 0h to 6/19/2010 24h with data from s3.\n')
-    fprintf('7) Run on ubuntu is us-west-2 for 4/19/2010 0h to 4/19/2010 24h with data local to this computer.\n')
+    fprintf('1) Run on ubuntu in us-west-2 for 4/19/2010 0h to 4/19/2010 24h accessing data from s3.\n')
+    fprintf('2) Run on ubuntu in us-west-2 for 5/19/2010 0h to 5/19/2010 24h accessing data from s3.\n')
+    fprintf('3) Run on ubuntu in us-west-2 for 6/19/2010 0h to 6/19/2010 24h accessing data from s3.\n')
+    fprintf('4) Run on ubuntu in us-west-2 for 4/19/2010 0h to 4/19/2010 24h accessing data locally.\n')
+    fprintf('5) Run on iMac   at home      for 4/19/2010 0h to 4/19/2010 24h accessing data from Aqua-1.\n')
 
     test_num = input('Enter the test run number: ');
     
@@ -224,22 +225,7 @@ if isempty(metadata_directory)
     end_date_time = [2010 6 21 12 30 0 ];  % Test run.
     
     switch test_num
-        case 1
-            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/combined/';  % Test run.
-            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test1/';  % Test run.
-            
-        case 2
-            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/combined/';  % Test run.
-            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test2/';  % Test run.
-            
-        case 3
-            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
-            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/combined/';  % Test run.
-            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test3/';  % Test run.
-        
-        case 4
+        case 1 % us-west-2 s3 access for 4/19/2023
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
             output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
@@ -254,7 +240,7 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
-        case 5
+        case 2 % us-west-2 s3 access for 5/19/2023
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
             output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
@@ -269,7 +255,7 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
-        case 6
+        case 3 % us-west-2 s3 access for 6/19/2023
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
             output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
@@ -284,7 +270,7 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
-        case 7
+        case 4 % us-west-2 local granule access for 4/19/2023
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = '~/Documents/Aqua/original_granules/';
             output_file_directory = '/home/ubuntu/Documents/Aqua/output/';
@@ -299,15 +285,39 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
+        case 5 % iMac Aqua-1 access for 4/19/2023
+            metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+            output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+
+            fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
+            logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
+
+            start_date_time = [2010 4 19 0 0 0]; % Test run.
+            end_date_time = [2010 4 19 23 59 59];  % Test run.
+
+            fast_regrid = 0; % Test run
+            get_gradients = 1;  % Test run.
+            save_core = 1;  % Test run.
+
+        case 101
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/combined/';  % Test run.
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test1/';  % Test run.
+            
+        case 102
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/combined/';  % Test run.
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test2/';  % Test run.
+            
+        case 103
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/combined/';  % Test run.
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test3/';  % Test run.
+        
         otherwise
             fprintf('Test case must be either 1, 2 or 3; you entered %i.\n', test_num)
-    end
-        
-    % Remove the previous version of this file.
-    
-%     ! rm /Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/2010/06/AQUA_MODIS_orbit_43222_20100619T065429_L2_SST.nc4
-    
-    %     [oinfo problem_list] = build_and_fix_orbits( granules_directory, metadata_directory, fixit_directory, logs_directory, output_file_directory, [2010 6 19 4 0 0], [2010 6 19 7 0 0 ], 0, 0, 0, 1);
+    end        
 end
 
 save_just_the_facts = 1;
@@ -425,10 +435,10 @@ if (Matlab_end_time < acceptable_start_time) | (Matlab_end_time > acceptable_end
     return
 end
 
-% if strcmp(output_file_directory(1:2), '~/')
-%     fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory)
-%     return
-% end
+if strcmp((1:2), '~/')
+    fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory)
+    return
+end
 
 %% Passed checks on input parameters. Open a diary file for this run.
 
@@ -508,7 +518,6 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 iOrbit = 1;
 iGranule = 0;
 
-% % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit;
 [status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
 
 iOrbit = iOrbit + 1;

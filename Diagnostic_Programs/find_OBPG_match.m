@@ -14,7 +14,7 @@ base_md_url = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
 % Now loop over lists of data from OBPG
 
-for iYear=2002:2022
+for iYear=2002:2021
 
     % Get the filename with the file with the input list for this year and open it. 
 
@@ -63,11 +63,13 @@ end
 
 % How about just the ones for 2002-2021 and without NRT.
 
+fprintf('\nList files that are missing.\n\n')
+
 im = 0;
 for iMissing=1:length(missing_granules)
-    if (isempty(strfind(missing_granules{iMissing}, 'NRT')) == 1) & (str2num(missing_granules{iMissing}(12:15)) ~= 2022) & (str2num(missing_granules{iMissing}(12:15)) ~= 2023)
+    % if (isempty(strfind(missing_granules{iMissing}, 'NRT')) == 1) & (str2num(missing_granules{iMissing}(12:15)) ~= 2022) & (str2num(missing_granules{iMissing}(12:15)) ~= 2023)
         im = im + 1;
         new_missing_granules{im} = missing_granules{iMissing};
         fprintf('%i) %s\n', im, new_missing_granules{im})
-    end
+    % end
 end

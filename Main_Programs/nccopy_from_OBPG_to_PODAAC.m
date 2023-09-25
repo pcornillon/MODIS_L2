@@ -8,6 +8,9 @@
 % It will ask for the years to copy and for the starting month and day if
 %  the year is entered with a minus sign.
 
+which_dataset = 2;
+datasets = {'combined' 'recover'};
+
 % Set up for either satdat1 or macstudio
 
 [ret, computer_name] = system('hostname');
@@ -53,9 +56,14 @@ if strfind(year_list{1}, '-')
     day_start = input(['Enter the day to start with ', num2str(month_start) '/' year_list{1} ' (1 for first day or cr): ']);
     if isempty(day_start); day_start = 1; end
 else
-    file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
-    month_start = 1;
-    day_start = 1;
+    if which_dataset == 1
+        file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
+        month_start = 1;
+        day_start = 1;
+    else
+        month_start = 1;
+        day_start = 1;
+    end
 end
 
 disp(['Successfully started job submitted for ' year_list{1} ' starting at month ' num2str(month_start) ' and day ' num2str(day_start)])
@@ -71,7 +79,7 @@ for iYear=1:length(year_list) % Loop over years to process .....................
     % Get the list of files to consider for processing.
     
     YearS = year_list{iYear};
-    file_list = dir([ base_dir_in, 'combined/' YearS '/AQUA*.nc']);
+    file_list = dir([ base_dir_in, datasets{which_dataset} '/' YearS '/AQUA*.nc']);
     
     tic
     for iFile=1:length(file_list) % Loop over granules *******************************************

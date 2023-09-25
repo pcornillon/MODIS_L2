@@ -136,6 +136,10 @@ global s3_expiration_time
 
 global med_op
  
+global determine_fn_size
+
+determine_fn_size = 1;
+
 % Structure of oinfo
 %
 % oinfo.

@@ -39,22 +39,31 @@ if Debug
     tic_regrid_start = tic;
 end
 
+% regridding_mode is used to tell the remainder of this function what to do:
+%
+% regridding_mode = 1 - determine new lat, lon grid and regrid SST to it 
+%                   using griddata. Regridding is done after all of the new
+%                   grid points have been determined for the given region.
+% regridding_mode = 2 - determine new lat, lon grid and regrid SST to it 
+%                   using fast regridding. Regridding is done after all of 
+%                   the newgrid points have been determined for the given 
+%                   region.
+% regridding_mode = 3 - determine new lat, lon grid and regrid SST to it 
+%                   using fast regridding. Regridding is done for each
+%                   group of 10 detectors.
+% regridding_mode = 0 - determine new lat, lon grid but don't regrid SST.
+
 if regrid_sst == 1
     if isempty(augmented_weights)
-        in_loop = 0;
+        regridding_mode = 1;
     else
-        in_loop = -1;  % Set to -1 to use fast regridding **************************
+        regridding_mode = 2;  % Set to -1 to use fast regridding **************************
     end
 else
-    in_loop = -999;
+    regridding_mode = 0;
 end
 
 % Get the data
-
-% load('~/Dropbox/Data/canonical_orbit/Orbit_2010_06_19', 'longitude', 'latitude', 'SST_In')
-% load ~/Dropbox/Data/canonical_orbit/Orbit_2010_06_19
-%   fi_in - fully specified the input netCDF filename.
-% load(fi_in)
 
 [mpixels nscans] = size(longitude);
 
@@ -66,9 +75,6 @@ if mpixels ~= npixels
 end
 
 dummy_scans = reshape([1:10*npixels], npixels, 10);
-
-% % new_lat = nan(size(latitude));
-% % new_lon = nan(size(longitude));
 
 num_detectors = 10;
 num_steps = num_detectors - 1;
@@ -85,15 +91,13 @@ num_steps = num_detectors - 1;
 % latitude will be empty where there are missing granules. Fill them in
 % with the canonical orbit.
 
-% % % latn = latitude(677,:);  % Latitude of the nadir track. 
-
 nn = find(isnan(nlat_orbit) == 1);
 
 if ~isempty(nn)
     nlat_orbit(nn) = nlat_avg(nn-1);
 end
 
-% First the part near the beginning of the orbit.
+% First, the part near the beginning of the orbit.
 
 north_lat_limit = 75;
 south_lat_limit = -75;
@@ -162,16 +166,17 @@ for iScan=region_start(1):num_detectors:region_end(1)-9
     new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
     new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
     
-    if in_loop == 1
-%         new_sst(:,iScanVec) = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), double(SST_In(:,iScanVec)), double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
-        nn_reorder = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), dummy_scans, double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
-        
-        temp = SST_In(:,iScanVec);
-        new_sst(:,iScanVec) = temp(nn_reorder);        
-    end
+    % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed. 
+    %
+    % % % if regridding_mode == 3
+    % % %     nn_reorder = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), dummy_scans, double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
+    % % % 
+    % % %     temp = SST_In(:,iScanVec);
+    % % %     new_sst(:,iScanVec) = temp(nn_reorder);        
+    % % % end
 end
 
-if in_loop==0
+if regridding_mode==1
     xx = double(easting(:,scans_this_section)); 
     yy = double(northing(:,scans_this_section));
     ss = double(SST_In(:,scans_this_section));
@@ -222,16 +227,18 @@ for iSection=[2,4]
         end
         
         mult = [0:kScan-jScan-1] / (kScan - jScan);
-        
+
         new_lat(:,iScanVec) = latitude(:,jScan) + lat_separation * mult;
         new_lon(:,iScanVec) = longitude(:,jScan) + lon_separation * mult;
-                
-        if in_loop == 1
-            nn_reorder = griddata( double(longitude(:,iScanVec)), double(latitude(:,iScanVec)), dummy_scans, new_lon(:,iScanVec), new_lat(:,iScanVec), 'nearest');
-            
-            temp = SST_In(:,iScanVec);
-            new_sst(:,iScanVec) = temp(nn_reorder);
-        end
+
+        % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed.
+        %
+        % % % if regridding_mode == 3
+        % % %     nn_reorder = griddata( double(longitude(:,iScanVec)), double(latitude(:,iScanVec)), dummy_scans, new_lon(:,iScanVec), new_lat(:,iScanVec), 'nearest');
+        % % % 
+        % % %     temp = SST_In(:,iScanVec);
+        % % %     new_sst(:,iScanVec) = temp(nn_reorder);
+        % % % end
     end
     
     % And add the last scan line in the orbit (Section 4). It will be
@@ -242,14 +249,16 @@ for iSection=[2,4]
         new_lat(:,end) = latitude(:,end);
         new_lon(:,end) = longitude(:,end);
         
-        if in_loop == 1
-            new_sst(:,end) = SST_In(:,end);
-        end
+        % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed.
+        %
+        % % % if regridding_mode == 3
+        % % %     new_sst(:,end) = SST_In(:,end);
+        % % % end
     end
     
     % Regrid SST.
     
-    if in_loop==0
+    if regridding_mode==1
         xx = double(longitude(:,scans_this_section));
         yy = double(latitude(:,scans_this_section));
         ss = double(SST_In(:,scans_this_section));
@@ -294,18 +303,19 @@ for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
     new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
     new_easting(:,iScanVec) = easting(:,iScan) + easting_separation * mult;
     
-    if in_loop == 1
-%         new_sst(:,iScan:iScan+9) = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), double(SST_In(:,iScanVec)), double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
-        nn_reorder = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), dummy_scans, double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
-        
-        temp = SST_In(:,iScanVec);
-        new_sst(:,iScanVec) = temp(nn_reorder);
-    end
+    % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed. 
+    %
+    % % % if regridding_mode == 3
+    % % %     nn_reorder = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), dummy_scans, double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
+    % % % 
+    % % %     temp = SST_In(:,iScanVec);
+    % % %     new_sst(:,iScanVec) = temp(nn_reorder);
+    % % % end
 end
 
 [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
-if in_loop==0
+if regridding_mode==1
     xx = double(easting(:,scans_this_section)); 
     yy = double(northing(:,scans_this_section));
     ss = double(SST_In(:,scans_this_section));
@@ -317,7 +327,7 @@ end
 
 %% Regrid SST using fast grid if requested.
 
-if in_loop == -1
+if regridding_mode == 2
     
     [nElements, nScans] = size(SST_In);
     [nMax, mElements, mScans] = size(augmented_weights);
@@ -335,7 +345,6 @@ if in_loop == -1
         weights_temp = squeeze(weights(iC,:,:));
         locations_temp = squeeze(locations(iC,:,:));
         
-% % %         non_zero_weights = find(weights_temp ~= 0);
         non_zero_weights = find((weights_temp ~= 0) & (isnan(weights_temp) == 0));
 
         SST_temp = zeros([nElements, nScans]);

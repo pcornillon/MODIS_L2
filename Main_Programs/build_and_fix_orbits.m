@@ -586,6 +586,12 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
+% If size of arrays is requested call here.
+
+if determine_fn_size
+    nbytes = get_size;
+end
+
 % Start by looking for the first granule after Matlab_start_time with a 
 % descending nadir track crossing latlim, nominally 73 S.
 

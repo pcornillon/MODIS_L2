@@ -18,7 +18,7 @@ for iYear=2002:2021
 
     % Get the filename with the file with the input list for this year and open it. 
 
-    input_list = ['~/Dropbox/TempForTransfer/' num2str(iYear) '-day_and_night_MODIS_SST_list.txt'];
+    input_list = ['/Volumes/Aqua-1/MODIS_R2019/filelists_from_OBPG/' num2str(iYear) '-day_and_night_MODIS_SST_list.txt'];
 
     fileID = fopen( input_list ,'r');
 
@@ -33,7 +33,7 @@ for iYear=2002:2021
 
         iGranules = iGranules + 1;
 
-        if rem(iGranules, 10000) == 0
+        if rem(iGranules, 30000) == 0
             fprintf('Working on file #%i -- %s\n', iGranules, input_line)
         end
 
@@ -47,11 +47,20 @@ for iYear=2002:2021
             fimd = [base_md_url Year '/' base_name '_OBPG_extras.nc4'];
 
             if exist(fimd) ~= 2
-                % Metadata for granule is missing
-                iMissingGranule = iMissingGranule + 1;
-                fprintf('Missing granule for input file #%i: %s.  Metadata filename: %s\n', iGranules, input_line(1:end-1), fimd)
 
-                missing_granules(iMissingGranule) = {input_line(1:end-1)};
+                % Metadata for granule is missing but maybe its an nrt granule.
+
+                fimd = [base_md_url Year '/' base_name '_NRT_OBPG_extras.nc4'];
+
+                if exist(fimd) ~= 2
+
+                    % OK, this guy really doesn't exist.
+
+                    iMissingGranule = iMissingGranule + 1;
+                    fprintf('Missing granule for input file #%i: %s.  Metadata filename: %s\n', iGranules, input_line(1:end-1), fimd)
+
+                    missing_granules(iMissingGranule) = {input_line(1:end-1)};
+                end
             end
         else
             % Here if this line is a number the list has been read.
@@ -68,8 +77,9 @@ fprintf('\nList files that are missing.\n\n')
 im = 0;
 for iMissing=1:length(missing_granules)
     % if (isempty(strfind(missing_granules{iMissing}, 'NRT')) == 1) & (str2num(missing_granules{iMissing}(12:15)) ~= 2022) & (str2num(missing_granules{iMissing}(12:15)) ~= 2023)
+    if str2num(missing_granules{iMissing}(12:15)) ~= 2022
         im = im + 1;
         new_missing_granules{im} = missing_granules{iMissing};
         fprintf('%i) %s\n', im, new_missing_granules{im})
-    % end
+    end
 end

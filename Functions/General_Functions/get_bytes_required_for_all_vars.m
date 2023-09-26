@@ -1,5 +1,5 @@
-function nbytes = get_size
-% get_size - get the total number of bytes assigned to variables in this workspace - PCC
+function nbytes = get_bytes_required_for_all_vars
+% get_bytes_required_for_all_vars - get the total number of bytes assigned to variables in this workspace - PCC
 %
 % This function issues the whos command, saving the results in a structure.
 % It then loops over all elements of the resulting structure, one element

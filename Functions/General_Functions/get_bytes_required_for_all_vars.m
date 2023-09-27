@@ -23,11 +23,12 @@ end
 fnnames = dbstack;
 
 if nbytes < 10^5
-    fprintf('\n%5.2f kilobytes required by all variables in %s at line %i.\n\n', nbytes/10^3, fnnames(2).name, fnnames(2).line)
-elseif nbytes < 10^8
-    fprintf('\n%5.2f megabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(2).name, fnnames(2).line)
+    fprintf('\n%5.2f kilobytes required by all variables in %s at line %i.\n\n', nbytes/10^3, fnnames(end).name, fnnames(end).line)
+% elseif nbytes < 10^8
 else
-    fprintf('\n%5.2f gigabytes required by all variables in %s at line %i.\n\n', nbytes/10^9, fnnames(2).name, fnnames(2).line)
+    fprintf('\n%5.2f megabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(end).name, fnnames(end).line)
+% else
+%     fprintf('\n%5.2f gigabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(end).name, fnnames(end).line)
 end
 
 end

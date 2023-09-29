@@ -1,4 +1,4 @@
-function nbytes = get_bytes_required_for_all_vars
+function nbytes = get_bytes_required_for_all_vars(printresults)
 % get_bytes_required_for_all_vars - get the total number of bytes assigned to variables in this workspace - PCC
 %
 % This function issues the whos command, saving the results in a structure.
@@ -7,7 +7,7 @@ function nbytes = get_bytes_required_for_all_vars
 % element.
 % 
 % INPUT 
-%   None
+%   printresults - 1 to printout stuff, 0 to, well, not print out stuff.
 %
 % OUTPUT
 %   nbytes - the total # of bytes with variables in the current workspace.
@@ -22,13 +22,15 @@ end
 
 fnnames = dbstack;
 
-if nbytes < 10^5
-    fprintf('\n%5.2f kilobytes required by all variables in %s at line %i.\n\n', nbytes/10^3, fnnames(end).name, fnnames(end).line)
-% elseif nbytes < 10^8
-else
-    fprintf('\n%5.2f megabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(end).name, fnnames(end).line)
-% else
-%     fprintf('\n%5.2f gigabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(end).name, fnnames(end).line)
+if printresults
+    if nbytes < 10^5
+        fprintf('\n%5.2f kilobytes required by all variables in %s at line %i.\n\n', nbytes/10^3, fnnames(end).name, fnnames(end).line)
+        % elseif nbytes < 10^8
+    else
+        fprintf('\n%5.2f megabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(end).name, fnnames(end).line)
+        % else
+        %     fprintf('\n%5.2f gigabytes required by all variables in %s at line %i.\n\n', nbytes/10^6, fnnames(end).name, fnnames(end).line)
+    end
 end
 
 end

@@ -1,4 +1,4 @@
-function  [pid, process_memory, varNames, var_gb] = get_process_memory(Loc, details)
+function  [pid, process_memory, varNames, var_gb] = get_process_memory(Loc, details, printresults)
 % get_process_memory - get main memory required by this process - PCC
 %
 % Get the pid for this process, get the memory it uses, parse the
@@ -9,6 +9,7 @@ function  [pid, process_memory, varNames, var_gb] = get_process_memory(Loc, deta
 %   Loc - a string used to denote the location from which the function was
 %    called.
 %   details - 1 to get the memory by different types, free, active,...
+%   printresults - 1 to printout stuff, 0 to, well, not print out stuff.
 %
 % OUTPUT
 %   pid = process identifier.
@@ -48,14 +49,16 @@ for i = 1:length(cmdout)
     end
 end
 
-process_mem = str2num( cmdout(i+1:end));
+process_memory = str2num( cmdout(i+1:end));
 
 % And print it out.
 
-if process_mem < 10^5
-    fprintf('\nMemory required by the calling process: %5.2f KB. Called at %s.\n', process_mem, Loc)
-else
-    fprintf('\nMemory required by the calling process: %5.2f GB. Called at %s.\n', process_mem/10^6, Loc)
+if printresults
+    if process_memory < 10^5
+        fprintf('\nMemory required by the calling process: %5.2f KB. Called at %s.\n', process_memory, Loc)
+    else
+        fprintf('\nMemory required by the calling process: %5.2f GB. Called at %s.\n', process_memory/10^6, Loc)
+    end
 end
 
 %% Get memory information from vm_stat
@@ -83,10 +86,12 @@ if details
         kk = strfind(aline, ' ');
         var_gb(iVar) = str2num( aline(kk(end)+1:end)) / 256000;
     end
-    
-    fprintf('\n%5.2f GB for free, active and inactive pages.\n', sum(var_gb(1:3)))
-    fprintf('%5.2f GB for free and inactive pages.\n', sum(var_gb(1:2:3)))
-    fprintf('%5.2f GB for active pages.\n\n', var_gb(2))
+
+    if printresults
+        fprintf('\n%5.2f GB for free, active and inactive pages.\n', sum(var_gb(1:3)))
+        fprintf('%5.2f GB for free and inactive pages.\n', sum(var_gb(1:2:3)))
+        fprintf('%5.2f GB for active pages.\n\n', var_gb(2))
+    end
 else
     varNames = {''};
     var_gb = [];

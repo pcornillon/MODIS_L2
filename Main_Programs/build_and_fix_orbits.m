@@ -110,6 +110,12 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 % % %     output_file_directory = '~/Documents/Aqua/output/';
 % % % end
 
+global determine_fn_size
+
+determine_fn_size = 1;
+
+if determine_fn_size; get_job_and_var_mem; end
+
 % globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
@@ -136,9 +142,7 @@ global s3_expiration_time
 
 global med_op
  
-global determine_fn_size
-
-determine_fn_size = 1;
+if determine_fn_size; get_job_and_var_mem; end
 
 % Structure of oinfo
 %
@@ -295,7 +299,7 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
-        case 5 % iMac Aqua-1 access for 4/19/2023
+        case 5 % iMac Aqua-1 access for 4/21/2023
             metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
             granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
             output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
@@ -303,8 +307,8 @@ if isempty(metadata_directory)
             fixit_directory = '/Users/petercornillon/Dropbox/Data/fixit_directory/';   % Test run.
             logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
 
-            start_date_time = [2010 4 19 0 0 0]; % Test run.
-            end_date_time = [2010 4 19 23 59 59];  % Test run.
+            start_date_time = [2010 4 21 0 0 0]; % Test run.
+            end_date_time = [2010 4 21 23 59 59];  % Test run.
 
             fast_regrid = 0; % Test run
             get_gradients = 1;  % Test run.
@@ -586,11 +590,7 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 
-% If size of arrays is requested call here.
-
-if determine_fn_size
-    nbytes = get_size;
-end
+if determine_fn_size; get_job_and_var_mem; end
 
 % Start by looking for the first granule after Matlab_start_time with a 
 % descending nadir track crossing latlim, nominally 73 S.
@@ -612,9 +612,11 @@ end
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
 while granule_start_time_guess <= Matlab_end_time
-    
+
     %% Build the orbit.
     
+    if determine_fn_size; get_job_and_var_mem; end
+
     time_to_process_this_orbit = tic;
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
@@ -682,8 +684,10 @@ while granule_start_time_guess <= Matlab_end_time
         %    to nan but in this case using qual_sst values.
         
         %% Fix the bowtie problem, again if requested.
-        
+                
         if fix_bowtie
+            if determine_fn_size; get_job_and_var_mem; end
+    
             start_address_bowtie = tic;
             
             % ******************************************************************************************
@@ -758,6 +762,8 @@ while granule_start_time_guess <= Matlab_end_time
         % part; all orbits should start at about the same location.
         
         if get_gradients
+            if determine_fn_size; get_job_and_var_mem; end
+    
             start_time_to_determine_gradient = tic;
             
             [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
@@ -785,6 +791,8 @@ while granule_start_time_guess <= Matlab_end_time
         
         %% Wrap-up for this orbit.
                 
+        if determine_fn_size; get_job_and_var_mem; end
+
         Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
             regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
             region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);

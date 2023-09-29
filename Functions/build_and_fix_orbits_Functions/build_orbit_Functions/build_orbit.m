@@ -60,6 +60,10 @@ global Matlab_start_time Matlab_end_time
 
 global med_op
 
+global determine_fn_size
+
+if determine_fn_size; get_job_and_var_mem; end
+
 status = 0;
 
 % Initialize return variables to simple nans; will return to calling

@@ -27,6 +27,10 @@ global scan_line_times start_line_index num_scan_lines_in_granule sltimes_avg nl
 global latlim npixels
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change possible_scan_line_skip_values
 
+global determine_fn_size
+
+if determine_fn_size; get_job_and_var_mem; end
+
 % Initialize return variables.
 
 status = 0;

@@ -214,6 +214,7 @@ if isempty(metadata_directory)
     fprintf('3) Run on ubuntu in us-west-2 for 6/19/2010 0h to 6/19/2010 24h accessing data from s3.\n')
     fprintf('4) Run on ubuntu in us-west-2 for 4/19/2010 0h to 4/19/2010 24h accessing data locally.\n')
     fprintf('5) Run on iMac   at home      for 4/19/2010 0h to 4/19/2010 24h accessing data from Aqua-1.\n')
+    fprintf('6) Run on MacBook Pro         for 4/19/2010 0h to 4/19/2010 24h accessing data from /Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/.\n')
     fprintf('\nTest runs for Angelina:\n')
     fprintf('11) Run on ubuntu in us-west-2 for 4/19/2010 0h to 4/19/2010 24h accessing data from s3.\n')
     fprintf('12) Run on ubuntu in us-west-2 for 5/19/2010 0h to 5/19/2010 24h accessing data from s3.\n')
@@ -309,6 +310,21 @@ if isempty(metadata_directory)
 
             start_date_time = [2010 4 21 0 0 0]; % Test run.
             end_date_time = [2010 4 21 23 59 59];  % Test run.
+
+            fast_regrid = 0; % Test run
+            get_gradients = 1;  % Test run.
+            save_core = 1;  % Test run.
+
+        case 6 % MacBook Pro Support_data_for_MODIS_L2_Corrections_1 access for 6/19/2023
+            metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
+            granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/combined/';
+            output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/';
+
+            fixit_directory = '/Users/petercornillon/Dropbox/Data/fixit_directory/';   % Test run.
+            logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
+
+            start_date_time = [2010 6 19 0 0 0]; % Test run.
+            end_date_time = [2010 6 19 23 59 59];  % Test run.
 
             fast_regrid = 0; % Test run
             get_gradients = 1;  % Test run.

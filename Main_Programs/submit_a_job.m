@@ -18,7 +18,7 @@ diary(Diary_File)
  fast_regrid = 0; % Test run
  get_gradients = 1;  % Test run.
  save_core = 1;  % Test run.
- print_diagnostics = 1;  % Test run.
+ print_diag = 1;  % Test run.
 
  debug = 1;
 

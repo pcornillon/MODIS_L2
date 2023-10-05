@@ -11,9 +11,9 @@
 # e.g. ./process_orbits [2010 4 19 0 0 0] [2010 4 19 23 59 59]
 #
 
-PATH=/Applications/MATLAB_R2011a.app/bin:$PATH
+PATH=/usr/local/MATLAB/R2023a/bin:$PATH
 unsetenv DISPLAY
-/Applications/MATLAB_R2011a.app/bin/matlab <<EOF
+/usr/local/MATLAB/R2023a/bin/matlab <<EOF
 
  addpath /home/ubuntu/Documents/MODIS_L2/Main_Programs/
  

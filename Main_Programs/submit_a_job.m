@@ -22,6 +22,8 @@ diary(Diary_File)
 
  debug = 1;
 
+ global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+
  metadata_directory = '/home/ubuntu/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
  granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
  output_file_directory = '/home/ubuntu/Documents/Aqua/output/';

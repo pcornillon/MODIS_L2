@@ -1,5 +1,5 @@
-function build_and_fix_orbits( start_date_time, end_date_time)
-% % % function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag)
+% % % function build_and_fix_orbits( start_date_time, end_date_time)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -8,16 +8,16 @@ function build_and_fix_orbits( start_date_time, end_date_time)
 %   start_date_time - build orbits with the first orbit to be built
 %    including this time specified as: [YYYY, MM, DD, HH, Min, 00].
 %   end_date_time - last orbit to be built includes this time.
-% % % %   fix_mask - if 1 fixes the mask. If absent, will set to 1.
-% % % %   fix_bowtie - if 1 fixes lzthe bow-tie problem, otherwise bow-tie effect
-% % % %    not fixed.
-% % % %   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
-% % % %   fast_regrid - 1 to use fast regridding.
-% % % %   get_gradients - 1 to calculate eastward and northward gradients, 0
-% % % %    otherwise.
-% % % %   save_core - 1 to save only the core values, regridded lon, lat, SST,
-% % % %    refined mask and nadir info, 0 otherwise.
-% % % %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
+%   fix_mask - if 1 fixes the mask. If absent, will set to 1.
+%   fix_bowtie - if 1 fixes lzthe bow-tie problem, otherwise bow-tie effect
+%    not fixed.
+%   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
+%   fast_regrid - 1 to use fast regridding.
+%   get_gradients - 1 to calculate eastward and northward gradients, 0
+%    otherwise.
+%   save_core - 1 to save only the core values, regridded lon, lat, SST,
+%    refined mask and nadir info, 0 otherwise.
+%   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
 %
 % OUTPUT
 %   none
@@ -223,8 +223,8 @@ if isempty(metadata_directory)
     fprintf('14) Run on ubuntu in us-west-2 for 4/19/2010 0h to 4/19/2010 24h accessing data locally.\n')
     fprintf('15) Run on iMac   at home      for 4/19/2010 0h to 4/19/2010 24h accessing data from Aqua-1.\n')
 
-    % % % test_num = input('Enter the test run number: ');
-    test_num = 999;
+    test_num = input('Enter the test run number: ');
+    % % % test_num = 999;
     
     fix_mask = 1;  % Test run.
     fix_bowtie = 1;  % Test run.

@@ -5,6 +5,9 @@
 % First make sure that the MODIS_L2 project has been openend and that the
 % Main_programs directory is on the path.
 
+Diary_File = '/home/ubuntu/Documents/Aqua/Logs/temp_log_1.txt';
+diary(Diary_File)
+
  addpath /home/ubuntu/Documents/MODIS_L2/Main_Programs/
 
  prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')

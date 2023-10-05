@@ -1,4 +1,4 @@
-#!/bin/tcsh
+#!/bin/ubuntu
 
 # Now run process_orbits
 

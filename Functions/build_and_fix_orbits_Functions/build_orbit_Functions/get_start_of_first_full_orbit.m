@@ -115,7 +115,7 @@ end
 
 if status == 901 
     if print_diagnostics
-        fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+        fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
     end
 end
 

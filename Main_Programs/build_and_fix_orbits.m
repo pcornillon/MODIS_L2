@@ -67,49 +67,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %  For test runs, the function will define the location of the various
 %  directories as well as parameters needed for the run. Nothing is passed
 %  into the function.
-%
-% To do a test run, capture the lines in 'if test_values' group and execute
-% them at the Matlab command line prompt.
 
-% % % % Following are command lines you need to run before calling this function.
-% % % 
-% % % execute_these_lines = 0;
-% % % 
-% % % if execute_these_lines
-% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-% % %     granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
-% % %     metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-% % %     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
-% % %     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-% % %     output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
-% % % 
-% % %     % For pcornillon@10.140.10.6
-% % % 
-% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-% % %     granules_directory = '/home/pcornillon/Aqua/original_granules/';
-% % %     metadata_directory = '/home/pcornillon/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
-% % %     fixit_directory = '/home/pcornillon/Aqua/metadata/';
-% % %     logs_directory = '/home/pcornillon/Aqua/Logs/';
-% % %     output_file_directory = '/home/pcornillon/Aqua/output/';
-% % % 
-% % %     % For ubuntu@10.140.10.115 and ubuntu@44.235.192.1
-% % % 
-% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-% % %     granules_directory = '~/Documents/Aqua/original_granules/';
-% % %     metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
-% % %     fixit_directory = '~/Documents/Aqua/metadata/';
-% % %     logs_directory = '~/Documents/Aqua/Logs/';
-% % %     output_file_directory = '~/Documents/Aqua/output/';
-% % % 
-% % %     % For ubuntu@44.235.192.1 using NASA s3 data
-% % % 
-% % %     global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
-% % %     granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
-% % %     metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
-% % %     fixit_directory = '~/Documents/Aqua/metadata/';
-% % %     logs_directory = '~/Documents/Aqua/Logs/';
-% % %     output_file_directory = '~/Documents/Aqua/output/';
-% % % end
+fprintf('Firing up build_and_fix_orbits.\n')
 
 global determine_fn_size
 

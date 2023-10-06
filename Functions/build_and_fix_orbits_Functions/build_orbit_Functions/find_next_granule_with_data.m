@@ -164,22 +164,6 @@ while 1==1
                 
                 % Is there an s3 data file at the same time as this metadata file?
 
-                % % % [~, ~, ~, ~, ~, seconds] = datevec(granule_start_time_guess);
-                % % % sint = floor(seconds);
-                % % % sint_test = sint;
-                % % % sint_testC = num2str(sint_test);
-                % % % if sint_test < 10
-                % % %     sint_testC = ['0' sint_testC];
-                % % %     if sint_test ~= 0
-                % % %         sint_testC = '00';
-                % % %     end
-                % % % end
-
-                % % % yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
-
-                % % % data_temp_filename = [granules_directory yymmddhhm sint_testC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-                % % % data_file_list = exist(data_temp_filename);
-
                 data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
                 
                 % If the file does not exist check for a nighttime version of it.

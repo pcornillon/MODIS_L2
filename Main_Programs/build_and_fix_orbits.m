@@ -68,8 +68,6 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %  directories as well as parameters needed for the run. Nothing is passed
 %  into the function.
 
-fprintf('Firing up build_and_fix_orbits.\n')
-
 global determine_fn_size
 
 determine_fn_size = 1;
@@ -544,7 +542,6 @@ end
 % Fast regridding arrays.
 
 if fix_bowtie & fast_regrid
-%     load([fixit_directory 'weights_and_locations_from_31191.mat'])
     load([fixit_directory 'weights_and_locations_41616_fixed.mat'])
 else
     augmented_weights = [];
@@ -556,7 +553,6 @@ end
 if get_gradients
     gradient_filename = [fixit_directory 'abbreviated_Separation_and_Angle_Arrays.mat'];
     
-    % track_angle = ncread( gradient_filename, 'track_angle');
     load(gradient_filename)
     cos_track_angle = cosd(track_angle);
     sin_track_angle = sin(track_angle);
@@ -632,12 +628,12 @@ while granule_start_time_guess <= Matlab_end_time
         
         if ~isempty(nn)
             nlat_orbit(nn) = nlat_avg(nn);
-        end 
-        
+        end
+
         %% Next fix the mask if requested.
-        
+
         SST_In_Masked = SST_In;
-        
+
         if fix_mask
             start_time_to_fix_mask = tic;
             

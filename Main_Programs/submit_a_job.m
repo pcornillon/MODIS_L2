@@ -1,5 +1,9 @@
+function submit_a_job( start_date_time, end_date_time)
 % submit_a_job - submit a build_and_fix_orbits job passing in start and end times - PCC
 %
+% INPUT
+%   start_date_time - [yyyy mm dd hh mi ss] where mi is minutes.
+%   end_date_time - [yyyy mm dd hh mi ss]
 %
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
@@ -8,6 +12,8 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 % Main_programs directory is on the path.
 
 Option = 1;
+
+% keyboard
 
 if Option == 1
     ProgDir = '/Users/petercornillon/MATLAB/Projects/MODIS_L2/';
@@ -19,10 +25,8 @@ else
     granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 end
 
-Diary_File = [BaseDir 'Logs/temp_log_1.txt'];
-diary(Diary_File)
-
-whos
+% Diary_File = [BaseDir 'Logs/temp_log_1.txt'];
+% diary(Diary_File)
 
 addpath([ProgDir 'Main_Programs/'])
 
@@ -44,10 +48,12 @@ output_file_directory = [BaseDir 'output/'];
 fixit_directory = [BaseDir 'metadata/'];
 logs_directory = [BaseDir 'Logs/'];
 
-start_date_time = [2010 06 19 4 0 0];
-end_date_time = [2010 06 19 7 0 0];
+% start_date_time = [2010 06 19 4 0 0];
+% end_date_time = [2010 06 19 7 0 0];
 
 whos
+
+% keyboard
 
 fprintf('Entering build_and_fix_orbits.\n')
 

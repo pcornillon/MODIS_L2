@@ -100,6 +100,13 @@ global s3_expiration_time
 
 global med_op
  
+rng('shuffle')  % This to make it start with a different random number.
+
+Diary_File = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*1000)) '.txt'];
+diary(Diary_File)
+
+fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))
+
 if determine_fn_size; get_job_and_var_mem; end
 
 % Structure of oinfo
@@ -507,10 +514,14 @@ end
 
 %% Passed checks on input parameters. Open a diary file for this run.
 
-Diary_File = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '.txt'];
-diary(Diary_File)
-
-tic_build_start = tic;
+% % % Diary_File = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*100)) '.txt'];
+% % % diary(Diary_File)
+% % % 
+% % % tic_build_start = tic;
+% % % 
+% % % fprintf('Made it to return.\n')
+% % % 
+% % % return
 
 %% Initialize parameters
 
@@ -584,6 +595,8 @@ iOrbit = 1;
 iGranule = 0;
 
 [status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
+
+fprintf('%i status after call to get_start...\n', status)
 
 iOrbit = iOrbit + 1;
 

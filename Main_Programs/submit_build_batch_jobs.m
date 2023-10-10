@@ -26,5 +26,5 @@ addpath([ProgDir 'Main_Programs/'])
 prj = openProject([ProgDir 'MODIS_L2.prj']);
 
 for iJob=1:size(periods_to_process,1)
-    job_number(iJob) = batch( 'build_wrapper', 0, {Option, periods_to_process{iJob,1}, periods_to_process{iJob,2}});
+    job_number(iJob) = batch( 'build_wrapper', 0, {Option, periods_to_process{iJob,1}, periods_to_process{iJob,2}}, CaptureDiary=true);
 end

@@ -170,6 +170,9 @@ oinfo.ginfo.pirate_gescan = [];
 
 regridded_debug = 0;  % To determine and write alternate SST fields based on griddata.
 
+check = 0;
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
 if isempty(metadata_directory)
     
     fprintf('You will be asked to select a test case from the following list.\n')
@@ -433,6 +436,7 @@ else
 end
 
 %% Initialize some variables.
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 npixels = 1354;
 
@@ -534,8 +538,12 @@ med_op = [1 1];
 % Get the range matrices to use for the reference temperature test.
 
 sst_range_grid_size = 2;
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+fprintf('%s. Does it exist: %i\n', [fixit_directory 'SST_Range_for_Declouding.mat'], exist([fixit_directory 'SST_Range_for_Declouding.mat']))
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 load([fixit_directory 'SST_Range_for_Declouding.mat'])
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 sst_range = gridded_sst_range(1:90,1:180,:);
 
 for i_range_image=1:12
@@ -547,6 +555,7 @@ for i_range_image=1:12
     xx(nn) = yy(nn);
     sst_range(:,:,i_range_image) = xx;
 end
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 %% Read in the arrays for fast regridding (first) and those used to calculate gradients (second).
 
@@ -558,6 +567,7 @@ else
     augmented_weights = [];
     augmented_locations = [];
 end
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 % Gradient stuff
 
@@ -576,6 +586,7 @@ end
 %% Get the relative scan line start times and latitudes.
 
 load([fixit_directory 'avg_scan_line_start_times.mat'])
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
@@ -585,6 +596,7 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
+check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 if determine_fn_size; get_job_and_var_mem; end
 

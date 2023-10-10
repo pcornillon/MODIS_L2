@@ -23,6 +23,13 @@
 % We will look at the gradients at element 837, 9042
 %
 
+% Need to get the track_angle array, which was deleted in build_and_fix...
+% to save space
+
+load(gradient_filename)
+
+% Now locate the region to test the gradients.
+
 scanc = 837;
 trackc = 9042;
 

@@ -20,7 +20,7 @@ switch Option
 
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
 
-    case 2 % satdat1
+    case 2 % MacStudio
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
         granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 

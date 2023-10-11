@@ -1,10 +1,9 @@
 % test_batch - tests apparent problem with load - PCC
 
+check = 0;
+
 BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
 fixit_directory = [BaseDir 'metadata/'];
-
-check = 0;
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 fixit_directory = [BaseDir 'metadata/'];
 

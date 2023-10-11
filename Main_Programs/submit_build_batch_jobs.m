@@ -15,7 +15,7 @@ switch Option
     case 1 % Peter's laptop
         ProgDir = '/Users/petercornillon/MATLAB/Projects/MODIS_L2/';
 
-    case 2 % satdat1
+    case 2 % MacStudio
         ProgDir = '/Users/petercornillon/MATLAB/Projects/MODIS_L2/';
 
     case 3 % AWS

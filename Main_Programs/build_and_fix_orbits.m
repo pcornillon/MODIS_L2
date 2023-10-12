@@ -68,6 +68,14 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %  directories as well as parameters needed for the run. Nothing is passed
 %  into the function.
 
+% Control for memory stats
+
+global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filename
+
+mem_count = 1;
+mem_print = 0;
+print_dbStack = 0;
+
 global determine_fn_size
 
 determine_fn_size = 1;
@@ -100,10 +108,12 @@ global s3_expiration_time
 
 global med_op
  
+% Open diary for this run.
+
 rng('shuffle')  % This to make it start with a different random number.
 
-Diary_File = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*1000)) '.txt'];
-diary(Diary_File)
+diary_filename = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*1000)) '.txt'];
+diary(diary_filename)
 
 fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))
 
@@ -170,8 +180,8 @@ oinfo.ginfo.pirate_gescan = [];
 
 regridded_debug = 0;  % To determine and write alternate SST fields based on griddata.
 
-check = 0;
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+% % % check = 0;
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 if isempty(metadata_directory)
     
@@ -436,7 +446,8 @@ else
 end
 
 %% Initialize some variables.
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 npixels = 1354;
 
@@ -516,10 +527,10 @@ if strcmp((1:2), '~/')
     return
 end
 
-%% Passed checks on input parameters. Open a diary file for this run.
-
-% % % Diary_File = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*100)) '.txt'];
-% % % diary(Diary_File)
+% % % %% Passed checks on input parameters. Open a diary file for this run.
+% % % 
+% % % diary_filename = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*100)) '.txt'];
+% % % diary(diary_filename)
 % % % 
 % % % tic_build_start = tic;
 % % % 
@@ -538,12 +549,13 @@ med_op = [1 1];
 % Get the range matrices to use for the reference temperature test.
 
 sst_range_grid_size = 2;
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
-fprintf('%s. Does it exist: %i\n', [fixit_directory 'SST_Range_for_Declouding.mat'], exist([fixit_directory 'SST_Range_for_Declouding.mat']))
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 load([fixit_directory 'SST_Range_for_Declouding.mat'])
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
 sst_range = gridded_sst_range(1:90,1:180,:);
 
 for i_range_image=1:12
@@ -555,7 +567,8 @@ for i_range_image=1:12
     xx(nn) = yy(nn);
     sst_range(:,:,i_range_image) = xx;
 end
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 %% Read in the arrays for fast regridding (first) and those used to calculate gradients (second).
 
@@ -567,7 +580,8 @@ else
     augmented_weights = [];
     augmented_locations = [];
 end
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 % Gradient stuff
 
@@ -586,7 +600,8 @@ end
 %% Get the relative scan line start times and latitudes.
 
 load([fixit_directory 'avg_scan_line_start_times.mat'])
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
@@ -596,7 +611,8 @@ check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
-check = check + 1; fprintf('Made it to checkpoint %i\n', check)
+
+% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 if determine_fn_size; get_job_and_var_mem; end
 
@@ -607,8 +623,6 @@ iOrbit = 1;
 iGranule = 0;
 
 [status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
-
-fprintf('%i status after call to get_start...\n', status)
 
 iOrbit = iOrbit + 1;
 
@@ -622,6 +636,8 @@ end
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
 while granule_start_time_guess <= Matlab_end_time
+
+    mem_count = mem_count + 1;
 
     %% Build the orbit.
     

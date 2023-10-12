@@ -9,6 +9,10 @@ function build_wrapper( Option, start_date_time, end_date_time)
 %   end_date_time - [yyyy mm dd hh mi ss]
 %
 
+global oinfo iOrbit iGranule iProblem problem_list
+
+global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filename
+
 % Set up directories for this job.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
@@ -26,7 +30,13 @@ switch Option
 
         metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
-    case 3 % AWS
+    case 3 % AWS for debug, not from S3
+        BaseDir = '/home/ubuntu/Documents/Aqua/';
+        granules_directory = [BaseDir 'original_granules/'];
+
+        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
+
+    case 4 % AWS from S3
         BaseDir = '/home/ubuntu/Documents/Aqua/';
         granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
@@ -63,3 +73,8 @@ whos
 fprintf('Entering build_and_fix_orbits.\n')
 
 build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag)
+
+% Save oinfo and memory structure files for this run.
+
+save(strrep(diary_filename, '.txt', '.txt'), 'oinfo', 'mem_struct')
+

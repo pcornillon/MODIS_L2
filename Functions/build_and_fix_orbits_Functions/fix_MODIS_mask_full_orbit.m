@@ -161,6 +161,8 @@ single_granule = 0;
 % % %     global Plot_Mask_Bits_1_3_4_5_6p_9_10_11_16 Plot_No_Fronts_Mask Plot_Problem_Pixels Plot_Object_Labels Plot_Mask_of_Objects Plot_Candidate_Pixels
 global AxisFontSize TitleFontSize Trailer_Info
 
+global mem_count mem_orbit_count mem_print print_dbStack mem_struct
+
 global determine_fn_size
 
 if determine_fn_size; get_job_and_var_mem; end

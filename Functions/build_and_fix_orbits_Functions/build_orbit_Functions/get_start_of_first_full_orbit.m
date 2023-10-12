@@ -22,6 +22,8 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
+local_debug = 0;
+
 % globals for the run as a whole.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
@@ -46,6 +48,8 @@ global Matlab_start_time Matlab_end_time
 
 global med_op
 
+if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
+
 % granule_start_time_guess is the time, a dummy variable, for the approximate
 % start time of a granule. It will be incremented by 5 minutes/granule as
 % this script loops through granules. Need to find the first granule in the
@@ -65,8 +69,11 @@ file_list = [];
 granule_start_time_guess = floor(Matlab_start_time*24) / 24 - 1 / 24;
 
 while isempty(file_list)
+    
     granule_start_time_guess = granule_start_time_guess + 1/24;
     
+    if local_debug; fprintf('In while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
+
     if granule_start_time_guess > Matlab_end_time
         fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
         
@@ -75,6 +82,8 @@ while isempty(file_list)
     end
     
     file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
+    
+    if local_debug; fprintf('%s\n', [file_list(1).folder '/' file_list(1).name]); end
 end
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
@@ -96,6 +105,8 @@ SS = str2num(file_list(1).name(nn+24:nn+25));
 
 granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,SS);
 
+if local_debug; fprintf('Following while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
+
 % Next, find the ganule at the beginning of the first complete orbit
 % starting with the first granule found in the time range.
 
@@ -103,8 +114,12 @@ start_line_index = [];
 
 while granule_start_time_guess <= Matlab_end_time
     
+    if local_debug; fprintf('In 2nd while loop.\n'); end
+
     [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
  
+    if local_debug; fprintf('After call to find_nex_granule_with_data. granule_start_time_guess: %s, start_line_index: %i\n', datestr(granule_start_time_guess), start_line_index); end
+
     if ~isempty(start_line_index)
         break
     end

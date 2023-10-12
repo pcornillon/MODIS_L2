@@ -434,7 +434,7 @@ end
 amazon_s3_run = 0;
 
 if strcmp( granules_directory(1:2), 's3') == 1
-    fprintf('\n%s\n\n\n', 'This is an Amazon S3 run; will read data from s3 storage.')
+    fprintf('\n%s\n', 'This is an Amazon S3 run; will read data from s3 storage.')
     amazon_s3_run = 1;
 
     % Get the credentials, will need them shortly.
@@ -442,7 +442,7 @@ if strcmp( granules_directory(1:2), 's3') == 1
     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
     s3_expiration_time = now;
 else
-    fprintf('\n%s\n\n\n', 'This is not an Amazon S3 run; will read data from local disks.')
+    fprintf('\n%s\n', 'This is not an Amazon S3 run; will read data from local disks.')
 end
 
 %% Initialize some variables.

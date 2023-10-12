@@ -54,8 +54,7 @@ if print_dbStack
         for iStack=3:length(dbStack)
             fprintf('        Called at line #%i in %s.\n', dbStack(iStack).line, dbStack(iStack).file)
         end
+        fprintf('\n')
     end
 end
-
-fprintf('\n')
 

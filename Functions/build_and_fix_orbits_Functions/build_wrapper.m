@@ -66,7 +66,7 @@ output_file_directory = [BaseDir 'output/'];
 fixit_directory = [BaseDir 'metadata/'];
 logs_directory = [BaseDir 'Logs/'];
 
-whos
+% whos
 
 % keyboard
 

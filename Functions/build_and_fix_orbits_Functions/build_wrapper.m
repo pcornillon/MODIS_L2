@@ -76,5 +76,5 @@ build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regr
 
 % Save oinfo and memory structure files for this run.
 
-save(strrep(diary_filename, '.txt', '.txt'), 'oinfo', 'mem_struct')
+save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct')
 

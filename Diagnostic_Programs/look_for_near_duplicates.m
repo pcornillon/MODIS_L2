@@ -8,13 +8,14 @@
 % than one minute.
 %
 
-base_dir = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+% base_dir = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+base_dir = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
 close_granules = [];
 iclose = 0;
 
 iDeleted = 0;
-for iYear=2007:2021
+for iYear=2002:2021
     YearS = num2str(iYear);
 
     fprintf('\nWorking on %s\n\n', YearS)
@@ -108,7 +109,6 @@ for iYear=2007:2021
                     end
                 end
             end
-                fprintf('%i) Hmmm the 2nd file, %s, does not have a ...nc.1 extension. Will not delete.\n', iGranule2, granule2_filename)
 
         elseif abs(matlab_time_granule1 - matlab_time_granule2) < 2/(24*60)
 

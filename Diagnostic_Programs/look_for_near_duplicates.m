@@ -129,12 +129,12 @@ for iYear=2002:2021
     end
 end
 
-deletion_filelist = dir([base_dir 'Filelists_and_Logs/deletion_log*');
+deletion_filelist = dir([base_dir 'Filelists_and_Logs/deletion_log*']);
 
 if isempty(deletion_filelist)
-    fileout = [base_dir 'Filelists_and_Logs/deletion_log_1.txt'']
+    fileout = [base_dir 'Filelists_and_Logs/deletion_log_1.txt'];
 else
-    fileout = [base_dir 'Filelists_and_Logs/deletion_log_' num2str(length(deletion_filelist)+1) '.txt'']
+    fileout = [base_dir 'Filelists_and_Logs/deletion_log_' num2str(length(deletion_filelist)+1) '.txt'];
 end
 
 save( fileout, 'iDeleted', 'iclose', 'deleted_files', 'close_granules')

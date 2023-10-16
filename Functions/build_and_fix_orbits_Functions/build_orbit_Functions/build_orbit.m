@@ -115,9 +115,13 @@ end
 
 %% Skip this orbit if it exist already.
 
-if exist(oinfo(iOrbit).name) == 2
+% Is there an orbit name for this orbit. If not, very bad, quit. Note that
+% the extension .nc4 is stripped off the name so that if either a .nc4 or
+% .dummy file exists we're good.
+
+if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', '.dummy')) == 2)
     
-    fprintf('--- Have already processed %s. Going to the next orbit. \n', oinfo(iOrbit).name)
+    fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
     
     start_line_index = [];
         

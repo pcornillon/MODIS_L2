@@ -89,6 +89,13 @@ sstScaleFactor = 0.005;
 LatLonScaleFactor = 0.001;
 gradientScaleFactor = 0.0001;
 
+% Write dummy file to use in search for files already processed since
+% we will move processed files to URI soon after they have been written
+% and then delete to save space. The dummy files will remain indicating
+% that the orbit has been processed.
+
+eval(['! touch ' strrep( output_filename, '.nc4', '.dummy')])
+
 %% Create the variables to be written out along with their attributes and write them. Start with main variable.
 
 if regrid_sst == 0
@@ -128,6 +135,7 @@ if regrid_sst == 0
 end
 
 if save_just_the_facts == 0
+
     % longitude
     
     nccreate( output_filename, 'longitude', 'Datatype', 'int32', ...

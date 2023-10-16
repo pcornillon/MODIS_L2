@@ -1,6 +1,7 @@
 % submit_build_batch_jobs - used to submit a number of build_and_fix_orbit jobs - PCC
 
 Option = input('Enter 1, 2 , 3 or 4 for the computer you are using (Peter''s laptop, satdat1, AWS debug, AWS S3): ');
+save_orbits = input('Enter 1 to write netCDF file for each orbit, otherwise enter 0: ');
 
 switch Option
     case 1 % Peter's laptop
@@ -27,5 +28,5 @@ fprintf('\n')
 periods_to_process = input('Enter the periods to process as indicated above: ');
 
 for iJob=1:size(periods_to_process,1)
-    job_number(iJob) = batch( 'build_wrapper', 0, {Option, periods_to_process{iJob,1}, periods_to_process{iJob,2}}, CaptureDiary=true);
+    job_number(iJob) = batch( 'build_wrapper', 0, {Option, periods_to_process{iJob,1}, periods_to_process{iJob,2}, save_orbits}, CaptureDiary=true);
 end

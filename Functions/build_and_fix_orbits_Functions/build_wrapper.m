@@ -1,4 +1,4 @@
-function build_wrapper( Option, start_date_time, end_date_time)
+function build_wrapper( Option, start_date_time, end_date_time, save_orbits)
 % build_wrapper - submit a build_and_fix_orbits job passing in start and end times - PCC
 %
 % INPUT
@@ -72,7 +72,7 @@ logs_directory = [BaseDir 'Logs/'];
 
 fprintf('Entering build_and_fix_orbits.\n')
 
-build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag)
+build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits)
 
 % Save oinfo and memory structure files for this run.
 

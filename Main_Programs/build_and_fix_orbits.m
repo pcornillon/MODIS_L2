@@ -1,4 +1,4 @@
-function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits)
 % % % function build_and_fix_orbits( start_date_time, end_date_time)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
@@ -18,6 +18,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   save_core - 1 to save only the core values, regridded lon, lat, SST,
 %    refined mask and nadir info, 0 otherwise.
 %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
+%   save_orbits - 1 to write netCDF file for each orbit, 0 to skip saving.
 %
 % OUTPUT
 %   none
@@ -819,19 +820,25 @@ while granule_start_time_guess <= Matlab_end_time
                 
         if determine_fn_size; get_job_and_var_mem; end
 
-        Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
-            regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
-            region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
-        
-        oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+        if save_orbits
+            Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
+                regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
+                region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
 
-        if print_times
-            fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
+            oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
+            if print_times
+                fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
+            end
+        else
+            if print_times
+                fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
+            end
         end
     end
-    
+
     % Increment orbit counter and reset granule counter to 1.
-    
+
     iOrbit = iOrbit + 1;
 end
 

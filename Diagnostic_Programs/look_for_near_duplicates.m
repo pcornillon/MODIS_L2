@@ -8,8 +8,13 @@
 % than one minute.
 %
 
-% base_dir = '/Volumes/Aqua-1/MODIS_R2019/combined/';
-base_dir = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+metadata_run = 1;
+
+if metadata_run
+    base_dir = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+else
+    base_dir = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+end
 
 close_granules = [];
 iclose = 0;
@@ -80,7 +85,15 @@ for iYear=2002:2021
                 creation_time2 = datenum(file_list(iGranule2).date);
 
                 if ~isempty(strfind( granule1_filename, 'NRT'))
-                    if creation_time1 >= creation_time2
+                    if metadata_run == 1
+                        fprintf('%i) %s is an NRT file assuming (hoping) that %s is not.\n', ...
+                            iGranule1, granule1_filename, granule2_filename)
+                        fprintf('Removing granule %s\n', granule2_filename)
+                        eval(['! rm ' granule2_filename])
+
+                        iDeleted = iDeleted + 1;
+                        deleted_files(iDeleted) = string(granule2_filename);
+                    elseif creation_time1 >= creation_time2
                         fprintf('%i) %s is an NRT file created at %s after %s, created at %s.\n', ...
                             iGranule1, granule1_filename, file_list(iGranule1).date, granule2_filename, file_list(iGranule2).date)
                         fprintf('Removing granule %s\n', granule2_filename)
@@ -89,13 +102,21 @@ for iYear=2002:2021
                         iDeleted = iDeleted + 1;
                         deleted_files(iDeleted) = string(granule2_filename);
                    else
-                        fprint('NRT granule #\i, %s, was created (%s) before #\i, %s. Not doing anything with it. \n', ...
+                        fprintf('NRT granule #%i, %s, was created (%s) before #%i, %s created on %s. Not doing anything with it. \n', ...
                             iGranule1, granule1_filename, file_list(iGranule1).date, iGranule2, granule2_filename, file_list(iGranule2).date)
                     end
                 end
 
                 if ~isempty(strfind( granule2_filename, 'NRT'))
-                    if creation_time2 >= creation_time1
+                    if metadata_run == 1
+                        fprintf('%i) %s is an NRT file assuming (hoping) that %s is not.\n', ...
+                            iGranule2, granule2_filename, granule1_filename)
+                        fprintf('Removing granule %s\n', granule1_filename)
+                        eval(['! rm ' granule1_filename])
+
+                        iDeleted = iDeleted + 1;
+                        deleted_files(iDeleted) = granule1_filename;
+                    elseif creation_time2 >= creation_time1
                         fprintf('%i) %s is an NRT file created at %s after %s, created at %s.\n', ...
                             iGranule2, granule2_filename, file_list(iGranule2).date, granule1_filename, file_list(iGranule1).date)
                         fprintf('Removing granule %s\n', granule1_filename)
@@ -104,7 +125,7 @@ for iYear=2002:2021
                         iDeleted = iDeleted + 1;
                         deleted_files(iDeleted) = granule1_filename;
                     else
-                        fprint('NRT granule #\i, %s, was created (%s) before  #\i, %s. Not doing anything with it. \n', ...
+                        fprintf('NRT granule #\i, %s, was created (%s) before  #\i, %s. Not doing anything with it. \n', ...
                             iGranule2, granule2_filename, file_list(iGranule2).date, iGranule1, granule1_filename, file_list(iGranule1).date)
                     end
                 end

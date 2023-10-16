@@ -155,7 +155,7 @@ deletion_filelist = dir([base_dir 'Filelists_and_Logs/deletion_log*']);
 if isempty(deletion_filelist)
     fileout = [base_dir 'Filelists_and_Logs/deletion_log_1.txt'];
 else
-    fileout = [base_dir 'Filelists_and_Logs/deletion_log_' num2str(length(deletion_filelist)+1) '.txt'];
+    fileout = [base_dir 'Filelists_and_Logs/deletion_log_' num2str(length(deletion_filelist)+1) '.mat'];
 end
 
 save( fileout, 'iDeleted', 'iclose', 'deleted_files', 'close_granules')

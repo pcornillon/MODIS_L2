@@ -591,7 +591,7 @@ if get_gradients
     
     load(gradient_filename)
     cos_track_angle = cosd(track_angle);
-    sin_track_angle = sin(track_angle);
+    sin_track_angle = sind(track_angle);
     clear track_angle
     
     % along_scan_seps_array = ncread(gradient_filename, 'along_scan_seps_array');
@@ -793,11 +793,19 @@ while granule_start_time_guess <= Matlab_end_time
     
             start_time_to_determine_gradient = tic;
             
+            medfilt2_sst = 1;
+            if medfilt2_sst
+                sstp = medfilt2(regridded_sst);
+            else
+                sstp = regridded_sst;
+            end
+
             [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
-                regridded_sst, ...
+                sstp, ...
                 along_track_seps_array(:,1:size(regridded_sst,2)), ...
                 along_scan_seps_array(:,1:size(regridded_sst,2)));
-            
+            clear sstp
+
             eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
             northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
             
@@ -821,7 +829,7 @@ while granule_start_time_guess <= Matlab_end_time
         if determine_fn_size; get_job_and_var_mem; end
 
         time_to_save_orbit = tic;
-        
+
         if save_orbits
             Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
                 regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...

@@ -820,17 +820,25 @@ while granule_start_time_guess <= Matlab_end_time
                 
         if determine_fn_size; get_job_and_var_mem; end
 
+        time_to_save_orbit = tic;
+        
         if save_orbits
             Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
                 regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
                 region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
+                                   
+            oinfo(iOrbit).time_to_save_this_file = toc(time_to_save_orbit);
 
             oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
             if print_times
+                fprintf('   Time to save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit)
                 fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
             end
+
         else
+            oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
             if print_times
                 fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
             end

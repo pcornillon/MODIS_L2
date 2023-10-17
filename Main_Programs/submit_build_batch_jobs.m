@@ -28,5 +28,6 @@ fprintf('\n')
 periods_to_process = input('Enter the periods to process as indicated above: ');
 
 for iJob=1:size(periods_to_process,1)
+    % job_number(iJob) = batch( 'build_wrapper', 0, {Option, periods_to_process{iJob,1}, periods_to_process{iJob,2}, save_orbits}, CaptureDiary=true, Pool=1);
     job_number(iJob) = batch( 'build_wrapper', 0, {Option, periods_to_process{iJob,1}, periods_to_process{iJob,2}, save_orbits}, CaptureDiary=true);
 end

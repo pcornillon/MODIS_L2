@@ -4,7 +4,9 @@ function [grad_x grad_y, grad_mag] = Sobel( ImageIn, get_mag)
 %
 % INPUT
 %
-%  ImageIn - the image to which the Sobel operator is to be applied.
+%  ImageIn - the image to which the Sobel operator is to be applied. 
+%   get_mag - if it exists
+%  
 %
 % OUTPUT
 % 

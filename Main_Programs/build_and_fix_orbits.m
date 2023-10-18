@@ -812,7 +812,7 @@ while granule_start_time_guess <= Matlab_end_time
             oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
             
             if print_times
-                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient, 5)
+                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient)
             end
         else
             grad_at_per_km = nan;

@@ -812,7 +812,7 @@ while granule_start_time_guess <= Matlab_end_time
             oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
             
             if print_times
-                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient, 5)
+                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient)
             end
         else
             grad_at_per_km = nan;
@@ -829,14 +829,15 @@ while granule_start_time_guess <= Matlab_end_time
         if determine_fn_size; get_job_and_var_mem; end
 
         time_to_save_orbit = tic;
-
+        
         if save_orbits
             Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
                 regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
                 region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
-                                   
+            
+            oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
             oinfo(iOrbit).time_to_save_this_file = toc(time_to_save_orbit);
-
+            
             oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
             if print_times

@@ -17,7 +17,9 @@ start_time = input('Enter the start date/time the batch jobs are to use as [yyyy
 period_to_process = input('Enter the date/time range for each batch job as [yyyy mm dd hh min ss]; e.g, [0 0 0 6 0 0] to process 6 hours worth of data: ');
 time_between_batch_jobs = input('Enter the date/time between the start of one batch times and the next as [yyyy mm dd hh min ss]; e.g, [0 0 1 0 0 0] for one day of satellite time between batch intervals: ');
 num_batch = input('Enter the number of batch jobs to submit; e.g, 5 to submit 5 batch jobs: ');
+fprintf('\n')
 
+for_real = input('Enter 1 if you would like to actually submitted jobs, 0 to see what time periods you will be submitting without submitting the jobs: ');
 fprintf('\n')
 
 mat_start_time = datenum(start_time);
@@ -25,10 +27,12 @@ mat_period_to_process = datenum(period_to_process);
 mat_time_between_batch_jobs = datenum(time_between_batch_jobs);
 
 for iJob=1:num_batch
-    tStart = datevec(mat_start_time) + datevec(mat_time_between_batch_jobs) * (iJob - 1);
-    tEnd = tStart + datevec(mat_period_to_process);
+    tStart = datevec(mat_start_time + mat_time_between_batch_jobs * (iJob - 1));
+    tEnd = datevec(datenum(tStart) + mat_period_to_process);
 
-    fprintf('Submitting job to process from %s to %s\n', datestr(tStart), datestr(tEnd))
+    fprintf('Submitting job #%i to process from %s to %s\n', iJob, datestr(tStart), datestr(tEnd))
 
-    % job_number(iJob) = batch( 'build_wrapper', 0, {Option, tStart, tEnd, save_orbits}, CaptureDiary=true);
+    if for_real == 1
+        job_number(iJob) = batch( 'build_wrapper', 0, {Option, tStart, tEnd, save_orbits}, CaptureDiary=true);
+    end
 end

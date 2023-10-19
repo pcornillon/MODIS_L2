@@ -58,7 +58,7 @@ get_gradients = 1;  % Test run.
 save_core = 1;  % Test run.
 print_diag = 1;  % Test run.% %  addpath([ProgDir 'Main_Programs/'])
 
-debug = 1;
+debug = 0;
 
 % % % metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
 output_file_directory = [BaseDir 'output/'];
@@ -67,6 +67,8 @@ fixit_directory = [BaseDir 'metadata/'];
 logs_directory = [BaseDir 'Logs/'];
 
 % whos
+% fprintf('\nSubmitting job to process from %s to %s\n', datestr(start_date_time), datestr(end_date_time))
+
 
 % keyboard
 

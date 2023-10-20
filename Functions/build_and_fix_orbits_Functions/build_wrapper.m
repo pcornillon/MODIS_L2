@@ -1,4 +1,4 @@
-function build_wrapper( Option, start_date_time, end_date_time, save_orbits, base_diary_filename)
+function build_wrapper( Option, start_date_time, end_date_time, base_diary_filename)
 % build_wrapper - submit a build_and_fix_orbits job passing in start and end times - PCC
 %
 % INPUT
@@ -7,7 +7,6 @@ function build_wrapper( Option, start_date_time, end_date_time, save_orbits, bas
 %            3 for AWS.
 %   start_date_time - [yyyy mm dd hh mi ss] where mi is minutes.
 %   end_date_time - [yyyy mm dd hh mi ss]
-%   save_orbits - 1 to save the output files, 0 otherwise.
 %   base_diary_filename - the name for the output log files.
 %
 
@@ -26,7 +25,7 @@ switch Option
 
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
 
-    case 2 % MacStudio
+    case 2 % MacStudio or Satdat1 reading from MacStudio
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
         granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
@@ -45,34 +44,23 @@ switch Option
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
 end
 
-% Diary_File = [BaseDir 'Logs/temp_log_1.txt'];
-% diary(Diary_File)
+% Initialize arguments for build_and_fix
 
-% % % addpath([ProgDir 'Main_Programs/'])
-% % % 
-% % % prj = openProject([ProgDir 'MODIS_L2.prj']);
-
-fix_mask = 1;  % Test run.
-fix_bowtie = 1;  % Test run.
-regrid_sst = 1;  % Test run.
-fast_regrid = 0; % Test run
-get_gradients = 1;  % Test run.
-save_core = 1;  % Test run.
-print_diag = 1;  % Test run.% %  addpath([ProgDir 'Main_Programs/'])
-
+fix_mask = 1;
+fix_bowtie = 1;
+regrid_sst = 1;
+fast_regrid = 0;
+get_gradients = 1;
+save_core = 1;
+print_diag = 1;
+save_orbits = 1;
 debug = 0;
 
-% % % metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
-output_file_directory = [BaseDir 'output/'];
+% Set directories.
 
+output_file_directory = [BaseDir 'output/'];
 fixit_directory = [BaseDir 'metadata/'];
 logs_directory = [BaseDir 'Logs/'];
-
-% whos
-% fprintf('\nSubmitting job to process from %s to %s\n', datestr(start_date_time), datestr(end_date_time))
-
-
-% keyboard
 
 fprintf('Entering build_and_fix_orbits.\n')
 

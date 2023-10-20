@@ -114,7 +114,7 @@ global med_op
 
 rng('shuffle')  % This to make it start with a different random number.
 
-diary_filename = [logs_directory 'build_and_fix_orbits_' base_diary_filename '.txt'];
+diary_filename = [logs_directory base_diary_filename '.txt'];
 diary(diary_filename)
 
 fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))
@@ -528,17 +528,6 @@ if strcmp((1:2), '~/')
     fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory)
     return
 end
-
-% % % %% Passed checks on input parameters. Open a diary file for this run.
-% % % 
-% % % diary_filename = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*100)) '.txt'];
-% % % diary(diary_filename)
-% % % 
-% % % tic_build_start = tic;
-% % % 
-% % % fprintf('Made it to return.\n')
-% % % 
-% % % return
 
 %% Initialize parameters
 

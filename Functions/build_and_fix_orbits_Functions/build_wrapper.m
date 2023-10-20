@@ -1,4 +1,4 @@
-function build_wrapper( Option, start_date_time, end_date_time, save_orbits)
+function build_wrapper( Option, start_date_time, end_date_time, save_orbits, base_diary_filename)
 % build_wrapper - submit a build_and_fix_orbits job passing in start and end times - PCC
 %
 % INPUT
@@ -7,6 +7,8 @@ function build_wrapper( Option, start_date_time, end_date_time, save_orbits)
 %            3 for AWS.
 %   start_date_time - [yyyy mm dd hh mi ss] where mi is minutes.
 %   end_date_time - [yyyy mm dd hh mi ss]
+%   save_orbits - 1 to save the output files, 0 otherwise.
+%   base_diary_filename - the name for the output log files.
 %
 
 global oinfo iOrbit iGranule iProblem problem_list
@@ -74,7 +76,7 @@ logs_directory = [BaseDir 'Logs/'];
 
 fprintf('Entering build_and_fix_orbits.\n')
 
-build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits)
+build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
 
 % Save oinfo and memory structure files for this run.
 

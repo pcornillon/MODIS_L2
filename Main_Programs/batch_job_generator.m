@@ -42,6 +42,9 @@ if do_it == 1
 
         fprintf('Submitting job #%i to process from %s to %s\n', iJob, datestr(tStart), datestr(tEnd))
 
-        job_number(iJob) = batch( 'build_wrapper', 0, {Option, tStart, tEnd, save_orbits}, CaptureDiary=true);
+        base_diary_filename = strrep(strrep([datestr(now) '_Job_' num2str(iJob) '_From_' datestr(tStart) '_To_' datestr(tEnd)], ':', 'h'), ' ', '_');
+
+        job_number(iJob) = batch( 'build_wrapper', 0, {Option, tStart, tEnd, save_orbits, base_diary_filename}, CaptureDiary=true);
+        % build_wrapper(Option, tStart, tEnd, save_orbits, base_diary_filename)
     end
 end

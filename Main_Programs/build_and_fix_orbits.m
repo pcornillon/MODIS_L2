@@ -1,4 +1,4 @@
-function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
 % % % function build_and_fix_orbits( start_date_time, end_date_time)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
@@ -19,6 +19,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %    refined mask and nadir info, 0 otherwise.
 %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
 %   save_orbits - 1 to write netCDF file for each orbit, 0 to skip saving.
+%   base_diary_filename - the name for the output log files.
 %
 % OUTPUT
 %   none
@@ -113,7 +114,7 @@ global med_op
 
 rng('shuffle')  % This to make it start with a different random number.
 
-diary_filename = [logs_directory 'build_and_fix_orbits_' strrep(num2str(now), '.', '_') '_' num2str(floor(rand(1)*1000)) '.txt'];
+diary_filename = [logs_directory 'build_and_fix_orbits_' base_diary_filename '.txt'];
 diary(diary_filename)
 
 fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))

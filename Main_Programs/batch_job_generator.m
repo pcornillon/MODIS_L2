@@ -1,7 +1,7 @@
 % batch_job_generator - used to submit a number of build_and_fix_orbit jobs - PCC
 
 submit_as_batch = 1;
-Option = 2;
+Option = 4;
 
 save_orbits = 1;
 

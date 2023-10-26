@@ -66,7 +66,6 @@ fprintf('Entering build_and_fix_orbits.\n')
 
 build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
 
-% Save oinfo and memory structure files for this run.
-
-save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct')
-
+% % % % Save oinfo and memory structure files for this run.
+% % % 
+% % % save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct')

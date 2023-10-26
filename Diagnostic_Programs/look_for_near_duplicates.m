@@ -8,7 +8,7 @@
 % than one minute.
 %
 
-metadata_run = 1;
+metadata_run = 0;
 
 if metadata_run
     base_dir = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
@@ -20,7 +20,7 @@ close_granules = [];
 iclose = 0;
 
 iDeleted = 0;
-for iYear=2002:2021
+for iYear=2022:2023
     YearS = num2str(iYear);
 
     fprintf('\nWorking on %s\n\n', YearS)
@@ -158,5 +158,14 @@ else
     fileout = [base_dir 'Filelists_and_Logs/deletion_log_' num2str(length(deletion_filelist)+1) '.mat'];
 end
 
-save( fileout, 'iDeleted', 'iclose', 'deleted_files', 'close_granules')
-
+if iDeleted ~= 0 & iClose ~=0
+    save( fileout, 'iDeleted', 'iclose', 'deleted_files', 'close_granules')
+elseif iDeleted ~= 0
+    fprintf('No close files found but %i files to delete found.\n', iDelete)
+    save( fileout, 'iDeleted', 'deleted_files')
+elseif iClose ~= 0
+    fprintf('No files to delete found but %i close files found.\n', iClose)
+    save( fileout, 'iclose', 'close_granules')
+else
+    fprintf('Neither files to delete nor close files found.\n')
+end

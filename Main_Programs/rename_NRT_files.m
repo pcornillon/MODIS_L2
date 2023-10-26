@@ -20,7 +20,7 @@ end
 
 iRenamed = 0;
 
-for iYear=2002:2021
+for iYear=2022:2023
     YearS = num2str(iYear);
 
     % Get the list of granules with NRT in their names for this year.
@@ -49,10 +49,11 @@ end
 
 rename_filelist = dir([base_dir 'Filelists_and_Logs/rename_log*']);
 
-if isempty(rename_filelist)
-    fileout = [base_dir 'Filelists_and_Logs/rename_log_1.txt'];
-else
-    fileout = [base_dir 'Filelists_and_Logs/rename_log_' num2str(length(deletion_filelist)+1) '.mat'];
+if ~isempty(rename_filelist)
+    log_filelist = dir([base_dir 'Filelists_and_Logs/rename_log*']);
+    next_log = length(log_filelist) + 1;
+
+    fileout = [base_dir 'Filelists_and_Logs/rename_log_' num2str(next_log) '.txt'];
 end
 
 save( fileout, 'iRenamed', 'renamed_granules')

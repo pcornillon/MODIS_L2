@@ -108,16 +108,19 @@ if amazon_s3_run
     % latitude(:,osscan:oescan) = single(h5read( fi_granule , 'lat', [1 gsscan], [npixels scan_lines_to_read]));
     data_id = H5D.open( file_id, 'lat');
     data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    data_temp(data_temp==-999) = nan;
     latitude(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
 
     % longitude(:,osscan:oescan) = single(ncread( fi_granule , 'lon', [1 gsscan], [npixels scan_lines_to_read]));
     data_id = H5D.open( file_id, 'lon');
     data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    data_temp(data_temp==-999) = nan;
     longitude(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
 
     % SST_In(:,osscan:oescan) = single(ncread( fi_granule , 'sea_surface_temperature', [1 gsscan], [npixels scan_lines_to_read]));
     data_id = H5D.open( file_id, 'sea_surface_temperature');
     data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    data_temp(data_temp==-32767) = nan;
     SST_In(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
 
     H5D.close(data_id)

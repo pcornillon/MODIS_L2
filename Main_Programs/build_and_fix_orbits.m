@@ -844,6 +844,10 @@ while granule_start_time_guess <= Matlab_end_time
         end
     end
 
+    % Save oinfo and memory structure files for this run.
+    
+    save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct')
+
     % Increment orbit counter and reset granule counter to 1.
 
     iOrbit = iOrbit + 1;

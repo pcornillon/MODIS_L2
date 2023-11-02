@@ -38,7 +38,7 @@ test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready t
 start_time = [2002 7 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 0 1 1 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 7; % The number of batch jobs to submit
+num_batch = 6; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.

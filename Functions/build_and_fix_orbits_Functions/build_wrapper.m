@@ -10,6 +10,15 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 %   base_diary_filename - the name for the output log files.
 %
 
+% Open the project if on AWS, otherwise, assume that it is already open.
+
+machine = pwd;
+if ~isempty(strfind(machine, 'ubuntu'))
+    prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
+end
+
+% Define globals.
+
 global oinfo iOrbit iGranule iProblem problem_list
 
 global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filename
@@ -17,6 +26,12 @@ global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filena
 % Set up directories for this job.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+
+% Set directories.
+
+output_file_directory = [BaseDir 'output/'];
+fixit_directory = [BaseDir 'metadata/'];
+logs_directory = [BaseDir 'Logs/'];
 
 switch Option
     case 1 % Peter's laptop
@@ -38,10 +53,18 @@ switch Option
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
 
     case 4 % AWS from S3
-        BaseDir = '/home/ubuntu/Documents/Aqua/';
+        % Set directories for s3 run with metadata.
+
+        % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
         granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
-        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
+        metadata_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
+        fixit_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
+
+        % BaseDir = '/home/ubuntu/Documents/Aqua/';
+
+        output_file_directory = [BaseDir 'output/'];
+        logs_directory = [BaseDir 'Logs/'];
 end
 
 % Initialize arguments for build_and_fix
@@ -55,12 +78,6 @@ save_core = 1;
 print_diag = 1;
 save_orbits = 1;
 debug = 0;
-
-% Set directories.
-
-output_file_directory = [BaseDir 'output/'];
-fixit_directory = [BaseDir 'metadata/'];
-logs_directory = [BaseDir 'Logs/'];
 
 fprintf('Entering build_and_fix_orbits.\n')
 

@@ -4,7 +4,7 @@
 % and num_batch must be changed for each version of this script. 
 % 
 % The values for this version of the script will submit batch jobs to
-% process all of the orbits for the first day in each month of 2002
+% process the first five orbits for the first day in each month of 2002
 % starting in July, the first month for which there was data for Aqua. Note
 % that the first job submitted will begin looking for data on 1 July 2002
 % but will not find any until 4 July. That's OK when we test a larger job
@@ -36,7 +36,7 @@ test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready t
 % 00h00 on 30 June 2002.
 
 start_time = [2002 7 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 1 1 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+period_to_process = [0 0 0 10 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
 num_batch = 6; % The number of batch jobs to submit
 

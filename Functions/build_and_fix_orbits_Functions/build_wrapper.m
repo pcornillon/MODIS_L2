@@ -63,8 +63,8 @@ switch Option
 
         % BaseDir = '/home/ubuntu/Documents/Aqua/';
 
-        output_file_directory = [BaseDir 'output/'];
-        logs_directory = [BaseDir 'Logs/'];
+        output_file_directory = '/mnt/s3-uri-gso-pcornillon/output/';
+        logs_directory = '/mnt/s3-uri-gso-pcornillon/Logs/';
 end
 
 % Initialize arguments for build_and_fix

@@ -30,6 +30,13 @@
 
 test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
+% Open the project if on AWS, otherwise, assume that it is already open.
+
+machine = pwd;
+if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
+    prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
+end
+
 % Note that for the start time you need to specify a month and day other
 % than 0; i.e., [2002 7 1 0 0 0] will start at 00h00 on 1 July 2002. If you
 % were to have entered [2002 7 1 0 0 0], the job would have started at

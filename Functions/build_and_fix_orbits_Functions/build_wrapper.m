@@ -12,10 +12,10 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
-machine = pwd;
-if ~isempty(strfind(machine, 'ubuntu'))
-    prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
-end
+% machine = pwd;
+% if ~isempty(strfind(machine, 'ubuntu'))
+%     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
+% end
 
 % Define globals.
 

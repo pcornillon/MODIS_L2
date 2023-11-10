@@ -123,9 +123,32 @@ while 1==1
     end
 
     % Search the minute (all second values) for a metadata file
-    % corresponding to the guess for the granule start time.
+    % corresponding to the guess for the granule start time. This search
+    % will be done by backing 5 seconds and then searching forward for 65
+    % until a granule is found, or not.
 
-    metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+    % % % metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+    
+    metadata_file_list = [];
+
+    granule_start_time_guess = granule_start_time_guess - 5 / 86400;
+    for iSecond=1:65
+        granule_start_time_guess = granule_start_time_guess + iSecond / 86400;
+
+        % % % if granule_start_time_guess > Matlab_end_time
+        % % %     fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+        % % % 
+        % % %     status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
+        % % %     return
+        % % % end
+
+        filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
+        
+        if exist(filename)
+            metadata_file_list = dir(filename);
+            break
+        end
+    end
 
     % Was a metadata file found at this time?
 

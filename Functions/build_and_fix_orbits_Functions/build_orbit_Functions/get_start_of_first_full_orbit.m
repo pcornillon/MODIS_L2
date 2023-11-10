@@ -68,22 +68,48 @@ file_list = [];
 
 granule_start_time_guess = floor(Matlab_start_time*24) / 24 - 1 / 24;
 
-while isempty(file_list)
-    
-    granule_start_time_guess = granule_start_time_guess + 1/24;
-    
-    if local_debug; fprintf('In while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
+if amazon_s3_run
 
-    if granule_start_time_guess > Matlab_end_time
-        fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+    % Will look for the first good granule stepping through the granule
+    % times one second at a time until it finds one.
+
+    granule_start_time_guess = granule_start_time_guess - 1 / 86400;
+    while 1==1
+        granule_start_time_guess = granule_start_time_guess + 1 / 86400;
+
+        if granule_start_time_guess > Matlab_end_time
+            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+
+            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
+            return
+        end
+
+        filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
         
-        status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
-        return
+        if exist(filename)
+            file_list = dir(filename);
+            break
+        end
     end
-    
-    file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
-    
-    if local_debug; fprintf('%s\n', [file_list(1).folder '/' file_list(1).name]); end
+
+else
+    while isempty(file_list)
+
+        granule_start_time_guess = granule_start_time_guess + 1/24;
+
+        if local_debug; fprintf('In while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
+
+        if granule_start_time_guess > Matlab_end_time
+            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+
+            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
+            return
+        end
+
+        file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
+
+        if local_debug; fprintf('%s\n', [file_list(1).folder '/' file_list(1).name]); end
+    end
 end
 
 % Found an hour with at least one metadata file in it. Get the Matlab time

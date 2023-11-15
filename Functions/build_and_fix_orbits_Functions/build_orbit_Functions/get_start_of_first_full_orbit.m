@@ -161,7 +161,7 @@ end
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.
 
-if if (status == 201) | (status == 231) | (status > 900)
+if (status == 201) | (status == 231) | (status > 900)
     if print_diagnostics
         fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
     end

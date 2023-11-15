@@ -12,10 +12,10 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
-machine = pwd;
-if ~isempty(strfind(machine, 'ubuntu'))
-    prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
-end
+% machine = pwd;
+% if ~isempty(strfind(machine, 'ubuntu'))
+%     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
+% end
 
 % Define globals.
 
@@ -29,28 +29,27 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 
 % Set directories.
 
-output_file_directory = [BaseDir 'output/'];
-fixit_directory = [BaseDir 'metadata/'];
-logs_directory = [BaseDir 'Logs/'];
-
 switch Option
     case 1 % Peter's laptop
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
         granules_directory = [BaseDir 'combined/'];
 
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
+        fixit_directory = [BaseDir 'metadata/'];
 
     case 2 % MacStudio or Satdat1 reading from MacStudio
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
         granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
         metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+        fixit_directory = [BaseDir 'metadata/'];
 
     case 3 % AWS for debug, not from S3
         BaseDir = '/home/ubuntu/Documents/Aqua/';
         granules_directory = [BaseDir 'original_granules/'];
 
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
+        fixit_directory = [BaseDir 'metadata/'];
 
     case 4 % AWS from S3
         % Set directories for s3 run with metadata.
@@ -58,14 +57,19 @@ switch Option
         % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
         granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
+        BaseDir = '/mnt/s3-uri-gso-pcornillon/';
+
         metadata_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
-        fixit_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
-
-        % BaseDir = '/home/ubuntu/Documents/Aqua/';
-
-        output_file_directory = '/mnt/s3-uri-gso-pcornillon/output/';
-        logs_directory = '/mnt/s3-uri-gso-pcornillon/Logs/';
+        fixit_directory = '/mnt/s3-uri-gso-pcornillon/';
+        % % % 
+        % % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
+        % % % 
+        % % % output_file_directory = '/mnt/s3-uri-gso-pcornillon/output/';
+        % % % logs_directory = '/mnt/s3-uri-gso-pcornillon/Logs/';
 end
+
+output_file_directory = [BaseDir 'output/'];
+logs_directory = [BaseDir 'Logs/'];
 
 % Initialize arguments for build_and_fix
 

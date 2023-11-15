@@ -119,7 +119,14 @@ while granule_start_time_guess <= Matlab_end_time
     [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
  
     if local_debug; fprintf('After call to find_nex_granule_with_data. granule_start_time_guess: %s, start_line_index: %i\n', datestr(granule_start_time_guess), start_line_index); end
-
+    
+    % Return if end of run.
+    
+    if (status == 201) | (status == 231) | (status > 900)
+        fprintf('End of run.\n')
+        return
+    end
+    
     if ~isempty(start_line_index)
         break
     end
@@ -128,7 +135,7 @@ end
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.
 
-if status == 901 
+if if (status == 201) | (status == 231) | (status > 900)
     if print_diagnostics
         fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
     end

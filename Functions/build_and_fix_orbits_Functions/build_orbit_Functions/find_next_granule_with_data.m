@@ -310,7 +310,7 @@ while 1==1
                             % status should never be 231 so returning if it is;
                             % again, it should NEVER happen.
 
-                            if status == 231
+                            if (status == 201) | (status == 231) | (status > 900)
                                 return
                             end
                         end
@@ -325,7 +325,7 @@ while 1==1
                             % status should never be 231 so returning if it is;
                             % again, it should NEVERN happen.
 
-                            if status == 231
+                            if (status == 201) | (status == 231) | (status > 900)
                                 return
                             end
                         end

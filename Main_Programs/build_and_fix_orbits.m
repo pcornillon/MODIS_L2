@@ -620,7 +620,7 @@ iOrbit = iOrbit + 1;
 % If end of run, return; not a very productive run. status=231 is a coding
 % error should never happen.
 
-if (status > 900) | (status == 231)
+if (status == 201) | (status == 231) | (status > 900)
     return
 end
 
@@ -640,15 +640,16 @@ while granule_start_time_guess <= Matlab_end_time
         = build_orbit( granule_start_time_guess);
     
     if status > 0
-        if status > 900
+        if status == 201
+            fprintf('Status returned from build_orbit as 201. This should never happen; it is a coding error. Terminating this run.\n')
+            return
+        end
+        
+        if (status == 231) | (status > 900)
             fprintf('Exiting.\n')
             return
         end
 
-        if status == 231
-            fprintf('Status returned from build_orbit as 231. This should never happen; it is a coding error. Terminating this run.\n')
-            return
-        end        
     else
         
         % latitude will be empty where there are missing granules. Fill them in

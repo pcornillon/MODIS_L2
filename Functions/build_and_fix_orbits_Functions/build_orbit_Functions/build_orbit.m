@@ -91,12 +91,11 @@ iGranule = 1;
 if length(oinfo) < iOrbit
     iGranule = 0;
     
-    % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
     % Return if end of run.
     
-    if status > 900
+    if (status == 201) | (status == 231) | (status > 900)
         fprintf('End of run.\n')
         return
     end
@@ -127,8 +126,14 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         
     while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        
+        % Return if end of run.
+        
+        if (status == 201) | (status == 231) | (status > 900)
+            fprintf('End of run.\n')
+            return
+        end
         
         if ~isempty(start_line_index)
             break
@@ -197,10 +202,9 @@ end
 
 while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-    % Get metadata information for the next granule-find_next... increments
+    % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     
-    % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
 % % %     if iGranule == 20
@@ -212,7 +216,7 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % finding a granule with a start time in it or 901 end of run. If
     % status = 201 or 901 break out of this loop.
     
-    if sum(status == [231 901])
+    if (status == 201) | (status == 231) | (status > 900)
         return
     else
         

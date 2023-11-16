@@ -24,7 +24,7 @@
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 % Open the project if on AWS, otherwise, assume that it is already open.
 
 machine = pwd

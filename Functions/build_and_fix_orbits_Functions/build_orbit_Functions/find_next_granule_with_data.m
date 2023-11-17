@@ -112,13 +112,15 @@ while 1==1
     % run is reached.
 
     if length(oinfo) == iOrbit
-        if granule_start_time_guess > (oinfo(iOrbit).end_time + 60 / secs_per_day)
-            if print_diagnostics
-                fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
+        if ~isempty(oinfo(iOrbit).end_time)
+            if granule_start_time_guess > (oinfo(iOrbit).end_time + 60 / secs_per_day)
+                if print_diagnostics
+                    fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
+                end
+                
+                status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
+                return
             end
-
-            status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
-            return
         end
     end
 

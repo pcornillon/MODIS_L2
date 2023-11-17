@@ -135,7 +135,7 @@ while 1==1
 
     granule_start_time_guess = granule_start_time_guess - 5 / 86400;
     for iSecond=1:65
-        granule_start_time_guess = granule_start_time_guess + iSecond / 86400;
+        granule_start_time_guess = granule_start_time_guess + 1 / 86400;
 
         % % % if granule_start_time_guess > Matlab_end_time
         % % %     fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))

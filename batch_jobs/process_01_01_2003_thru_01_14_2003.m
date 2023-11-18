@@ -115,4 +115,4 @@ for iJob=1:num_batch
     end
 end
 
-fprintf('To get status of these jobs use ''job_number(iJob)'', where iJob is one of the job numbers above.\n')
+fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')

@@ -676,7 +676,7 @@ while granule_start_time_guess <= Matlab_end_time
             oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
             
             if print_times
-                fprintf('   Time to fix the mask for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_fix_mask)
+                fprintf('   Time to fix the mask for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_fix_mask, datestr(now))
             end
         else
             Final_Mask = zeros(size(SST_In));
@@ -750,7 +750,7 @@ while granule_start_time_guess <= Matlab_end_time
             oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
             
             if print_times
-                fprintf('   Time to address bowtie for this orbit: %6.1f seconds.\n',  oinfo(iOrbit).time_to_address_bowtie)
+                fprintf('   Time to address bowtie for this orbit: %6.1f seconds. Current date/time: %s\n',  oinfo(iOrbit).time_to_address_bowtie, datestr(now))
             end
         else
             regridded_sst = SST_In_Masked; % Need this for gradients.
@@ -803,7 +803,7 @@ while granule_start_time_guess <= Matlab_end_time
             oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
             
             if print_times
-                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds.\n', oinfo(iOrbit).time_to_determine_gradient)
+                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_determine_gradient, datestr(now))
             end
         else
             grad_at_per_km = nan;
@@ -832,15 +832,15 @@ while granule_start_time_guess <= Matlab_end_time
             oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
             if print_times
-                fprintf('   Time to save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit)
-                fprintf('   Time to process and save %s: %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
+                fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
+                fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
             end
 
         else
             oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
             if print_times
-                fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds.\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit)
+                fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
             end
         end
     end

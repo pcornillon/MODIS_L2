@@ -36,6 +36,7 @@ switch Option
 
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
         fixit_directory = [BaseDir 'metadata/'];
+        output_file_directory = [BaseDir 'output/'];
 
     case 2 % MacStudio or Satdat1 reading from MacStudio
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
@@ -43,6 +44,7 @@ switch Option
 
         metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
         fixit_directory = [BaseDir 'metadata/'];
+        output_file_directory = [BaseDir 'output/'];
 
     case 3 % AWS for debug, not from S3
         BaseDir = '/home/ubuntu/Documents/Aqua/';
@@ -50,6 +52,7 @@ switch Option
 
         metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
         fixit_directory = [BaseDir 'metadata/'];
+        output_file_directory = [BaseDir 'output/'];
 
     case 4 % AWS from S3
         % Set directories for s3 run with metadata.
@@ -61,6 +64,7 @@ switch Option
 
         metadata_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
         fixit_directory = '/mnt/s3-uri-gso-pcornillon/';
+        output_file_directory = 'home/ubuntu/Documents/output/';
         % % % 
         % % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
         % % % 
@@ -68,7 +72,6 @@ switch Option
         % % % logs_directory = '/mnt/s3-uri-gso-pcornillon/Logs/';
 end
 
-output_file_directory = [BaseDir 'output/'];
 logs_directory = [BaseDir 'Logs/'];
 
 % Initialize arguments for build_and_fix

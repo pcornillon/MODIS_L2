@@ -109,6 +109,7 @@ for iJob=1:num_batch
     if ~test_run
         if submit_as_batch
             job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true)
+            fprintf('The Matlab job number for this job is: %i\n', job_number(iJob))
         else
             build_wrapper(Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
         end

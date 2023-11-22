@@ -6,7 +6,7 @@ function [status, indices] = get_osscan_etc_NO_sli(indices)
 % also get the location at which these scanlines are to be written in the
 % current orbit.
 %
-% The function should be called after a the metadata of a granule has been
+% The function should be called after the metadata of a granule has been
 % read and NO end of orbit, empty(start_line_index), has been found.
 %
 % The function will calculate the starting and ending indices for the data

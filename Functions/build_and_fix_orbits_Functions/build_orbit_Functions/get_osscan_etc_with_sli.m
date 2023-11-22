@@ -73,6 +73,10 @@ if indices.current.oescan ~= orbit_length
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
     status = populate_problem_list( 115, ['Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of ' num2str(latlim) ' S. On occasion they sum to 40,060. This orbit (' oinfo(iOrbit).ginfo(iGranule).metadata_name ') is one of these. Forcing to 40,160.']);
+
+    if iOrbit == 1
+        fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful./n')
+    end
 end
 
 % Determine how many scan lines are needed to bring the length of this
@@ -88,7 +92,7 @@ end
 if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule
     
     % This case arises if the additional 101 scan lines need to complete
-    % the current orbit result in more scanl ines being required from
+    % the current orbit result in more scan lines being required from
     % the current granule than are available in it. In this case, scan
     % lines will need to be pirated from the next granule, if it
     % exists. This section gets the starting and ending scanlines to be

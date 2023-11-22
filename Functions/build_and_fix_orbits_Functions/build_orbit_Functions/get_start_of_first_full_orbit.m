@@ -140,10 +140,21 @@ start_line_index = [];
 
 while granule_start_time_guess <= Matlab_end_time
     
+    % Zero out iGranule since this is the start of the job and this script
+    % is looking for the first granule with a descending 78 S crossing.
+    
+    iGranule = 0;
+
     if local_debug; fprintf('In 2nd while loop.\n'); end
 
     [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
- 
+
+    % find_next_granule_with_data, used in the loop above, looks for the next
+    % granule with data in it and it looks to see if the nadir track of the
+    % granule crosses 78 S while descending. It if does, it finds the pixel at
+    % which this occurs and returns the location of this pixel in the granule
+    % in start_line_index.
+
     if local_debug; fprintf('After call to find_nex_granule_with_data. granule_start_time_guess: %s, start_line_index: %i\n', datestr(granule_start_time_guess), start_line_index); end
     
     % Return if end of run.
@@ -157,6 +168,18 @@ while granule_start_time_guess <= Matlab_end_time
         break
     end
 end
+
+% So, the nadir track of the last granule read crossed 78 S moving southward.
+% The way find_next_granule_with_data works is that it populates oinfo(1) 
+% corresponding to the data prior to this crossing and it populates
+% oinfor(2) for the portion of the granule after crossing 78 S. Note that
+% iOrbit, the argument of oinfo, is 1 in this case because this is the
+% first attempt to find such a crossing. This means that when build_orbit
+% is called it will be working on iOrbit=2 but it should really be 1, so
+% oinfo will be rewritten at this point.
+
+temp_oinfo = oinfo(2);
+oinfo = temp_oinfo;
 
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.

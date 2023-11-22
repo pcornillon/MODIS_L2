@@ -288,23 +288,27 @@ while 1==1
                     oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
 
                     if iGranule == 1
-                        % Even though this granule contains the start of an orbit, it is still
-                        % the first granule in this orbit. This can happen if all of the other
-                        % granules in the orbit are missing.
-                        %
-                        % Get the possible location of this granule in the orbit. If it starts in
-                        % the 101 scanline overlap region, two possibilities will be returned. The
-                        % earlier one of the two, smaller scanline, will be chosen; choosing the
-                        % later of the two would mean that only the last few scanlines of the orbit
-                        % would be used in the orbit, which should have already been done if nadir
-                        % track of the previous granule crossed 78 S.
+                        if iOrbit > 1
+                            % The flow gets here if this is the first granule in an orbit and the
+                            % descending nadir track crosses -78 S. This can happen if all of the
+                            % other granules in the orbit are missing.
+                            %
+                            % Get the possible location of this granule in the orbit. If it starts in
+                            % the 101 scanline overlap region, two possibilities will be returned. The
+                            % earlier one of the two, smaller scanline, will be chosen; choosing the
+                            % later of the two would mean that only the last few scanlines of the orbit
+                            % would be used in the orbit, which should have already been done if nadir
+                            % track of the previous granule crossed 78 S.
 
-                        nnToUse = get_scanline_index;
+                            nnToUse = get_scanline_index;
 
-                        if isempty(nnToUse)
-                            indices.current.osscan = [];
+                            if isempty(nnToUse)
+                                indices.current.osscan = [];
+                            else
+                                indices.current.osscan = nnToUse(1);
+                            end
                         else
-                            indices.current.osscan = nnToUse(1);
+                            indices.current.osscan = 1;
                         end
                     else
                         % Get the number of scan lines to skip and make sure that it is an

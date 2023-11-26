@@ -75,7 +75,7 @@ if indices.current.oescan ~= orbit_length
     status = populate_problem_list( 115, ['Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of ' num2str(latlim) ' S. On occasion they sum to 40,060. This orbit (' oinfo(iOrbit).ginfo(iGranule).metadata_name ') is one of these. Forcing to 40,160.']);
 
     if iOrbit == 1
-        fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful./n')
+        fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful.\n')
     end
 end
 

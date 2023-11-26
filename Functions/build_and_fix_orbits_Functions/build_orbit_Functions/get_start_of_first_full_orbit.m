@@ -180,6 +180,7 @@ end
 
 temp_oinfo = oinfo(2);
 oinfo = temp_oinfo;
+iOrbit = 1;
 
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.

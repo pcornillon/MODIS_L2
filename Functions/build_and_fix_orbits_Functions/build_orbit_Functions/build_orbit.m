@@ -168,13 +168,14 @@ scan_seconds_from_start = single(nan(1,orbit_length));
 
 granule_start_time_guess_save = granule_start_time_guess;
 
-fi_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
+data_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
+metadata_granule = oinfo(iOrbit).ginfo(iGranule).metadata_name;
 
 % Populate the orbit with data from this granule.
 
 [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-    = add_granule_data_to_orbit( 'current', fi_granule, latitude, longitude, SST_In, ...
-    qual_sst, flags_sst, sstref, scan_seconds_from_start);
+    = add_granule_data_to_orbit( 'current', data_granule, metadata_granule, latitude, longitude, ...
+    SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
 
 if status ~= 0
     return
@@ -207,10 +208,6 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     
     [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
-% % %     if iGranule == 20
-% % %         keyboard
-% % %     end
-
     % Status returned from find_next_granule_with_data is either 0 - all OK,
     % 201 - granule start time exceeded the end of orbit time without
     % finding a granule with a start time in it or 901 end of run. If
@@ -222,10 +219,11 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
         % Populate the orbit with data from this granule.
         
-        fi_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
+        data_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
+        metadata_granule = oinfo(iOrbit).ginfo(iGranule).metadata_name;
         
         [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-            = add_granule_data_to_orbit( 'current', fi_granule, ...
+            = add_granule_data_to_orbit( 'current', data_granule, metadata_granule, ...
             latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
         
         % And the data to pirate data if we need to do this.

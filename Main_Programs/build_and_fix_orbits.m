@@ -611,11 +611,11 @@ if determine_fn_size; get_job_and_var_mem; end
 % descending nadir track crossing latlim, nominally 73 S.
 
 iOrbit = 1;
-iGranule = 0;
+% % % iGranule = 0;
 
 [status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
 
-iOrbit = iOrbit + 1;
+% % % iOrbit = iOrbit + 1;
 
 % If end of run, return; not a very productive run. status=231 is a coding
 % error should never happen.

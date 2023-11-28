@@ -1,4 +1,4 @@
-function [found_one, data_filename, granule_start_time_guess] = get_S3_filename( file_type, arg_2)
+function [found_one, data_filename, test_time] = get_S3_filename( file_type, arg_2)
 % get_S3_filename - get the name of the NASA data file from the AWS S3 NASA bucket - PCC
 %
 % This function will get the approximate time of the granule to search for
@@ -32,6 +32,8 @@ global granules_directory metadata_directory
 global formatOut
 global s3_expiration_time
 
+test_time = nan;
+
 found_one = 0;
 
 switch file_type
@@ -44,9 +46,9 @@ switch file_type
         for iSecond=1:65
             test_time = test_time + 1 / 86400;
 
-            metadata_granule = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
+            data_filename = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
 
-            if exist(metadata_granule)
+            if exist(data_filename)
                 found_one = 1;
                 break
             end
@@ -113,6 +115,9 @@ switch file_type
         else
             found_one = 1;
         end
+
+    otherwise
+        fprintf('Should never get here.\n')
 end
 
 end

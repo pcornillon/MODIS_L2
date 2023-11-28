@@ -109,8 +109,8 @@ switch build_type
         oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
         
     otherwise
-        fprintf('*** build_type passed in as %s, must be either ''sli'', or ''no_sli''.\n', build_type)
+        fprintf('*** build_type passed in as %s, must be either ''sli'', or ''no_sli''. This is a coding error\n', build_type)
         
-        status = populate_problem_list( 231, oinfo(iOrbit).name);
+        status = populate_problem_list( 231, ['build_type passed in as ' build_type '. Must be either ''sli'', or ''no_sli'' for ' oinfo(iOrbit).name '. This should never happen; coding error.']);
 end
 

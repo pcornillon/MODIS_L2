@@ -8,7 +8,7 @@
 % It will ask for the years to copy and for the starting month and day if
 %  the year is entered with a minus sign.
 
-which_dataset = 2;
+which_dataset = 1;
 datasets = {'combined' 'recover'};
 
 % Set up for either satdat1 or macstudio

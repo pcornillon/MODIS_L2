@@ -65,14 +65,15 @@ indices.current.gescan = start_line_index + 101 - 1;
 % Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan ~= orbit_length
+
     if print_diagnostics
-        fprintf('...Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of %f S. On occasion they sum to 40,060. This orbit (%s) is one of these. Forcing to 40,160.\n', latlim, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+        fprintf('...Calculsted length orbit for %s is %i, not equal to %i. This can happen but should be very rare.\n', oinfo(iOrbit).name, indices.current.oescan, orbit_length);
     end
-    
+
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
-    
-    status = populate_problem_list( 115, ['Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of ' num2str(latlim) ' S. On occasion they sum to 40,060. This orbit (' oinfo(iOrbit).ginfo(iGranule).metadata_name ') is one of these. Forcing to 40,160.']);
+
+    status = populate_problem_list( 416, ['Calculsted length orbit for ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ', not equal to ' num2str(orbit_length) '. This can happen but should be very rare.']);
 
     if iOrbit == 1
         fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful.\n')

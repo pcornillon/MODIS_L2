@@ -62,18 +62,20 @@ status = 0;
 % that this granule starts near the end of the granule with the descending
 % nadir crossing of 78 S.
 
-found_one = 0;
-test_time = oinfo(iOrbit).ginfo(end).end_time - 5 / 86400;
-for iSecond=1:65
-    test_time = test_time + 1 / 86400;
+% % % found_one = 0;
+% % % test_time = oinfo(iOrbit).ginfo(end).end_time - 5 / 86400;
+% % % for iSecond=1:65
+% % %     test_time = test_time + 1 / 86400;
+% % % 
+% % %     metadata_granule = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
+% % % 
+% % %     if exist(metadata_granule)
+% % %         found_one = 1;
+% % %         break
+% % %     end
+% % % end
 
-    metadata_granule = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-
-    if exist(metadata_granule)
-        found_one = 1;
-        break
-    end
-end
+[found_one, metadata_granule, ~] = get_S3_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
 
 if found_one == 0
     fprintf('*** No data metadata granule found for %s. This means there is no file from which to pirate data. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
@@ -86,7 +88,7 @@ else
 
         % % % data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
 
-        [found_one, data_granule] = get_S3_filename( metadata_granule);
+        [found_one, data_granule, ~] = get_S3_filename( 'data', metadata_granule);
     else
         data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr( granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
         

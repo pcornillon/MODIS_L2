@@ -34,7 +34,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10 
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim

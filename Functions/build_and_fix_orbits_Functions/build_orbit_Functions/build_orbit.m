@@ -151,7 +151,7 @@ end
 
 %% Now build this orbit from its granules; a granule has been found with the start of this orbit.
 
-fprintf('Working on orbit #%i: %s.\n', iOrbit, oinfo(iOrbit).name)
+fprintf('__________________________________________________\n\nWorking on orbit #%i: %s.\n\n', iOrbit, oinfo(iOrbit).name)
 
 start_time_to_build_this_orbit = tic;
 

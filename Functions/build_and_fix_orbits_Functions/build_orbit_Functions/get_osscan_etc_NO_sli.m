@@ -64,12 +64,20 @@ indices.current.gescan = num_scan_lines_in_granule;
 % Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan > orbit_length
+    % The number of scan lines between descending crossings of 78 S should
+    % be 40,170, to which we add 1 to allow for bow-tie correction and 100
+    % for orbit overlap. If indices.current.oescan is greater than this we
+    % have moved beyond the end of an orbit and, because we are in this
+    % function, without finding descending equatorial crossing. This means
+    % that there was a serious problem. I don't think that it should
+    % happen. 
+
     if print_diagnostics
-        fprintf('...Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of %f S. On occasion they sum to 40,060. This orbit (%s) is one of these. Forcing it to 40,160.\n', latlim, oinfo(iOrbit).ginfo(iGranule).metadata_name);
+        fprintf('***** Calcualted length of orbit for %s is %i, which is greater than %i. This should not happen.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.oescan, orbit_length);
     end
     
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 115, ['Granules have 2030 or 2040 scans for a total of 40,160 between descending crossings of ' num2str(latlim) ' S. On occasion they sum to 40,060. This orbit (' oinfo(iOrbit).ginfo(iGranule).metadata_name ') is one of these. Forcing it to 40,160.']);
+    status = populate_problem_list( 415, ['***** Calcualted length of orbit for ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' is ' num2str(indices.current.oescan) ', which is greater than ' num2str(orbit_length) '. This should NEVER happen.']);
 end

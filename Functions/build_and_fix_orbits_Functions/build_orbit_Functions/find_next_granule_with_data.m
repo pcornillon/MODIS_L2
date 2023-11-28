@@ -61,7 +61,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10
+global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -105,11 +105,13 @@ while 1==1
     end
 
     % Is this time passed the end time of the orbit? Only check if an orbit
-    % already exists from which the time has been calculated; i.e., only if
-    % oinfo exists. If it does but this is beyond the end of an orbit, then
-    % it is old information so clear oinfo to allow the search for the next
-    % granule to go on until either a granule is found or the end of the
-    % run is reached.
+    % already exists from which the time has been calculated; i.e., do not
+    % check if the script is looking for the first granule that crosses 78
+    % S. If the orbit does exist but this time is beyond the end of an end
+    % of the orbit, flag and return; it means that at least one granule at
+    % the end of the orbit was missing. I'm not comfortable with this so
+    % need to check how often it happens and fix manually if it happens on
+    % occasion, otherwise will have to code a fix.
 
     if length(oinfo) == iOrbit
         if ~isempty(oinfo(iOrbit).end_time)
@@ -131,18 +133,24 @@ while 1==1
 
     % % % metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
     
-    metadata_file_list = [];
+    % % % metadata_file_list = [];
+    % % % 
+    % % % granule_start_time_guess = granule_start_time_guess - 5 / 86400;
+    % % % for iSecond=1:65
+    % % %     granule_start_time_guess = granule_start_time_guess + 1 / 86400;
+    % % % 
+    % % %     filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
+    % % % 
+    % % %     if exist(filename)
+    % % %         metadata_file_list = dir(filename);
+    % % %         break
+    % % %     end
+    % % % end
 
-    granule_start_time_guess = granule_start_time_guess - 5 / 86400;
-    for iSecond=1:65
-        granule_start_time_guess = granule_start_time_guess + 1 / 86400;
-
-        filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-        
-        if exist(filename)
-            metadata_file_list = dir(filename);
-            break
-        end
+    [found_one, metadata_granule, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
+    
+    if found_one
+        metadata_file_list = dir(metadata_granule);
     end
 
     % Was a metadata file found at this time?
@@ -222,7 +230,7 @@ while 1==1
                 % % % %     found_one = 1;
                 % % % % end
 
-                [found_one, data_temp_filename] = get_S3_filename( metadata_file_list(1).name);
+                [found_one, data_temp_filename, ~] = get_S3_filename( 'data', metadata_file_list(1).name);
             else
                 data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
 
@@ -313,10 +321,53 @@ while 1==1
                         [val, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
 
                         if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0
-                            fprintf('...Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
-                                oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
 
-                            status = populate_problem_list( 115, ['Number of lines to skip for granule, ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
+                            if lines_to_skip == 10
+
+                                % Should not get here but every once in a while
+                                % the first scan of the mirror is missing;
+                                % i.e., 10 scan lines are missing. If the
+                                % number of missing lines is thought to be 10,
+                                % then check to see if this is one of those
+                                % cases by calculating the separation of the
+                                % last nadir pixel on the previous granule and
+                                % the first nadir pixel for this granule. If
+                                % they are separated by between 9 and 11.5 kms,
+                                % then the scan of the mirror is missing, so
+                                % it's OK to add 10 nan scan lines at this
+                                % point.
+
+                                clon_1 = ncread(oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/clon');
+                                clat_1 = ncread(oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/clat');
+
+                                clon_2 = ncread(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clon');
+                                clat_2 = ncread(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clat');
+
+                                dd_1_2 = sqrt( ((clon_2(1)-clon_1(end)) * cosd(clat_1(end))).^2 + (clat_2(1)-clat_1(end)).^2) * 111;
+
+                                if dd_1_2 > 9 & dd_1_2 < 11.5
+
+                                    fprintf('.....First 1/2 mirror rotation skipped for %s, will skip %i lines at %f longitude, %f latitude.\n', ...
+                                        oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip, clon_2(1), clat_2(1))
+
+                                    status = populate_problem_list( 116, ['Looks like 1st 1/2 mirror rotation missing for this granule. Skipping ' num2str(lines_to_skip) ' scan lines.'], granule_start_time_guess);
+                                else
+                                    fprintf('.....Says to skip 10 lines for %s, but the distance, %f km, isn''t right. Will not skip any lines.\n', ...
+                                        oinfo(iOrbit).ginfo(iGranule).metadata_name, dd_1_2)
+
+                                    status = populate_problem_list( 117, ['Says to skip 10 lines for %s, but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time_guess);
+
+                                    lines_to_skip = 0;
+                                end
+                            else
+
+                                fprintf('.....Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
+                                    oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
+
+                                status = populate_problem_list( 115, ['Number of lines to skip for granule, ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
+
+                                lines_to_skip = possible_num_scan_lines_skip(3,nn);
+                            end
                         end
 
                         indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
@@ -328,6 +379,8 @@ while 1==1
 
                     if ~isempty(indices.current.osscan)
 
+                        % Generate the orbit name if it has not already been generated. 
+
                         if isempty(oinfo(iOrbit).name)
                             status = generate_output_filename('no_sli');
 
@@ -338,6 +391,9 @@ while 1==1
                                 return
                             end
                         end
+
+                        % Get the location of this granule in the orbit and
+                        % the start and end of orbit if not already known.
 
                         if isempty(start_line_index)
                             [~, indices] = get_osscan_etc_NO_sli(indices);

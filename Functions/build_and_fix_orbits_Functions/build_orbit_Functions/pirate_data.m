@@ -88,7 +88,7 @@ else
 
         % % % data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
 
-        [found_one, data_granule, ~] = get_S3_filename( 'data', metadata_granule);
+        [found_one, data_granule, ~] = get_S3_filename( 'sst_data', metadata_granule);
     else
         data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr( granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
         

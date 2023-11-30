@@ -130,7 +130,7 @@ if amazon_s3_run
     % % % SST_In(:,osscan:oescan) = single( data_temp(1:npixels,gsscan:gsscan+scan_lines_to_read-1));
     SST_In(:,osscan:oescan) = read_variable_HDF( file_id, data_granule, 'sea_surface_temperature', npixels, gsscan, scan_lines_to_read);
 
-    H5D.close(data_id)
+    H5D.close(file_id)
 
     % Read from the metadata file.
 

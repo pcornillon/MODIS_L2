@@ -65,7 +65,7 @@ switch Option
         metadata_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
         fixit_directory = '/mnt/s3-uri-gso-pcornillon/';
         % output_file_directory = '/home/ubuntu/Documents/output/';
-        output_file_directory = '/mnt/cornillon-output';
+        output_file_directory = '/mnt/cornillon-output/';
         % % % 
         % % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
         % % % 

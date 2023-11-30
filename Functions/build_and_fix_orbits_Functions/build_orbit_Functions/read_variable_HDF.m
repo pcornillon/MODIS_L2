@@ -20,9 +20,6 @@ function [VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixels, gssca
 
 VarOut = [];
 
-ScaleFactor = 1;
-AddOffset = 0;
-
 % Get the id for the variable.
 
 data_id = H5D.open( FileID, VarName);
@@ -36,14 +33,14 @@ end
 
 info = h5info(FileName);
 
-if info == -1
+if isempty(info)
     fprintf('*** Couldn''t get info for %s\n', VarName)
     return
 end
 
 DatasetNumber = 0;
 for i=1:length(info.Datasets)
-    if ~isempty(strcmp(info.Datasets(i), 'VarName'))
+    if strcmp(info.Datasets(i).Name, VarName) ~=0
         DatasetNumber = i;
         break
     end
@@ -62,28 +59,30 @@ else
     
     FillValue = nan;
     for iAttribute=1:length(info.Datasets(DatasetNumber).Attributes)
-        if ~isempty(strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute), '_FillValue'))
+        if strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute).Name, '_FillValue') ~= 0
             FillValue = info.Datasets(DatasetNumber).Attributes(iAttribute).Value;
             break
         end
     end
     
     if isnan(FillValue) == 0
-        data_temp(data_temp==info.Datasets(DatasetNumber).Attributes(AttributeNumber).Value) = nan;
+        data_temp(data_temp==FillValue) = nan;
     end
     
     % Get the scale factor and offset and applyl Note they are set to 1 and
     % 0 initially, so, if not present the input will not be scaled. 
     
+    ScaleFactor = 1;
     for iAttribute=1:length(info.Datasets(DatasetNumber).Attributes)
-        if ~isempty(strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute), 'scale_factor'))
+        if strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute).Name, 'scale_factor') ~= 0
             ScaleFactor = info.Datasets(DatasetNumber).Attributes(iAttribute).Value;
             break
         end
     end
     
+    AddOffset = 0;
     for iAttribute=1:length(info.Datasets(DatasetNumber).Attributes)
-        if ~isempty(strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute), 'add_offset'))
+        if strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute).Name, 'add_offset') ~= 0
             AddOffset = info.Datasets(DatasetNumber).Attributes(iAttribute).Value;
             break
         end

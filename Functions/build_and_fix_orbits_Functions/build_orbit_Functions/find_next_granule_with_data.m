@@ -230,7 +230,7 @@ while 1==1
                 % % % %     found_one = 1;
                 % % % % end
 
-                [found_one, data_temp_filename, ~] = get_S3_filename( 'data', metadata_file_list(1).name);
+                [found_one, data_temp_filename, ~] = get_S3_filename( 'sst_data', metadata_file_list(1).name);
             else
                 data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
 

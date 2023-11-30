@@ -1,4 +1,4 @@
-function [VarOut] = read_variable_HDF(file_id, VarName, nPixels, gsscan, scan_lines_to_read)
+function [VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixels, gsscan, scan_lines_to_read)
 % read_variable_HDF - reads a variable from a netCDF file using HDF.
 %
 % This function will get the missing value for the variable to be read as
@@ -6,7 +6,8 @@ function [VarOut] = read_variable_HDF(file_id, VarName, nPixels, gsscan, scan_li
 % elements with missing values to nan and scales the variable.
 %
 % INPUT
-%   file_id - the hdf ID for the file in which the variable is found.
+%   FileID - the hdf ID for the file in which the variable is found.
+%   FileName - used to get the information about the variables.
 %   VarName - a string--make sure to enclose in quotes 'SST_In'-- for the
 %    variable to be read.
 %   nPixels - will return elements in the first dimesion from 1 to nPixels.
@@ -17,24 +18,76 @@ function [VarOut] = read_variable_HDF(file_id, VarName, nPixels, gsscan, scan_li
 %   VarOut - the scaled input value with nans at missing value locations.
 %
 
+VarOut = [];
+
+ScaleFactor = 1;
+AddOffset = 0;
+
 % Get the id for the variable.
 
-data_id = H5D.open( file_id, VarName);
-if data_id
-    VarOut = nan;
+data_id = H5D.open( FileID, VarName);
+
+if data_id == -1
+    fprintf('*** Couldn''t open file for %s\n', VarName)
     return
 end
 
-% Read the variable.
+%Start by determining which dataset contains this variable.
 
-data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+info = h5info(FileName);
 
-% Get the missing value and apply.
- 
-data_temp(data_temp==MissingValues) = nan;
+if info == -1
+    fprintf('*** Couldn''t get info for %s\n', VarName)
+    return
+end
 
-% Get the scale factor and offset and apply.
+DatasetNumber = 0;
+for i=1:length(info.Datasets)
+    if ~isempty(strcmp(info.Datasets(i), 'VarName'))
+        DatasetNumber = i;
+        break
+    end
+end
 
-VarOut = single(data_temp(1:nPixels,gsscan:gsscan+scan_lines_to_read-1)) * ScaleFactor + Offset;
-
+if DatasetNumber == 0
+    fprintf('*** Couldn''t get Dataset number for %s\n', VarName)
+    return
+else
+    
+    % Read the variable.
+    
+    data_temp = H5D.read( data_id,'H5T_NATIVE_DOUBLE', 'H5S_ALL', 'H5S_ALL', 'H5P_DEFAULT');
+    
+    % Get the missing value and apply if there is one.
+    
+    FillValue = nan;
+    for iAttribute=1:length(info.Datasets(DatasetNumber).Attributes)
+        if ~isempty(strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute), '_FillValue'))
+            FillValue = info.Datasets(DatasetNumber).Attributes(iAttribute).Value;
+            break
+        end
+    end
+    
+    if isnan(FillValue) == 0
+        data_temp(data_temp==info.Datasets(DatasetNumber).Attributes(AttributeNumber).Value) = nan;
+    end
+    
+    % Get the scale factor and offset and applyl Note they are set to 1 and
+    % 0 initially, so, if not present the input will not be scaled. 
+    
+    for iAttribute=1:length(info.Datasets(DatasetNumber).Attributes)
+        if ~isempty(strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute), 'scale_factor'))
+            ScaleFactor = info.Datasets(DatasetNumber).Attributes(iAttribute).Value;
+            break
+        end
+    end
+    
+    for iAttribute=1:length(info.Datasets(DatasetNumber).Attributes)
+        if ~isempty(strcmp(info.Datasets(DatasetNumber).Attributes(iAttribute), 'add_offset'))
+            AddOffset = info.Datasets(DatasetNumber).Attributes(iAttribute).Value;
+            break
+        end
+    end
+    
+    VarOut = single(data_temp(1:nPixels,gsscan:gsscan+scan_lines_to_read-1)) * ScaleFactor + AddOffset;
 end

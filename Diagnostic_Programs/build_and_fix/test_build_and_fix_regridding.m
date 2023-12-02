@@ -34,12 +34,12 @@ debug = 1;
 
 clear global 
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote oinfo problem_list
 
 granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-% output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
-output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
+% output_file_directory_local = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+output_file_directory_local = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
 
 fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
 logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
@@ -53,12 +53,12 @@ build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regr
 
 clear global
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote oinfo problem_list
 
 granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-% output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
-output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
+% output_file_directory_local = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+output_file_directory_local = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
 
 fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
 logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
@@ -72,12 +72,12 @@ build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regr
 
 clear global
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory oinfo problem_list
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote oinfo problem_list
 
 granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-% output_file_directory = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
-output_file_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
+% output_file_directory_local = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
+output_file_directory_local = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test4/';  % Test run.
 
 fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
 logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.

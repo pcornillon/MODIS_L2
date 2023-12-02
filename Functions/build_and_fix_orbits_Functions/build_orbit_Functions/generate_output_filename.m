@@ -28,7 +28,7 @@ function status = generate_output_filename(build_type)
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
 global print_diagnostics print_times debug
 global npixels
 
@@ -78,7 +78,7 @@ switch build_type
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit).orbit_number) ...
             '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
         
-        oinfo(iOrbit).name = [output_file_directory datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
+        oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
         
         % If this granule also contains the start of an orbit all of the
@@ -95,7 +95,7 @@ switch build_type
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit+1).orbit_number) ...
             '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
         
-        oinfo(iOrbit+1).name = [output_file_directory datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
+        oinfo(iOrbit+1).name = [output_file_directory_local datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit+1).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
         
         % And the metadata for this granule at the start of the next orbit.

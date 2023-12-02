@@ -24,7 +24,7 @@
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
@@ -97,9 +97,11 @@ end
 % changed if you want to submit jobs using a different set of input data
 % and/or if you want to run jobs interactively.
 
-submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+% submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
 
-Option = 4; % Reads data from s3 in us-west-2.
+Option = 2; % For debug. Reads from and writes to Cornillon_NAS
+% Option = 5; % Reads data from s3 in us-west-2.
 
 for iJob=1:num_batch
     fprintf('Submitting job #%i to process from %s to %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)))

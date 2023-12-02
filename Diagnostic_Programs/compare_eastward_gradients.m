@@ -1,4 +1,4 @@
-function compare_eastward_gradients(output_file_directory)
+function compare_eastward_gradients(output_file_directory_local)
 % compare_eastward_gradients - test the output of a test run of build_and_fix_orbits.
 % 
 % The script will read in the eastward gradients from the file just
@@ -8,7 +8,7 @@ function compare_eastward_gradients(output_file_directory)
 % 0.
 %
 % INPUT
-%   output_file_directory - the folder with the file just written by
+%   output_file_directory_local - the folder with the file just written by
 %    build_and_fix_orbits and the comparison file downloaded from Zenodo.
 %    This folder is needed for the comparison of the outputs.
 %
@@ -17,7 +17,7 @@ function compare_eastward_gradients(output_file_directory)
 %
 % Sample call-note that the folder name is in quotes and ends with / (for a
 % Mac):
-%   compare_eastward_gradients(output_file_directory)
+%   compare_eastward_gradients(output_file_directory_local)
 %
 
 % Get the directory separator for this computer type.
@@ -30,14 +30,14 @@ end
 
 % Get the eastward gradients from the file downloaded from Zenodo.
 
-nn = strfind( output_file_directory, DirectorySeparator);
+nn = strfind( output_file_directory_local, DirectorySeparator);
 
-fi_orig = [output_file_directory(1:nn(end-1)) 'AQUA_MODIS.20100619T052031.L2.SST.nc4'];
+fi_orig = [output_file_directory_local(1:nn(end-1)) 'AQUA_MODIS.20100619T052031.L2.SST.nc4'];
 e_grad_orig = ncread( fi_orig, 'eastward_gradient');
 
 % Get the eastward gradients from the file just created.
 
-fi_new = [output_file_directory '2010' DirectorySeparator '06' DirectorySeparator 'AQUA_MODIS.20100619T052031.L2.SST.nc4'];
+fi_new = [output_file_directory_local '2010' DirectorySeparator '06' DirectorySeparator 'AQUA_MODIS.20100619T052031.L2.SST.nc4'];
 e_grad_new = ncread( fi_new, 'eastward_gradient');
 
 % Difference the fiedlds.

@@ -1,5 +1,5 @@
 function [orbits_directory, granules_directory, metadata_directory, fixit_directory, ...
-    logs_directory, output_file_directory] = setup_for_build_fix_test_run(base_dir)
+    logs_directory, output_file_directory_local] = setup_for_build_fix_test_run(base_dir)
 % setup_for_build_fix_test_run - creates the folders into which the data required to test build_and_fix_orbits are placed.
 % 
 % Run this script to setup the directories needed for a test run of build_and_fix_orbits.
@@ -17,7 +17,7 @@ function [orbits_directory, granules_directory, metadata_directory, fixit_direct
 %   metadata_directory -
 %   fixit_directory -
 %   logs_directory -
-%   output_file_directory - the folder with the file just written by
+%   output_file_directory_local - the folder with the file just written by
 %    build_and_fix_orbits and the comparison file downloaded from Zenodo.
 %    This folder is needed for the comparison of the outputs.
 %
@@ -53,7 +53,7 @@ orbits_directory = [base_dir 'build_test' DirectorySeparator 'test_dir_a' Direct
 metadata_directory = [base_dir 'build_test' DirectorySeparator 'test_dir_a' DirectorySeparator 'MODIS_R2019' DirectorySeparator 'Data_from_OBPG_for_PO-DAAC' DirectorySeparator];
 fixit_directory = [base_dir 'build_test' DirectorySeparator 'test_dir_b' DirectorySeparator];
 logs_directory = [base_dir 'build_test' DirectorySeparator 'test_dir_c' DirectorySeparator 'Logs' DirectorySeparator];
-output_file_directory = [base_dir 'build_test' DirectorySeparator 'test_dir_c' DirectorySeparator 'Output' DirectorySeparator];
+output_file_directory_local = [base_dir 'build_test' DirectorySeparator 'test_dir_c' DirectorySeparator 'Output' DirectorySeparator];
 
 lines = {'Great, you''ve created the necessary folders and the variables pointing to these folders,' ...
     'now populate them with data from https://doi.org/10.5281/zenodo.7655067 as follows' ...
@@ -65,7 +65,7 @@ lines = {'Great, you''ve created the necessary folders and the variables pointin
     ['5) Download AQUA_MODIS.20100619T052031.L2.SST.nc4 into ' base_dir 'build_test' DirectorySeparator 'test_dir_c' DirectorySeparator ' (434 MB).'] ...
     'When you have populated the folders enter the following two lines at the Matlab command prompt:' ...
     '[timing problem_list] = build_and_fix_orbits(  orbits_directory, granules_directory, metadata_directory, fixit_directory, ...' ...
-    '   logs_directory, output_file_directory, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);' ...
+    '   logs_directory, output_file_directory_local, [2010 6 19 5 25 0], [2010 6 19 5 30 0 ], 1, 1, 1, 1);' ...
     'This will build and fix one orbit (about 5 minutes on my computer), which it will place in the ' ...
     [base_dir 'build_test' DirectorySeparator 'test_dir_c' DirectorySeparator 'Output' DirectorySeparator '2010' DirectorySeparator '06' DirectorySeparator ' folder.'] ...
     'To determine if it has performed correctly, in the Matlab command line type:\n compare_outputs.'};

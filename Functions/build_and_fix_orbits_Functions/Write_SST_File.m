@@ -42,7 +42,7 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
 global print_diagnostics print_times debug regridded_debug
 global npixels
 

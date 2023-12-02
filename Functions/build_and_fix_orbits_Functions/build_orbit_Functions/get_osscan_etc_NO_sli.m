@@ -25,7 +25,7 @@ function [status, indices] = get_osscan_etc_NO_sli(indices)
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
 global print_diagnostics print_times debug
 global npixels
 

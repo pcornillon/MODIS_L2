@@ -278,6 +278,46 @@ for iSection=[2,4]
         
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
     end
+
+    % Fix problem with longitude going from one side of the dateline to the other.
+
+    diff_lon = diff(longitude);
+    [icdl, jcdl] = find(abs(diff_lon) > 10);
+
+    for iScan=region_start(iSection):region_end(iSection)
+        nn = find(abs(jcdl)==iScan);
+
+        if ~isempty(nn)
+
+            % Do not fix if the dateline is within 1 pixel of the beginning
+            % or the end of the scanline.
+
+            if (nn(1) > 1) & (nn(end) < size(new_sst,1)-1)
+
+                file_start = min(icdl(nn));
+                file_end = max(icdl(nn));
+
+                num_fill = file_end - file_start;
+
+                step_size = new_sst(fill_end+1, iScan) - min(fill_start-1, iScan);
+                pixel_step_size = step_size / (num_fill + 1);
+                
+                for iElement=fill_start:fill_end
+
+                    % Only fill this element if it is a nan in new_sst.
+                    % This happens when the orbit is bending over at high
+                    % latitudes. Could get fancy and fill between the
+                    % pixels that have legit values but this occurs rarely
+                    % in the orbit and it's not clear how much fixing it
+                    % helps at these locations.
+                    
+                    if isnan(new_sst(iElement,iScan))
+                        new_sst(iElement, iScan) = new_sst(fill_start-1, iScan) + pixel_step_size * (iElement - (fill_start - 1));
+                    end
+                end
+            end
+        end
+    end
 end
 
 %% Do Section 3.

@@ -1,4 +1,4 @@
-% processs_day_1_for_01_2003_thru_12_2010 - Script to submit build_and_fix batch jobs - PCC
+% processs_01_01_2003_thru_01_14_2003 - Script to submit build_and_fix batch jobs - PCC
 
 % The four variables intialized below, start_time, period_to_process, batch_step 
 % and num_batch must be changed for each version of this script. 
@@ -25,6 +25,12 @@
 % jobs. 
 
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+
+% submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
+
+% Option = 6; % Reads data from s3 in us-west-2.
+Option = 2; % For debug. Reads from and writes to Cornillon_NAS
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
@@ -96,12 +102,6 @@ end
 % Two variables that will rarely need to be changed. They will only be
 % changed if you want to submit jobs using a different set of input data
 % and/or if you want to run jobs interactively.
-
-% submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
-submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
-
-Option = 2; % For debug. Reads from and writes to Cornillon_NAS
-% Option = 5; % Reads data from s3 in us-west-2.
 
 for iJob=1:num_batch
     fprintf('Submitting job #%i to process from %s to %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)))

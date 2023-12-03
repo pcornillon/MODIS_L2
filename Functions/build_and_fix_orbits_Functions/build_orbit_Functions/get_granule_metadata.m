@@ -7,6 +7,12 @@ function [status, granule_start_time_guess] = get_granule_metadata( metadata_fil
 % detectors. It does this by reading the milliseconds of each scan line;
 % it are the same for all scan lines in a detector group.
 %
+% The start of an orbit corresponds to the time of the scan line for which
+% the nadir value is the CLOSEST to 78 S on the descending portion of the
+% orbit. Note that another definition would have been the first scan line
+% with a nadir value south of 78 S on a descending orbit. This is NOT how
+% it is defined. 
+%
 % INPUT
 %   metadata_file_list - list of granule metadata found files for this time.
 %   data_file_list - list of granule data files found for this time.
@@ -158,7 +164,18 @@ if ~isempty(aa)
         if sign(nlat_t(mm(1))-latlim) ~= sign(nlat_t(mm(end))-latlim)
 
             nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
-            start_line_index = floor(nn(1) / 10) * 10 + 5;
+
+            % Find the descending scan line for which the nadir value is
+            % CLOSEST to 78 S.
+
+            option_1 = floor(nn(1) / 10) * 10 + 1;
+            option_2 = floor(nn(1) / 10) * 10 + 5;
+
+            if abs(option_1 - latlim) <= abs(option_2 - latlim)
+                start_line_index = option_1;
+            else
+                start_line_index = option_2;
+            end
 
             % Next check to see if the 11th point from here is closer to
             % latlim, if it is use it but first make sure that there are at

@@ -119,7 +119,7 @@ while 1==1
                 if print_diagnostics
                     fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
                 end
-                
+
                 status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
                 return
             end
@@ -132,15 +132,15 @@ while 1==1
     % until a granule is found, or not.
 
     % % % metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-    
+
     % % % metadata_file_list = [];
-    % % % 
+    % % %
     % % % granule_start_time_guess = granule_start_time_guess - 5 / 86400;
     % % % for iSecond=1:65
     % % %     granule_start_time_guess = granule_start_time_guess + 1 / 86400;
-    % % % 
+    % % %
     % % %     filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-    % % % 
+    % % %
     % % %     if exist(filename)
     % % %         metadata_file_list = dir(filename);
     % % %         break
@@ -148,7 +148,7 @@ while 1==1
     % % % end
 
     [found_one, metadata_granule, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
-    
+
     if found_one
         metadata_file_list = dir(metadata_granule);
     end
@@ -175,38 +175,38 @@ while 1==1
             if amazon_s3_run
 
                 % % % % % Do we need new credentials for the s3 file?
-                % % % % 
+                % % % %
                 % % % % if (now - s3_expiration_time) > 55 / (60 * 24)
                 % % % %     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
                 % % % % end
-                % % % % 
+                % % % %
                 % % % % % Get the time of the metadata file.
                 % % % % % modis metadata file: AQUA_MODIS_20100502T170507_L2_SST_OBPG_extras.nc4
-                % % % % 
+                % % % %
                 % % % % md_date = metadata_file_list(1).name(12:19);
                 % % % % md_time = metadata_file_list(1).name(21:26);
-                % % % % 
+                % % % %
                 % % % % % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
-                % % % % 
+                % % % %
                 % % % % % Is there an s3 data file at the same time as this metadata file?
-                % % % % 
+                % % % %
                 % % % % data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-                % % % % 
+                % % % %
                 % % % % % If the file does not exist check for a nighttime version of it.
-                % % % % 
+                % % % %
                 % % % % if ~exist(data_temp_filename)
                 % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
                 % % % % end
-                % % % % 
+                % % % %
                 % % % % % If the file does not exist search all seconds for this metadata minute.
-                % % % % 
+                % % % %
                 % % % % if ~exist(data_temp_filename)
-                % % % % 
+                % % % %
                 % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
                 % % % %     % % % found_one = 0;
-                % % % % 
+                % % % %
                 % % % %     yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
-                % % % % 
+                % % % %
                 % % % %     for iSec=0:59
                 % % % %         iSecC = num2str(iSec);
                 % % % %         if iSec < 10
@@ -214,13 +214,13 @@ while 1==1
                 % % % %         elseif iSec == 0
                 % % % %             iSecC = '00';
                 % % % %         end
-                % % % % 
+                % % % %
                 % % % %         data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-                % % % % 
+                % % % %
                 % % % %         if ~exist(data_temp_filename)
                 % % % %             data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
                 % % % %         end
-                % % % % 
+                % % % %
                 % % % %         if exist(data_temp_filename)
                 % % % %             found_one = 1;
                 % % % %             break
@@ -272,174 +272,184 @@ while 1==1
                 % bad and go to the next one.
 
                 if status == 0
-                    iGranule = iGranule + 1;
 
-                    % Populate oinfo for this granule for info. oinfo(iOrbit).name
-                    % has not been defined yet but will be shortly using some
-                    % of these values.
+                    if (iGranule == 0) & (iOrbit == 1) & isempty(start_line_index)
 
-                    oinfo(iOrbit).ginfo(iGranule).data_name = data_temp_filename;
+                        % Still looking for the first granule with a descending
+                        % crossing of 78 S.
 
-                    oinfo(iOrbit).ginfo(iGranule).metadata_name = metadata_temp_filename;
-                    oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
-
-                    oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
-                    oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) + (secs_per_scan_line * 10) /  secs_per_day;
-
-                    oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
-
-                    oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
-
-                    if iGranule == 1
-                        if iOrbit > 1
-                            % The flow gets here if this is the first granule in an orbit and the
-                            % descending nadir track crosses -78 S. This can happen if all of the
-                            % other granules in the orbit are missing.
-                            %
-                            % Get the possible location of this granule in the orbit. If it starts in
-                            % the 101 scanline overlap region, two possibilities will be returned. The
-                            % earlier one of the two, smaller scanline, will be chosen; choosing the
-                            % later of the two would mean that only the last few scanlines of the orbit
-                            % would be used in the orbit, which should have already been done if nadir
-                            % track of the previous granule crossed 78 S.
-
-                            nnToUse = get_scanline_index;
-
-                            if isempty(nnToUse)
-                                indices.current.osscan = [];
-                            else
-                                indices.current.osscan = nnToUse(1);
-                            end
-                        else
-                            indices.current.osscan = 1;
-                        end
+                        fprintf('Granule at %s does not descend across 78 S. Will continue searching.\n', datestr(granule_start_time_guess))
                     else
-                        % Get the number of scan lines to skip and make sure that it is an
-                        % acceptable value.
 
-                        lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
-                        [val, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
+                        iGranule = iGranule + 1;
 
-                        if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0
+                        % Populate oinfo for this granule for info. oinfo(iOrbit).name
+                        % has not been defined yet but will be shortly using some
+                        % of these values.
 
-                            if lines_to_skip == 10
+                        oinfo(iOrbit).ginfo(iGranule).data_name = data_temp_filename;
 
-                                % Should not get here but every once in a while
-                                % the first scan of the mirror is missing;
-                                % i.e., 10 scan lines are missing. If the
-                                % number of missing lines is thought to be 10,
-                                % then check to see if this is one of those
-                                % cases by calculating the separation of the
-                                % last nadir pixel on the previous granule and
-                                % the first nadir pixel for this granule. If
-                                % they are separated by between 9 and 11.5 kms,
-                                % then the scan of the mirror is missing, so
-                                % it's OK to add 10 nan scan lines at this
-                                % point.
+                        oinfo(iOrbit).ginfo(iGranule).metadata_name = metadata_temp_filename;
+                        oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
 
-                                clon_1 = ncread(oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/clon');
-                                clat_1 = ncread(oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/clat');
+                        oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
+                        oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) + (secs_per_scan_line * 10) /  secs_per_day;
 
-                                clon_2 = ncread(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clon');
-                                clat_2 = ncread(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clat');
+                        oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
 
-                                dd_1_2 = sqrt( ((clon_2(1)-clon_1(end)) * cosd(clat_1(end))).^2 + (clat_2(1)-clat_1(end)).^2) * 111;
+                        oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
 
-                                if dd_1_2 > 9 & dd_1_2 < 11.5
+                        if iGranule == 1
+                            if iOrbit > 1
+                                % The flow gets here if this is the first granule in an orbit and the
+                                % descending nadir track crosses -78 S. This can happen if all of the
+                                % other granules in the orbit are missing.
+                                %
+                                % Get the possible location of this granule in the orbit. If it starts in
+                                % the 101 scanline overlap region, two possibilities will be returned. The
+                                % earlier one of the two, smaller scanline, will be chosen; choosing the
+                                % later of the two would mean that only the last few scanlines of the orbit
+                                % would be used in the orbit, which should have already been done if nadir
+                                % track of the previous granule crossed 78 S.
 
-                                    fprintf('.....First 1/2 mirror rotation skipped for %s, will skip %i lines at %f longitude, %f latitude.\n', ...
-                                        oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip, clon_2(1), clat_2(1))
+                                nnToUse = get_scanline_index;
 
-                                    status = populate_problem_list( 116, ['Looks like 1st 1/2 mirror rotation missing for this granule. Skipping ' num2str(lines_to_skip) ' scan lines.'], granule_start_time_guess);
+                                if isempty(nnToUse)
+                                    indices.current.osscan = [];
                                 else
-                                    fprintf('.....Says to skip 10 lines for %s, but the distance, %f km, isn''t right. Will not skip any lines.\n', ...
-                                        oinfo(iOrbit).ginfo(iGranule).metadata_name, dd_1_2)
-
-                                    status = populate_problem_list( 117, ['Says to skip 10 lines for %s, but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time_guess);
-
-                                    lines_to_skip = 0;
+                                    indices.current.osscan = nnToUse(1);
                                 end
                             else
-
-                                fprintf('.....Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
-                                    oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
-
-                                status = populate_problem_list( 115, ['Number of lines to skip for granule, ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
-
-                                lines_to_skip = possible_num_scan_lines_skip(3,nn);
+                                indices.current.osscan = 1;
                             end
-                        end
-
-                        indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
-                    end
-
-                    % If there was a problem determining if the descending
-                    % nadir track crosses latlim in this granule, skip the
-                    % granule and go to the next one.
-
-                    if ~isempty(indices.current.osscan)
-
-                        % Generate the orbit name if it has not already been generated. 
-
-                        if isempty(oinfo(iOrbit).name)
-                            status = generate_output_filename('no_sli');
-
-                            % status should never be 231 so returning if it is;
-                            % again, it should NEVER happen.
-
-                            if (status == 201) | (status == 231) | (status > 900)
-                                return
-                            end
-                        end
-
-                        % Get the location of this granule in the orbit and
-                        % the start and end of orbit if not already known.
-
-                        if isempty(start_line_index)
-                            [~, indices] = get_osscan_etc_NO_sli(indices);
                         else
-                            [~, indices] = get_osscan_etc_with_sli(indices);
+                            % Get the number of scan lines to skip and make sure that it is an
+                            % acceptable value.
 
-                            status = generate_output_filename('sli');
+                            lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
+                            [~, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
 
-                            % status should never be 231 so returning if it is;
-                            % again, it should NEVERN happen.
+                            if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0
 
-                            if (status == 201) | (status == 231) | (status > 900)
-                                return
+                                if lines_to_skip == 10
+
+                                    % Should not get here but every once in a while
+                                    % the first scan of the mirror is missing;
+                                    % i.e., 10 scan lines are missing. If the
+                                    % number of missing lines is thought to be 10,
+                                    % then check to see if this is one of those
+                                    % cases by calculating the separation of the
+                                    % last nadir pixel on the previous granule and
+                                    % the first nadir pixel for this granule. If
+                                    % they are separated by between 9 and 11.5 kms,
+                                    % then the scan of the mirror is missing, so
+                                    % it's OK to add 10 nan scan lines at this
+                                    % point.
+
+                                    clon_1 = ncread(oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/clon');
+                                    clat_1 = ncread(oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/clat');
+
+                                    clon_2 = ncread(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clon');
+                                    clat_2 = ncread(oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/clat');
+
+                                    dd_1_2 = sqrt( ((clon_2(1)-clon_1(end)) * cosd(clat_1(end))).^2 + (clat_2(1)-clat_1(end)).^2) * 111;
+
+                                    if dd_1_2 > 9 & dd_1_2 < 11.5
+
+                                        fprintf('.....First 1/2 mirror rotation skipped for %s, will skip %i lines at %f longitude, %f latitude.\n', ...
+                                            oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip, clon_2(1), clat_2(1))
+
+                                        status = populate_problem_list( 116, ['Looks like 1st 1/2 mirror rotation missing for this granule. Skipping ' num2str(lines_to_skip) ' scan lines.'], granule_start_time_guess);
+                                    else
+                                        fprintf('.....Says to skip 10 lines for %s, but the distance, %f km, isn''t right. Will not skip any lines.\n', ...
+                                            oinfo(iOrbit).ginfo(iGranule).metadata_name, dd_1_2)
+
+                                        status = populate_problem_list( 117, ['Says to skip 10 lines for %s, but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time_guess);
+
+                                        lines_to_skip = 0;
+                                    end
+                                else
+
+                                    fprintf('.....Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
+                                        oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
+
+                                    status = populate_problem_list( 115, ['Number of lines to skip for granule, ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
+
+                                    lines_to_skip = possible_num_scan_lines_skip(3,nn);
+                                end
                             end
+
+                            indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
                         end
 
-                        % And now popoulate oinfo for scan line indices.
+                        % If there was a problem determining if the descending
+                        % nadir track crosses latlim in this granule, skip the
+                        % granule and go to the next one.
 
-                        oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
-                        oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
+                        if ~isempty(indices.current.osscan)
 
-                        oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
-                        oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
+                            % Generate the orbit name if it has not already been generated.
 
-                        if isfield(indices, 'pirate')
-                            oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.pirate.osscan;
-                            oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.pirate.oescan;
+                            if isempty(oinfo(iOrbit).name)
+                                status = generate_output_filename('no_sli');
 
-                            oinfo(iOrbit).ginfo(iGranule).pirate_gsscan = indices.pirate.gsscan;
-                            oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.pirate.gescan;
+                                % status should never be 231 so returning if it is;
+                                % again, it should NEVER happen.
+
+                                if (status == 201) | (status == 231) | (status > 900)
+                                    return
+                                end
+                            end
+
+                            % Get the location of this granule in the orbit and
+                            % the start and end of orbit if not already known.
+
+                            if isempty(start_line_index)
+                                [~, indices] = get_osscan_etc_NO_sli(indices);
+                            else
+                                [~, indices] = get_osscan_etc_with_sli(indices);
+
+                                status = generate_output_filename('sli');
+
+                                % status should never be 231 so returning if it is;
+                                % again, it should NEVERN happen.
+
+                                if (status == 201) | (status == 231) | (status > 900)
+                                    return
+                                end
+                            end
+
+                            % And now popoulate oinfo for scan line indices.
+
+                            oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
+                            oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
+
+                            oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
+                            oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
+
+                            if isfield(indices, 'pirate')
+                                oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.pirate.osscan;
+                                oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.pirate.oescan;
+
+                                oinfo(iOrbit).ginfo(iGranule).pirate_gsscan = indices.pirate.gsscan;
+                                oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.pirate.gescan;
+                            end
+
+                            if isfield(indices, 'next')
+                                oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
+                                oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
+
+                                oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
+                                oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
+
+                                % Return here because the start of a new orbit has been
+                                % found.
+                            end
+
+                            return
+                        else
+                            iGranule = iGranule - 1;
                         end
-
-                        if isfield(indices, 'next')
-                            oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
-                            oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
-
-                            oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
-                            oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
-
-                            % Return here because the start of a new orbit has been
-                            % found.
-                        end
-
-                        return
-                    else
-                        iGranule = iGranule - 1;
                     end
                 end
             end

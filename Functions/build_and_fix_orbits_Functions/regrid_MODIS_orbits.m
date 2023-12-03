@@ -279,45 +279,59 @@ for iSection=[2,4]
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
     end
 
-    % Fix problem with longitude going from one side of the dateline to the other.
+    %% Fix problem with longitude going from one side of the dateline to the other.
 
     diff_lon = diff(longitude);
     [icdl, jcdl] = find(abs(diff_lon) > 10);
 
+    Range = 5;
+    
     for iScan=region_start(iSection):region_end(iSection)
-        nn = find(abs(jcdl)==iScan);
+        nn = find(jcdl == iScan);
 
         if ~isempty(nn)
 
-            % Do not fix if the dateline is within 1 pixel of the beginning
-            % or the end of the scanline.
+            fix_start = min(icdl(nn));
+            fix_end = max(icdl(nn));
 
-            if (nn(1) > 1) & (nn(end) < size(new_sst,1)-1)
+            % Do not fix if the dateline is near (within 5 pixels) of the 
+            % beginning or the end of the scanline.
 
-                file_start = min(icdl(nn));
-                file_end = max(icdl(nn));
+            if (fix_start > Range) & (fix_end < size(new_sst,1)-Range)
 
-                num_fill = file_end - file_start;
+                % Do not fix if new_sst is nan to Range (nominally 5)
+                % pixels on either side of the identified range.  
 
-                step_size = new_sst(fill_end+1, iScan) - min(fill_start-1, iScan);
-                pixel_step_size = step_size / (num_fill + 1);
+                nn = find(isnan(new_sst(fix_start-Range:fix_start-1, iScan))==0);
+                mm = find(isnan(new_sst(fix_end+1:fix_end+Range, iScan))==0);
                 
-                for iElement=fill_start:fill_end
+                fix_start = fix_start - Range + max(nn);
+                fix_end = fix_end + min(mm) - 1;
 
-                    % Only fill this element if it is a nan in new_sst.
-                    % This happens when the orbit is bending over at high
-                    % latitudes. Could get fancy and fill between the
-                    % pixels that have legit values but this occurs rarely
-                    % in the orbit and it's not clear how much fixing it
-                    % helps at these locations.
-                    
-                    if isnan(new_sst(iElement,iScan))
-                        new_sst(iElement, iScan) = new_sst(fill_start-1, iScan) + pixel_step_size * (iElement - (fill_start - 1));
+                if (isnan(new_sst(fix_start-1, iScan)) == 0) & (isnan(new_sst(fix_end+1, iScan))== 0)
+                    num_fill = fix_end - fix_start + 1;
+
+                    step_size = new_sst(fix_end+1, iScan) - new_sst(fix_start-1, iScan);
+                    pixel_step_size = step_size / (num_fill + 1);
+
+                    for iElement=fix_start:fix_end
+
+                        % Only fill this element if it is a nan in new_sst.
+                        % This happens when the orbit is bending over at high
+                        % latitudes. Could get fancy and fill between the
+                        % pixels that have legit values but this occurs rarely
+                        % in the orbit and it's not clear how much fixing it
+                        % helps at these locations.
+
+                        if isnan(new_sst(iElement,iScan))
+                            new_sst(iElement, iScan) = new_sst(fix_start-1, iScan) + pixel_step_size * (iElement - (fix_start - 1));
+                        end
                     end
                 end
             end
         end
     end
+%%
 end
 
 %% Do Section 3.

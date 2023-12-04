@@ -279,6 +279,8 @@ while 1==1
                         % crossing of 78 S.
 
                         fprintf('Granule at %s does not descend across 78 S. Will continue searching.\n', datestr(granule_start_time_guess))
+    
+                        granule_start_time_guess = granule_start_time_guess - 5 / (24 * 60);
                     else
 
                         iGranule = iGranule + 1;

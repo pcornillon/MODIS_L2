@@ -65,15 +65,16 @@ indices.current.gescan = start_line_index + 101 - 1;
 % Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan ~= orbit_length
+    kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
 
     if print_diagnostics
-        fprintf('...Calculsted length orbit for %s is %i, not equal to %i. This can happen but should be very rare.\n', oinfo(iOrbit).name, indices.current.oescan, orbit_length);
+        fprintf('...Calculated length of %s is %i scans, not %i. Forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length, orbit_length);
     end
 
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
 
-    status = populate_problem_list( 416, ['Calculsted length orbit for ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ', not equal to ' num2str(orbit_length) '. This can happen but should be very rare.']);
+    status = populate_problem_list( 416, ['Calculated length of ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ' scans, not ' num2str(orbit_length(kk+11:end-11)) '. Forcing to ' num2str(orbit_length) '.']);
 
     if iOrbit == 1
         fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful.\n')

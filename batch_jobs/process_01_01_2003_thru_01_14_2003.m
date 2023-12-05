@@ -27,7 +27,7 @@
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
 % submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
-submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
 
 % Option = 6; % Reads data from s3 in us-west-2.
 Option = 2; % For debug. Reads from and writes to Cornillon_NAS

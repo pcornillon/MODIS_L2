@@ -17,12 +17,6 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 %     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
 % end
 
-% Define globals.
-
-global oinfo iOrbit iGranule iProblem problem_list
-
-global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filename
-
 % Set up directories for this job.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote

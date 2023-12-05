@@ -333,6 +333,8 @@ while 1==1
 
                             if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0
 
+                                kk = strfind(oinfo(iOrbit).ginfo(iGranule).metadata_name, 'AQUA_MODIS_'); % Used in error statements below.
+
                                 if lines_to_skip == 10
 
                                     % Should not get here but every once in a while
@@ -358,24 +360,27 @@ while 1==1
 
                                     if dd_1_2 > 9 & dd_1_2 < 11.5
 
-                                        fprintf('.....First 1/2 mirror rotation skipped for %s, will skip %i lines at %f longitude, %f latitude.\n', ...
-                                            oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip, clon_2(1), clat_2(1))
+                                        fprintf('.....1st 1/2 mirror rotation missing for %s. Skipping %i lines at lon %f, lat %f.\n', ...
+                                            oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), lines_to_skip, clon_2(1), clat_2(1))
 
-                                        status = populate_problem_list( 116, ['Looks like 1st 1/2 mirror rotation missing for this granule. Skipping ' num2str(lines_to_skip) ' scan lines.'], granule_start_time_guess);
+                                        status = populate_problem_list( 116, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                            '. Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time_guess);
                                     else
                                         fprintf('.....Says to skip 10 lines for %s, but the distance, %f km, isn''t right. Will not skip any lines.\n', ...
-                                            oinfo(iOrbit).ginfo(iGranule).metadata_name, dd_1_2)
+                                            oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), dd_1_2)
 
-                                        status = populate_problem_list( 117, ['Says to skip 10 lines for %s, but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time_guess);
+                                        status = populate_problem_list( 117, ['Says to skip 10 lines for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                            ', but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time_guess);
 
                                         lines_to_skip = 0;
                                     end
                                 else
 
                                     fprintf('.....Number of lines to skip for granule %s, %i, is not an acceptable value. Forcing to %i.\n', ...
-                                        oinfo(iOrbit).ginfo(iGranule).metadata_name, lines_to_skip,  possible_num_scan_lines_skip(3,nn))
+                                        oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), lines_to_skip,  possible_num_scan_lines_skip(3,nn))
 
-                                    status = populate_problem_list( 115, ['Number of lines to skip for granule, ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
+                                    status = populate_problem_list( 115, ['Number of lines to skip for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                        ', ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
 
                                     lines_to_skip = possible_num_scan_lines_skip(3,nn);
                                 end

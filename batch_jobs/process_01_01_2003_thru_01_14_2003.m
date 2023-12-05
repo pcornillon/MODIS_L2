@@ -108,9 +108,9 @@ end
 % and/or if you want to run jobs interactively.
 
 for iJob=1:num_batch
-    fprintf('Submitting job #%i to process from %s to %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)))
-
     base_diary_filename = strrep(strrep([datestr(now) '_Job_' num2str(iJob) '_From_' datestr(mat_start(iJob)) '_To_' datestr(mat_end(iJob))], ':', 'h'), ' ', '_');
+
+    fprintf('Submitting job #%i to process from %s to %s. Diary file: %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)), base_diary_filename)
 
     if ~test_run
         if submit_as_batch

@@ -36,7 +36,11 @@ Option = 2; % For debug. Reads from and writes to Cornillon_NAS
 
 machine = pwd;
 if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
-    prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj')
+    prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
+end
+
+if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0)
+    prj = openProject('/Users/petercornillon/MATLAB/Projects/MODIS_L2/MODIS_L2.prj');
 end
 
 % Note that for the start time you need to specify a month and day other

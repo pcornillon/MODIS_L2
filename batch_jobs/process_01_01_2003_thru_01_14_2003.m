@@ -1,5 +1,5 @@
 % processs_01_01_2003_thru_01_14_2003 - Script to submit build_and_fix batch jobs - PCC
-
+%
 % The four variables intialized below, start_time, period_to_process, batch_step 
 % and num_batch must be changed for each version of this script. 
 % 

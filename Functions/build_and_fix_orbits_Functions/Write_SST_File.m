@@ -792,3 +792,22 @@ for iAttribute = 1:length(oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attribut
     end
 end
 
+%% Submit a batch job to copy the file just written from local to remote storage.
+
+% The reason for this is that writing a netCDF file to remote storage takes
+% a long time compared to writing it to local storage so write it to local
+% storage and then submit a batch job to copy it from local storage to
+% remote storage. Only do this if output_file_directory_remote is not empty. 
+% Note that output_filename in the following is the local filename. 
+
+if ~isempty(output_file_directory_remote)
+
+    % Check to see if copy_output_no is running.
+    
+    nn = strfind(output_filename, '/SST/');
+    remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
+
+    copy_output_no = batch( 'copy_output_file', 0, {output_filename, remote_filename}, CaptureDiary=true);
+end
+
+

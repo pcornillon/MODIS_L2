@@ -41,9 +41,9 @@ switch Option
         metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
         fixit_directory = [BaseDir 'metadata/'];
 
-        granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
-        % granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
-        output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        % granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+        granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
+        output_file_directory_local = '/users/petercornillon/Desktop/SST/';
         output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 
     case 3 % MacStudio or Satdat1 reading and writing to the Cornillon_NAS

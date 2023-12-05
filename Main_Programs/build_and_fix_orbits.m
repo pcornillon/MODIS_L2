@@ -607,6 +607,8 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 
 if determine_fn_size; get_job_and_var_mem; end
 
+tic_build_start = tic;
+
 % Start by looking for the first granule after Matlab_start_time with a 
 % descending nadir track crossing latlim, nominally 73 S.
 

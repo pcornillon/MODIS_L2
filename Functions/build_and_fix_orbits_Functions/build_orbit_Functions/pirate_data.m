@@ -110,6 +110,15 @@ else
         return
     end
 
+    % Need to get scan_line_times for the pirated granule but this will
+    % overwrite the values for the previous granule, which are needed for
+    % the next orbit. Sooo.... copy the current values to a temporary place
+    % and reinstate them after the call to add_granule_data_to_orbit, which
+    % needs them. A bit clunky but doing it this way means that I don't
+    % have to change other stuff. 
+    
+    temp_scan_line_times = scan_line_times;
+
     % Need to read the scan times from the pirated metadata file.
 
     Year = ncread( metadata_granule, '/scan_line_attributes/year');
@@ -125,4 +134,8 @@ else
     [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
         = add_granule_data_to_orbit( 'pirate', data_granule, metadata_granule, ...
         latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
+
+    % Now reinstate scan_line_times for the start of the next orbit.
+
+    scan_line_times = temp_scan_line_times;
 end

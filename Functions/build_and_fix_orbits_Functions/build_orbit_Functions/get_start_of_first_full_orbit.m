@@ -85,8 +85,13 @@ if amazon_s3_run
         end
 
         filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-        
+
+        % If a filename is found, get a list of files here since the
+        % function was set up to deal with this list previously, before I
+        % sorted out the above so this is really for legacy reasons.
+
         if exist(filename)
+
             file_list = dir(filename);
             break
         end
@@ -159,7 +164,12 @@ while granule_start_time_guess <= Matlab_end_time
     
     % Return if end of run.
     
-    if (status == 201) | (status == 231) | (status > 900)
+    if status == 201
+        fprintf('*** This should really never happen, but if it does, end the run.\n')
+        status = 901;
+    end
+
+    if status > 900
         fprintf('End of run.\n')
         return
     end

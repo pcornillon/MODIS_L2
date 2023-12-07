@@ -96,10 +96,10 @@ while 1==1
 
     if granule_start_time_guess > Matlab_end_time
         if print_diagnostics
-            fprintf('*** No start of an orbit in the specified range %s to %s.\n', datestr(start_time), datestr(Matlab_end_time))
+            fprintf('*** Did not cross %6.2f between end of previous orbit (%s) and end of run (%s).\n', latlim, datestr(start_time), datestr(Matlab_end_time))
         end
 
-        status = populate_problem_list( 901, ['*** No start of an orbit in the specified range ' datestr(start_time) ' to ' datestr(Matlab_end_time)], granule_start_time_guess);
+        status = populate_problem_list( 901, ['*** Did not cross ' num2str(latlim, 6.2) ' between end of previous orbit (' datestr(start_time) ') and (' datestr(Matlab_end_time) ')'], granule_start_time_guess);
 
         return
     end

@@ -550,7 +550,7 @@ end
 % med_op is the 2 element vector specifying the number of pixels to use in
 % the median filtering operation. Usually it is [3 3] but for test work,
 % set it to [1 1]; i.e., do not median filter.
-
+    
 med_op = [1 1];
 
 % Get the range matrices to use for the reference temperature test.
@@ -635,8 +635,7 @@ iOrbit = 1;
 
 % % % iOrbit = iOrbit + 1;
 
-% If end of run, return; not a very productive run. status=231 is a coding
-% error should never happen.
+% Either no granules with a 78 crossing or coding problem.
 
 if (status == 201) | (status == 231) | (status > 900)
     return
@@ -656,18 +655,16 @@ while granule_start_time_guess <= Matlab_end_time
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granule_start_time_guess);
-    
-    if status > 0
-        if status == 201
-            fprintf('Status returned from build_orbit as 201. This should never happen; it is a coding error. Terminating this run.\n')
-            return
-        end
-        
-        if (status == 231) | (status > 900)
-            fprintf('Exiting.\n')
-            return
-        end
 
+    % No remaining granules with a 78 crossing.
+    
+    if status > 900
+        fprintf('Exiting.\n')
+        return
+    end
+
+    if (status == 201) | (status > 231)
+        fprintf('Problem building this orbit, skipping to the next one.\n')
     else
         
         % latitude will be empty where there are missing granules. Fill them in

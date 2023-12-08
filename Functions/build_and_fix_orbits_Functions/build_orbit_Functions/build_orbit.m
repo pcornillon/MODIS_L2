@@ -124,6 +124,10 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
     
     start_line_index = [];
         
+    % Skip the next 80 minutes of granules to save time; don't have to read them.
+
+    granule_start_time_guess = granule_start_time_guess + 85 / (60 * 24);
+
     while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
         [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
@@ -146,7 +150,13 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         status = 251;
     end
     
-    return
+    % TEMPORARY START
+
+    iOrbit = iOrbit + 1;
+    iGranule = 1;
+    % % % return
+    
+    % TEMPORARY STOP
 end
 
 %% Now build this orbit from its granules; a granule has been found with the start of this orbit.
@@ -212,9 +222,15 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % 201 - granule start time exceeded the end of orbit time without
     % finding a granule with a start time in it or 901 end of run. If
     % status = 201 or 901 break out of this loop.
-    
+
     if (status == 201) | (status == 231) | (status > 900)
         return
+
+        oinfo(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
+
+        if print_times
+            fprintf('   Time to build this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_build_orbit, datestr(now))
+        end
     else
         
         % Populate the orbit with data from this granule.

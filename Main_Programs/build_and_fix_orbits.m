@@ -50,7 +50,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %    metadata files copied from the OBPG files.
 %   fixit_directory - the directory for files required by this script to
 %    correct the cloud mask and the bow-tie effect.
-%   output_file_directory_local - the base directory for the output files. 
+%   output_file_directory_local - the base directory for the output files.
 %    Note that this must be the full directory name, netCDF doesn't like ~/.
 %
 % Build orbits for 25 February through to 1 April  2010 and fix the bow-tie
@@ -62,7 +62,7 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
 %   logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
 %   output_file_directory_local = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/';
-% 
+%
 %   build_and_fix_orbits( [2010 2 25 0 0 0], [2010 4 1 0 0 0], 0, 1, 0, 1, 0, 1, 1);
 %   build_and_fix_orbits( [2010 6 19 0 0 0], [2010 6 24 0 0 0], 1, 1, 1, 0, 1, 1, 1);
 %
@@ -110,7 +110,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10 
+global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -125,7 +125,7 @@ global s3_expiration_time
 % globals used in the other major functions of build_and_fix_orbits.
 
 global med_op
- 
+
 % Open diary for this run.
 
 rng('shuffle')  % This to make it start with a different random number.
@@ -154,7 +154,7 @@ if determine_fn_size; get_job_and_var_mem; end
 %       end_time
 %       metadata_global_attrib
 %       scans_in_this_granule
-%       osscan_diff - difference in # of scan lines for the location of the start of this granule in the orbit from two different ways of estimating it.  
+%       osscan_diff - difference in # of scan lines for the location of the start of this granule in the orbit from two different ways of estimating it.
 %       osscan
 %       oescan
 %       gsscan
@@ -166,7 +166,7 @@ if determine_fn_size; get_job_and_var_mem; end
 
 % Initial oinfo structure. Need to do this to be able to check for the
 % existence of a field. Specifically, if the field has not been created and
-% isempty is done on it, it will fail. 
+% isempty is done on it, it will fail.
 
 oinfo.name = [];
 oinfo.start_time = [];
@@ -202,7 +202,7 @@ regridded_debug = 0;  % To determine and write alternate SST fields based on gri
 % % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 if isempty(metadata_directory)
-    
+
     fprintf('You will be asked to select a test case from the following list.\n')
     fprintf('\nTest runs for Peter:\n')
     fprintf('1) Run on ubuntu in us-west-2 for 4/19/2010 0h to 4/19/2010 24h accessing data from s3.\n')
@@ -220,7 +220,7 @@ if isempty(metadata_directory)
 
     test_num = input('Enter the test run number: ');
     % % % test_num = 999;
-    
+
     fix_mask = 1;  % Test run.
     fix_bowtie = 1;  % Test run.
     regrid_sst = 1;  % Test run.
@@ -228,14 +228,14 @@ if isempty(metadata_directory)
     get_gradients = 0;  % Test run.
     save_core = 0;  % Test run.
     print_diagnostics = 1;  % Test run.
-    
+
     debug = 1;
 
     fixit_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';   % Test run.
     logs_directory = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';  % Test run.
     start_date_time = [2010 6 19 5 0 0]; % Test run.
     end_date_time = [2010 6 21 12 30 0 ];  % Test run.
-    
+
     switch test_num
         case 1 % us-west-2 s3 access for 4/19/2023
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
@@ -327,7 +327,7 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
-        % Test runs for Angelina
+            % Test runs for Angelina
 
         case 11 % us-west-2 s3 access for 4/19/2023
             metadata_directory = '~/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
@@ -389,23 +389,23 @@ if isempty(metadata_directory)
             get_gradients = 1;  % Test run.
             save_core = 1;  % Test run.
 
-% Other cases from a long time ago
+            % Other cases from a long time ago
 
         case 101
             metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
             granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/combined/';  % Test run.
             output_file_directory_local = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test1/';  % Test run.
-            
+
         case 102
             metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
             granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_2/MODIS_R2019/combined/';  % Test run.
             output_file_directory_local = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test2/';  % Test run.
-            
+
         case 103
             metadata_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';  % Test run.
             granules_directory = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_3/MODIS_R2019/combined/';  % Test run.
             output_file_directory_local = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/SST/test3/';  % Test run.
-        
+
         case 999
             metadata_directory = '/home/ubuntu/Documents/Aqua/metadata/Data_from_OBPG_for_PO-DAAC/';
             granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
@@ -420,7 +420,7 @@ if isempty(metadata_directory)
 
         otherwise
             fprintf('Test case must be either 1, 2 or 3; you entered %i.\n', test_num)
-    end        
+    end
 end
 
 save_just_the_facts = 1;
@@ -550,7 +550,7 @@ end
 % med_op is the 2 element vector specifying the number of pixels to use in
 % the median filtering operation. Usually it is [3 3] but for test work,
 % set it to [1 1]; i.e., do not median filter.
-    
+
 med_op = [1 1];
 
 % Get the range matrices to use for the reference temperature test.
@@ -594,12 +594,12 @@ end
 
 if get_gradients
     gradient_filename = [fixit_directory 'abbreviated_Separation_and_Angle_Arrays.mat'];
-    
+
     load(gradient_filename)
     cos_track_angle = cosd(track_angle);
     sin_track_angle = sind(track_angle);
     clear track_angle
-    
+
     % along_scan_seps_array = ncread(gradient_filename, 'along_scan_seps_array');
     % along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
 end
@@ -625,7 +625,7 @@ if determine_fn_size; get_job_and_var_mem; end
 
 tic_build_start = tic;
 
-% Start by looking for the first granule after Matlab_start_time with a 
+% Start by looking for the first granule after Matlab_start_time with a
 % descending nadir track crossing latlim, nominally 73 S.
 
 iOrbit = 1;
@@ -648,230 +648,248 @@ while granule_start_time_guess <= Matlab_end_time
     mem_count = mem_count + 1;
 
     %% Build the orbit.
-    
+
     if determine_fn_size; get_job_and_var_mem; end
 
     time_to_process_this_orbit = tic;
-    
+
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granule_start_time_guess);
 
     % No remaining granules with a 78 crossing.
-    
+
     if status > 900
         fprintf('Exiting.\n')
         return
     end
 
-    if (status == 201) | (status > 231)
-        fprintf('Problem building this orbit, skipping to the next one.\n')
-    else
-        
-        % latitude will be empty where there are missing granules. Fill them in
-        % with the canonical orbit.
-        
-        nlat_orbit = latitude(677,:);
-        
-        nn = find(isnan(nlat_orbit) == 1);
-        
-        if ~isempty(nn)
-            nlat_orbit(nn) = nlat_avg(nn);
-        end
+    % % % if status == 251
+    % % %     fprintf('Have skipped the building of orbit %s. Skipping the rest of the processing for this orbit.\n', oinfo(iOrbit).name)
+    % % % 
+    % % %     % Since we are skipping the processing but we have started the
+    % % %     % orbit, we need to increment the orbit number, which is usually
+    % % %     % done after saving the orbith, which is not done in this case.
+    % % % 
+    % % %     iOrbit = iOrbit + 1;
+    % % % else
+        % % % if (status == 201) | (status == 231)
+        if status == 231
+            fprintf('Problem building this orbit, skipping to the next one.\n')
 
-        %% Next fix the mask if requested.
+            % Find the next granule with a descending 78 S crossing.
 
-        SST_In_Masked = SST_In;
+            iGranule = 0;
+            [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
+                = build_orbit( granule_start_time_guess);
 
-        if fix_mask
-            start_time_to_fix_mask = tic;
-            
-            [~, Month, ~, ~, ~, ~] = datevec(oinfo(iOrbit).start_time);
-            [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, Month);
-            
-            oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
-            
-            if print_times
-                fprintf('   Time to fix the mask for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_fix_mask, datestr(now))
-            end
         else
-            Final_Mask = zeros(size(SST_In));
-            Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
-            
-            oinfo(iOrbit).time_to_fix_mask = 0;
-        end
-        
-        SST_In_Masked(Final_Mask==1) = nan;
-        
-        % At this point,
-        %   if the mask has been fixed, final_mask will have values of 0
-        %    where the SST value is 'good' and 1 where it is 'bad'.
-        %   if the mask has NOT been fixed, final_mask is set 0 if
-        %    qual_sst<2, the value is 'good' according to the input mask
-        %    and it will be set to 1 otherwise, the pixel is 'bad'.
-        % AND
-        %   if the mask has been fixed, SST_In_Masked is the input SST
-        %    field, SST_In, with values for which final_mask is 1 set to
-        %    nan; i.e., the corrected mask.
-        %   if the mask has NOT been fixed, SST_In_Masked is the input SST
-        %    field, SST_In,again with values for which final_mask is 1 set
-        %    to nan but in this case using qual_sst values.
-        
-        %% Fix the bowtie problem, again if requested.
-                
-        if fix_bowtie
-            if determine_fn_size; get_job_and_var_mem; end
-    
-            start_address_bowtie = tic;
-            
-            % ******************************************************************************************
-            % Need to add augmented_weights, augmented_locations as the first
-            % two arugments of the call to regrid... if you want to use fast
-            % regridding.
-            % ******************************************************************************************
-            
-            % [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-            %     regrid_MODIS_orbits( regrid_sst, [],[], longitude, latitude, SST_In_Masked);
-                        
-            if regridded_debug == 1
-                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
 
-                mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
-                if length(mm) < numel(SST_In_Masked)
-                    clear xx
-                    xx(mm) = double(SST_In_Masked(mm));
-                    lonxx(mm) = double(longitude(mm));
-                    latxx(mm) = double(latitude(mm));
-                    
-                    regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
-                else
-                    regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
+            % latitude will be empty where there are missing granules. Fill them in
+            % with the canonical orbit.
+
+            nlat_orbit = latitude(677,:);
+
+            nn = find(isnan(nlat_orbit) == 1);
+
+            if ~isempty(nn)
+                nlat_orbit(nn) = nlat_avg(nn);
+            end
+
+            %% Next fix the mask if requested.
+
+            SST_In_Masked = SST_In;
+
+            if fix_mask
+                start_time_to_fix_mask = tic;
+
+                [~, Month, ~, ~, ~, ~] = datevec(oinfo(iOrbit).start_time);
+                [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, Month);
+
+                oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
+
+                if print_times
+                    fprintf('   Time to fix the mask for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_fix_mask, datestr(now))
                 end
             else
-                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ~, ~, ~, ~] = ...
-                    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+                Final_Mask = zeros(size(SST_In));
+                Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
 
-                easting = [];
-                northing = [];
-                new_easting = [];
-                new_northing = [];
-                regridded_sst_alternate = [];
+                oinfo(iOrbit).time_to_fix_mask = 0;
             end
-            
-            if status ~= 0
-                fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo.name, status)
-            end
-            
-            oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
-            
-            if print_times
-                fprintf('   Time to address bowtie for this orbit: %6.1f seconds. Current date/time: %s\n',  oinfo(iOrbit).time_to_address_bowtie, datestr(now))
-            end
-        else
-            regridded_sst = SST_In_Masked; % Need this for gradients.
-            
-            regridded_longitude = nan;
-            regridded_latitude = nan;
-            regridded_flags_sst = nan;
-            regridded_qual = nan;
-            regridded_sstref = nan;
-            region_start = nan;
-            region_end = nan;
-            easting = nan;
-            northing = nan;
-            new_easting = nan;
-            new_northing = nan;
-            
-            oinfo(iOrbit).time_to_address_bowtie = 0;
-        end
-        
-        %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
-        
-        % Note that if the bow-tie problem has not been fixed, the
-        % regridded_sst field is actually the input SST field masked wither
-        % with the qual_sst mask if the mask has not been fixed or the
-        % fixed mixed mask if it has been fixed. Since some orbits are
-        % shorter than the separation and angle arrays, only use the first
-        % part; all orbits should start at about the same location.
-        
-        if get_gradients
-            if determine_fn_size; get_job_and_var_mem; end
-    
-            start_time_to_determine_gradient = tic;
-            
-            medfilt2_sst = 1;
-            if medfilt2_sst
-                sstp = medfilt2(regridded_sst);
+
+            SST_In_Masked(Final_Mask==1) = nan;
+
+            % At this point,
+            %   if the mask has been fixed, final_mask will have values of 0
+            %    where the SST value is 'good' and 1 where it is 'bad'.
+            %   if the mask has NOT been fixed, final_mask is set 0 if
+            %    qual_sst<2, the value is 'good' according to the input mask
+            %    and it will be set to 1 otherwise, the pixel is 'bad'.
+            % AND
+            %   if the mask has been fixed, SST_In_Masked is the input SST
+            %    field, SST_In, with values for which final_mask is 1 set to
+            %    nan; i.e., the corrected mask.
+            %   if the mask has NOT been fixed, SST_In_Masked is the input SST
+            %    field, SST_In,again with values for which final_mask is 1 set
+            %    to nan but in this case using qual_sst values.
+
+            %% Fix the bowtie problem, again if requested.
+
+            if fix_bowtie
+                if determine_fn_size; get_job_and_var_mem; end
+
+                start_address_bowtie = tic;
+
+                % ******************************************************************************************
+                % Need to add augmented_weights, augmented_locations as the first
+                % two arugments of the call to regrid... if you want to use fast
+                % regridding.
+                % ******************************************************************************************
+
+                % [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+                %     regrid_MODIS_orbits( regrid_sst, [],[], longitude, latitude, SST_In_Masked);
+
+                if regridded_debug == 1
+                    [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
+                        regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+
+                    mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
+                    if length(mm) < numel(SST_In_Masked)
+                        clear xx
+                        xx(mm) = double(SST_In_Masked(mm));
+                        lonxx(mm) = double(longitude(mm));
+                        latxx(mm) = double(latitude(mm));
+
+                        regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
+                    else
+                        regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
+                    end
+                else
+                    [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ~, ~, ~, ~] = ...
+                        regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+
+                    easting = [];
+                    northing = [];
+                    new_easting = [];
+                    new_northing = [];
+                    regridded_sst_alternate = [];
+                end
+
+                if status ~= 0
+                    fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo.name, status)
+                end
+
+                oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
+
+                if print_times
+                    fprintf('   Time to address bowtie for this orbit: %6.1f seconds. Current date/time: %s\n',  oinfo(iOrbit).time_to_address_bowtie, datestr(now))
+                end
             else
-                sstp = regridded_sst;
+                regridded_sst = SST_In_Masked; % Need this for gradients.
+
+                regridded_longitude = nan;
+                regridded_latitude = nan;
+                regridded_flags_sst = nan;
+                regridded_qual = nan;
+                regridded_sstref = nan;
+                region_start = nan;
+                region_end = nan;
+                easting = nan;
+                northing = nan;
+                new_easting = nan;
+                new_northing = nan;
+
+                oinfo(iOrbit).time_to_address_bowtie = 0;
             end
 
-            [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
-                sstp, ...
-                along_track_seps_array(:,1:size(regridded_sst,2)), ...
-                along_scan_seps_array(:,1:size(regridded_sst,2)));
-            clear sstp
+            %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
 
-            eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
-            northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
-            
-            oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
-            
-            if print_times
-                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_determine_gradient, datestr(now))
+            % Note that if the bow-tie problem has not been fixed, the
+            % regridded_sst field is actually the input SST field masked wither
+            % with the qual_sst mask if the mask has not been fixed or the
+            % fixed mixed mask if it has been fixed. Since some orbits are
+            % shorter than the separation and angle arrays, only use the first
+            % part; all orbits should start at about the same location.
+
+            if get_gradients
+                if determine_fn_size; get_job_and_var_mem; end
+
+                start_time_to_determine_gradient = tic;
+
+                medfilt2_sst = 1;
+                if medfilt2_sst
+                    sstp = medfilt2(regridded_sst);
+                else
+                    sstp = regridded_sst;
+                end
+
+                [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
+                    sstp, ...
+                    along_track_seps_array(:,1:size(regridded_sst,2)), ...
+                    along_scan_seps_array(:,1:size(regridded_sst,2)));
+                clear sstp
+
+                eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
+                northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
+
+                oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
+
+                if print_times
+                    fprintf('   Time to determine the gradient for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_determine_gradient, datestr(now))
+                end
+            else
+                grad_at_per_km = nan;
+                grad_as_per_km = nan;
+
+                eastward_gradient = nan;
+                northward_gradient = nan;
+
+                oinfo(iOrbit).time_to_determine_gradient = 0;
             end
-        else
-            grad_at_per_km = nan;
-            grad_as_per_km = nan;
-            
-            eastward_gradient = nan;
-            northward_gradient = nan;
-            
-            oinfo(iOrbit).time_to_determine_gradient = 0;
+
+            %% Wrap-up for this orbit.
+
+            if determine_fn_size; get_job_and_var_mem; end
+
+            time_to_save_orbit = tic;
+
+            if save_orbits
+                Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
+                    regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
+                    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
+
+                oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
+                oinfo(iOrbit).time_to_save_this_file = toc(time_to_save_orbit);
+
+                oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
+                if print_times
+                    fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
+                    fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                end
+
+            else
+                oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
+                if print_times
+                    fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                end
+            end
         end
-        
-        %% Wrap-up for this orbit.
-                
-        if determine_fn_size; get_job_and_var_mem; end
 
-        time_to_save_orbit = tic;
-        
-        if save_orbits
-            Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
-                regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
-                region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
-            
-            oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
-            oinfo(iOrbit).time_to_save_this_file = toc(time_to_save_orbit);
-            
-            oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+        % Save oinfo and memory structure files for this run.
 
-            if print_times
-                fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
-                fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
-            end
+        save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct')
 
-        else
-            oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+        % Save the diary to this point
 
-            if print_times
-                fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
-            end
-        end
-    end
+        diary off
+        diary(diary_filename)
 
-    % Save oinfo and memory structure files for this run.
-    
-    save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct')
+        % Increment orbit counter and reset granule counter to 1.
 
-    % Save the diary to this point
-
-    diary off
-    diary(diary_filename)
-
-    % Increment orbit counter and reset granule counter to 1.
-
-    iOrbit = iOrbit + 1;
+        iOrbit = iOrbit + 1;
+    % % % end
 end
 
 fprintf('   Time for this run: %8.1f seconds or, in minutes, %5.1f\n', toc(tic_build_start), toc(tic_build_start/60))

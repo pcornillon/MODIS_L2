@@ -400,10 +400,9 @@ while 1==1
                             if isempty(oinfo(iOrbit).name)
                                 status = generate_output_filename('no_sli');
 
-                                % status should never be 231 so returning if it is;
-                                % again, it should NEVER happen.
+                                % status = 231 ==> build_type in generate_output_filename neither 'sli' nor 'no_sli'
 
-                                if (status == 201) | (status == 231) | (status > 900)
+                                if status == 231
                                     return
                                 end
                             end

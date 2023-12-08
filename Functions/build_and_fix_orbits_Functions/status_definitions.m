@@ -48,9 +48,13 @@
 % 
 % 241 - build_orbit - orbit name not built for iOrbit>1. Very bad. Abort.
 
-% 251 - build_orbit - This orbit already built, have skipped to the start of the next orbit. 
-%       return -- WARNING
-%
+% % % % 251 - build_orbit - This orbit already built, have skipped to the start of the next orbit. 
+% % % %       return -- WARNING
+% % % %
+
+% 261 - build_orbit - length of oinfo less than iOrbit. Not sure how it would get here. 
+%       status = populate_problem_list( 261, ['*** don''t think that we should ever get here: [iOrbit, iGranule]=[' num2str(iOrbit)] ', ' num2str(iGranule) ']. Orbit name: ' oinfo(iOrbit).name '.');
+%       contnues from here; no return at this point -- WARNING
 
 % 415 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.

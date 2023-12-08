@@ -89,6 +89,13 @@ iGranule = 1;
 % end time of the orbit determined when the orbit first started.
 
 if length(oinfo) < iOrbit
+
+    if print_diagnostics
+        fprintf('*** Don''t think that we should ever get here: [iOrbit, iGranule]=[%i, %i]. Granule: %s. Time: %s.\n', iOrbit, iGranule, oinfo(iOrbit).name, datestr(granule_start_time_guess))
+    end
+
+    status = populate_problem_list( 261, ['*** Don''t think that we should ever get here: [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) ']. Orbit name: ' oinfo(iOrbit).name '.'], granule_start_time_guess);
+
     iGranule = 0;
     
     [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
@@ -144,19 +151,19 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         end
     end
     
-    % If no problems set status to 251 ==> this orbit already built.
-
-    if status == 0
-        status = 251;
-    end
+    % % % % If no problems set status to 251 ==> this orbit already built.
+    % % % 
+    % % % if status == 0
+    % % %     status = 251;
+    % % % end
     
-    % TEMPORARY START
-
-    iOrbit = iOrbit + 1;
-    iGranule = 1;
-    % % % return
-    
-    % TEMPORARY STOP
+    % % % % TEMPORARY START
+    % % % 
+    % % % iOrbit = iOrbit + 1;
+    % % % iGranule = 1;
+    % % % % % % return
+    % % % 
+    % % % % TEMPORARY STOP
 end
 
 %% Now build this orbit from its granules; a granule has been found with the start of this orbit.

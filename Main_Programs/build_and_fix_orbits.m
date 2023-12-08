@@ -84,7 +84,7 @@ clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_
     nlat_orbit nlat_avg orbit_length latlim sst_range sst_range_grid_size ...
     oinfo iOrbit iGranule iProblem problem_list scan_line_times ...
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
-    Matlab_end_time s3_expiration_time med_op
+    Matlab_end_time s3_expiration_time med_op missing_end_granule
 
 % Control for memory stats
 
@@ -116,7 +116,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list
+global oinfo iOrbit iGranule iProblem problem_list missing_end_granule
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
@@ -193,6 +193,8 @@ oinfo.ginfo.pirate_osscan = [];
 oinfo.ginfo.pirate_oescan = [];
 oinfo.ginfo.pirate_gsscan = [];
 oinfo.ginfo.pirate_gescan = [];
+
+missing_end_granule = 0;
 
 % Initialize return variables.
 
@@ -674,7 +676,7 @@ while granule_start_time_guess <= Matlab_end_time
     % % % else
         % % % if (status == 201) | (status == 231)
         if status == 231
-            fprintf('Problem building this orbit, skipping to the next one.\n')
+            fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
 
             % Find the next granule with a descending 78 S crossing.
 

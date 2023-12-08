@@ -67,7 +67,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list
+global oinfo iOrbit iGranule iProblem problem_list missing_end_granule
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
@@ -121,10 +121,21 @@ while 1==1
                 end
 
                 status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
+
+                missing_end_granule = 1;
                 return
             end
         end
     end
+
+    % ADDED TEXT ******************************************************
+
+    if missing_end_granule
+        iOrbit = iOrbit + 1;
+        iGranule = 0;
+    end
+
+    % ADDED TEXT ******************************************************
 
     % Search the minute (all second values) for a metadata file
     % corresponding to the guess for the granule start time. This search
@@ -278,7 +289,7 @@ while 1==1
                         % Still looking for the first granule with a descending
                         % crossing of 78 S.
 
-                        fprintf('Granule at %s does not descend across 78 S. Will continue searching.\n', datestr(granule_start_time_guess))
+                        fprintf('\nGranule at %s does not descend across 78 S. Will continue searching.\n\n', datestr(granule_start_time_guess))
     
                         granule_start_time_guess = granule_start_time_guess - 5 / (24 * 60);
                     else
@@ -412,6 +423,63 @@ while 1==1
 
                             if isempty(start_line_index)
                                 [~, indices] = get_osscan_etc_NO_sli(indices);
+
+                                % ADDED TEXT ******************************************************
+
+                                % If there was no granule at the end of the
+                                % current orbit, need to set up the start of
+                                % the next orbit.
+
+                                % % % if (granule_start_time_guess - 5 / (24 * 60)) > Matlab_end_time
+                                % % if granule_start_time_guess > Matlab_end_time
+                                % %     oinfo(iOrbit+1).start_time = oinfo(iOrbit).end_time + sltimes_avg;
+                                % %     oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_day;
+                                % %     oinfo(iOrbit+1).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number; % MAYBE PLUS 1 HERE.
+                                % % 
+                                % %     orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit+1).orbit_number) ...
+                                % %         '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+                                % % 
+                                % %     oinfo(iOrbit+1).name = [output_file_directory_local datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
+                                % %         datestr(oinfo(iOrbit+1).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
+                                % % 
+                                % %     % And the metadata for this granule at the start of the next orbit.
+                                % % 
+                                % %     oinfo(iOrbit+1).ginfo(1).data_name = oinfo(iOrbit).ginfo(end).data_name;
+                                % %     oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
+                                % %     oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
+                                % %     oinfo(iOrbit+1).ginfo(1).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
+                                % % 
+                                % %     oinfo(iOrbit+1).ginfo(1).start_time = scan_line_times(1);
+                                % %     oinfo(iOrbit+1).ginfo(1).end_time = scan_line_times(end);
+                                % % end
+
+                                % % if missing_end_granule
+                                % %     iOrbit = iOrbit + 1;
+                                % %     Granule = 1;
+                                % % 
+                                % %     oinfo(iOrbit).start_time = oinfo(iOrbit-1).end_time + sltimes_avg;
+                                % %     oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
+                                % %     oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number; % MAYBE PLUS 1 HERE.
+                                % % 
+                                % %     orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit).orbit_number) ...
+                                % %         '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+                                % % 
+                                % %     oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
+                                % %         datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
+                                % % 
+                                % %     % And the metadata for this granule at the start of the next orbit.
+                                % % 
+                                % %     oinfo(iOrbit).ginfo(iGranule).data_name = oinfo(iOrbit).ginfo(end).data_name;
+                                % %     oinfo(iOrbit).ginfo(iGranule).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
+                                % %     oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
+                                % %     oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
+                                % % 
+                                % %     oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
+                                % %     oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end);
+                                % % end
+                                
+                                % ADDED TEXT ******************************************************
+                                    
                             else
                                 [~, indices] = get_osscan_etc_with_sli(indices);
 
@@ -454,6 +522,12 @@ while 1==1
 
                             return
                         else
+                            if print_diagnostics
+                                fprintf('*** Problem determining if descending track crosses %6.2f in %s for [iOrbit, iGranule]=[%i, %i]. Time: %s.\n', latlim, oinfo(iOrbit).name, iOrbit, iGranule, datestr(granule_start_time_guess))
+                            end
+
+                            status = populate_problem_list( 263, ['*** Problem determining if descending track crosses ' num2str(latlim) ' in ' oinfo(iOrbit).name ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time_guess);
+
                             iGranule = iGranule - 1;
                         end
                     end

@@ -1,6 +1,8 @@
-function [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, update_oinfo, granule_start_time_guess)
+function [status, granule_start_time_guess] = get_granule_metadata( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess)
+% % % function [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, update_oinfo, granule_start_time_guess) 
 % get_granule_metadata - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
-%
+
+
 % Read the latitude of the nadir track for this granule and determine
 % whether or not it crosses latlim, nominally 78 S. It also checks to make
 % sure that the granule starts with the first detector in a group of 10
@@ -14,8 +16,9 @@ function [status, granule_start_time_guess] = get_granule_metadata( metadata_fil
 % it is defined. 
 %
 % INPUT
-%   metadata_file_list - list of granule metadata found files for this time.
-%   data_file_list - list of granule data files found for this time.
+% % % %   metadata_file_list - list of granule metadata found files for this time.
+%   metadata_granule_folder_name - the metadata folder in which the file was found.
+%   metadata_granule_file_name - the name of the metadata file found.
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 % OUTPUT
@@ -58,7 +61,8 @@ nlat_t = [];
 
 % Build temporaty filename.
 
-temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+% % % temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
 
 % Read time info from metadata granule.
 
@@ -81,7 +85,8 @@ num_scan_lines_in_granule = length(scan_line_times);
 % detector group to minimize the spreading effect from the bowtie issue.
 
 if isempty(scan_line_times)
-    fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_file_list(1).name)
+    % % % fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_file_list(1).name)
+    fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_granule_file_name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
     status = populate_problem_list( 201, temp_filename, granule_start_time_guess);

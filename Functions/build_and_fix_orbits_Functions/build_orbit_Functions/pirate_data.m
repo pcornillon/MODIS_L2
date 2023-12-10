@@ -75,30 +75,36 @@ status = 0;
 % % %     end
 % % % end
 
-[found_one, metadata_granule, ~] = get_S3_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
+% % % [found_one, metadata_granule, ~] = get_S3_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
+[found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_S3_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
 
 if found_one == 0
     fprintf('*** No data metadata granule found for %s. This means there is no file from which to pirate data. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
 
     status = populate_problem_list( 122, oinfo(iOrbit).ginfo(1).metadata_name);
 else    
-    if amazon_s3_run
-        % Here for s3.
-        % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+    metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
+    
+    % % % if amazon_s3_run
+    % % %     % Here for s3.
+    % % %     % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+    % % % 
+    % % %     % % % data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
+    % % % 
+    % % %     [found_one, data_granule, ~] = get_S3_filename( 'sst_data', metadata_granule);
+    % % % else
+    % % %     data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr( granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+    % % % 
+    % % %     if isempty(data_file_list)
+    % % %         found_one = 0;
+    % % %     else
+    % % %         found_one = 1;
+    % % %         data_granule = [data_file_list(1).folder '/' data_file_list(1).name];
+    % % %     end
+    % % % end
 
-        % % % data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
-
-        [found_one, data_granule, ~] = get_S3_filename( 'sst_data', metadata_granule);
-    else
-        data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr( granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-        
-        if isempty(data_file_list)
-            found_one = 0;
-        else
-            found_one = 1;
-            data_granule = [data_file_list(1).folder '/' data_file_list(1).name];
-        end
-    end
+    % % % [found_one, data_granule, ~] = get_S3_filename( 'sst_data', metadata_granule);
+    [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule);
 
     if found_one == 0
         if print_diagnostics
@@ -109,6 +115,8 @@ else
 
         return
     end
+
+    data_granule = [data_granule_folder_name data_granule_file_name];
 
     % Need to get scan_line_times for the pirated granule but this will
     % overwrite the values for the previous granule, which are needed for

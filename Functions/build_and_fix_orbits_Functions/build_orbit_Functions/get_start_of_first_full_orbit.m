@@ -1,4 +1,5 @@
-function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit
+% % % function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit
+function [status, granule_start_time_guess] = get_start_of_first_full_orbit
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
 % This function starts by searching for the first metadata granule at or
@@ -12,10 +13,10 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 % OUTPUT
 %   status  : 911 - end of run.
 %           : Value returnd from find_start_of_orbit.
-%   metadata_file_list - result of a dir function on the metadata directory
-%    returning at least one filename.
-%   data_file_list - result of a dir function on the data directory
-%    returning at least one filename.
+% % % %   metadata_file_list - result of a dir function on the metadata directory
+% % % %    returning at least one filename.
+% % % %   data_file_list - result of a dir function on the data directory
+% % % %    returning at least one filename.
 %   indices - a structure with osscan, oescan, gsscan and gescan for the
 %    current orbit, data to be pirated from the next orbit if relevant and,
 %    also if relevant, values for the next orbit. 
@@ -125,14 +126,25 @@ end
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
 
-nn = strfind( file_list(1).name, 'AQUA_MODIS_');
+% % % nn = strfind( file_list(1).name, 'AQUA_MODIS_');
+% % % 
+% % % yyyy = str2num(file_list(1).name(nn+11:nn+14));
+% % % mm = str2num(file_list(1).name(nn+15:nn+16));
+% % % dd = str2num(file_list(1).name(nn+17:nn+18));
+% % % HH = str2num(file_list(1).name(nn+20:nn+21));
+% % % MM = str2num(file_list(1).name(nn+22:nn+23));
+% % % SS = str2num(file_list(1).name(nn+24:nn+25));
 
-yyyy = str2num(file_list(1).name(nn+11:nn+14));
-mm = str2num(file_list(1).name(nn+15:nn+16));
-dd = str2num(file_list(1).name(nn+17:nn+18));
-HH = str2num(file_list(1).name(nn+20:nn+21));
-MM = str2num(file_list(1).name(nn+22:nn+23));
-SS = str2num(file_list(1).name(nn+24:nn+25));
+metadata_granule_file_name = file_list(1).name;
+
+nn = strfind( metadata_granule_file_name, 'AQUA_MODIS_');
+
+yyyy = str2num(metadata_granule_file_name(nn+11:nn+14));
+mm = str2num(metadata_granule_file_name(nn+15:nn+16));
+dd = str2num(metadata_granule_file_name(nn+17:nn+18));
+HH = str2num(metadata_granule_file_name(nn+20:nn+21));
+MM = str2num(metadata_granule_file_name(nn+22:nn+23));
+SS = str2num(metadata_granule_file_name(nn+24:nn+25));
 
 granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,SS);
 
@@ -152,7 +164,8 @@ while granule_start_time_guess <= Matlab_end_time
 
     if local_debug; fprintf('In 2nd while loop.\n'); end
 
-    [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
 
     % find_next_granule_with_data, used in the loop above, looks for the next
     % granule with data in it and it looks to see if the nadir track of the

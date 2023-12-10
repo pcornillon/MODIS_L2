@@ -633,7 +633,8 @@ tic_build_start = tic;
 iOrbit = 1;
 % % % iGranule = 0;
 
-[status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
+% % % [status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
+[status, granule_start_time_guess] = get_start_of_first_full_orbit;
 
 % % % iOrbit = iOrbit + 1;
 

@@ -39,7 +39,7 @@ if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
 end
 
-if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0)
+if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0) & (submit_as_batch == 1)
     prj = openProject('/Users/petercornillon/MATLAB/Projects/MODIS_L2/MODIS_L2.prj');
 end
 
@@ -55,7 +55,6 @@ num_batch = 1; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
-
 
 yearShift_period = period_to_process(1);
 monthShift_period = period_to_process(2);

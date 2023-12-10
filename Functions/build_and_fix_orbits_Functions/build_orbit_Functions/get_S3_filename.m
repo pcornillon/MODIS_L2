@@ -1,4 +1,4 @@
-function [found_one, data_filename, test_time] = get_S3_filename( file_type, arg_2)
+function [found_one, folder_name, file_name, test_time] = get_S3_filename( file_type, arg_2)
 % get_S3_filename - get the name of the NASA data file from the AWS S3 NASA bucket - PCC
 %
 % This function will get the approximate time of the granule to search for
@@ -9,8 +9,8 @@ function [found_one, data_filename, test_time] = get_S3_filename( file_type, arg
 %   file_type - 'sst_data' for NASA granule data or 'metadata' for OBPG
 %    metadata file in S3 bucket.
 %   arg_2 = time to start looking for a metadata granule, will be set to
-%    test_time if 'metadata. 
-%    OR 
+%    test_time if 'metadata.
+%    OR
 %    The metadata filename corresponding to the data file we are searching
 %    for if file_type is 'S3', otherwise can be blank or have a value,
 %    which will be ignored. Will be set to metadata_name if 'data'.
@@ -18,9 +18,9 @@ function [found_one, data_filename, test_time] = get_S3_filename( file_type, arg
 % OUTPUT
 %   found_one - 1 if a data file was found corresponding to the metadata
 %    file and 0 if none was found within one minute.
-%   data_filename - the name of the data file found.
-%   granule_start_time_guess - the start time, which was altered in the
-%    call for 'metadata'.
+%   folder_name - the folder in which the file was found.
+%   file_name - the name of the data file found.
+%   test_time - the start time, which was altered in the call for 'metadata'.
 %
 
 % globals for the run as a whole.
@@ -30,11 +30,14 @@ global granules_directory metadata_directory
 % globals for build_orbit part.
 
 global formatOut
-global s3_expiration_time
-
-test_time = nan;
+global s3_expiration_time amazon_s3_run
 
 found_one = 0;
+
+folder_name = '';
+file_name = '';
+
+test_time = nan;
 
 switch file_type
 
@@ -50,71 +53,113 @@ switch file_type
 
             if exist(data_filename)
                 found_one = 1;
+
+                folder_name = [metadata_directory datestr(test_time, formatOut.yyyy) '/'];
+                file_name = ['AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
+
                 break
             end
         end
 
     case 'sst_data'
 
-        % Do we need new credentials for the s3 file?
-
-        if (now - s3_expiration_time) > 55 / (60 * 24)
-            s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
-        end
+        metadata_name = arg_2;
 
         % Get the time of the metadata file.
-        % modis metadata file: AQUA_MODIS_20100502T170507_L2_SST_OBPG_extras.nc4
-
-        metadata_name = arg_2;
 
         md_date = metadata_name(12:19);
         md_time = metadata_name(21:26);
 
-        % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
+        % Will first get components of the filename, which differ from data
+        % at URI, as copied from OBPG, and at AWS.
 
-        % Is there an s3 data file at the same time as this metadata file?
+        if amazon_s3_run
 
-        data_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
+            % make sure that access credentials for NASA S3 files are still active.
 
-        % If the file does not exist check for a nighttime version of it.
+            if (now - s3_expiration_time) > 55 / (60 * 24)
+                s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+            end
 
-        if ~exist(data_filename)
-            data_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+            % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
+            %   granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+
+            filename_start = '';
+            filename_end_day = '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc';
+            filename_end_night = '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc';
+            dir_year = '';
+        else
+            % modis metadata file: AQUA_MODIS.20030103T120006.L2.SST.nc
+            %   granules_directory = '/Volumes/MODIS_L2_original/OBPG/combined/';  OR
+            %   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+
+
+            filename_start = 'AQUA_MODIS.';
+            filename_end_day = '.L2.SST.nc';
+            filename_end_night = filename_end_day;
+
+            dir_year = [md_date(1:4) '/'];
         end
 
-        % If the file does not exist search all seconds for this metadata minute.
+        % Build the filename.
 
-        if ~exist(data_filename)
+        data_filename = [granules_directory dir_year filename_start md_date md_time filename_end_day];
 
-            data_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-            % % % found_one = 0;
+        % Well, does this sucker exist? If not, continue searching for a file.
 
-            granule_guess_time = datenum([str2num(md_data(1:4)) str2num(md_data(5:6)) str2num(md_data(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
+        if exist(data_filename)
+            found_one = 1;
+        else
+            % If the file does not exist check for a nighttime version of it.
 
-            yymmddhhmm = datestr(granule_guess_time, formatOut.yyyymmddhhmm);
+            % Note that since filename_end_night = filename_end_day for
+            % granules at URI (i.e., not in an S3 bucket), the script will
+            % perform two identical searches if the file is not found on the
+            % first one. Yup, that's slower but these runs are just for debug
+            % purposes and the extra time to do this is not that big of a deal.
+            % It would be a much bigger deal for NASA S3.
 
-            for iSec=0:59
-                iSecC = num2str(iSec);
-                if iSec < 10
-                    iSecC = ['0' iSecC];
-                elseif iSec == 0
-                    iSecC = '00';
+            data_filename = [granules_directory dir_year filename_start md_date md_time filename_end_night];
+
+            if ~exist(data_filename)
+                % If the file does not exist search all seconds for this metadata minute.
+
+                % % % data_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+
+                granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
+
+                yymmddhhmm = datestr(granule_guess_time, formatOut.yyyymmddhhmm);
+
+                if amazon_s3_run == 0
+                    yymmddhhmm = [yymmddhhmm(1:8) 'T' yymmddhhmm(9:12)];
                 end
 
-                data_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
+                for iSec=0:59
+                    iSecC = num2str(iSec);
+                    if iSec < 10
+                        iSecC = ['0' iSecC];
+                    elseif iSec == 0
+                        iSecC = '00';
+                    end
 
-                if ~exist(data_filename)
-                    data_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-                end
+                    data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_day];
 
-                if exist(data_filename)
-                    found_one = 1;
-                    break
+                    if ~exist(data_filename) & amazon_s3_run  % No need to search for a URI nighttime version of the file. 
+                        data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_night];
+                    end
+
+                    if exist(data_filename)
+                        found_one = 1;
+                        break
+                    end
                 end
             end
-        else
-            found_one = 1;
         end
+
+        nn = strfind(data_filename, '/');
+
+        folder_name = data_filename(1:nn(end));
+        file_name = data_filename(nn(end)+1:end);
 
     otherwise
         fprintf('Should never get here.\n')

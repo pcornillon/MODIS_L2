@@ -98,7 +98,8 @@ if length(oinfo) < iOrbit
 
     iGranule = 0;
     
-    [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
     % Return if end of run.
     
@@ -137,7 +138,8 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
     while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         
         % Return if end of run.
         
@@ -223,7 +225,8 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     
-    [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
     % Status returned from find_next_granule_with_data is either 0 - all OK,
     % 201 - granule start time exceeded the end of orbit time without

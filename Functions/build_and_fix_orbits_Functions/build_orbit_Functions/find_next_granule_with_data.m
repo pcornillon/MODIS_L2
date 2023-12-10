@@ -1,4 +1,5 @@
-function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess)
+function [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess)
+% % % function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -82,7 +83,7 @@ global med_op
 status = 0;
 indices = [];
 data_file_list = [];
-metadata_file_list = [];
+% % % metadata_file_list = [];
 
 % Start of loop searching for next granule.
 
@@ -158,104 +159,113 @@ while 1==1
     % % %     end
     % % % end
 
-    [found_one, metadata_granule, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
+    % % % [found_one, metadata_granule, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
+    [found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
+
+    % Was a metadata file found at this time? If so proceed, if not
+    % increment time to search by 5 minutes and search for the next
+    % metadata file.
 
     if found_one
-        metadata_file_list = dir(metadata_granule);
-    end
-
-    % Was a metadata file found at this time?
-
-    if ~isempty(metadata_file_list)
-
-        % Hopefully there is only one file in the searched time range.
-
-        if length(metadata_file_list) == 1
+        % % % metadata_file_list = dir(metadata_granule);
+    % % % end
+    % % % 
+    % % % % Was a metadata file found at this time?
+    % % % 
+    % % % if ~isempty(metadata_file_list)
+        % % % 
+        % % % % Hopefully there is only one file in the searched time range.
+        % % % 
+        % % % if length(metadata_file_list) == 1
 
             % Get the metadata filename.
 
-            metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+            % % % metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+            metadata_temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
 
             % Is the data granule for this time present? If so, get the range
             % of locations of scanlines in the orbit and the granule to use.
             % Otherwise, add to problem list and continue search for a data
             % granule; remember, a metadata granule was found so this should
-            % not occur.
+            % not occur. BUT FIRST, search for a granule within a minute of
+            % the time passed in.
 
-            found_one = 0;
-            if amazon_s3_run
+            % % % found_one = 0;
+            % % % if amazon_s3_run
+            % % % 
+            % % %     % % % % % Do we need new credentials for the s3 file?
+            % % %     % % % %
+            % % %     % % % % if (now - s3_expiration_time) > 55 / (60 * 24)
+            % % %     % % % %     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+            % % %     % % % % end
+            % % %     % % % %
+            % % %     % % % % % Get the time of the metadata file.
+            % % %     % % % % % modis metadata file: AQUA_MODIS_20100502T170507_L2_SST_OBPG_extras.nc4
+            % % %     % % % %
+            % % %     % % % % md_date = metadata_file_list(1).name(12:19);
+            % % %     % % % % md_time = metadata_file_list(1).name(21:26);
+            % % %     % % % %
+            % % %     % % % % % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
+            % % %     % % % %
+            % % %     % % % % % Is there an s3 data file at the same time as this metadata file?
+            % % %     % % % %
+            % % %     % % % % data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
+            % % %     % % % %
+            % % %     % % % % % If the file does not exist check for a nighttime version of it.
+            % % %     % % % %
+            % % %     % % % % if ~exist(data_temp_filename)
+            % % %     % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+            % % %     % % % % end
+            % % %     % % % %
+            % % %     % % % % % If the file does not exist search all seconds for this metadata minute.
+            % % %     % % % %
+            % % %     % % % % if ~exist(data_temp_filename)
+            % % %     % % % %
+            % % %     % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+            % % %     % % % %     % % % found_one = 0;
+            % % %     % % % %
+            % % %     % % % %     yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
+            % % %     % % % %
+            % % %     % % % %     for iSec=0:59
+            % % %     % % % %         iSecC = num2str(iSec);
+            % % %     % % % %         if iSec < 10
+            % % %     % % % %             iSecC = ['0' iSecC];
+            % % %     % % % %         elseif iSec == 0
+            % % %     % % % %             iSecC = '00';
+            % % %     % % % %         end
+            % % %     % % % %
+            % % %     % % % %         data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
+            % % %     % % % %
+            % % %     % % % %         if ~exist(data_temp_filename)
+            % % %     % % % %             data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+            % % %     % % % %         end
+            % % %     % % % %
+            % % %     % % % %         if exist(data_temp_filename)
+            % % %     % % % %             found_one = 1;
+            % % %     % % % %             break
+            % % %     % % % %         end
+            % % %     % % % %     end
+            % % %     % % % % else
+            % % %     % % % %     found_one = 1;
+            % % %     % % % % end
+            % % % 
+            % % %     [found_one, data_temp_filename, ~] = get_S3_filename( 'sst_data', metadata_file_list(1).name);
+            % % % else
+            % % %     data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
+            % % % 
+            % % %     % If a file was found save the filename.
+            % % % 
+            % % %     if ~isempty(data_file_list)
+            % % %         if length(data_file_list) == 1
+            % % %             data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
+            % % %             found_one = 1;
+            % % %         end
+            % % %     end
+            % % % end
+            % % % 
+            % % % % % % if isempty(data_file_list)
 
-                % % % % % Do we need new credentials for the s3 file?
-                % % % %
-                % % % % if (now - s3_expiration_time) > 55 / (60 * 24)
-                % % % %     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
-                % % % % end
-                % % % %
-                % % % % % Get the time of the metadata file.
-                % % % % % modis metadata file: AQUA_MODIS_20100502T170507_L2_SST_OBPG_extras.nc4
-                % % % %
-                % % % % md_date = metadata_file_list(1).name(12:19);
-                % % % % md_time = metadata_file_list(1).name(21:26);
-                % % % %
-                % % % % % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
-                % % % %
-                % % % % % Is there an s3 data file at the same time as this metadata file?
-                % % % %
-                % % % % data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-                % % % %
-                % % % % % If the file does not exist check for a nighttime version of it.
-                % % % %
-                % % % % if ~exist(data_temp_filename)
-                % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-                % % % % end
-                % % % %
-                % % % % % If the file does not exist search all seconds for this metadata minute.
-                % % % %
-                % % % % if ~exist(data_temp_filename)
-                % % % %
-                % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-                % % % %     % % % found_one = 0;
-                % % % %
-                % % % %     yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
-                % % % %
-                % % % %     for iSec=0:59
-                % % % %         iSecC = num2str(iSec);
-                % % % %         if iSec < 10
-                % % % %             iSecC = ['0' iSecC];
-                % % % %         elseif iSec == 0
-                % % % %             iSecC = '00';
-                % % % %         end
-                % % % %
-                % % % %         data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-                % % % %
-                % % % %         if ~exist(data_temp_filename)
-                % % % %             data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-                % % % %         end
-                % % % %
-                % % % %         if exist(data_temp_filename)
-                % % % %             found_one = 1;
-                % % % %             break
-                % % % %         end
-                % % % %     end
-                % % % % else
-                % % % %     found_one = 1;
-                % % % % end
-
-                [found_one, data_temp_filename, ~] = get_S3_filename( 'sst_data', metadata_file_list(1).name);
-            else
-                data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-
-                % If a file was found save the filename.
-
-                if ~isempty(data_file_list)
-                    if length(data_file_list) == 1
-                        data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
-                        found_one = 1;
-                    end
-                end
-            end
-
-            % % % if isempty(data_file_list)
+            [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule_file_name);
 
             if found_one == 0
                 % Reset metadata_file_list to empty since no data granule
@@ -263,19 +273,21 @@ while 1==1
                 % flag and keep searching.
 
                 if print_diagnostics
-                    fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_file_list(1).folder, metadata_file_list(1).name )
+                    fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_granule_folder_name, metadata_granule_file_name )
                 end
 
-                status = populate_problem_list( 101, ['No data granule found corresponding to ' metadata_file_list(1).folder '/' metadata_file_list(1).name '.'], granule_start_time_guess);
+                status = populate_problem_list( 101, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
 
-                metadata_file_list = [];
+                % % % metadata_file_list = [];
             else
                 % % % data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
                 % % % metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
+                data_temp_filename = [data_granule_folder_name data_granule_file_name];
 
                 % Get the metadata for this granule.
 
-                [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
+                % % % [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
+                [status, granule_start_time_guess] = get_granule_metadata( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
 
                 % If status not equal to zero, either problems with start times
                 % or 1st detector, not 1st detector in group of 10. Neither of
@@ -532,7 +544,7 @@ while 1==1
                         end
                     end
                 end
-            end
+            % % % end
         end
     end
 

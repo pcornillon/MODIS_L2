@@ -286,8 +286,8 @@ while 1==1
 
                 % Get the metadata for this granule.
 
-                % % % [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, 1, granule_start_time_guess);
-                [status, granule_start_time_guess] = get_granule_metadata( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
+                % % % [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_file_list, 1, granule_start_time_guess);
+                [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
 
                 % If status not equal to zero, either problems with start times
                 % or 1st detector, not 1st detector in group of 10. Neither of

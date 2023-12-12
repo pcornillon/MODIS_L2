@@ -149,6 +149,16 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         end
         
         if ~isempty(start_line_index)
+            % If we get here, the search has found an orbit with a
+            % descending 78S crossing. But this was an orbit that was
+            % already processed so we need to decrement iOrbit, replacing
+            % the current values of oinfo(iOrbit) with those of
+            % oinfo(iOrbit+1), which was created in the above search.
+
+            oinfo(iOrbit) = oinfo(iOrbit+1);
+            oinfo(iOrbit+1) = [];
+            iGranule = 1;
+
             break
         end
     end

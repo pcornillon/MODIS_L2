@@ -24,75 +24,137 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 % Set directories.
 
 switch Option
-    case 1 % MacStudio or Satdat1 reading from NAS and writing to the NAS
+    case 1 % MacStudio or Satdat1 
+        % reading 
+        %   fixit metadata from Dropbox, 
+        %   OBPG metadata from Dropbox, 
+        %   granules from Cornillon_NAS 
+        % and writing 
+        %   local output to the Cornillon_NAS
+        %   remote outut to the Cornillon_NAS
+        %   logs output to Dropbobx
+
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
 
-        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
         fixit_directory = [BaseDir 'metadata/'];
+        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
 
-        % % % granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
         granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
+        
         output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
         output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+
+        logs_directory = [BaseDir 'Logs/'];
     
-    case 2 % MacStudio or Satdat1 reading from Aqua-1 and writing to the Cornillon_NAS
+    case 2 % MacStudio or Satdat1 
+        % reading 
+        %   fixit metadata from Dropbox, 
+        %   OBPG metadata from Aqua-1, 
+        %   granules from Cornillon_NAS 
+        % and writing 
+        %   local output to the Desktop
+        %   remote outut to the Cornillon_NAS
+        %   logs output to Dropbobx
+
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
 
-        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
         fixit_directory = [BaseDir 'metadata/'];
+        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
-        % granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
         granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
+
         output_file_directory_local = '/users/petercornillon/Desktop/SST/';
         output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 
-    case 3 % MacStudio or Satdat1 reading and writing to the Cornillon_NAS
+        logs_directory = [BaseDir 'Logs/'];
+
+    case 3 % MacStudio or Satdat1
+        %   fixit metadata from Dropbox, 
+        %   OBPG metadata from Cornillon_NAS, 
+        %   granules from Cornillon_NAS 
+        % and writing 
+        %   local output to the Desktop
+        %   remote outut to the Cornillon_NAS
+        %   logs output to Dropbobx
+
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
 
-        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
         fixit_directory = [BaseDir 'metadata/'];
+        metadata_directory = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
-        % granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
         granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
-        output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+
+        output_file_directory_local = '/users/petercornillon/Desktop/SST/';
         output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 
-    case 4 % MacStudio or Satdat1 reading from MacStudio
+        logs_directory = [BaseDir 'Logs/'];
+
+    case 4 % MacStudio or Satdat1
+        %   fixit metadata from Dropbox, 
+        %   OBPG metadata from Aqua-1, 
+        %   granules from Aqua-1 
+        % and writing 
+        %   local output to Dropbox
+        %   remote outut to the Cornillon_NAS
+        %   logs output to Dropbobx
+
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+
+        fixit_directory = [BaseDir 'metadata/'];
+        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+
         granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
-        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-        fixit_directory = [BaseDir 'metadata/'];
         output_file_directory_local = [BaseDir 'output/'];
+        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+
+        logs_directory = [BaseDir 'Logs/'];
 
     case 5 % AWS for debug, not from S3
-        BaseDir = '/home/ubuntu/Documents/Aqua/';
+        %   fixit metadata from Dropbox, 
+        %   OBPG metadata from Dropbox, 
+        %   granules from Dropbox 
+        % and writing 
+        %   local output to Dropbox
+        %   remote outut to []
+        %   logs output to Dropbobx
+
+       BaseDir = '/home/ubuntu/Documents/Aqua/';
+
+        fixit_directory = [BaseDir 'metadata/'];
+        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
+
         granules_directory = [BaseDir 'original_granules/'];
 
-        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
-        fixit_directory = [BaseDir 'metadata/'];
         output_file_directory_local = [BaseDir 'output/'];
+        output_file_directory_remote = '';
+
+        logs_directory = [BaseDir 'Logs/'];
 
     case 6 % AWS from S3
-        % Set directories for s3 run with metadata.
+        %   fixit metadata from s3-uri-gso-pcornillon
+        %   OBPG metadata  from s3-uri-gso-pcornillon 
+        %   granules       from NASA S3
+        % and writing 
+        %   local output   to   /home/ubuntu/Documents/Aqua/output/
+        %   remote outut   to   Cornillon_NAS
+        %   logs output    to   s3-uri-gso-pcornillonDropbobx
 
-        % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
-        granules_directory = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+        fixit_directory              = '/mnt/s3-uri-gso-pcornillon/';
+        metadata_directory           = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
 
-        BaseDir = '/mnt/s3-uri-gso-pcornillon/';
+        granules_directory           = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
-        metadata_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
-        fixit_directory = '/mnt/s3-uri-gso-pcornillon/';
-        % output_file_directory_local = '/home/ubuntu/Documents/output/';
-        output_file_directory_local = '/mnt/uri-nfs-cornillon/';
+        output_file_directory_local  = '/home/ubuntu/Documents/Aqua/output/';
+        output_file_directory_remote = '/mnt/uri-nfs-cornillon/';
+
+        logs_directory               = '/mnt/s3-uri-gso-pcornillon/Logs/';
+        
         % % % 
         % % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
         % % % 
         % % % output_file_directory_local = '/mnt/s3-uri-gso-pcornillon/output/';
-        % % % logs_directory = '/mnt/s3-uri-gso-pcornillon/Logs/';
 end
-
-logs_directory = [BaseDir 'Logs/'];
 
 % Initialize arguments for build_and_fix
 

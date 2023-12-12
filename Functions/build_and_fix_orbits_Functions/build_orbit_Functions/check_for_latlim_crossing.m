@@ -1,6 +1,6 @@
-function [status, granule_start_time_guess] = get_granule_metadata( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess)
-% % % function [status, granule_start_time_guess] = get_granule_metadata( metadata_file_list, update_oinfo, granule_start_time_guess) 
-% get_granule_metadata - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
+function [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess)
+% % % function [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_file_list, update_oinfo, granule_start_time_guess) 
+% check_for_latlim_crossing - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 
 
 % Read the latitude of the nadir track for this granule and determine

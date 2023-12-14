@@ -244,13 +244,14 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % status = 201 or 901 break out of this loop.
 
     if (status == 201) | (status == 231) | (status > 900)
-        return
-
         oinfo(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
 
         if print_times
             fprintf('   Time to build this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_build_orbit, datestr(now))
         end
+
+        return
+        
     else
         
         % Populate the orbit with data from this granule.

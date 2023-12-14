@@ -79,12 +79,14 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filename ...
     determine_fn_size print_diagnostics print_times debug regridded_debug ...
     npixels save_just_the_facts amazon_s3_run formatOut secs_per_day ...
-    secs_per_orbit secs_per_scan_line secs_per_granule_minus_10 ...
+    secs_per_orbit secs_per_scan_line ...
     index_of_NASA_orbit_change possible_num_scan_lines_skip sltimes_avg ...
     nlat_orbit nlat_avg orbit_length latlim sst_range sst_range_grid_size ...
     oinfo iOrbit iGranule iProblem problem_list scan_line_times ...
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
     Matlab_end_time s3_expiration_time med_op missing_end_granule
+
+% % % clear global secs_per_granule_minus_10
 
 % Control for memory stats
 
@@ -110,7 +112,8 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10
+global secs_per_day secs_per_orbit secs_per_scan_line 
+% % % global secs_per_granule_minus_10
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -473,15 +476,18 @@ npixels = 1354;
 
 latlim = -78;
 
-secs_per_day = 86400;
-secs_per_orbit = 5933.56;
-secs_per_scan_line = 0.1477112;
+orbit_length = 40271;
 
-secs_per_granule_minus_10 = [298.3760  299.8540];
+secs_per_day = 86400;
+
+% secs_per_orbit = 5933.56;
+% secs_per_scan_line = 0.1477112;
+secs_per_scan_line = 0.1489950539;
+secs_per_orbit = secs_per_scan_line * (orbit_length - 100 - 1);
+
+% % % secs_per_granule_minus_10 = [298.3760  299.8540];
 
 index_of_NASA_orbit_change = 11052;
-
-orbit_length = 40271;
 
 iProblem = 0;
 
@@ -801,6 +807,7 @@ while granule_start_time_guess <= Matlab_end_time
                 northing = nan;
                 new_easting = nan;
                 new_northing = nan;
+                regridded_sst_alternate = [];
 
                 oinfo(iOrbit).time_to_address_bowtie = 0;
             end

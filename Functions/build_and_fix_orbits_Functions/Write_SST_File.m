@@ -588,7 +588,7 @@ if save_just_the_facts == 0
     
 end
 
-% Date and time of the start of this orbit sconds since 1/1/1970
+% Date and time of the start of this orbit seconds since 1/1/1970
 
 time_coverage_start = datenum(oinfo(iOrbit).start_time - datenum(1970, 1, 1, 0, 0, 0)) * secs_per_day;
 
@@ -666,7 +666,7 @@ if ~isempty(nGranules)
     ncwriteatt( output_filename, '/contributing_granules/end_time', 'long_name', 'end time since 1970-01-01 00:00:00.0')
     ncwriteatt( output_filename, '/contributing_granules/end_time', 'standard_name', 'end_time_of_granule')
     ncwriteatt( output_filename, '/contributing_granules/end_time', 'units', 'seconds')
-    ncwrite(    output_filename, '/contributing_granules/end_time', start_times)
+    ncwrite(    output_filename, '/contributing_granules/end_time', end_times)
     
     % Now for the start and end indices of the location of the data
     % from this granule in the orbit.

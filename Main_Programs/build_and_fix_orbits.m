@@ -480,9 +480,12 @@ orbit_length = 40271;
 
 secs_per_day = 86400;
 
-% secs_per_orbit = 5933.56;
-% secs_per_scan_line = 0.1477112;
-secs_per_scan_line = 0.1489950539;
+% secs_per_scan_line is determined from the script scan_line_timing_info in Main_Programs
+
+% secs_per_scan_line = 0.1477112; % From earlier work before scan_line_timing_info 
+secs_per_scan_line = 0.14772;
+
+% secs_per_orbit = 5933.56;  % Was hardwired in from earlier but will calculate it now.
 secs_per_orbit = secs_per_scan_line * (orbit_length - 100 - 1);
 
 % % % secs_per_granule_minus_10 = [298.3760  299.8540];

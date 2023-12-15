@@ -124,6 +124,12 @@ while 1==1
                 status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
 
                 missing_end_granule = 1;
+                
+                % Need to determine the start and end of this orbit. Will
+                % do this based on time from the end of the previous orbit
+                % to the start of this granule and, as a check, from the
+                % latitude of the first nadir value in this granule
+                % compared to the canonical orbit. 
                 return
             end
         end

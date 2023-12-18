@@ -5,6 +5,11 @@
 % through its orbit.
 %
 
+global secs_per_day secs_per_scan_line orbit_length
+
+orbit_length = 40271;
+secs_per_day = 86400;
+
 granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
 
 % Get a list of built orbits to use.
@@ -104,28 +109,42 @@ iGranule = 5;
 load /Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/avg_scan_line_start_times.mat
 clear sltimes_avg nlon_typical
 
-num_scan_lines_in_orbit = floor(length(nadir_info(iFilename).time_from_start_orbit) / 2);
+% % % % Find direction of satellite--increasing +1 versus decreasing -1
+% % % % latitude--as a function of location in the canonical orbit.
+% % % 
+% % % for i=2:orbit_length
+% % %     dd(i) = (nlat_avg(i) - nlat_avg(i-1)) / abs(nlat_avg(i) - nlat_avg(i-1));
+% % % end
+% % % ddd = diff(dd);
+% % % nn = find(abs(ddd) > 0.1);
+% % % direction_orbit = nn(2:end);
+% % % 
+
+num_scan_lines_in_half_orbit = floor(orbit_length / 2);
 
 for iFilename=2:length(filelist)
     
     % Get the nadir latitudes for this granule; will have access to this
     % information in a regular run.
     
-    [Year, Month, Day, Hour, Minute, Second] = datevec(granule_info(iFilename).start_time(iGranule));
+    [Year, Month, Day, Hour, Minute, Second] = datevec(granule_info(iFilename).start_time(iGranule)/secs_per_day + datenum(1970,1,1,0,0,0));
     temp_filename = [granules_directory num2str(Year) '/' granule_info(iFilename).filenames(iGranule,:)];
     nlat_t = single(ncread( temp_filename, '/scan_line_attributes/clat'));
-    sat_direction = (nlat(2) - nlat(1)) / abs(nlat(2) - nlat(1));
-    
-    
-    % First guess at number of scans in the current orbit based on time.
-    
-    guess_scan_num_from_time(iFilename) = floor((granule_info(iFilename).start_time(iGranule) - ...
-        orbit_info(iFilename-1).orbit_end_time) / secs_per_scan_line);
 
-    % Now guess at number of scans in the current orbit based latitude.
-    % First, do so based on the start time of the granule.
+    year_t = single(ncread( temp_filename, '/scan_line_attributes/year'));
+    day_t = single(ncread( temp_filename, '/scan_line_attributes/day'));
+    msec_t = single(ncread( temp_filename, '/scan_line_attributes/msec'));
     
-    nadir_info(iFilename).time_from_start_orbit = (granule_info(iFilename).start_time(iGranule) - granule_info(iFilename).start_time(1));
+    [month_t day_t] = doy2mmdd(year_t(1), day_t(1));
+
+    mat_time = datenum( double(year_t), double(month_t), double(day_t), 0, 0, double(msec_t/1000)); % days since 0,1,1,0,0,0
+    linux_time = (mat_time - datenum(1970,1,1)) * secs_per_day; % seconds since 1970,1,1,0,0,0
+
+    % Now guess at number of scans from the start of this orbit to the
+    % start of this granule. First, do so based on the start time of the granule.
+    
+    guess_scan_num_from_time(iFilename) = floor( (granule_info(iFilename).start_time(iGranule) - ...
+        orbit_info(iFilename-1).orbit_end_time) / secs_per_scan_line);
     
     % Next do so based on the latitude of the first scan line in the granule.
     
@@ -152,12 +171,12 @@ for iFilename=2:length(filelist)
          else
             % Two groups
             
-            if nlat_t(aa(bb)) < nlat_t(aa(1))
-               nn = find( min(abs(nlat_avg(1:num_scan_lines_in_orbit) - nlat_t(1))) == abs(nlat_avg(1:num_scan_lines_in_orbit) - nlat_t(1)));
+            if (nlat_avg(aa(1)+1) > nlat_avg(aa(1))) & (nlat_t(2) > nlat_t(1))
+               nn = find( min(abs(nlat_avg(1:num_scan_lines_in_half_orbit) - nlat_t(1))) == abs(nlat_avg(1:num_scan_lines_in_half_orbit) - nlat_t(1)));
                guess_scan_num_from_canonical_orbit(iFilename) = nn(1);
             else
-               nn = find( min(abs(nlat_avg(num_scan_lines_in_orbit+1:end) - nlat_t(1))) == abs(nlat_avg(num_scan_lines_in_orbit+1:end) - nlat_t(1)));
-               guess_scan_num_from_canonical_orbit(iFilename) = num_scan_lines_in_orbit + nn(1);
+               nn = find( min(abs(nlat_avg(num_scan_lines_in_half_orbit+1:end) - nlat_t(1))) == abs(nlat_avg(num_scan_lines_in_half_orbit+1:end) - nlat_t(1)));
+               guess_scan_num_from_canonical_orbit(iFilename) = num_scan_lines_in_half_orbit + nn(1);
             end
         end
     end
@@ -174,12 +193,14 @@ for iFilename=2:length(filelist)
     % AQUA_MODIS.20030109T000006.L2.SST.nc'
 
     temp_filename = filelist(iFilename).name;
-    nn = strfind( temp_filename, '.');
-    
-    nntime = find( abs(nadir_info(iFilename).time_from_start_orbit - granule_info(iFilename).start_time(1)) < 0.01);
-    nnlat  = find( abs(nadir_info(iFilename).nadir_latitude        - nlat_t(1))                             < 0.0001);
+    nn = strfind( temp_filename, '_');
+
+    dt_from_start_of_orbit = nadir_info(iFilename).time_from_start_orbit + orbit_info(iFilename).orbit_start_time - granule_info(iFilename).start_time(1);
+
+    true_scan_num_from_time(iFilename) = find( min(abs(dt_from_start_of_orbit)) == abs(dt_from_start_of_orbit));
+    true_scan_num_from_canonical_orbit(iFilename)  = find( min(abs(nadir_info(iFilename).nadir_latitude - nlat_t(1))) == abs(nadir_info(iFilename).nadir_latitude - nlat_t(1)));
     
     fprintf('%i) For %s, iGranule %i starts at orbit element %i\nThe location was guessed to be %i based on time and %i based on latitude.\n', ...
-        iFilename, temp_filename(nn(1)+1:nn(2)-1), iGranule, nnlat, guess_scan_num_from_time(iFilename), ...
+        iFilename, temp_filename(nn(4)+1:nn(5)-1), iGranule, true_scan_num_from_canonical_orbit, guess_scan_num_from_time(iFilename), ...
         guess_scan_num_from_canonical_orbit(iFilename))
 end

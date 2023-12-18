@@ -46,11 +46,11 @@ for iFilename=1:length(filelist)
     % Information about the nadir track of each orbit.
 
     nadir_info(iFilename).nadir_latitude = ncread(filename, 'nadir_latitude');
-    nadir_info(iFilename).time_from_start_orbit = ncread(filename, 'time_from_start_orbit');
+    nadir_info(iFilename).time_from_start_of_orbit = ncread(filename, 'time_from_start_of_orbit');
     
     % Information derived from the above.
 
-    orbit_info(iFilename).orbit_end_time = orbit_info(iFilename).orbit_start_time + nadir_info(iFilename).time_from_start_orbit(end);
+    orbit_info(iFilename).orbit_end_time = orbit_info(iFilename).orbit_start_time + nadir_info(iFilename).time_from_start_of_orbit(end);
 
     % if (iFilename ~= 37) & (iFilename ~= 38) & (iFilename ~= 39) & (iFilename ~= 1
 
@@ -124,6 +124,8 @@ num_scan_lines_in_half_orbit = floor(orbit_length / 2);
 
 for iFilename=2:length(filelist)
     
+    nadir_info(iFilename).time = orbit_info(iFilename).orbit_start_time + nadir_info(iFilename).time_from_start_of_orbit; 
+    
     % Get the nadir latitudes for this granule; will have access to this
     % information in a regular run.
     
@@ -195,7 +197,7 @@ for iFilename=2:length(filelist)
     temp_filename = filelist(iFilename).name;
     nn = strfind( temp_filename, '_');
 
-    dt_from_start_of_orbit = nadir_info(iFilename).time_from_start_orbit + orbit_info(iFilename).orbit_start_time - granule_info(iFilename).start_time(1);
+    dt_from_start_of_orbit = nadir_info(iFilename).time_from_start_of_orbit + orbit_info(iFilename).orbit_start_time - granule_info(iFilename).start_time(1);
 
     true_scan_num_from_time(iFilename) = find( min(abs(dt_from_start_of_orbit)) == abs(dt_from_start_of_orbit));
     true_scan_num_from_canonical_orbit(iFilename)  = find( min(abs(nadir_info(iFilename).nadir_latitude - nlat_t(1))) == abs(nadir_info(iFilename).nadir_latitude - nlat_t(1)));

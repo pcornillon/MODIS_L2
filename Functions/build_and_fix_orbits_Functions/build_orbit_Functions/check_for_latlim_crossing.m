@@ -176,7 +176,11 @@ if ~isempty(aa)
             option_1 = floor(nn(1) / 10) * 10 + 1;
             option_2 = floor(nn(1) / 10) * 10 + 5;
 
-            if abs(option_1 - latlim) <= abs(option_2 - latlim)
+            %% LOOKS LIKE THE NEXT LINE IS WRONG
+%             if abs(option_1 - latlim) <= abs(option_2 - latlim)
+            
+            %% IT SHOULD BE
+            if abs(nlat_t(option_1) - latlim) <= abs(nlat_t(option_2) - latlim)
                 start_line_index = option_1;
             else
                 start_line_index = option_2;

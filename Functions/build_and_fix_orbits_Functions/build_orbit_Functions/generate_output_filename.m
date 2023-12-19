@@ -66,6 +66,8 @@ switch build_type
         
         nnToUse = get_scanline_index;
         
+        %% SHOULD THESE ALL BE iOrbit+1 INSTEAD OF iOrbit?
+        
         oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
         

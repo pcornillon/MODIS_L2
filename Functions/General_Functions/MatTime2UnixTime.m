@@ -3,6 +3,6 @@ function unix_time = MatTime2UnixTime(mat_time)
 %
 % Well, realy not unix time since that would be in msec from 1970,1,1 but...
 
-unix_time = mat_time  * 86400 - datenum(1970,1,1);
+unix_time = (mat_time - datenum(1970,1,1)) * 86400;
 
 end

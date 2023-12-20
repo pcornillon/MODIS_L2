@@ -63,16 +63,23 @@ for iFilename=1:length(filelist)
     orbit_info(iFilename).nadir_latitude = ncread(filename, 'nadir_latitude');
     
     temp_time = ncread(filename, 'time_from_start_orbit');
+    orbit_info(iFilename).actual_time_from_start_of_orbit = temp_time;
+    
+    % Actual time is in groups of 10. calculated_time is the time of scans
+    % had each scan line been done separately.
+    
     for iScan=1:10:length(temp_time)-9
         for j=0:9
-            orbit_info(iFilename).time_from_start_of_orbit(iScan+j) = temp_time(iScan) + j * secs_per_scan_line;
+            orbit_info(iFilename).calculated_time_from_start_of_orbit(iScan+j) = temp_time(iScan) + j * secs_per_scan_line;
         end
     end
     
     % Information derived from the above: orbit end time and the time in seconds from 1970,1,1 of each scan line. 
 
-    orbit_info(iFilename).seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).time_from_start_of_orbit; 
-    orbit_info(iFilename).orbit_end_time = orbit_info(iFilename).seconds_since_1970(end); % seconds since 1970,1,1
+    orbit_info(iFilename).calculate_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).calculated_time_from_start_of_orbit; 
+    orbit_info(iFilename).actual_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).actual_time_from_start_of_orbit; 
+    
+    orbit_info(iFilename).orbit_end_time = orbit_info(iFilename).calculate_seconds_since_1970(end); % seconds since 1970,1,1
 
     % Make sure that the start time of the orbit corresponds to the time of the first pixel to use in the first granule.
 
@@ -187,12 +194,11 @@ for iFilename=2:length(filelist)
             datestr(UnixTime2MatTime(linux_time(1))), iGranule, filename(nn(5)+1:nn(7)-1))
     end
    
-    % Now guess at the number of scans from the start of this orbit to the
-    % start of this granule. First, do so so using get_scanline_index.
+    %% Guess # of scans from the start of orbit to the start of this granule.   GUESS -- GET_SCANLINE_INDEX
     
     guess_from_get_fn(iFilename) = get_scanline_index;
 
-    % Next, do so based on time.
+    %% Guess based on time.                                                     GUESS -- TIME
     
     guess_from_time(iFilename) = floor( (granule_info(iFilename).start_time(iGranule) - ...
         (orbit_info(iFilename-1).orbit_end_time - 100 * secs_per_scan_line) ) / secs_per_scan_line);
@@ -204,58 +210,30 @@ for iFilename=2:length(filelist)
     
     guess_from_time(iFilename) = floor( guess_from_time(iFilename) / 10) * 10 + 6;
 
-    % Now determine how close these are to the time of the first scan line in the orbit.
+    %% True value based on time.                                                TRUE -- TIME
 
-    dt_from_start_of_orbit = granule_info(iFilename).start_time(iGranule) - orbit_info(iFilename).seconds_since_1970;
+    dt_from_start_of_orbit = granule_info(iFilename).start_time(iGranule) - orbit_info(iFilename).calculate_seconds_since_1970;
+    kk = find( min(abs(dt_from_start_of_orbit)) == abs(dt_from_start_of_orbit)); whos kk
+    true_scan_num_from_time(iFilename) = kk(1);
 
-    kk = find( min(abs(dt_from_start_of_orbit)) == abs(dt_from_start_of_orbit));
-    true_scan_num_from_time(iFilename) = kk(5);
-   
-    % Next repeat based on the latitude of the first scan line in the granule.
-    
-    aa = find( abs(nlat_avg - nlat_t(1)) < 0.02);
-
-    % If no crossing found return; should never get here.
-    
-    if isempty(aa)
-        fprintf('iGranule = %i, iFilename = %i. Should never get here.\n', iGranule, iFilename)
-    else
-        % If more than 10 scan lines separate groups of scan lines found
-        % near the start of iGranule, break them up and analyze separately
-        % for direction. 
+    %% Guess based on the latitude of the first scan line in the granule.       GUESS -- LATITUDE
         
-        diffaa = diff(aa);
-        bb = find(diffaa >10);
- 
-        if isempty(bb)
-            % Only one group
-                
-            nn = find( min(abs(nlat_avg - nlat_t(1))) == abs(nlat_avg - nlat_t(1)));
+    kLower = max([1 guess_from_get_fn(iFilename)-100]);
+    kUpper = min([guess_from_get_fn(iFilename)+100 orbit_length]);
 
-            guess_from_canonical_orbit(iFilename) = nn(1);
-         else
-            % Two groups
-            
-            if (nlat_avg(aa(1)+1) > nlat_avg(aa(1))) & (nlat_t(2) > nlat_t(1))
-               nn = find( min(abs(nlat_avg(1:num_scan_lines_in_half_orbit) - nlat_t(1))) == abs(nlat_avg(1:num_scan_lines_in_half_orbit) - nlat_t(1)));
-               guess_from_canonical_orbit(iFilename) = nn(1);
-            else
-               nn = find( min(abs(nlat_avg(num_scan_lines_in_half_orbit+1:end) - nlat_t(1))) == abs(nlat_avg(num_scan_lines_in_half_orbit+1:end) - nlat_t(1)));
-               guess_from_canonical_orbit(iFilename) = num_scan_lines_in_half_orbit + nn(1);
-            end
-        end
-    end
-    
-    % Next, remember that the number of scan lines from the first one in
-    % this granule to the first one for this orbit must be a multiple of 5;
-    % the first scan line in the orbit must occur as the 5th line in a
-    % group of ten and there are multiple of 10 scan lines per orbit.
-            
+    dlat_from_start_of_orbit = abs(nlat_avg(kLower:kUpper) - nlat_t(1));
+    guess_from_canonical_orbit(iFilename) = kLower + find( min(abs(dlat_from_start_of_orbit)) == abs(dlat_from_start_of_orbit)) - 1;
     guess_from_canonical_orbit(iFilename) = floor( guess_from_canonical_orbit(iFilename) / 10) * 10 + 6;
 
-    true_scan_num_from_canonical_orbit(iFilename)  = find( min(abs(orbit_info(iFilename).nadir_latitude - nlat_t(1))) == abs(orbit_info(iFilename).nadir_latitude - nlat_t(1)));
-    
-    fprintf('%i) For %s, iGranule %i starts at orbit element %i\nThe location was guessed to be %i based on time and %i based on latitude.\n', ...
-        iFilename, temp_filename(nn(4)+1:nn(5)-1), iGranule, true_scan_num_from_canonical_orbit, guess_from_time(iFilename), ...
-        guess_from_canonical_orbit(iFilename))
+    %% True value based on latitude.                                            TRUE -- LATITUDE
+
+    dt_from_canonical_orbit = orbit_info(iFilename).nadir_latitude - nlat_t(1);
+    kk = kLower + find( min(abs(dt_from_canonical_orbit(kLower:kUpper))) == abs(dt_from_canonical_orbit(kLower:kUpper))) - 1; whos kk
+    true_scan_num_from_canonical_orbit(iFilename)  = kk(1);
+        
+    fprintf('\n%i) Different guesses for the number of scan lines from the start of orbit %s to the first scan line in granule %i\n', ...
+        iFilename, temp_filename(nn(4)+1:nn(5)-1), iGranule)
+    fprintf('   get_scanline_index: %i, time: %i, latitude %i. True based on time %i and latitude %i\n', ...
+        guess_from_get_fn(iFilename), guess_from_time(iFilename), guess_from_canonical_orbit(iFilename), ...
+        true_scan_num_from_time(iFilename), true_scan_num_from_canonical_orbit(iFilename))
 end

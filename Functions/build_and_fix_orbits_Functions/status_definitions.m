@@ -35,6 +35,13 @@
 %
 % 141 - get_granule_metadata - mirror rotation rate seems to have changed.
 %
+% % % % 151 - find_next_granule_with_data - mirror side for the first scan line on granule same as that of the last scan of the prevous granule.
+% % % %       continue -- WARNING.
+% % % %
+% % % % 152 - find_next_granule_with_data - mirror side for the 1st scan line in the 1st granule of this orbit is the same as that of the last scan of the last granule in the previous orbit.
+% % % %       continue -- WARNING.
+% % % %
+%
 % ACTION REQUIRED ON RETURN
 %
 % 201 - get_granule_metadata - Time for this granule is past the predicted end time of the current orbit.

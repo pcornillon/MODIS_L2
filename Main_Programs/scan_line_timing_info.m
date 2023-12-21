@@ -39,7 +39,7 @@ for iFilename=1:length(filelist)
         
     % Get locations to isolate orbit # and date/dime 
 
-    nn = strfind(filename, '_');
+    nnOrbitFilename= strfind(filename, '_');
 
     % When did the orbit start? Times here and below are seconds since 1/1/1970 0:0:0 
 
@@ -79,7 +79,7 @@ for iFilename=1:length(filelist)
     orbit_info(iFilename).calculate_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).calculated_time_from_start_of_orbit; 
     orbit_info(iFilename).actual_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).actual_time_from_start_of_orbit; 
     
-    orbit_info(iFilename).orbit_end_time = orbit_info(iFilename).calculate_seconds_since_1970(end); % seconds since 1970,1,1
+    orbit_info(iFilename).orbit_end_time_plus_100 = orbit_info(iFilename).calculate_seconds_since_1970(end); % seconds since 1970,1,1
 
     % Make sure that the start time of the orbit corresponds to the time of the first pixel to use in the first granule.
 
@@ -88,7 +88,7 @@ for iFilename=1:length(filelist)
 
     if abs(orbit_start_time_differences*100/secs_per_scan_line) > 10
         fprintf('\nFor orbit %s the orbit start time (%s) does not agree with the granule start time (%s).\n', ...
-            filename(nn(5)+1:nn(7)-1), ...
+            filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1), ...
             datestr(UnixTime2MatTime(orbit_info(iFilename).orbit_start_time)),  ...
             datestr(UnixTime2MatTime(granule_info(iFilename).start_time(1) + (granule_info(iFilename).granule_start_index(1) - 1))))
         fprintf('The percentage difference with regard to the time separating scans is %6.2f%%.\n', ...
@@ -104,15 +104,17 @@ for iFilename=1:length(filelist)
     if iFilename == 1
         diff_start_end(iFilename) = nan;
     else
-        diff_start_end(iFilename) = (orbit_info(iFilename).orbit_start_time - orbit_info(iFilename-1).orbit_end_time + 100 * secs_per_scan_line);
+        orbit_info(iFilename-1).orbit_end_time = orbit_info(iFilename-1).orbit_end_time_plus_100 - 100 * secs_per_scan_line;
+
+        diff_start_end(iFilename) = (orbit_info(iFilename).orbit_start_time - 1 * secs_per_scan_line - orbit_info(iFilename-1).orbit_end_time );
         fractional_diff(iFilename) = diff_start_end(iFilename) / secs_per_scan_line;
 
         previous_filename = [filelist(iFilename-1).folder '/' filelist(iFilename-1).name];
 
         if abs(fractional_diff(iFilename) + 10) > 0.01 & abs(fractional_diff(iFilename)) > 0.01
-            fprintf('\n*** The end time of orbit %s (%s) does not correspond to the start time of orbit %s (%s). This should not happen.\n', ...
-                previous_filename(nn(5)+1:nn(7)-1), datestr(UnixTime2MatTime(orbit_info(iFilename-1).orbit_end_time + 100 * secs_per_scan_line)), ...
-                filename(nn(5)+1:nn(7)-1), datestr(UnixTime2MatTime(orbit_info(iFilename).orbit_start_time + 100 * secs_per_scan_line)))
+            fprintf('\n*** The end time of orbit %s (%s) does not correspond to the start time of orbit %s (%s). Difference is %6.4f scan line times.\n', ...
+                previous_filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1), datestr(UnixTime2MatTime(orbit_info(iFilename-1).orbit_end_time)), ...
+                filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1), datestr(UnixTime2MatTime(orbit_info(iFilename).orbit_start_time)), fractional_diff(iFilename))
 
                 problem = problem + 1;
         end
@@ -158,7 +160,7 @@ end
 
 %% Now test to see if it can find the correct starting time for the ith granule in a given orbit.
 
-iGranule = 2;
+iGranule = 1;
 
 % Estimate the number of scans from the end of the previous orbit to the
 % start of this granule. First, need the 
@@ -166,7 +168,7 @@ iGranule = 2;
 for iFilename=2:length(filelist)
         
     filename = [filelist(iFilename).folder '/' filelist(iFilename).name];
-    nn = strfind(filename, '_');
+    nnOrbitFilename= strfind(filename, '_');
 
     % Get the nadir latitudes and times for this granule; will have access to this information in a regular run.
     
@@ -188,10 +190,10 @@ for iFilename=2:length(filelist)
 
     if abs(linux_time(1) - granule_info(iFilename).start_time(iGranule)) > 0.1
         fprintf('\nStart time (%s) for granule %i of orbit %s just read in does not correspond to the start time written to the output file (%s).\n', ...
-            datestr(UnixTime2MatTime(linux_time(1))), iGranule, filename(nn(1)+1:nn(2)-1), datestr(UnixTime2MatTime(granule_info(iFilename).start_time(iGranule))))
+            datestr(UnixTime2MatTime(linux_time(1))), iGranule, filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1), datestr(UnixTime2MatTime(granule_info(iFilename).start_time(iGranule))))
     else
         fprintf('\nStart time (%s) for granule %i of orbit %s just read in corresponds to the start time written to the output file.\n', ...
-            datestr(UnixTime2MatTime(linux_time(1))), iGranule, filename(nn(5)+1:nn(7)-1))
+            datestr(UnixTime2MatTime(linux_time(1))), iGranule, filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1))
     end
    
     %% Guess # of scans from the start of orbit to the start of this granule.   GUESS -- GET_SCANLINE_INDEX
@@ -201,7 +203,7 @@ for iFilename=2:length(filelist)
     %% Guess based on time.                                                     GUESS -- TIME
     
     guess_from_time(iFilename) = floor( (granule_info(iFilename).start_time(iGranule) - ...
-        (orbit_info(iFilename-1).orbit_end_time - 100 * secs_per_scan_line) ) / secs_per_scan_line);
+        (orbit_info(iFilename-1).orbit_end_time) ) / secs_per_scan_line);
 
     % Next, remember that the number of scan lines from the first one in
     % this granule to the first one for this orbit must be a multiple of 5;
@@ -212,16 +214,26 @@ for iFilename=2:length(filelist)
 
     %% True value based on time.                                                TRUE -- TIME
 
-    dt_from_start_of_orbit = granule_info(iFilename).start_time(iGranule) - orbit_info(iFilename).calculate_seconds_since_1970;
-    kk = find( min(abs(dt_from_start_of_orbit)) == abs(dt_from_start_of_orbit)); whos kk
-    true_scan_num_from_time(iFilename) = kk(1);
+    % % % dt_from_start_of_orbit = granule_info(iFilename).start_time(iGranule) - orbit_info(iFilename).calculate_seconds_since_1970;
+    % % % kk = find( min(abs(dt_from_start_of_orbit)) == abs(dt_from_start_of_orbit)); whos kk
+    % % % true_scan_num_from_time(iFilename) = kk(1);
+    kk = find( abs(granule_info(iFilename).start_time(iGranule) - orbit_info(iFilename).calculate_seconds_since_1970) < 0.1);
+    
+    if length(kk) == 1
+        true_scan_num_from_time(iFilename) = kk(1);
+    else
+        fprintf('\n\n%i) For orbit %s, found %i matches in the time search for start of granule %i.\n', ...
+            iFilename, temp_filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1), length(kk), iGranule)
+
+        true_scan_num_from_time(iFilename) = nan;
+    end
 
     %% Guess based on the latitude of the first scan line in the granule.       GUESS -- LATITUDE
         
     kLower = max([1 guess_from_get_fn(iFilename)-100]);
     kUpper = min([guess_from_get_fn(iFilename)+100 orbit_length]);
 
-    dlat_from_start_of_orbit = abs(nlat_avg(kLower:kUpper) - nlat_t(1));
+    dlat_from_start_of_orbit = nlat_avg(kLower:kUpper) - nlat_t(1);
     guess_from_canonical_orbit(iFilename) = kLower + find( min(abs(dlat_from_start_of_orbit)) == abs(dlat_from_start_of_orbit)) - 1;
     guess_from_canonical_orbit(iFilename) = floor( guess_from_canonical_orbit(iFilename) / 10) * 10 + 6;
 
@@ -232,7 +244,7 @@ for iFilename=2:length(filelist)
     true_scan_num_from_canonical_orbit(iFilename)  = kk(1);
         
     fprintf('\n%i) Different guesses for the number of scan lines from the start of orbit %s to the first scan line in granule %i\n', ...
-        iFilename, temp_filename(nn(4)+1:nn(5)-1), iGranule)
+        iFilename, temp_filename(nnOrbitFilename(5)+1:nnOrbitFilename(7)-1), iGranule)
     fprintf('   get_scanline_index: %i, time: %i, latitude %i. True based on time %i and latitude %i\n', ...
         guess_from_get_fn(iFilename), guess_from_time(iFilename), guess_from_canonical_orbit(iFilename), ...
         true_scan_num_from_time(iFilename), true_scan_num_from_canonical_orbit(iFilename))

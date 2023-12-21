@@ -39,14 +39,14 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10
+global secs_per_day secs_per_orbit secs_per_scan_line
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
 global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t mside
 global Matlab_start_time Matlab_end_time
 
 % globals used in the other major functions of build_and_fix_orbits.
@@ -64,6 +64,10 @@ nlat_t = [];
 % % % temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
 temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
 
+% Read the mirror side information
+
+mside = single(ncread( temp_filename, '/scan_line_attributes/mside'));
+
 % Read time info from metadata granule.
 
 Year = ncread( temp_filename, '/scan_line_attributes/year');
@@ -74,7 +78,19 @@ mSec = ncread( temp_filename, '/scan_line_attributes/msec');
 % scanlines in this granule. Be careful because the start times for scanlines
 % occur are the same for all detectors in a group.
 
-scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
+% % % scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
+
+% Actual time is in groups of 10. scan_line_times, below, is the time of 
+% scans had each scan line been done separately.
+
+temp_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / secs_per_day;
+
+for iScan=1:10:length(temp_times)-9
+    for jSubscan=0:9
+        scan_line_times(iScan+j) = temp_times(iScan) + j * secs_per_scan_line;
+    end
+end
+
 num_scan_lines_in_granule = length(scan_line_times);
 
 % Make sure that there is time data for this granule and that the 1st line
@@ -103,8 +119,8 @@ end
 
 % Make sure that the scan_line_times are good.
 
-dt = (scan_line_times(end-5) - scan_line_times(5)) * 86400;
-if min(abs(dt - secs_per_granule_minus_10)) > 0.01
+dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
+if min(abs(dt - (secs_per_granule - 10 * secs_per_scan_line))) > 0.01
     if print_diagnostics
         fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
     end

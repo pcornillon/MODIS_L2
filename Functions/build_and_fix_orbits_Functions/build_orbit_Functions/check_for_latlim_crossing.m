@@ -85,6 +85,16 @@ mSec = ncread( temp_filename, '/scan_line_attributes/msec');
 
 temp_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / secs_per_day;
 
+% Need to set scan_line_times to empty because the number of scans changes
+% from between 2030 and 2040. If the previous granule had 2040 scan lines
+% and this one had 2030, the last 10 values will be bogus, belonging to the
+% previous granule. Also the resulting lenght of scan_line_times will be
+% wrong.  Note scan_line_times SHOULD NOT BE CLEARED in that this will
+% clear it as a global variable and it will not be passed to other
+% functions.
+
+scan_line_times = [];
+
 for iScan=1:10:length(temp_times)-9
     for jSubscan=0:9
         scan_line_times(iScan+jSubscan) = temp_times(iScan) + jSubscan * secs_per_scan_line / secs_per_day;
@@ -120,7 +130,7 @@ end
 % Make sure that the scan_line_times are good.
 
 dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
-if min(abs(dt - (secs_per_granule - 10 * secs_per_scan_line))) > 0.01
+if abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line)) > 0.01
     if print_diagnostics
         fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
     end
@@ -128,7 +138,11 @@ if min(abs(dt - (secs_per_granule - 10 * secs_per_scan_line))) > 0.01
     status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.'], granule_start_time_guess);
 end
 
-secs_per_granule = (scan_line_times(end) - scan_line_times(1)) * secs_per_day + secs_per_scan_line;
+% Determine the time for this granule. Note that it is scaled at the end to
+% 2030 scan lines since the first guess from build_and_fix_orbits is for
+% 2030 scan lines.
+
+secs_per_granule = ((scan_line_times(end) - scan_line_times(1)) * secs_per_day + secs_per_scan_line) * 2030 / length(scan_line_times);
 
 % Does the descending nadir track crosses latlim?
 

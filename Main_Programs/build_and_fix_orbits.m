@@ -493,7 +493,7 @@ secs_per_scan_line = 0.14772;
 % secs_per_orbit = 5933.56;  % Was hardwired in from earlier but will calculate it now.
 secs_per_orbit = secs_per_scan_line * (orbit_length - 100 - 1);
 
-secs_per_granule = 299.8532;  % First guess. Will update after reading each granule. old value 298.3760
+secs_per_granule = 299.8532;  % First guess. Will update after reading each granule. Old value 298.3760 assumes 2030 scan lines.
 
 index_of_NASA_orbit_change = 11052;
 

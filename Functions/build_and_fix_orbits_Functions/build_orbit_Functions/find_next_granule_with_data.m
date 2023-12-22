@@ -293,7 +293,8 @@ while 1==1
                 % Get the metadata for this granule.
 
                 % % % [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_file_list, 1, granule_start_time_guess);
-                [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
+
+               [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
 
                 % If status not equal to zero, either problems with start times
                 % or 1st detector, not 1st detector in group of 10. Neither of
@@ -324,7 +325,8 @@ while 1==1
                         oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
 
                         oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
-                        oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) + (secs_per_scan_line * 10) /  secs_per_day;
+                        % % % oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) + (secs_per_scan_line * 10) /  secs_per_day;
+                        oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end);
 
                         oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
 
@@ -339,8 +341,8 @@ while 1==1
                         % granule.
                         
                         if iGranule ~= 1
-                            mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).metadata_name, '/scan_line_attributes/mside'));
-                            mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).metadata_name, '/scan_line_attributes/mside'));
+                            mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
+                            mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).data_name, '/scan_line_attributes/mside'));
 
                             if mside_previous(end) == mside_current(1)
                                 if print_diagnostics
@@ -393,7 +395,8 @@ while 1==1
                             % Get the number of scan lines to skip and make sure that it is an
                             % acceptable value.
 
-                            lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
+                            % % % lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
+                            lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day - secs_per_scan_line + 0.05) / secs_per_scan_line);
                             [~, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
 
                             if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0

@@ -62,23 +62,29 @@ for iFilename=1:length(filelist)
 
     orbit_info(iFilename).nadir_latitude = ncread(filename, 'nadir_latitude');
     
-    temp_time = ncread(filename, 'time_from_start_orbit');
-    orbit_info(iFilename).actual_time_from_start_of_orbit = temp_time;
+    % % % temp_time = ncread(filename, 'time_from_start_orbit');
+    % % % orbit_info(iFilename).actual_time_from_start_of_orbit = temp_time;
+    % % % 
+    % % % % Actual time is in groups of 10. calculated_time is the time of scans
+    % % % % had each scan line been done separately.
+    % % % 
+    % % % for iScan=1:10:length(temp_time)-9
+    % % %     for j=0:9
+    % % %         orbit_info(iFilename).calculated_time_from_start_of_orbit(iScan+j) = temp_time(iScan) + j * secs_per_scan_line;
+    % % %     end
+    % % % end
+    % % % 
+    % % % % Information derived from the above: orbit end time and the time in seconds from 1970,1,1 of each scan line. 
+    % % % 
+    % % % orbit_info(iFilename).calculate_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).calculated_time_from_start_of_orbit; 
+    % % % orbit_info(iFilename).actual_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).actual_time_from_start_of_orbit; 
     
-    % Actual time is in groups of 10. calculated_time is the time of scans
-    % had each scan line been done separately.
-    
-    for iScan=1:10:length(temp_time)-9
-        for j=0:9
-            orbit_info(iFilename).calculated_time_from_start_of_orbit(iScan+j) = temp_time(iScan) + j * secs_per_scan_line;
-        end
-    end
-    
+    orbit_info(iFilename).calculated_time_from_start_of_orbit = ncread(filename, 'time_from_start_orbit');
+        
     % Information derived from the above: orbit end time and the time in seconds from 1970,1,1 of each scan line. 
 
     orbit_info(iFilename).calculate_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).calculated_time_from_start_of_orbit; 
-    orbit_info(iFilename).actual_seconds_since_1970 = orbit_info(iFilename).orbit_start_time + orbit_info(iFilename).actual_time_from_start_of_orbit; 
-    
+
     orbit_info(iFilename).orbit_end_time_plus_100 = orbit_info(iFilename).calculate_seconds_since_1970(end); % seconds since 1970,1,1
 
     % Make sure that the start time of the orbit corresponds to the time of the first pixel to use in the first granule.

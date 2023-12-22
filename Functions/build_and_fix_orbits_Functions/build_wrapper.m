@@ -154,6 +154,27 @@ switch Option
         % % % % BaseDir = '/home/ubuntu/Documents/Aqua/';
         % % % 
         % % % output_file_directory_local = '/mnt/s3-uri-gso-pcornillon/output/';
+
+    case 7 % Laptop
+        %   fixit metadata from s3-uri-gso-pcornillon
+        %   OBPG metadata  from Data_1
+        %   granules       from Data_1
+        % and writing 
+        %   local output   to   Data_1
+        %   remote outut   to   Data_1
+        %   logs output    to   Data_1
+
+        BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+
+        fixit_directory              = [BaseDir 'metadata/'];
+        metadata_directory           = '/Volumes/Data_1/Data_from_OBPG_for_PO-DAAC/';
+
+        granules_directory           = '/Volumes/Data_1/combined/';
+
+        output_file_directory_local  = '/Volumes/Data_1/output/';
+        output_file_directory_remote = '/Volumes/Data_1/output/';
+
+        logs_directory               = '/Volumes/Data_1/Logs/';
 end
 
 % Initialize arguments for build_and_fix

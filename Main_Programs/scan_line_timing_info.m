@@ -5,7 +5,7 @@
 % through its orbit.
 %
 
-global secs_per_day secs_per_scan_line orbit_length nlat_t nlat_avg
+global secs_per_day secs_per_scan_line orbit_length nlat_t nlat_avg secs_per_granule
 
 orbit_length = 40271;
 secs_per_day = 86400;

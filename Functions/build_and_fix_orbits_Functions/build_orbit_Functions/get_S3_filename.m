@@ -31,6 +31,7 @@ global granules_directory metadata_directory
 
 global formatOut
 global s3_expiration_time amazon_s3_run
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
 
 found_one = 0;
 
@@ -44,10 +45,10 @@ switch file_type
     case 'metadata'
         metadata_granule = [];
 
-        test_time = arg_2 - 5 / 86400;
+        test_time = arg_2 - 5 / secs_per_day;
 
         for iSecond=1:65
-            test_time = test_time + 1 / 86400;
+            test_time = test_time + 1 / secs_per_day;
 
             data_filename = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
 

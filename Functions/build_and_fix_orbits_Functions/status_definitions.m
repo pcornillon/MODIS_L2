@@ -41,7 +41,10 @@
 % % % % 152 - find_next_granule_with_data - mirror side for the 1st scan line in the 1st granule of this orbit is the same as that of the last scan of the last granule in the previous orbit.
 % % % %       continue -- WARNING.
 % % % %
-%
+% % % % 153 - find_next_granule_with_data - Can''t find the start of a group of 10 scan lines. Thought that it would be %i. SHOULD NEVER GET HERE.
+% % % %       continue -- WARNING.
+% % % %
+
 % ACTION REQUIRED ON RETURN
 %
 % 201 - get_granule_metadata - Time for this granule is past the predicted end time of the current orbit.

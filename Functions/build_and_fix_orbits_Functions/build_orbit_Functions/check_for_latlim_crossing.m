@@ -39,7 +39,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line
+global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -66,7 +66,7 @@ temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
 
 % Read the mirror side information
 
-mside = single(ncread( temp_filename, '/scan_line_attributes/mside'));
+% % % mside = single(ncread( temp_filename, '/scan_line_attributes/mside'));
 
 % Read time info from metadata granule.
 
@@ -87,7 +87,7 @@ temp_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / secs_per_da
 
 for iScan=1:10:length(temp_times)-9
     for jSubscan=0:9
-        scan_line_times(iScan+j) = temp_times(iScan) + j * secs_per_scan_line;
+        scan_line_times(iScan+jSubscan) = temp_times(iScan) + jSubscan * secs_per_scan_line / secs_per_day;
     end
 end
 
@@ -127,6 +127,8 @@ if min(abs(dt - (secs_per_granule - 10 * secs_per_scan_line))) > 0.01
 
     status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.'], granule_start_time_guess);
 end
+
+secs_per_granule = (scan_line_times(end) - scan_line_times(1)) * secs_per_day + secs_per_scan_line;
 
 % Does the descending nadir track crosses latlim?
 
@@ -187,30 +189,78 @@ if ~isempty(aa)
             nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
 
             % Find the descending scan line for which the nadir value is
-            % CLOSEST to 78 S.
-
-            option_1 = floor(nn(1) / 10) * 10 + 1;
-            option_2 = floor(nn(1) / 10) * 10 + 5;
-
-            %% LOOKS LIKE THE NEXT LINE IS WRONG
-%             if abs(option_1 - latlim) <= abs(option_2 - latlim)
+            % CLOSEST to 78 S and is the 5th scan line in a 10 scan line
+            % group. But,first make sure that iStart_of_group is at the
+            % beginning of a 10 scan line group. Need to check that test
+            % values of nlat_t do not extend past either end of nlat_t.
             
-            %% IT SHOULD BE
-            if abs(nlat_t(option_1) - latlim) <= abs(nlat_t(option_2) - latlim)
-                start_line_index = option_1;
-            else
-                start_line_index = option_2;
+            iStart_of_group = floor(nn(1) / 10) * 10 + 1;
+            
+            bad_grouping = 0;
+            if iStart_of_group <= 1
+                if nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10)
+                    bad_grouping = 1;
+                    
+                end
+            elseif iStart_of_group+10 >= length(nlat_t)
+                if nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)
+                    bad_grouping = 1;
+                end
+            elseif (nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)) | (nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10))
+                bad_grouping = 1;
             end
+            
+            if bad_grouping == 1
+                fprintf('*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i. SHOULD NEVER GET HERE.\n', iStart_of_group)
+                granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+                
+                status = populate_problem_list( 153, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time_guess);
+            end
+            
+            % Now find the group of 10 with the point in the middle closest
+            % to 78 S looking at the group of 10 before the one in which
+            % the crossing was found, the group of 10 in which the crossing
+            % was found and the next group of 10.
 
-            % Next check to see if the 11th point from here is closer to
-            % latlim, if it is use it but first make sure that there are at
-            % least 11 more scan lines left in the orbit after start_line_index.
-
-            if (start_line_index + 10) < num_scan_lines_in_granule
-                if abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
-                    start_line_index = start_line_index + 10;
+            iPossible = [iStart_of_group-6 iStart_of_group+5 iStart_of_group+15];
+            start_line_index = iPossible(2);
+            
+            central_group = abs(nlat_t(iPossible(2)) - latlim);
+            
+            if iPossible(1) > 0
+                if abs(nlat_t(iPossible(1)) - latlim) < central_group
+                    start_line_index = iPossible(1);
                 end
             end
+            
+            if iPossible(3) > length(nlat_t)
+                if abs(nlat_t(iPossible(3)) - latlim) < central_group
+                    start_line_index = iPossible(3);
+                end
+            end            
+
+% % %             option_1 = floor(nn(1) / 10) * 10 + 1;
+% % %             option_2 = floor(nn(1) / 10) * 10 + 5;
+% % % 
+% % %             %% LOOKS LIKE THE NEXT LINE IS WRONG
+% % % %             if abs(option_1 - latlim) <= abs(option_2 - latlim)
+% % %             
+% % %             %% IT SHOULD BE
+% % %             if abs(nlat_t(option_1) - latlim) <= abs(nlat_t(option_2) - latlim)
+% % %                 start_line_index = option_1;
+% % %             else
+% % %                 start_line_index = option_2;
+% % %             end
+% % % 
+% % %             % Next check to see if the 11th point from here is closer to
+% % %             % latlim, if it is use it but first make sure that there are at
+% % %             % least 11 more scan lines left in the orbit after start_line_index.
+% % % 
+% % %             if (start_line_index + 10) < num_scan_lines_in_granule
+% % %                 if abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
+% % %                     start_line_index = start_line_index + 10;
+% % %                 end
+% % %             end
         end
     end
 end

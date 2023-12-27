@@ -85,7 +85,7 @@ clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_
     oinfo iOrbit iGranule iProblem problem_list scan_line_times ...
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
     Matlab_end_time s3_expiration_time med_op missing_end_granule secs_per_granule ...
-    orbit_duration
+    orbit_duration current_orbit_end_time
 
 
 % Control for memory stats
@@ -119,7 +119,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list missing_end_granule
+global oinfo iOrbit iGranule iProblem problem_list missing_end_granule current_orbit_end_time
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 

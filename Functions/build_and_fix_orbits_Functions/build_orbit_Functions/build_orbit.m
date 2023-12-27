@@ -52,9 +52,9 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list
+global oinfo iOrbit iGranule iProblem problem_list current_orbit_end_time
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
-global Matlab_start_time Matlab_end_time
+global Matlab_start_time Matlab_end_time 
 
 % globals used in the other major functions of build_and_fix_orbits.
 
@@ -128,6 +128,8 @@ end
 
 already_processed = 0;
 
+current_orbit_end_time = oinfo(iOrbit).end_time;
+
 if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', '.dummy')) == 2)
     
     already_processed = 1;
@@ -136,7 +138,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
     % Skip the next 85 minutes of granules to save time; don't have to read them.
     
-    orbit_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
+    current_orbit_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
     granule_start_time_guess = granule_start_time_guess + 85 / (60 * 24);
 
     % Keep skipping orbits until a missing one is found. 
@@ -156,7 +158,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
             % orbit.
             
             granule_start_time_guess = granule_start_time_guess + 90 / (60 * 24);
-            orbit_end_time = orbit_end_time + orbit_duration / secs_per_day;
+            current_orbit_end_time = current_orbit_end_time + orbit_duration / secs_per_day;
         else
             found_one = 0;
         end
@@ -164,7 +166,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
     
     start_line_index = [];
 
-    while granule_start_time_guess <= (orbit_end_time + 60 / secs_per_day)
+    while granule_start_time_guess <= (current_orbit_end_time + 60 / secs_per_day)
         
         % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
@@ -259,8 +261,8 @@ end
 % granule instead of 2040. (I'm not sure if the last thing is really a
 % problem.)
 
-while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
-        
+% % % while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
+while granule_start_time_guess <= (current_orbit_end_time + 60 / secs_per_day)     
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     

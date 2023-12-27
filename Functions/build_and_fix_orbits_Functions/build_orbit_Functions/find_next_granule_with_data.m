@@ -68,7 +68,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list missing_end_granule
+global oinfo iOrbit iGranule iProblem problem_list missing_end_granule current_orbit_end_time
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
@@ -116,7 +116,8 @@ while 1==1
 
     if length(oinfo) == iOrbit
         if ~isempty(oinfo(iOrbit).end_time)
-            if granule_start_time_guess > (oinfo(iOrbit).end_time + 60 / secs_per_day)
+%             if granule_start_time_guess > (oinfo(iOrbit).end_time + 60 / secs_per_day)
+            if granule_start_time_guess > (current_orbit_end_time + 60 / secs_per_day)
                 if print_diagnostics
                     fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
                 end

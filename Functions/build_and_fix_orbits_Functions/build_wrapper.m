@@ -84,8 +84,8 @@ switch Option
 
         granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
 
-        output_file_directory_local = '/users/petercornillon/Desktop/SST/';
-        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_remote = '';
 
         logs_directory = [BaseDir 'Logs/'];
 

@@ -18,7 +18,7 @@ string_out = num2str(num_in);
 % number of requested digits. If so write a message and return, as a string,
 % the number passed in.
 
-if num_in > 10^(num_digits-1)
+if num_in > 10^(num_digits)-1
     fprintf('\n\n*******************\nPassed in %i but asked that the output have %i digits; clearly a conflict.\n********************\n\n', num_in, num_digits)
 end
 

@@ -44,6 +44,9 @@
 % % % % 153 - find_next_granule_with_data - Can''t find the start of a group of 10 scan lines. Thought that it would be %i. SHOULD NEVER GET HERE.
 % % % %       continue -- WARNING.
 % % % %
+% % % % 161 - extract_datetime_from_filename - Something wrong with filename passed into this function. SHOULD NEVER GET HERE.
+% % % %       continue -- WARNING.
+% % % %
 
 % ACTION REQUIRED ON RETURN
 %

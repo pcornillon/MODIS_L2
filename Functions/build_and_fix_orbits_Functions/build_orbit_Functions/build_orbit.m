@@ -52,7 +52,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list current_orbit_end_time
+global oinfo iOrbit iGranule iProblem problem_list 
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time 
 
@@ -128,8 +128,6 @@ end
 
 already_processed = 0;
 
-current_orbit_end_time = oinfo(iOrbit).end_time;
-
 if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', '.dummy')) == 2)
     
     already_processed = 1;
@@ -138,27 +136,41 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
     % Skip the next 85 minutes of granules to save time; don't have to read them.
     
-    current_orbit_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
     granule_start_time_guess = granule_start_time_guess + 85 / (60 * 24);
 
     % Keep skipping orbits until a missing one is found. 
     
-    kk = strfind( oinfo(iOrbit).name, '/');
-    
     found_one = 1;
-    next_orbit_number = oinfo(iOrbit).orbit_number;
-    while found_one      
-        next_orbit_number = next_orbit_number + 1;
-        exist_list = dir( [oinfo(iOrbit).name(1:kk(end)) 'AQUA_MODIS_orbit_' return_a_string( 6, next_orbit_number) '*']);
+    while found_one
+
+        % When probing for the next orbit, need to be careful that the
+        % year and/or the month has not changed since the previous orbit.
+
+        [status, temp_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
+        [YR, MN, DY, ~, ~, ~] = datevec(temp_time + orbit_duration / secs_per_day);
+
+        exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
+            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
         
         if ~isempty(exist_list)
-            % If this orbit is present, skip 90 minutes and look for the
-            % next one. Skipped 90 here instead of 85 because don't have to
-            % be that close as long as it is less than the time of an
-            % orbit.
+
+            % If this orbit is present, reset all of the oinfo values that
+            % we can extract from the title of the next orbit. Then skip
+            % the duration of a typical orbit. The difference between
+            % skipping 85 minutes for the first processed orbit found and
+            % this one is that for the first one we had to make sure that
+            % the granule was not near the end of an orbit. Here we are
+            % adding the typical duration to this time; i.e., we have
+            % already taken this slop into acount with the first orbit
+            % skipped.
             
-            granule_start_time_guess = granule_start_time_guess + 90 / (60 * 24);
-            current_orbit_end_time = current_orbit_end_time + orbit_duration / secs_per_day;
+            oinfo(iOrbit).name = [exist_list(1).folder '/' exist_list(1).name];
+            [status, oinfo(iOrbit).start_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
+
+            oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
+            oinfo(iOrbit).orbit_number = oinfo(iOrbit).orbit_number + 1;
+
+            granule_start_time_guess = granule_start_time_guess + orbit_duration / secs_per_day;
         else
             found_one = 0;
         end
@@ -166,7 +178,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
     
     start_line_index = [];
 
-    while granule_start_time_guess <= (current_orbit_end_time + 60 / secs_per_day)
+    while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
         % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
@@ -195,10 +207,10 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
     
     % If no problems set status to 251 ==> this orbit already built.
     
-    if status == 0
-        status = 251;
-        return
-    end
+    % % % % % % % % if status == 0
+    % % % % % % % %     status = 251;
+    % % % % % % % %     return
+    % % % % % % % % end
     
     % % % % TEMPORARY START
     % % % 
@@ -261,8 +273,7 @@ end
 % granule instead of 2040. (I'm not sure if the last thing is really a
 % problem.)
 
-% % % while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
-while granule_start_time_guess <= (current_orbit_end_time + 60 / secs_per_day)     
+while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     

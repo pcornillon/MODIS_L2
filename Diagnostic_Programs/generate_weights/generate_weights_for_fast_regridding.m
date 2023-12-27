@@ -72,7 +72,7 @@ tic_build_start = tic;
 
 %% Get the nadir track information for the month containing the start time.
 
-orbit_filename = [ancillary_data_dir 'nadir_info_' return_a_string(start_date_time(1)) '_' return_a_string(start_date_time(2)) '.mat'];
+orbit_filename = [ancillary_data_dir 'nadir_info_' return_a_string( 2, start_date_time(1)) '_' return_a_string( 2, start_date_time(2)) '.mat'];
 
 if exist(orbit_filename) == 2
     load(orbit_filename, 'filenames', 'filename_index', 'orbit_info', 'scan_line_in_file');

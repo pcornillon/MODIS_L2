@@ -104,7 +104,7 @@ else
     % % % end
 
     % % % [found_one, data_granule, ~] = get_S3_filename( 'sst_data', metadata_granule);
-    [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule);
+    [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule_file_name);
 
     if found_one == 0
         if print_diagnostics

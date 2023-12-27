@@ -46,7 +46,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 orbit_duration
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -126,17 +126,45 @@ end
 % the extension .nc4 is stripped off the name so that if either a .nc4 or
 % .dummy file exists we're good.
 
+already_processed = 0;
+
 if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', '.dummy')) == 2)
     
-    fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
+    already_processed = 1;
     
-    start_line_index = [];
-        
-    % Skip the next 80 minutes of granules to save time; don't have to read them.
+    fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
 
+    % Skip the next 85 minutes of granules to save time; don't have to read them.
+    
+    orbit_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
     granule_start_time_guess = granule_start_time_guess + 85 / (60 * 24);
 
-    while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
+    % Keep skipping orbits until a missing one is found. 
+    
+    kk = strfind( oinfo(iOrbit).name, '/');
+    
+    found_one = 1;
+    next_orbit_number = oinfo(iOrbit).orbit_number;
+    while found_one      
+        next_orbit_number = next_orbit_number + 1;
+        exist_list = dir( [oinfo(iOrbit).name(1:kk(end)) 'AQUA_MODIS_orbit_' return_a_string( 6, next_orbit_number) '*']);
+        
+        if ~isempty(exist_list)
+            % If this orbit is present, skip 90 minutes and look for the
+            % next one. Skipped 90 here instead of 85 because don't have to
+            % be that close as long as it is less than the time of an
+            % orbit.
+            
+            granule_start_time_guess = granule_start_time_guess + 90 / (60 * 24);
+            orbit_end_time = orbit_end_time + orbit_duration / secs_per_day;
+        else
+            found_one = 0;
+        end
+    end        
+    
+    start_line_index = [];
+
+    while granule_start_time_guess <= (orbit_end_time + 60 / secs_per_day)
         
         % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
@@ -163,11 +191,12 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         end
     end
     
-    % % % % If no problems set status to 251 ==> this orbit already built.
-    % % % 
-    % % % if status == 0
-    % % %     status = 251;
-    % % % end
+    % If no problems set status to 251 ==> this orbit already built.
+    
+    if status == 0
+        status = 251;
+        return
+    end
     
     % % % % TEMPORARY START
     % % % 

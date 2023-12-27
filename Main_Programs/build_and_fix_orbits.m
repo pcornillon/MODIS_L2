@@ -84,7 +84,8 @@ clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_
     nlat_orbit nlat_avg orbit_length latlim sst_range sst_range_grid_size ...
     oinfo iOrbit iGranule iProblem problem_list scan_line_times ...
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
-    Matlab_end_time s3_expiration_time med_op missing_end_granule secs_per_granule
+    Matlab_end_time s3_expiration_time med_op missing_end_granule secs_per_granule ...
+    orbit_duration
 
 
 % Control for memory stats
@@ -111,7 +112,7 @@ global npixels
 
 global save_just_the_facts amazon_s3_run
 global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule
+global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule orbit_duration
 % % % global secs_per_granule_minus_10
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
@@ -485,6 +486,8 @@ orbit_length = 40271;
 
 secs_per_day = 86400;
 
+orbit_duration = 99.1389 * 60;  % Time from descending crossiong of 78 S to 100 pixels past the next descending crossing. 
+
 % secs_per_scan_line is determined from the script scan_line_timing_info in Main_Programs
 
 % secs_per_scan_line = 0.1477112; % From earlier work before scan_line_timing_info 
@@ -680,15 +683,17 @@ while granule_start_time_guess <= Matlab_end_time
         return
     end
 
-    % % % if status == 251
-    % % %     fprintf('Have skipped the building of orbit %s. Skipping the rest of the processing for this orbit.\n', oinfo(iOrbit).name)
-    % % % 
+    if status == 251
+        fprintf('Have skipped the building of orbit %s. Skipping the rest of the processing for this orbit.\n', oinfo(iOrbit).name)
+    
+        iOrbit = iOrbit - 1;
+        
     % % %     % Since we are skipping the processing but we have started the
     % % %     % orbit, we need to increment the orbit number, which is usually
     % % %     % done after saving the orbith, which is not done in this case.
     % % % 
     % % %     iOrbit = iOrbit + 1;
-    % % % else
+    else
         % % % if (status == 201) | (status == 231)
         if status == 231
             fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
@@ -894,6 +899,7 @@ while granule_start_time_guess <= Matlab_end_time
                 end
             end
         end
+    end
 
         % Save oinfo and memory structure files for this run.
 

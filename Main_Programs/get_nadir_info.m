@@ -115,11 +115,11 @@ while imatlab_time <= matlab_time_end
     
     [iyear, imonth, iday, ihour, iminute, isecond] = datevec(imatlab_time);
     
-    iyears = convertStringsToChars(num2str(iyear));
-    imonths = return_a_string(imonth);
-    idays = return_a_string(iday);
-    ihours = return_a_string(ihour);
-    iminutes = return_a_string(iminute);
+    iyears = convertStringsToChars( 2, num2str(iyear));
+    imonths = return_a_string( 2, imonth);
+    idays = return_a_string( 2, iday);
+    ihours = return_a_string( 2, ihour);
+    iminutes = return_a_string( 2, iminute);
     
 % %     if iday ~= day_save
 % %         day_save = iday;
@@ -338,7 +338,7 @@ while imatlab_time <= matlab_time_end
                     end
                 else
                     
-                    filename_out = [base_dir_out, 'Orbits/Orbit_' num2str(pcc_orbit_number) '_nadir_info_' year_for_name '_' return_a_string(month_save) '_long'];
+                    filename_out = [base_dir_out, 'Orbits/Orbit_' num2str(pcc_orbit_number) '_nadir_info_' year_for_name '_' return_a_string( 2, month_save) '_long'];
                     
                 end
                 
@@ -511,11 +511,11 @@ if month_save == 12
 end
 
 if save_long
-    save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string(month_save) '_long'], ...
+    save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string( 2, month_save) '_long'], ...
         'filenames', 'orbit_number', 'filename_index', 'matlab_time', '*lon', '*lat', 'detnum', ...
         'nsol_z', 'scan_line_in_file', 'orbit_info', 'latlim');
 else
-    save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string(month_save)], ...
+    save( [base_dir_out, 'Orbits/nadir_info_' year_for_name '_' return_a_string( 2, month_save)], ...
         'filenames', 'filename_index', 'scan_line_in_file', 'nsol_z', 'orbit_info');
 end
 

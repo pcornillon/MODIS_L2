@@ -66,8 +66,16 @@ switch file_type
 
         metadata_name = arg_2;
 
-        % Get the time of the metadata file.
+        % Get the time of the metadata file. Start by finding where in the
+        % string the data and time info is. 
 
+% % %         kk = findstr( metadata_name, '/');
+% % %         if isempty(kk)
+% % %             kk = 0;
+% % %         end
+% % %         
+% % %         md_date = metadata_name(kk+12:kk+19);
+% % %         md_time = metadata_name(kk+21:kk+26);
         md_date = metadata_name(12:19);
         md_time = metadata_name(21:26);
 
@@ -104,7 +112,7 @@ switch file_type
 
         % Build the filename.
 
-        data_filename = [granules_directory dir_year filename_start md_date md_time filename_end_day];
+        data_filename = [granules_directory dir_year filename_start md_date 'T' md_time filename_end_day];
 
         % Well, does this sucker exist? If not, continue searching for a file.
 

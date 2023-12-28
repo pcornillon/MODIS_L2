@@ -65,10 +65,13 @@ indices.current.gescan = start_line_index + 101 - 1;
 % Is the length of the orbit correct? If not force it to be so.
 
 if indices.current.oescan ~= orbit_length
-    kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
 
-    if print_diagnostics
-        fprintf('...Calculated length of %s is %i scans, not %i. Forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length, orbit_length);
+    kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
+    if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
+
+        if print_diagnostics
+            fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length, orbit_length);
+        end
     end
 
     indices.current.oescan = orbit_length;

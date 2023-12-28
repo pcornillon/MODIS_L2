@@ -87,7 +87,7 @@ switch Option
         output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
         output_file_directory_remote = '';
 
-        logs_directory = [BaseDir 'Logs/'];
+        logs_directory = '/Volumes/MODIS_L2_Modified/OBPG/Logs/';
 
     case 4 % MacStudio or Satdat1
         %   fixit metadata from Dropbox, 

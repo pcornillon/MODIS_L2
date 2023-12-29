@@ -247,7 +247,7 @@ if ~isempty(aa)
                 end
             end
             
-            if iPossible(3) > length(nlat_t)
+            if iPossible(3) < length(nlat_t)
                 if abs(nlat_t(iPossible(3)) - latlim) < central_group
                     start_line_index = iPossible(3);
                 end

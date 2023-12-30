@@ -910,7 +910,7 @@ while granule_start_time_guess <= Matlab_end_time
                     region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
 
                 oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
-                oinfo(iOrbit).time_to_save_this_file = toc(time_to_save_orbit);
+% % %                 oinfo(iOrbit).time_to_save_this_file = toc(time_to_save_orbit);
 
                 oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 

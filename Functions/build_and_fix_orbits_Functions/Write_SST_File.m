@@ -800,14 +800,14 @@ end
 % remote storage. Only do this if output_file_directory_remote is not empty. 
 % Note that output_filename in the following is the local filename. 
 
-if ~isempty(output_file_directory_remote)
-
-    % Check to see if copy_output_no is running.
-    
-    nn = strfind(output_filename, '/SST/');
-    remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
-
-    copy_output_no = batch( 'copy_output_file', 0, {output_filename, remote_filename}, CaptureDiary=true);
-end
+% % % if ~isempty(output_file_directory_remote)
+% % % 
+% % %     % Check to see if copy_output_no is running.
+% % %     
+% % %     nn = strfind(output_filename, '/SST/');
+% % %     remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
+% % % 
+% % %     copy_output_no = batch( 'copy_output_file', 0, {output_filename, remote_filename}, CaptureDiary=true);
+% % % end
 
 

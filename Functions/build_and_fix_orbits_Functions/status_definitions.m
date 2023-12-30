@@ -1,6 +1,6 @@
 % Meaning of return status. Old values in parentheses.
 %
-% INFORMATIONAL, NO ACTION REQUIRED ON RETURN.
+% % % % means that these are up to date.
 %
 % 101 - get_scanline_index - data granule missing but metadata granule present. Will skip to next granule.  
 %       status = populate_problem_list( 101, ['No data granule found corresponding to ' metadata_file_list(1).folder '/' metadata_file_list(1).name '.'], granule_start_time_guess);
@@ -8,8 +8,6 @@
 
 % 102 - find_next_granule_with_data - starting index less than 10. Setting
 %       to 1. Not sure if this is correct.
-% 103 - get_scanline_index - Latitude for nlat_t(5) is nan. This should not
-%       happen. Skipping this granule. 
 % 104 - get_scanline_index - Only one intersection of nlat_t(5) found with nlat_avg. 
 
 % 115 - find_next_granule_with_data - Number of lines to skip for this granule is not an acceptable value. Forcing to the possible number of lines to skip.
@@ -72,6 +70,24 @@
 % 415 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %
+
+%% **************** get_scanline_index ****************
+% % % % 801 - get_scanline_index - nan latitudes read from granule. This should not happen.  
+% % % %       status = populate_problem_list( 101, ['Latitude for nlat_t(5) is nan for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. This should not happen. Skipping this granule.']);
+% % % %       return -- no action on return since status is not passed back.
+% % % % 
+% % % % 802 - get_scanline_index - something fishy with latitudes read from granule.  
+% % % %       status = populate_problem_list( 102, ['Latitudes don''t appear to be right for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. First latitude is ' num2str(nlat_t(1))])
+% % % %       return -- no action on return since status is not passed back.
+% % % % 
+% % % % 803 - get_scanline_index - problem when trying to match current latitudes with the canonical orbit.   
+% % % %       status = populate_problem_list( 103, ['Only one intersection of nlat_t(5) found with nlat_avg for ' oinfo(iOrbit).ginfo(iGranule).metadata_name]);
+% % % %       continue -- WARNING -- status not passed back.
+% % % % 
+% % % % 804 - get_scanline_index - problem when trying to match current latitudes with the canonical orbit.   
+% % % %       status = populate_problem_list( 104, ['Be careful, for granule ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' get_scanline_index found a starting index of num2str(nnToUse). Is setting nnToUse to 1.']);   
+% % % %       continue -- WARNING -- status not passed back.
+
 % END OF RUN
 %
 % 901 - find_next_granule_with_data - Did not find a granule that crosses 78 S since the end of the last orbit. (used to be -999).

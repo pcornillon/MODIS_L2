@@ -66,9 +66,18 @@ switch build_type
         
         nnToUse = get_scanline_index;
         
+        % nnToUse should be a number ending in 6, since the orbit starts
+        % from the middle of a 10 group detector array. The following will
+        % find the closest value to a number ending in 6. Most of the time
+        % it should be the same number of when working with an orbit that
+        % does not start with a granule that crosses 78 S on the southward
+        % portion of the orbit.  
+        
+        nnToUse = nnToUse(1) - rem(nnToUse(1)-1, 10) + 5;     
+        
         %% SHOULD THESE ALL BE iOrbit+1 INSTEAD OF iOrbit?
         
-        oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse(1)) / secs_per_day;
+        oinfo(iOrbit).start_time = scan_line_times(1) - sltimes_avg(nnToUse) / secs_per_day;
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
         
         if nnToUse(1) > index_of_NASA_orbit_change

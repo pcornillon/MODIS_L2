@@ -98,7 +98,6 @@ if length(oinfo) < iOrbit
 
     iGranule = 0;
     
-    % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     [status, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
     % Return if end of run.
@@ -180,7 +179,6 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
     while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
         
         % Return if end of run.
@@ -204,21 +202,6 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
             break
         end
     end
-    
-    % If no problems set status to 251 ==> this orbit already built.
-    
-    % % % % % % % % if status == 0
-    % % % % % % % %     status = 251;
-    % % % % % % % %     return
-    % % % % % % % % end
-    
-    % % % % TEMPORARY START
-    % % % 
-    % % % iOrbit = iOrbit + 1;
-    % % % iGranule = 1;
-    % % % % % % return
-    % % % 
-    % % % % TEMPORARY STOP
 end
 
 %% Now build this orbit from its granules; a granule has been found with the start of this orbit.
@@ -277,7 +260,6 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     
-    % % % [status, ~, ~, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     
     % Status returned from find_next_granule_with_data is either 0 - all OK,

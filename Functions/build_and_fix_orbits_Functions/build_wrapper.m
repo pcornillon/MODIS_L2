@@ -172,7 +172,7 @@ switch Option
         granules_directory           = '/Volumes/Data_1/combined/';
 
         output_file_directory_local  = '/Volumes/Data_1/output/';
-        output_file_directory_remote = '/Volumes/Data_1/output/';
+        output_file_directory_remote = '';
 
         logs_directory               = '/Volumes/Data_1/Logs/';
 end

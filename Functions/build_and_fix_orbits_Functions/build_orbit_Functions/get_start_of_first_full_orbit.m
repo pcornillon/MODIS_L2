@@ -1,5 +1,5 @@
 % % % function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit
-function [status, granule_start_time_guess] = get_start_of_first_full_orbit
+function [status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time)
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
 % This function starts by searching for the first metadata granule at or
@@ -8,7 +8,8 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit
 % satellite passes latlim, nominally 78 S.
 %
 % INPUT
-%   none
+%   search_start_time - the Matlab time at which the search for data
+%   granules is to start.
 %
 % OUTPUT
 %   status  : 911 - end of run.
@@ -67,7 +68,7 @@ if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
 file_list = [];
 
-granule_start_time_guess = floor(Matlab_start_time*24) / 24 - 1 / 24;
+granule_start_time_guess = floor(search_start_time * 24) / 24 - 1 / 24;
 
 if amazon_s3_run
 
@@ -79,9 +80,9 @@ if amazon_s3_run
         granule_start_time_guess = granule_start_time_guess + 1 / 86400;
 
         if granule_start_time_guess > Matlab_end_time
-            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
 
-            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
+            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(search_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
             return
         end
 
@@ -106,9 +107,9 @@ else
         if local_debug; fprintf('In while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
 
         if granule_start_time_guess > Matlab_end_time
-            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
 
-            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(Matlab_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
+            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(search_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
             return
         end
 
@@ -125,15 +126,6 @@ end
 % latlim, nominally 78 S.
 
 % fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
-
-% % % nn = strfind( file_list(1).name, 'AQUA_MODIS_');
-% % % 
-% % % yyyy = str2num(file_list(1).name(nn+11:nn+14));
-% % % mm = str2num(file_list(1).name(nn+15:nn+16));
-% % % dd = str2num(file_list(1).name(nn+17:nn+18));
-% % % HH = str2num(file_list(1).name(nn+20:nn+21));
-% % % MM = str2num(file_list(1).name(nn+22:nn+23));
-% % % SS = str2num(file_list(1).name(nn+24:nn+25));
 
 metadata_granule_file_name = file_list(1).name;
 
@@ -210,7 +202,7 @@ iOrbit = 1;
 
 if (status == 201) | (status == 231) | (status > 900)
     if print_diagnostics
-        fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(Matlab_start_time), datestr(Matlab_end_time))
+        fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
     end
 end
 

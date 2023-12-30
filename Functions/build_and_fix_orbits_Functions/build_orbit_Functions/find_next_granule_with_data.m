@@ -68,7 +68,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list missing_end_granule current_orbit_end_time
+global oinfo iOrbit iGranule iProblem problem_list missing_end_granule
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
@@ -116,8 +116,7 @@ while 1==1
 
     if length(oinfo) == iOrbit
         if ~isempty(oinfo(iOrbit).end_time)
-%             if granule_start_time_guess > (oinfo(iOrbit).end_time + 60 / secs_per_day)
-            if granule_start_time_guess > (current_orbit_end_time + 60 / secs_per_day)
+            if granule_start_time_guess > (oinfo(iOrbit).end_time - 2 / secs_per_day)
                 if print_diagnostics
                     fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
                 end
@@ -136,58 +135,27 @@ while 1==1
         end
     end
 
-    % ADDED TEXT ******************************************************
-
-    if missing_end_granule
-        iOrbit = iOrbit + 1;
-        iGranule = 0;
-    end
-
-    % ADDED TEXT ******************************************************
-
     % Search the minute (all second values) for a metadata file
     % corresponding to the guess for the granule start time. This search
     % will be done by backing 5 seconds and then searching forward for 65
     % until a granule is found, or not.
 
-    % % % metadata_file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-
-    % % % metadata_file_list = [];
-    % % %
-    % % % granule_start_time_guess = granule_start_time_guess - 5 / 86400;
-    % % % for iSecond=1:65
-    % % %     granule_start_time_guess = granule_start_time_guess + 1 / 86400;
-    % % %
-    % % %     filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-    % % %
-    % % %     if exist(filename)
-    % % %         metadata_file_list = dir(filename);
-    % % %         break
-    % % %     end
-    % % % end
-
-    % % % [found_one, metadata_granule, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
     [found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
 
     % Was a metadata file found at this time? If so proceed, if not
     % increment time to search by 5 minutes and search for the next
     % metadata file.
-
-    if found_one
-        % % % metadata_file_list = dir(metadata_granule);
-    % % % end
-    % % % 
-    % % % % Was a metadata file found at this time?
-    % % % 
-    % % % if ~isempty(metadata_file_list)
-        % % % 
-        % % % % Hopefully there is only one file in the searched time range.
-        % % % 
-        % % % if length(metadata_file_list) == 1
+    
+    if found_one == 0
+        if print_diagnostics
+            fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_granule_folder_name, metadata_granule_file_name )
+        end
+        
+        status = populate_problem_list( 101, ['No metadata granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
+    else
 
             % Get the metadata filename.
 
-            % % % metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
             metadata_temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
 
             % Is the data granule for this time present? If so, get the range
@@ -197,103 +165,20 @@ while 1==1
             % not occur. BUT FIRST, search for a granule within a minute of
             % the time passed in.
 
-            % % % found_one = 0;
-            % % % if amazon_s3_run
-            % % % 
-            % % %     % % % % % Do we need new credentials for the s3 file?
-            % % %     % % % %
-            % % %     % % % % if (now - s3_expiration_time) > 55 / (60 * 24)
-            % % %     % % % %     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
-            % % %     % % % % end
-            % % %     % % % %
-            % % %     % % % % % Get the time of the metadata file.
-            % % %     % % % % % modis metadata file: AQUA_MODIS_20100502T170507_L2_SST_OBPG_extras.nc4
-            % % %     % % % %
-            % % %     % % % % md_date = metadata_file_list(1).name(12:19);
-            % % %     % % % % md_time = metadata_file_list(1).name(21:26);
-            % % %     % % % %
-            % % %     % % % % % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc
-            % % %     % % % %
-            % % %     % % % % % Is there an s3 data file at the same time as this metadata file?
-            % % %     % % % %
-            % % %     % % % % data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-            % % %     % % % %
-            % % %     % % % % % If the file does not exist check for a nighttime version of it.
-            % % %     % % % %
-            % % %     % % % % if ~exist(data_temp_filename)
-            % % %     % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-            % % %     % % % % end
-            % % %     % % % %
-            % % %     % % % % % If the file does not exist search all seconds for this metadata minute.
-            % % %     % % % %
-            % % %     % % % % if ~exist(data_temp_filename)
-            % % %     % % % %
-            % % %     % % % %     data_temp_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-            % % %     % % % %     % % % found_one = 0;
-            % % %     % % % %
-            % % %     % % % %     yymmddhhmm = datestr(granule_start_time_guess, formatOut.yyyymmddhhmm);
-            % % %     % % % %
-            % % %     % % % %     for iSec=0:59
-            % % %     % % % %         iSecC = num2str(iSec);
-            % % %     % % % %         if iSec < 10
-            % % %     % % % %             iSecC = ['0' iSecC];
-            % % %     % % % %         elseif iSec == 0
-            % % %     % % % %             iSecC = '00';
-            % % %     % % % %         end
-            % % %     % % % %
-            % % %     % % % %         data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc'];
-            % % %     % % % %
-            % % %     % % % %         if ~exist(data_temp_filename)
-            % % %     % % % %             data_temp_filename = [granules_directory yymmddhhmm iSecC '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
-            % % %     % % % %         end
-            % % %     % % % %
-            % % %     % % % %         if exist(data_temp_filename)
-            % % %     % % % %             found_one = 1;
-            % % %     % % % %             break
-            % % %     % % % %         end
-            % % %     % % % %     end
-            % % %     % % % % else
-            % % %     % % % %     found_one = 1;
-            % % %     % % % % end
-            % % % 
-            % % %     [found_one, data_temp_filename, ~] = get_S3_filename( 'sst_data', metadata_file_list(1).name);
-            % % % else
-            % % %     data_file_list = dir( [granules_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr(granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-            % % % 
-            % % %     % If a file was found save the filename.
-            % % % 
-            % % %     if ~isempty(data_file_list)
-            % % %         if length(data_file_list) == 1
-            % % %             data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
-            % % %             found_one = 1;
-            % % %         end
-            % % %     end
-            % % % end
-            % % % 
-            % % % % % % if isempty(data_file_list)
 
             [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule_file_name);
 
             if found_one == 0
-                % Reset metadata_file_list to empty since no data granule
-                % exists for this time, even though a metadata granule does,
-                % flag and keep searching.
-
                 if print_diagnostics
                     fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_granule_folder_name, metadata_granule_file_name )
                 end
 
-                status = populate_problem_list( 101, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
+                status = populate_problem_list( 102, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
 
-                % % % metadata_file_list = [];
             else
-                % % % data_temp_filename = [data_file_list(1).folder '/' data_file_list(1).name];
-                % % % metadata_temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
                 data_temp_filename = [data_granule_folder_name data_granule_file_name];
 
                 % Get the metadata for this granule.
-
-                % % % [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_file_list, 1, granule_start_time_guess);
 
                [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
 
@@ -356,8 +241,8 @@ while 1==1
                         end
 
                         if (iGranule == 1) & (iOrbit > 1)
-                            mside_current = single(ncread( oinfo(iOrbit).ginfo(1).metadata_name, '/scan_line_attributes/mside'));
-                            mside_previous = single(ncread( oinfo(iOrbit-1).ginfo(end).metadata_name, '/scan_line_attributes/mside'));
+                            mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
+                            mside_previous = single(ncread( oinfo(iOrbit-1).ginfo(end).data_name, '/scan_line_attributes/mside'));
 
                             if mside_previous(end) == mside_current(1)
                                 if print_diagnostics
@@ -387,7 +272,18 @@ while 1==1
                                 if isempty(nnToUse)
                                     indices.current.osscan = [];
                                 else
-                                    indices.current.osscan = nnToUse(1);
+                                    % It should be a number ending in 6,
+                                    % since the orbit starts from the
+                                    % middle of a 10 group detector array.
+                                    % The following will find the closest
+                                    % value to a number ending in 6. Most
+                                    % of the time it should be the same
+                                    % number of when working with an orbit
+                                    % that does not start with a granule
+                                    % that crosses 78 S on the southward
+                                    % portion of the orbit. 
+                                    
+                                    indices.current.osscan = nnToUse(1) - rem(nnToUse(1)-1, 10) + 5;
                                 end
                             else
                                 indices.current.osscan = 1;
@@ -469,7 +365,7 @@ while 1==1
                             if isempty(oinfo(iOrbit).name)
                                 status = generate_output_filename('no_sli');
 
-                                % status = 231 ==> build_type in generate_output_filename neither 'sli' nor 'no_sli'
+                                % status = 231 ==> build_type in generate_output_filename neither 'sli' nor 'no_sli'. Should never happen.
 
                                 if status == 231
                                     return

@@ -649,7 +649,9 @@ iOrbit = 1;
 % % % iGranule = 0;
 
 % % % [status, ~, ~, ~, granule_start_time_guess] = get_start_of_first_full_orbit;
-[status, granule_start_time_guess] = get_start_of_first_full_orbit;
+
+search_start_time = Matlab_start_time;
+[status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time);
 
 % % % iOrbit = iOrbit + 1;
 
@@ -665,7 +667,35 @@ while granule_start_time_guess <= Matlab_end_time
 
     mem_count = mem_count + 1;
 
-    %% Build the orbit.
+    %% Build the orbit 
+    
+    % Make sure that we are at the start of an orbit. If the the last
+    % granule of the previous orbit was missing, there would be no start
+    % for this orbit so we need to search for the start of the next orbit.
+    
+    if length(oinfo) ~= iOrbit
+        iGranule = 0;
+        
+        oinfo(iOrbit).start_time = oinfo(iOrbit-1).end_time + 1 * secs_per_scan_line / secs_per_day;
+        oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
+        oinfo(iOrbit).orbit_number = oinfo(iOrbit-1).orbit_number + 1;
+        
+        orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+            '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+        
+        oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
+            datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
+        
+        [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        
+        % Return if end of run.
+        
+        if (status == 201) | (status == 231) | (status > 900)
+            fprintf('Problem building this orbit, return to builds_and_fix_orbit.\n')
+            return
+        end
+    end
+
 
     if determine_fn_size; get_job_and_var_mem; end
 

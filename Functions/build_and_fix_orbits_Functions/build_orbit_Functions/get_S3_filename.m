@@ -165,6 +165,8 @@ switch file_type
                         break
                     end
                 end
+            else
+                found_one = 1;
             end
         end
 

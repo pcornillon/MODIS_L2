@@ -97,6 +97,7 @@ switch file_type
             filename_end_day = '-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc';
             filename_end_night = '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc';
             dir_year = '';
+            date_time_separator = '';
         else
             % modis metadata file: AQUA_MODIS.20030103T120006.L2.SST.nc
             %   granules_directory = '/Volumes/MODIS_L2_original/OBPG/combined/';  OR
@@ -108,11 +109,13 @@ switch file_type
             filename_end_night = filename_end_day;
 
             dir_year = [md_date(1:4) '/'];
+            date_time_separator = 'T';
         end
 
         % Build the filename.
 
-        data_filename = [granules_directory dir_year filename_start md_date 'T' md_time filename_end_day];
+% % %         data_filename = [granules_directory dir_year filename_start md_date 'T' md_time filename_end_day];
+        data_filename = [granules_directory dir_year filename_start md_date date_time_separator md_time filename_end_day];
 
         % Well, does this sucker exist? If not, continue searching for a file.
 
@@ -139,9 +142,9 @@ switch file_type
 
                 yymmddhhmm = datestr(granule_guess_time, formatOut.yyyymmddhhmm);
 
-                if amazon_s3_run == 0
-                    yymmddhhmm = [yymmddhhmm(1:8) 'T' yymmddhhmm(9:12)];
-                end
+% % %                 if amazon_s3_run == 0
+% % %                     yymmddhhmm = [yymmddhhmm(1:8) 'T' yymmddhhmm(9:12)];
+% % %                 end
 
                 for iSec=0:59
                     iSecC = num2str(iSec);

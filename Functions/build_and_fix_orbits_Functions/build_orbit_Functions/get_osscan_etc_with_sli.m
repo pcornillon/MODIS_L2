@@ -70,14 +70,14 @@ if indices.current.oescan ~= orbit_length
     if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
 
         if print_diagnostics
-            fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length, orbit_length);
+            fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length);
         end
     end
 
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
 
-    status = populate_problem_list( 416, ['Calculated length of ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ' scans, not ' num2str(orbit_length(kk+11:end-11)) '. Forcing to ' num2str(orbit_length) '.']);
+    status = populate_problem_list( 416, ['Calculated length of ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']);
 
     if iOrbit == 1
         fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful.\n')

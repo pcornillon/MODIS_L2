@@ -329,11 +329,11 @@ while 1==1
 
                                     if dd_1_2 > 9 & dd_1_2 < 11.5
 
-                                        fprintf('.....1st 1/2 mirror rotation missing for %s. Skipping %i lines at lon %f, lat %f.\n', ...
-                                            oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), lines_to_skip, clon_2(1), clat_2(1))
+                                        fprintf('.....1st 1/2 mirror rotation missing for %s, granule #%i. Skipping %i lines at lon %f, lat %f.\n', ...
+                                            oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), iGranule, lines_to_skip, clon_2(1), clat_2(1))
 
                                         status = populate_problem_list( 116, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
-                                            '. Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time_guess);
+                                            ' for granule #' num2str(iGranule) '. Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time_guess);
                                     else
                                         fprintf('.....Says to skip 10 lines for %s, but the distance, %f km, isn''t right. Will not skip any lines.\n', ...
                                             oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), dd_1_2)

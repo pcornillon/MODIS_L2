@@ -226,31 +226,35 @@ while 1==1
                         % the mirror side for the first scan line in this
                         % granule.
                         
-                        if iGranule ~= 1
-                            mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
-                            mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).data_name, '/scan_line_attributes/mside'));
-
-                            if mside_previous(end) == mside_current(1)
-                                if print_diagnostics
-                                    fprintf('***Mirror side (%i) for the first scan line on granule %i of orbit %i is the same as that of the last scan of the prevous granule.\n', ...
-                                        mside_current(1), iGranule, iOrbit)
+                        % This is a diagnostic test, skip for AWS until I
+                        % determine whether or not mside is in the AWS NASA
+                        % granules
+                        
+                        if amazon_s3_run == 0
+                            if iGranule ~= 1
+                                mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
+                                mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).data_name, '/scan_line_attributes/mside'));
+                                
+                                if mside_previous(end) == mside_current(1)
+                                    if print_diagnostics
+                                        fprintf('***Mirror side (%i) for the first scan line on granule %i of orbit %i is the same as that of the last scan of the prevous granule.\n', ...
+                                            mside_current(1), iGranule, iOrbit)
+                                    end
+                                    
+                                    status = populate_problem_list( 151, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule.'], granule_start_time_guess);
                                 end
-
-                                status = populate_problem_list( 151, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule.'], granule_start_time_guess);
-                            end
-                        end
-
-                        if (iGranule == 1) & (iOrbit > 1)
-                            mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
-                            mside_previous = single(ncread( oinfo(iOrbit-1).ginfo(end).data_name, '/scan_line_attributes/mside'));
-
-                            if mside_previous(end) == mside_current(1)
-                                if print_diagnostics
-                                    fprintf('***Mirror side (%i) for the 1st scan line of the 1st granule %i in orbit %i is the same as that of the last scan line of the last granule in the previous orbit.\n', ...
-                                        mside_current(1), iGranule, iOrbit)
+                            elseif iOrbit > 1
+                                mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
+                                mside_previous = single(ncread( oinfo(iOrbit-1).ginfo(end).data_name, '/scan_line_attributes/mside'));
+                                
+                                if mside_previous(end) == mside_current(1)
+                                    if print_diagnostics
+                                        fprintf('***Mirror side (%i) for the 1st scan line of the 1st granule %i in orbit %i is the same as that of the last scan line of the last granule in the previous orbit.\n', ...
+                                            mside_current(1), iGranule, iOrbit)
+                                    end
+                                    
+                                    status = populate_problem_list( 152, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time_guess);
                                 end
-
-                                status = populate_problem_list( 152, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time_guess);
                             end
                         end
 

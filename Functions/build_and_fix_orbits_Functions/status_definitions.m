@@ -96,3 +96,17 @@
 
 % 
 % 911 - get_start_of_first_full_orbit - end of run.
+
+%% ******************* regrid_MODIS_orbits ********************************
+% % % % 1001 - regrid_MODIS_orbits - All of the SSTs in a section 1 to be regridded are nan. 
+% % % %        status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+% % % %   continue -- WARMING -- status not passed back. 
+% % % % 
+% % % % 1002 - regrid_MODIS_orbits - All of the SSTs in a section 2 or 4 to be regridded are nan. 
+% % % %        status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+% % % %   continue -- WARMING -- status not passed back. 
+% % % % 
+% % % % 1003 - regrid_MODIS_orbits - All of the SSTs in a section 3 to be regridded are nan. 
+% % % %        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+% % % %   continue -- WARMING -- status not passed back. 
+% % % % 

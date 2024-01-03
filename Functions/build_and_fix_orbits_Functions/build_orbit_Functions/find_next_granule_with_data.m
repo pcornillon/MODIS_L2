@@ -148,10 +148,10 @@ while 1==1
     
     if found_one == 0
         if print_diagnostics
-            fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_granule_folder_name, metadata_granule_file_name )
+            fprintf('No metadata granule found between %s and %s.\n', datestr(granule_start_time_guess - 5 / secs_per_day), datestr(granule_start_time_guess + 60 / secs_per_day))
         end
         
-        status = populate_problem_list( 101, ['No metadata granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
+        status = populate_problem_list( 101, ['No metadata granule found between ' datestr(granule_start_time_guess - 5 / secs_per_day) ' and ' datestr(granule_start_time_guess + 60 / secs_per_day) '.'], granule_start_time_guess);
     else
 
             % Get the metadata filename.

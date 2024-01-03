@@ -195,7 +195,7 @@ if regridding_mode==1
     pp = find(isnan(xx) == 0);
 
     if length(pp) == 0
-        fprintf('...All SST_In values in Section 1 are nan for orbit %s'.\n', oinfo(iOrbit).name)
+        fprintf('...All SST_In values in Section 1 are nan for orbit %s.\n', oinfo(iOrbit).name)
 
         status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
     else
@@ -283,7 +283,7 @@ for iSection=[2,4]
         pp = find(isnan(xx) == 0);
 
         if length(pp) == 0
-            fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s'.\n', oinfo(iOrbit).name)
+            fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
 
             status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
         else
@@ -400,7 +400,7 @@ if regridding_mode==1
     pp = find(isnan(xx) == 0);
 
     if length(pp) == 0
-        fprintf('...All SST_In values in Sections 3 are nan for orbit %s'.\n', oinfo(iOrbit).name)
+        fprintf('...All SST_In values in Sections 3 are nan for orbit %s.\n', oinfo(iOrbit).name)
 
         status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
     else

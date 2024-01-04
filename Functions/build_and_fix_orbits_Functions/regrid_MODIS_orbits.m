@@ -197,7 +197,7 @@ if regridding_mode==1
     if length(pp) == 0
         fprintf('...All SST_In values in Section 1 are nan for orbit %s.\n', oinfo(iOrbit).name)
 
-        status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+        status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], '');
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end
@@ -402,7 +402,7 @@ if regridding_mode==1
     if length(pp) == 0
         fprintf('...All SST_In values in Sections 3 are nan for orbit %s.\n', oinfo(iOrbit).name)
 
-        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end

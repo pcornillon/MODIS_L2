@@ -68,7 +68,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list missing_end_granule
+global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
@@ -116,20 +116,13 @@ while 1==1
 
     if length(oinfo) == iOrbit
         if ~isempty(oinfo(iOrbit).end_time)
-            if granule_start_time_guess > (oinfo(iOrbit).end_time - 2 / secs_per_day)
+            if granule_start_time_guess > (oinfo(iOrbit).end_time - 2 * secs_per_scan_line / secs_per_day)
                 if print_diagnostics
                     fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
                 end
 
                 status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
 
-                missing_end_granule = 1;
-                
-                % Need to determine the start and end of this orbit. Will
-                % do this based on time from the end of the previous orbit
-                % to the start of this granule and, as a check, from the
-                % latitude of the first nadir value in this granule
-                % compared to the canonical orbit. 
                 return
             end
         end
@@ -148,10 +141,10 @@ while 1==1
     
     if found_one == 0
         if print_diagnostics
-            fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_granule_folder_name, metadata_granule_file_name )
+            fprintf('No metadata granule found between %s and %s.\n', datestr(granule_start_time_guess - 5 / secs_per_day), datestr(granule_start_time_guess + 60 / secs_per_day))
         end
         
-        status = populate_problem_list( 101, ['No metadata granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
+        status = populate_problem_list( 101, ['No metadata granule found between ' datestr(granule_start_time_guess - 5 / secs_per_day) ' and ' datestr(granule_start_time_guess + 60 / secs_per_day) '.'], granule_start_time_guess);
     else
 
             % Get the metadata filename.
@@ -211,10 +204,18 @@ while 1==1
                         oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = ncreadatt( oinfo(iOrbit).ginfo(iGranule).metadata_name,'/','orbit_number');
 
                         oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
-                        % % % oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end) + (secs_per_scan_line * 10) /  secs_per_day;
                         oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end);
 
-                        oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
+                        % Only adding metadata attributes for the first
+                        % granule on each orbit. These attributes are
+                        % similar from granule-to-granule and only those
+                        % from the first granule are copied to the output
+                        % file so no need to carry those for the other
+                        % granules around in oinfo.
+                        
+                        if iGranule == 1
+                            oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
+                        end
 
                         oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
 
@@ -296,7 +297,6 @@ while 1==1
                             % Get the number of scan lines to skip and make sure that it is an
                             % acceptable value.
 
-                            % % % lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day + 0.05) / secs_per_scan_line);
                             lines_to_skip = floor( (abs(scan_line_times(1) - oinfo(iOrbit).ginfo(iGranule-1).end_time) * secs_per_day - secs_per_scan_line + 0.05) / secs_per_scan_line);
                             [~, nn] = find(min(abs(lines_to_skip - possible_num_scan_lines_skip(3,:))) == abs(lines_to_skip - possible_num_scan_lines_skip(3,:)));
 
@@ -381,62 +381,6 @@ while 1==1
 
                             if isempty(start_line_index)
                                 [~, indices] = get_osscan_etc_NO_sli(indices);
-
-                                % ADDED TEXT ******************************************************
-
-                                % If there was no granule at the end of the
-                                % current orbit, need to set up the start of
-                                % the next orbit.
-
-                                % % % if (granule_start_time_guess - 5 / (24 * 60)) > Matlab_end_time
-                                % % if granule_start_time_guess > Matlab_end_time
-                                % %     oinfo(iOrbit+1).start_time = oinfo(iOrbit).end_time + sltimes_avg;
-                                % %     oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_day;
-                                % %     oinfo(iOrbit+1).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number; % MAYBE PLUS 1 HERE.
-                                % % 
-                                % %     orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit+1).orbit_number) ...
-                                % %         '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
-                                % % 
-                                % %     oinfo(iOrbit+1).name = [output_file_directory_local datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
-                                % %         datestr(oinfo(iOrbit+1).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
-                                % % 
-                                % %     % And the metadata for this granule at the start of the next orbit.
-                                % % 
-                                % %     oinfo(iOrbit+1).ginfo(1).data_name = oinfo(iOrbit).ginfo(end).data_name;
-                                % %     oinfo(iOrbit+1).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
-                                % %     oinfo(iOrbit+1).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
-                                % %     oinfo(iOrbit+1).ginfo(1).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
-                                % % 
-                                % %     oinfo(iOrbit+1).ginfo(1).start_time = scan_line_times(1);
-                                % %     oinfo(iOrbit+1).ginfo(1).end_time = scan_line_times(end);
-                                % % end
-
-                                % % if missing_end_granule
-                                % %     iOrbit = iOrbit + 1;
-                                % %     Granule = 1;
-                                % % 
-                                % %     oinfo(iOrbit).start_time = oinfo(iOrbit-1).end_time + sltimes_avg;
-                                % %     oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
-                                % %     oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number; % MAYBE PLUS 1 HERE.
-                                % % 
-                                % %     orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string(oinfo(iOrbit).orbit_number) ...
-                                % %         '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
-                                % % 
-                                % %     oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
-                                % %         datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
-                                % % 
-                                % %     % And the metadata for this granule at the start of the next orbit.
-                                % % 
-                                % %     oinfo(iOrbit).ginfo(iGranule).data_name = oinfo(iOrbit).ginfo(end).data_name;
-                                % %     oinfo(iOrbit).ginfo(iGranule).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
-                                % %     oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
-                                % %     oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
-                                % % 
-                                % %     oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
-                                % %     oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end);
-                                % % end
-                                
-                                % ADDED TEXT ******************************************************
                                     
                             else
                                 [~, indices] = get_osscan_etc_with_sli(indices);
@@ -490,7 +434,6 @@ while 1==1
                         end
                     end
                 end
-            % % % end
         end
     end
 

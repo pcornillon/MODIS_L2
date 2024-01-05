@@ -141,7 +141,7 @@ end
 
 new_lon = nan(size(longitude));
 new_lat = new_lon;
-new_sst = single(new_lon);
+new_sst = single(nan(size(longitude)));
 
 easting = single(new_lon);
 northing = single(new_lon);
@@ -194,7 +194,13 @@ if regridding_mode==1
     
     pp = find(isnan(xx) == 0);
 
-    new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+    if length(pp) == 0
+        fprintf('...All SST_In values in Section 1 are nan for orbit %s.\n', oinfo(iOrbit).name)
+
+        status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], '');
+    else
+        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+    end
 end
 
 % And convert from polar to lat, lon.
@@ -210,7 +216,7 @@ for iSection=[2,4]
         disp(['Doing section ' num2str(iSection) ': ' num2str(toc(tic_regrid_start))])
         disp(' ')
     end
-    
+
     imult = [0:9] / num_detectors;
     
     scans_this_section = [];
@@ -275,8 +281,14 @@ for iSection=[2,4]
         ss = double(SST_In(:,scans_this_section));
         
         pp = find(isnan(xx) == 0);
-        
-        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
+
+        if length(pp) == 0
+            fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
+
+            status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
+        else
+            new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
+        end
     end
 
     %% Fix problem with longitude going from one side of the dateline to the other.
@@ -384,19 +396,25 @@ if regridding_mode==1
     xx = double(easting(:,scans_this_section)); 
     yy = double(northing(:,scans_this_section));
     ss = double(SST_In(:,scans_this_section));
-    
+
     pp = find(isnan(xx) == 0);
 
-    new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+    if length(pp) == 0
+        fprintf('...All SST_In values in Sections 3 are nan for orbit %s.\n', oinfo(iOrbit).name)
+
+        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
+    else
+        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+    end
 end
 
 %% Regrid SST using fast grid if requested.
 
 if regridding_mode == 2
-    
+
     [nElements, nScans] = size(SST_In);
     [nMax, mElements, mScans] = size(augmented_weights);
-    
+
     % Truncate weights array to same number of scan lines as SST array.
     
     weights = augmented_weights(:,:,1:nScans);

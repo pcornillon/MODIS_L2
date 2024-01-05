@@ -34,7 +34,7 @@ function [Final_Mask] = fix_MODIS_full_orbit( file_in, longitude, latitude, SST_
 %   b) 
 
 
-%The generated masks are based on the masks of associated with the 16
+% The generated masks are based on the masks associated with the 16
 %   flags of l2_flags. Masks for flags 2, 4 and 6 are dilated by 
 %       Two 0/1 masks are generaged from these bits:
 %           i) Mask_Bits_1_3_4_5_6p_9_10_11_16 - a mask for which a given
@@ -155,10 +155,8 @@ iSkewness_Segment_Bad = 0;
 
 single_granule = 0;
 
-% % % Not_Called_from_Debug_Control = 1;
-% % % if Not_Called_from_Debug_Control == 1
-% % %     global Plot_SST_In Plot_flags_sst Plot_Individual_flags_sst
-% % %     global Plot_Mask_Bits_1_3_4_5_6p_9_10_11_16 Plot_No_Fronts_Mask Plot_Problem_Pixels Plot_Object_Labels Plot_Mask_of_Objects Plot_Candidate_Pixels
+global oinfo iOrbit iGranule iProblem problem_list
+
 global AxisFontSize TitleFontSize Trailer_Info
 
 global mem_count mem_orbit_count mem_print print_dbStack mem_struct
@@ -235,87 +233,33 @@ if exist('Start') == 0 | exist('Counts') == 0
     Counts = [Inf Inf];
 end
 
-% % %% Get the year, month, day and hour of this file.
-% % 
-% % % file_in = '~/Dropbox/ComputerPrograms/Satellite_Model_SST_Processing/AI-SST/Data/Gulf_Stream_decoherence/AQUA_MODIS.20100619T062008.L2.SST.nc';
-% % 
-% % nn = strfind(file_in, 'AQUA_MODIS.2');
-% % if isempty(nn)
-% %     keyboard
-% % end
-% % 
-% % nn = nn+ 11;
-% % Year = str2num(file_in(nn:nn+3));
-% % Month = str2num(file_in(nn+4:nn+5));
-% % Day = str2num(file_in(nn+6:nn+7));
-% % Hour = str2num(file_in(nn+9:nn+10));
-
-% Setup directories
-
-% % if strcmp(base_dir(1), '~')
-% %     base_dir = ['/Users/petercornillon' base_dir(2:end)];
-% %     new_mask_base_dir = [base_dir 'Final_Mask/'];
-% % else
-% % %     nn = strfind(base_dir, '/Fronts');
-% % %     if isempty(nn); keyboard; end
-% % %     new_mask_base_dir = [base_dir(1:nn) '/New_Masks/MODIS_Aqua/'];
-% %     
-% %     new_mask_base_dir = [base_dir 'Final_Mask/'];
-% % end
-
-%% Read Lat,Lon and write the geolocation file.
-
-% I have no idea what the following lines do. Looks like they are left over
-% from when I was processing one granule at a time so can probably safely
-% skip here.
-
-% % time_before_write_geo = toc;
-% % if single_granule
-% %     [Status, latitude, longitude] = nscans( file_in, base_dir);
-% % end
-% % time_to_write_geo = toc - time_before_write_geo;
-
-%% Load the SST, flags_sst and Quality fields for the test image
-
-% % % Read SST and, if requested, plot.
-% % 
-% % if single_granule
-% %     SST_In = ncread( file_in, '/geophysical_data/sst', Start, Counts);
-% %     time_coverage_start = ncreadatt(file_in, '/', 'time_coverage_start');
-% %     GlobalAttributes = ncinfo(file_in);
-% % else
-% %     load(file_in)
-% % end
-
 Final_Mask = zeros(size(SST_In));
 
-% % % Get the input quality. This is only used to see how good we did.
-% % 
-% % if single_granule
-% %     Qual_In = ncread( file_in, '/geophysical_data/qual_sst', Start, Counts);
-% % end
+% Get the input quality. This is only used to see how good we did.
+
 qual_2_or_worse = int8(zeros(size(Qual_In)));
 qual_2_or_worse(Qual_In>=2) = 1;
+
+nn = find(qual_2_or_worse==1);
+oinfo(iOrbit).fix_mask_stats.num_qual_2_or_worse = length(nn);
 
 % Check to see if there is any good data in this granule; if not, write out an empty mask and a median field of nans and go to the next granule
 
 nn = find(SST_In > -2);
 if isempty(nn)
-% %     [Status] = Write_Enhanced_MODIS_SST_Mask( file_in, new_mask_base_dir, int8(Final_Mask), ...
-% %         Old_Reference_Temperature_Flag, New_Reference_Temperature_Flag, qual_2_or_worse, time_coverage_start, GlobalAttributes);
-% % 
-% %     [Status] = Write_Median_SST_File( base_dir, file_in, SST_In, Final_Mask, 2, time_coverage_start, GlobalAttributes);
-    disp(['No good data for ' file_in '. Skipping to the next file.'])
-    keyboard
-end
+    fprintf('...No good data in SST_In. Set Final_Mask field to 1, bad data, and returned.\n')
 
-% % disp(['Working on ' file_in '.'])
+    status = populate_problem_list( 701, 'No good data in SST_In. Set Final_Mask field to 1 and returned.');
+
+    Final_Mask = ones(size(SST_In));
+
+    return
+end
 
 sizSST_In = size(SST_In);
 
 % Initialize arrays to use to the size of the input field.
 
-% % % Final_Mask = zeros(size(SST_In));
 Mask_Pixels_to_Keep = zeros(size(SST_In));
 Mask_Pixels_to_Discard = zeros(size(SST_In));
 
@@ -397,7 +341,6 @@ Meanings_of_flags_sst = {'ISMASKED'   'BTBAD'      'BTRANGE'   'BTDIFF'    'SSTR
 
 mask = int32(zeros(16, sizSST_In(1), sizSST_In(2)));
 
-% % % for iBit=[1:5 7:16] 
 for iBit=[1:16] 
         
     if iBit == 16
@@ -408,10 +351,7 @@ for iBit=[1:16]
         % unsigned but it doesn't like that. As a result any pixel with a
         % negative value of flags_sst has bit 16, the sign bit, set, so
         
-% % %         eval(['mask_' num2str(iBit) ' = int32(zeros(sizSST_In));'])
-% % %         eval(['mask_' num2str(iBit) '(flags_sst<0) = 2^15;'])
        temp = int32(zeros(sizSST_In));
-% % %        temp(flags_sst<0) = 2^15;
        temp(flags_sst<0) = 1;
        mask(16,:,:) = temp;
     else
@@ -419,8 +359,6 @@ for iBit=[1:16]
         % All other bits actually get the value of the bit at each pixel location -
         % does it in one swell foop.
         
-% % %         eval(['mask_' num2str(iBit) ' = int32(bitand(flags_sst, ' num2str(2^(iBit-1)) ', ''int16''));'])
-% % %          mask(iBit,:,:) = int32(bitand(flags_sst, 2^(iBit-1), 'int16'));
          temp = int32(bitand(flags_sst, 2^(iBit-1), 'int16'));
          nn = find(temp>0);
          temp(nn) = 1;
@@ -432,7 +370,6 @@ end
 
 for iBit=1:16
     
-% % %     eval(['Temp_Flag = mask_' num2str(iBit) ';'])
     Temp_Flag = squeeze(mask( iBit, :, :));
     
     if (iBit == 6)
@@ -445,9 +382,6 @@ for iBit=1:16
         
         % Get the difference between the reference field and this field.
         
-% %         if single_granule
-% %             sstref = ncread(file_in,'/geophysical_data/sstref');
-% %         end
         sstdiff = sstref - SST_In;
 
         lon_range_index_vec = floor((180 + longitude(:)) / sst_range_grid_size) + 1;
@@ -471,21 +405,6 @@ for iBit=1:16
 
         ranges_for_this_month = squeeze(sst_range(:,:,Month));
         
-% % %         % Find bits not flagged by one of the other tests being used. Will
-% % %         % test these for the new temperature difference threshold.
-% % %         
-% % %         temp_for_6 = int32(zeros(sizSST_In));
-% % %         for jBit=[1:5 7:8 11:12 14:16]
-% % %             temp_for_6 = temp_for_6 + squeeze(mask(jBit,:,:));
-% % %         end
-% % %         nn = find(temp_for_6 > 0);
-% % %         
-% % %         temp_for_6 = int32(zeros(sizSST_In));
-% % %         for iCheck=1:length(nn)
-% % %             jCheck = nn(iCheck);
-% % %             temp_for_6(jCheck) = squeeze(ranges_for_this_month(lon_range_index_vec(jCheck), lat_range_index_vec(jCheck)));
-% % %         end
-        
         temp_for_6 = zeros(sizSST_In);
         for iCheck=1:numel(temp_for_6)
             
@@ -501,7 +420,6 @@ for iBit=1:16
         
         temp_for_6 = temp_for_6 * Thresholds.Reference_SST_Diff_Factor;
         Temp_Flag(sstdiff > temp_for_6) = 1;
-% % %         Temp_Flag(sstdiff <= temp_for_6) = 0;
         New_Reference_Temperature_Flag = int8(Temp_Flag);
     end
     
@@ -627,9 +545,6 @@ end
 
 % % Figno = Plot_Masks( Plot_Problem_Pixels_No_Singletons, Figno, inLiveScript, Problem_Pixels_No_Singletons, 'Problem_Pixels_No_Singletons');
 
-% % % Problem_Pixels_Clear_Holes_Filled = bwmorph(Problem_Pixels, 'fill'); TITLE_Problem_Pixels_Clear_Holes_Filled = 'Original Mask Filled (M_{of})';
-% % % Problem_Pixels_Majority = bwmorph(Problem_Pixels, 'fill'); TITLE_Problem_Pixels_Majority = 'Original Mask Majority (M_{ofm})';
-
 %% Fill small regions in the mask that are 'clear': Problem_Pixels_No_Singletons ==> Problem_Pixels_Clear_Holes_Filled
 
 Mask_Inverted = imcomplement(Problem_Pixels_No_Singletons);
@@ -746,18 +661,21 @@ length_FracArea = length(FracArea);
 nnReduced = find(FracArea<Thresholds.FracArea | (Eccentricity>=Thresholds.Eccentricity & FilledArea<Thresholds.FilledArea));
 length_nnReduced = length(nnReduced);
 
-% % kk = strfind(file_in, '/');
 if isempty(nnReduced)
-    disp(['No candidate objects found in: ' file_in '. Skipping to the next granule.'])
-% %     [Status] = Write_Enhanced_MODIS_SST_Mask( file_in, new_mask_base_dir, int8(Final_Mask), ...
-% %         Old_Reference_Temperature_Flag, New_Reference_Temperature_Flag, qual_2_or_worse, time_coverage_start, GlobalAttributes);
-% % 
-% %     [Status] = Write_Median_SST_File( base_dir, file_in, SST_In, Final_Mask, 2, time_coverage_start, GlobalAttributes);
+    fprintf('...No candidate objects found. Set Final_Mask field to 1, bad data, and returned.\n')
+
+    status = populate_problem_list( 702, 'No candidate objects found. Set Final_Mask field to 1 and returned.');
+
+    Final_Mask = ones(size(SST_In));
+    
     return
 else
-    if print_diagnostics
-        fprintf('Out of a possible %i objects, %i meeting our thresholds were found in this file.\n', length_FracArea, length_nnReduced)
-    end
+    % if print_diagnostics
+    %     fprintf('Out of a possible %i objects, %i meeting our thresholds were found in this file.\n', length_FracArea, length_nnReduced)
+    % end
+    
+    oinfo(iOrbit).fix_mask_stats.length_FracArea = length_FracArea;
+    oinfo(iOrbit).fix_mask_stats.length_nnReduced = length_nnReduced;
 end
 
 % Copy the objects, which met the above tests to a new structure called
@@ -792,8 +710,6 @@ Quality = logical(Mask_of_Objects);
 % clear Flag_* Dilated_* Temp_Flag Problem_Pixels Output_Array Mask_* Object_Labels flags_sst DMO dd_*
 
 Number_Corrected_Segments = 0;
-% % % Extra = 5; % The padding to add around each object selected for analysis.
-% % % Vector_Threshold = 0.5;
 
 % Get all objects in the modified Problem_Pixels mask.
 
@@ -843,8 +759,6 @@ Temperature_Test_Mean = zeros(1,Num_Objects);
 Temperature_Test_Sigma = zeros(1,Num_Objects);
 Gradient_Test = zeros(1,Num_Objects);
 
-% % % Debug_Array = nan(sizSST_In);
-
 %% Loop over the objects identified as possibly having masking issues.
 
 if exist('objects_to_inspect')
@@ -860,10 +774,6 @@ end
 
 Time_for_Image_Wide_Tests = toc;
 tic
-
-% % % if Num_Objects > 1300
-% % %     profile on
-% % % end
 
 for iObject=objects_to_inspect
         
@@ -952,9 +862,6 @@ for iObject=objects_to_inspect
         
         % Get the Sobel vector gradient of the input SST field for this object.
         
-% % %         [GX, GY] = Sobel(SST_In_Object);
-% % %         Grad_X = GX(2:end-1,2:end-1);
-% % %         Grad_Y = GY(2:end-1,2:end-1);
         [Grad_X, Grad_Y] = Sobel(SST_In_Object);
         
         % Get the magnitude and direction of gradients.
@@ -991,13 +898,6 @@ end
 
 Time_to_Process_Objects = toc;
 
-% % % if Num_Objects > 1300
-% % %     profile off
-% % %     profsave(profile('info'),'myprofile_results_batch_timer')
-% % % %     keyboard
-% % %     exit
-% % % end
-
 Mask_Pixels_to_Discard(Mask_Pixels_to_Discard>0) = 1;
 Mask_Pixels_to_Keep(Mask_Pixels_to_Keep>0) = 1;
 
@@ -1027,8 +927,19 @@ end
 
 % % Figno = Plot_Masks( Plot_Final_Mask, Figno, inLiveScript, Final_Mask, 'Final_Mask');
 
-% % % % How long to process this file.
-% % % 
-% % % Total_Elapsed_Time = toc(Start_Time);
-% % % 
-% % % disp(['Time to process this granule: ' num2str(Total_Elapsed_Time,3) 's '])
+% And write out stats for number of pixels fixed.
+
+nn = find(Final_Mask == 1);
+oinfo(iOrbit).fix_mask_stats.num_stlll_bad = length(nn);
+
+nn_good_good = find( (qual_2_or_worse == 0) & (Final_Mask == 0));
+nn_good_bad = find( (qual_2_or_worse == 0) & (Final_Mask == 1));
+nn_bad_good = find( (qual_2_or_worse == 1) & (Final_Mask == 0));
+nn_bad_bad = find( (qual_2_or_worse == 1) & (Final_Mask == 1));
+
+oinfo(iOrbit).fix_mask_stats.qual_good_final_mask_good = length(nn_good_good);
+oinfo(iOrbit).fix_mask_stats.qual_good_final_mask_bad = length(nn_good_bad);
+oinfo(iOrbit).fix_mask_stats.qual_bad_final_mask_good = length(nn_bad_good);
+oinfo(iOrbit).fix_mask_stats.qual_bad_final_mask_bad = length(nn_bad_bad);
+
+

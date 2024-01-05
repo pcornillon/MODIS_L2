@@ -45,6 +45,9 @@
 % % % % 161 - extract_datetime_from_filename - Something wrong with filename passed into this function. SHOULD NEVER GET HERE.
 % % % %       continue -- WARNING.
 % % % %
+% % % %   175 - build_and_fix_orbits - failed to copy output file to remote location.
+% % % %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
+% % % %         error - nothing done here but need to fix quickly because it will result in a buildup of files in the local output directory.
 
 % ACTION REQUIRED ON RETURN
 %
@@ -71,7 +74,16 @@
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %
 
+
+%% **************** fix_MODIS_mask_full_orbit ****************
+
+% % % % 701 - fix_MODIS_mask_full_orbit - No good data in granule. Set mask to nan and return.
+% % % %       status = populate_problem_list( 701, 'No good data in SST_In. Set Final_Mask field to 1 and returned.');
+% % % %       return == no action on return; status not passed back.
+
+
 %% **************** get_scanline_index ****************
+
 % % % % 801 - get_scanline_index - nan latitudes read from granule. This should not happen.  
 % % % %       status = populate_problem_list( 101, ['Latitude for nlat_t(5) is nan for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. This should not happen. Skipping this granule.']);
 % % % %       return -- no action on return since status is not passed back.
@@ -96,3 +108,17 @@
 
 % 
 % 911 - get_start_of_first_full_orbit - end of run.
+
+%% ******************* regrid_MODIS_orbits ********************************
+% % % % 1001 - regrid_MODIS_orbits - All of the SSTs in a section 1 to be regridded are nan. 
+% % % %        status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+% % % %   continue -- WARMING -- status not passed back. 
+% % % % 
+% % % % 1002 - regrid_MODIS_orbits - All of the SSTs in a section 2 or 4 to be regridded are nan. 
+% % % %        status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+% % % %   continue -- WARMING -- status not passed back. 
+% % % % 
+% % % % 1003 - regrid_MODIS_orbits - All of the SSTs in a section 3 to be regridded are nan. 
+% % % %        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
+% % % %   continue -- WARMING -- status not passed back. 
+% % % % 

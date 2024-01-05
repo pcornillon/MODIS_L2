@@ -62,6 +62,12 @@ switch file_type
             end
         end
 
+        % Reset test_time to the time passed in. If it is not reset, it
+        % will creep up by about a minute on each call potentially putting
+        % it out of range for if a number of granules are missing.
+
+        test_time = arg_2;
+        
     case 'sst_data'
 
         metadata_name = arg_2;

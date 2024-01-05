@@ -61,7 +61,7 @@ switch Option
         fixit_directory = [BaseDir 'metadata/'];
         metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
-        granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
+        granules_directory    = '/Volumes/MODIS_L2_Original/OBPG/combined/';
 
         output_file_directory_local = '/users/petercornillon/Desktop/SST/';
         output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
@@ -82,7 +82,7 @@ switch Option
         fixit_directory = [BaseDir 'metadata/'];
         metadata_directory = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
-        granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
+        granules_directory    = '/Volumes/MODIS_L2_Original/OBPG/combined/';
 
 %         output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 %         output_file_directory_remote = '';

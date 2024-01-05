@@ -41,7 +41,7 @@ if iOrbit > 0
         end
 
         if exist('iGranule')
-            problem_list(iProblem).iGranule = oinfo(iOrbit).iGranule;
+            problem_list(iProblem).iGranule = iGranule;
         end
     end
 end

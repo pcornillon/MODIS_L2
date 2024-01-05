@@ -240,6 +240,9 @@ Final_Mask = zeros(size(SST_In));
 qual_2_or_worse = int8(zeros(size(Qual_In)));
 qual_2_or_worse(Qual_In>=2) = 1;
 
+nn = find(qual_2_or_worse==1);
+oinfo(iOrbit).fix_mask_stats.num_qual_2_or_worse = length(nn);
+
 % Check to see if there is any good data in this granule; if not, write out an empty mask and a median field of nans and go to the next granule
 
 nn = find(SST_In > -2);
@@ -923,3 +926,20 @@ for  iEliminate=1:length(nn)
 end
 
 % % Figno = Plot_Masks( Plot_Final_Mask, Figno, inLiveScript, Final_Mask, 'Final_Mask');
+
+% And write out stats for number of pixels fixed.
+
+nn = find(Final_Mask == 1);
+oinfo(iOrbit).fix_mask_stats.num_stlll_bad = length(nn);
+
+nn_good_good = find( (qual_2_or_worse == 0) & (Final_Mask == 0));
+nn_good_bad = find( (qual_2_or_worse == 0) & (Final_Mask == 1));
+nn_bad_good = find( (qual_2_or_worse == 1) & (Final_Mask == 0));
+nn_bad_bad = find( (qual_2_or_worse == 1) & (Final_Mask == 1));
+
+oinfo(iOrbit).fix_mask_stats.qual_good_final_mask_good = length(nn_good_good);
+oinfo(iOrbit).fix_mask_stats.qual_good_final_mask_bad = length(nn_good_bad);
+oinfo(iOrbit).fix_mask_stats.qual_bad_final_mask_good = length(nn_bad_good);
+oinfo(iOrbit).fix_mask_stats.qual_bad_final_mask_bad = length(nn_bad_bad);
+
+

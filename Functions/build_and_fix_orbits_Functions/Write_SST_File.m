@@ -792,6 +792,16 @@ for iAttribute = 1:length(oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attribut
     end
 end
 
+% The granule attributes take up much too much space in oinfo, which is
+% saved for each orbit so, after writing them out for the first granule,
+% remove the rest from oinfo
+
+if length(oinfo(iOrbit).ginfo) > 1
+    for jGranule=2:length(oinfo(iOrbit).ginfo)
+        oinfo(iOrbit).ginfo(jGranule).metadata_global_attrib = [];
+    end
+end
+
 %% Submit a batch job to copy the file just written from local to remote storage.
 
 % The reason for this is that writing a netCDF file to remote storage takes

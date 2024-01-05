@@ -71,7 +71,15 @@
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %
 
+%% **************** fix_MODIS_mask_full_orbit ****************
+
+% % % % 701 - fix_MODIS_mask_full_orbit - No good data in granule. Set mask to nan and return.
+% % % %       status = populate_problem_list( 701, 'No good data in SST_In. Set Final_Mask field to 1 and returned.');
+% % % %       return == no action on return; status not passed back.
+
+
 %% **************** get_scanline_index ****************
+
 % % % % 801 - get_scanline_index - nan latitudes read from granule. This should not happen.  
 % % % %       status = populate_problem_list( 101, ['Latitude for nlat_t(5) is nan for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. This should not happen. Skipping this granule.']);
 % % % %       return -- no action on return since status is not passed back.

@@ -1,4 +1,4 @@
-function status = populate_problem_list( status, problem_filename, granule_start_time_guess)
+function status = populate_problem_list( status, problem_description, granule_start_time_guess)
 % populate_problem_list - updates problem_list for this error/warning code - PCC
 %
 % This function get the index to use for this error/warning from
@@ -9,8 +9,7 @@ function status = populate_problem_list( status, problem_filename, granule_start
 %
 % INPUT
 %   status - the error/warning code to use. 
-%   problem_filename - the name of the metadata or data file associated
-%    with the error/waring. This name can be empty.
+%   problem_description - Description of the problem.
 %   granule_start_time_guess - time of start of granule. Optional.
 %
 % OUTPUT
@@ -21,7 +20,7 @@ global oinfo iOrbit iGranule iProblem problem_list
 
 iProblem = iProblem + 1;
 
-problem_list(iProblem).filename = problem_filename;
+problem_list(iProblem).problem_description = problem_description;
 problem_list(iProblem).code = status;
 
 if exist('granule_start_time_guess')

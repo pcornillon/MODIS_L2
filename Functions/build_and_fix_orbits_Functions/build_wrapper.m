@@ -84,8 +84,10 @@ switch Option
 
         granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
 
-        output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
-        output_file_directory_remote = '';
+%         output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+%         output_file_directory_remote = '';
+        output_file_directory_local = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/SST/';
+        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 
         logs_directory = '/Volumes/MODIS_L2_Modified/OBPG/Logs/';
 

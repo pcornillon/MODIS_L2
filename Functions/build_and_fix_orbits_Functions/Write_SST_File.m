@@ -819,5 +819,3 @@ end
 % % % 
 % % %     copy_output_no = batch( 'copy_output_file', 0, {output_filename, remote_filename}, CaptureDiary=true);
 % % % end
-
-

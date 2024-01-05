@@ -45,6 +45,9 @@
 % % % % 161 - extract_datetime_from_filename - Something wrong with filename passed into this function. SHOULD NEVER GET HERE.
 % % % %       continue -- WARNING.
 % % % %
+% % % %   175 - build_and_fix_orbits - failed to copy output file to remote location.
+% % % %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
+% % % %         error - nothing done here but need to fix quickly because it will result in a buildup of files in the local output directory.
 
 % ACTION REQUIRED ON RETURN
 %
@@ -70,6 +73,7 @@
 % 415 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %
+
 
 %% **************** fix_MODIS_mask_full_orbit ****************
 

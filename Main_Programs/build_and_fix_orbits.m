@@ -653,12 +653,48 @@ while granule_start_time_guess <= Matlab_end_time
                 regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
                 region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
 
+            time_to_copy_orbit = tic;
+
+            oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
+
+            % Copy the file using rsyn if a remote directory has been specified.
+
+            if ~isempty(output_file_directory_remote)
+
+                nn = strfind(output_filename, '/SST/');
+                remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
+
+                eval(['! rsync -av ' output_filename ' ' remote_filename])
+
+                % Make sure that the file copied properly.
+
+                output_details = dir(output_filename);
+                remote_details = dir(remote_filename);
+
+                if (output_details.bytes == remote_details.bytes) & (remote_details.bytes > 10^8)
+                    eval(['! rm ' output_filename])
+                else
+                    if print_diagnostics
+                        fprintf('*** Failed to copy  %s to %s.\n', output_filename, remote_filename)
+                    end
+
+                    status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
+                end
+            end
+            
+            oinfo(iOrbit).time_to_copy_orbit = toc(time_to_copy_orbit);
+
             oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 
             oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
             if print_times
                 fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
+                
+                if ~isempty(output_file_directory_remote)
+                    fprintf('   Time to copy %s to %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_copy_orbit, output_file_directory_remote, datestr(now))
+                end
+                
                 fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
             end
 

@@ -653,13 +653,13 @@ while granule_start_time_guess <= Matlab_end_time
                 regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
                 region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
 
-            time_to_copy_orbit = tic;
-
             oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 
             % Copy the file using rsyn if a remote directory has been specified.
 
             if ~isempty(output_file_directory_remote)
+    
+                time_to_copy_orbit = tic;
 
                 nn = strfind(output_filename, '/SST/');
                 remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
@@ -680,10 +680,10 @@ while granule_start_time_guess <= Matlab_end_time
 
                     status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
                 end
+                
+                oinfo(iOrbit).time_to_copy_orbit = toc(time_to_copy_orbit);
             end
             
-            oinfo(iOrbit).time_to_copy_orbit = toc(time_to_copy_orbit);
-
             oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 
             oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);

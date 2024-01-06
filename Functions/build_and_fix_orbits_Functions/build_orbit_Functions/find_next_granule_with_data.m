@@ -206,16 +206,16 @@ while 1==1
                         oinfo(iOrbit).ginfo(iGranule).start_time = scan_line_times(1);
                         oinfo(iOrbit).ginfo(iGranule).end_time = scan_line_times(end);
 
-                        % Only adding metadata attributes for the first
-                        % granule on each orbit. These attributes are
-                        % similar from granule-to-granule and only those
-                        % from the first granule are copied to the output
-                        % file so no need to carry those for the other
-                        % granules around in oinfo.
+                        % Initially, only read the first granule here but
+                        % this caused problems when the orbit was already
+                        % found so will load metadata for all granules here
+                        % and then remove the metadata for all but the
+                        % first granule when we write the metadata to the
+                        % output file.
                         
-                        if iGranule == 1
+                        % if iGranule == 1
                             oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
-                        end
+                        % end
 
                         oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
 

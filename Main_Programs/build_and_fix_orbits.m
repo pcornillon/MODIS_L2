@@ -658,13 +658,14 @@ while granule_start_time_guess <= Matlab_end_time
             % Copy the file using rsyn if a remote directory has been specified.
 
             if ~isempty(output_file_directory_remote)
+                output_filename = oinfo(iOrbit).name;
     
                 time_to_copy_orbit = tic;
 
                 nn = strfind(output_filename, '/SST/');
                 remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
 
-                eval(['! rsync -av ' output_filename ' ' remote_filename])
+                eval(['! rsync -avq ' output_filename ' ' remote_filename])
 
                 % Make sure that the file copied properly.
 

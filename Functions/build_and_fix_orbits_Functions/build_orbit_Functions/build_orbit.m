@@ -193,9 +193,16 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
             % descending 78S crossing. But this was an orbit that was
             % already processed so we need to decrement iOrbit, replacing
             % the current values of oinfo(iOrbit) with those of
-            % oinfo(iOrbit+1), which was created in the above search.
+            % oinfo(iOrbit+1), which was created in the above search. Note
+            % that we also have to save the metadata from the last granule
+            % of the current orbit, which will be the first granule on the
+            % next orbit and put it in that place.
+
+            metadata = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
 
             oinfo(iOrbit) = oinfo(iOrbit+1);
+            oinfo(iOrbit).ginfo(1).metadata_global_attrib = metadata;
+
             oinfo(iOrbit+1) = [];
             iGranule = 1;
 

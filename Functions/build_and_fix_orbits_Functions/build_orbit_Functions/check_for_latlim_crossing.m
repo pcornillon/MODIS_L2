@@ -219,72 +219,59 @@ if ~isempty(aa)
             % values of nlat_t do not extend past either end of nlat_t.
             
             iStart_of_group = floor(nn(1) / 10) * 10 + 1;
-            
-            bad_grouping = 0;
-            if iStart_of_group <= 1
-                if nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10)
-                    bad_grouping = 1;
-                    
-                end
-            elseif iStart_of_group+10 >= length(nlat_t)
-                if nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)
-                    bad_grouping = 1;
-                end
-            elseif (nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)) | (nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10))
-                bad_grouping = 1;
-            end
-            
-            if bad_grouping == 1
-                fprintf('*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i. SHOULD NEVER GET HERE.\n', iStart_of_group)
-                granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+
+            if iStart_of_group > length(nlat_t)
+
+                % If the nearest point to latlim is the LAST scan line then
+                % it is the closest group so no need to check the groups on
+                % each side. 
                 
-                status = populate_problem_list( 153, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time_guess);
-            end
-            
-            % Now find the group of 10 with the point in the middle closest
-            % to 78 S looking at the group of 10 before the one in which
-            % the crossing was found, the group of 10 in which the crossing
-            % was found and the next group of 10.
+                start_line_index = iStart_of_group - 6;
+            else
 
-            iPossible = [iStart_of_group-6 iStart_of_group+5 iStart_of_group+15];
-            start_line_index = iPossible(2);
-            
-            central_group = abs(nlat_t(iPossible(2)) - latlim);
-            
-            if iPossible(1) > 0
-                if abs(nlat_t(iPossible(1)) - latlim) < central_group
-                    start_line_index = iPossible(1);
+                bad_grouping = 0;
+                if iStart_of_group <= 1
+                    if nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10)
+                        bad_grouping = 1;
+
+                    end
+                elseif iStart_of_group+10 >= length(nlat_t)
+                    if nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)
+                        bad_grouping = 1;
+                    end
+                elseif (nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)) | (nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10))
+                    bad_grouping = 1;
+                end
+
+                if bad_grouping == 1
+                    fprintf('*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i. SHOULD NEVER GET HERE.\n', iStart_of_group)
+                    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+
+                    status = populate_problem_list( 153, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time_guess);
+                end
+
+                % Now find the group of 10 with the point in the middle closest
+                % to 78 S looking at the group of 10 before the one in which
+                % the crossing was found, the group of 10 in which the crossing
+                % was found and the next group of 10.
+
+                iPossible = [iStart_of_group-6 iStart_of_group+5 iStart_of_group+15];
+                start_line_index = iPossible(2);
+
+                central_group = abs(nlat_t(iPossible(2)) - latlim);
+
+                if iPossible(1) > 0
+                    if abs(nlat_t(iPossible(1)) - latlim) < central_group
+                        start_line_index = iPossible(1);
+                    end
+                end
+
+                if iPossible(3) < length(nlat_t)
+                    if abs(nlat_t(iPossible(3)) - latlim) < central_group
+                        start_line_index = iPossible(3);
+                    end
                 end
             end
-            
-            if iPossible(3) < length(nlat_t)
-                if abs(nlat_t(iPossible(3)) - latlim) < central_group
-                    start_line_index = iPossible(3);
-                end
-            end            
-
-% % %             option_1 = floor(nn(1) / 10) * 10 + 1;
-% % %             option_2 = floor(nn(1) / 10) * 10 + 5;
-% % % 
-% % %             %% LOOKS LIKE THE NEXT LINE IS WRONG
-% % % %             if abs(option_1 - latlim) <= abs(option_2 - latlim)
-% % %             
-% % %             %% IT SHOULD BE
-% % %             if abs(nlat_t(option_1) - latlim) <= abs(nlat_t(option_2) - latlim)
-% % %                 start_line_index = option_1;
-% % %             else
-% % %                 start_line_index = option_2;
-% % %             end
-% % % 
-% % %             % Next check to see if the 11th point from here is closer to
-% % %             % latlim, if it is use it but first make sure that there are at
-% % %             % least 11 more scan lines left in the orbit after start_line_index.
-% % % 
-% % %             if (start_line_index + 10) < num_scan_lines_in_granule
-% % %                 if abs(nlat_t(start_line_index)-latlim) > abs(nlat_t(start_line_index+10)-latlim)
-% % %                     start_line_index = start_line_index + 10;
-% % %                 end
-% % %             end
         end
     end
 end

@@ -10,6 +10,10 @@
 %       to 1. Not sure if this is correct.
 % 104 - get_scanline_index - Only one intersection of nlat_t(5) found with nlat_avg. 
 
+% 111- find_next_granule_with_data - Wrong number of scan lines in granule.
+%
+%       error - skips granule, returns from function. 
+
 % 115 - find_next_granule_with_data - Number of lines to skip for this granule is not an acceptable value. Forcing to the possible number of lines to skip.
 %       status = populate_problem_list( 115, ['Number of lines to skip for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
 %        ', ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
@@ -31,7 +35,13 @@
 %
 % 131 - generate_output_filename - Calculation of end times do not agree.
 %
-% 141 - get_granule_metadata - mirror rotation rate seems to have changed.
+% % % % 141 - get_granule_metadata - mirror rotation rate seems to have changed.
+% % % %       status = populate_problem_list( 141, ['Number of scan lines in this granules is ' num2str(length(scan_line_times)) ', neither 2030 nor 2040. Continuing but be careful.'], granule_start_time_guess);
+% % % %       continues; on return, continues if status = 141 -- WARNING
+%
+% % % % 142 - get_granule_metadata - mirror rotation rate seems to have changed.
+% % % %       abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line))
+% % % %       continues; on return, continues if status = 142 -- WARNING
 %
 % % % % 151 - find_next_granule_with_data - mirror side for the first scan line on granule same as that of the last scan of the prevous granule.
 % % % %       continue -- WARNING.

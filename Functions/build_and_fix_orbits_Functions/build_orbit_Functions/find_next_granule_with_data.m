@@ -138,18 +138,41 @@ while 1==1
     % Was a metadata file found at this time? If so proceed, if not
     % increment time to search by 5 minutes and search for the next
     % metadata file.
-    
+
     if found_one == 0
         if print_diagnostics
             fprintf('No metadata granule found between %s and %s.\n', datestr(granule_start_time_guess - 5 / secs_per_day), datestr(granule_start_time_guess + 60 / secs_per_day))
         end
-        
+
         status = populate_problem_list( 101, ['No metadata granule found between ' datestr(granule_start_time_guess - 5 / secs_per_day) ' and ' datestr(granule_start_time_guess + 60 / secs_per_day) '.'], granule_start_time_guess);
     else
 
-            % Get the metadata filename.
+        % Get the metadata filename.
 
-            metadata_temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
+        metadata_temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
+
+        % Before proceeding, make sure that there are either 2030 or 2040
+        % scan lines in this granule. When this is not the case, things
+        % seem to get out of whack, so skip the granule.
+
+        granule_info = ncinfo(metadata_temp_filename);
+
+        good_granule = 0;
+
+        for iDim=1:length(granule_info.Dimensions)
+            if strcmp(granule_info.Dimensions(iDim).Name, 'number_of_lines') == 1
+                if (granule_info.Dimensions(iDim).Length == 2030) | (granule_info.Dimensions(iDim).Length == 2040)
+                    good_granule = 1;
+                end
+                break
+            end
+        end
+
+        if good_granule == 0
+            fprintf('...Bad granule (#%i) %s. Number of scan lines, %i, is neither 2030 nor 2040. Skipping this granule.\n', iGranule, metadata_granule_file_name, granule_info.Dimensions(iDim).Length)
+
+            status = populate_problem_list( 111, ['Bad granule (' num2str(iGranule) ') ' metadata_temp_filename '. Number of scan lines, ' num2str(granule_info.Dimensions(iDim).Length) ', is neither 2030 nor 2040. Skipping granule.']);
+        else
 
             % Is the data granule for this time present? If so, get the range
             % of locations of scanlines in the orbit and the granule to use.
@@ -173,7 +196,7 @@ while 1==1
 
                 % Get the metadata for this granule.
 
-               [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
+                [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
 
                 % If status not equal to zero, either problems with start times
                 % or 1st detector, not 1st detector in group of 10. Neither of
@@ -188,7 +211,13 @@ while 1==1
                         % crossing of 78 S.
 
                         fprintf('\nGranule at %s does not descend across 78 S. Will continue searching.\n\n', datestr(granule_start_time_guess))
-    
+
+                        % Need to decrement granule_start... because it is
+                        % incremented in check_for_latlim... assuming that
+                        % a good granule has been found. If no metadata
+                        % granule is found, granule_start... will be
+                        % incremented hence the need to decrement here.
+
                         granule_start_time_guess = granule_start_time_guess - 5 / (24 * 60);
                     else
 
@@ -212,9 +241,9 @@ while 1==1
                         % and then remove the metadata for all but the
                         % first granule when we write the metadata to the
                         % output file.
-                        
+
                         % if iGranule == 1
-                            oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
+                        oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
                         % end
 
                         oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
@@ -226,34 +255,34 @@ while 1==1
                         % line in the previous granule is not the same as
                         % the mirror side for the first scan line in this
                         % granule.
-                        
+
                         % This is a diagnostic test, skip for AWS until I
                         % determine whether or not mside is in the AWS NASA
                         % granules
-                        
+
                         if amazon_s3_run == 0
                             if iGranule ~= 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
                                 mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).data_name, '/scan_line_attributes/mside'));
-                                
+
                                 if mside_previous(end) == mside_current(1)
                                     if print_diagnostics
                                         fprintf('***Mirror side (%i) for the first scan line on granule %i of orbit %i is the same as that of the last scan of the prevous granule.\n', ...
                                             mside_current(1), iGranule, iOrbit)
                                     end
-                                    
+
                                     status = populate_problem_list( 151, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule.'], granule_start_time_guess);
                                 end
                             elseif iOrbit > 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
                                 mside_previous = single(ncread( oinfo(iOrbit-1).ginfo(end).data_name, '/scan_line_attributes/mside'));
-                                
+
                                 if mside_previous(end) == mside_current(1)
                                     if print_diagnostics
                                         fprintf('***Mirror side (%i) for the 1st scan line of the 1st granule %i in orbit %i is the same as that of the last scan line of the last granule in the previous orbit.\n', ...
                                             mside_current(1), iGranule, iOrbit)
                                     end
-                                    
+
                                     status = populate_problem_list( 152, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time_guess);
                                 end
                             end
@@ -286,8 +315,8 @@ while 1==1
                                     % number of when working with an orbit
                                     % that does not start with a granule
                                     % that crosses 78 S on the southward
-                                    % portion of the orbit. 
-                                    
+                                    % portion of the orbit.
+
                                     indices.current.osscan = nnToUse(1) - rem(nnToUse(1)-1, 10) + 5;
                                 end
                             else
@@ -381,7 +410,7 @@ while 1==1
 
                             if isempty(start_line_index)
                                 [~, indices] = get_osscan_etc_NO_sli(indices);
-                                    
+
                             else
                                 [~, indices] = get_osscan_etc_with_sli(indices);
 
@@ -434,10 +463,11 @@ while 1==1
                         end
                     end
                 end
+            end
         end
     end
 
-    % Here is no granule for this time; need to increment time step.
+    % Here if no granule for this time; need to increment time step.
 
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 end

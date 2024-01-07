@@ -127,6 +127,16 @@ if abs(mSec(10)-mSec(1)) > 0.01
     return
 end
 
+% Write warning message if the number of scan lines in the granule is not 2030 or 204
+
+if (length(scan_line_times) ~= 2030) & (length(scan_line_times) ~= 2040)
+    if print_diagnostics
+        fprintf('...Number of scan lines in this granules is %i, neither 2030 nor 2040. Continuing but be careful.\n', length(scan_line_times));
+    end
+
+    status = populate_problem_list( 141, ['Number of scan lines in this granules is ' num2str(length(scan_line_times)) ', neither 2030 nor 2040. Continuing but be careful.']);
+end
+
 % Make sure that the scan_line_times are good.
 
 dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
@@ -135,7 +145,7 @@ if abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_s
         fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
     end
 
-    status = populate_problem_list( 141, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.'], granule_start_time_guess);
+    status = populate_problem_list( 142, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.']);
 end
 
 % Determine the time for this granule. Note that it is scaled at the end to

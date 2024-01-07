@@ -96,21 +96,22 @@ switch Option
         %   OBPG metadata from Aqua-1, 
         %   granules from Aqua-1 
         % and writing 
-        %   local output to Dropbox
-        %   remote outut to the Cornillon_NAS
+        %   local output to Peter's Data folder
+        %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+        BaseDir1 = '/Users/petercornillon/';
+        BaseDir2 = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
 
-        fixit_directory = [BaseDir 'metadata/'];
+        fixit_directory = [BaseDir1 'Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/'];
         metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
         granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
-        output_file_directory_local = [BaseDir 'output/'];
-        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_local = [BaseDir2 'output/'];
+        output_file_directory_remote = '';
 
-        logs_directory = [BaseDir 'Logs/'];
+        logs_directory = [BaseDir2 'Logs/'];
 
     case 5 % AWS for debug, not from S3
         %   fixit metadata from Dropbox, 

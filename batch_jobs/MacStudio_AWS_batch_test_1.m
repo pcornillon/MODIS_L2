@@ -16,17 +16,19 @@ test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready t
 
 submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
-% The next line needs to be replaced with the line after if an AWS spot instance.
-
-Option = input('Choose either option 4 for MacStudio or 8 for AWS: ');
-
-% Option = 8; % Reads data from s3 in us-west-2.
-
 % Open the project if on AWS, otherwise, assume that it is already open.
+% Also select Option and num_batch based on whether or not this is an AWS
+% run
 
 machine = pwd;
 if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
+    
+    Option = 8;
+    num_batch = 2;   % The number of batch jobs to submit
+else
+    Option = 4;
+    num_batch = 3;   % The number of batch jobs to submit
 end
 
 % % % if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0) & (submit_as_batch == 1)
@@ -41,7 +43,6 @@ end
 start_time = [2012 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 0 0 6 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 0 1 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 3; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.

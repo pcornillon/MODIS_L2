@@ -100,18 +100,17 @@ switch Option
         %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir1 = '/Users/petercornillon/';
-        BaseDir2 = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
+        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
 
-        fixit_directory                 = [BaseDir1 'Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/'];
+        fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
         metadata_directory              = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
         granules_directory              = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
-        output_file_directory_local     = [BaseDir2 'output/'];
+        output_file_directory_local     = [BaseDir 'output/'];
         output_file_directory_remote    = '';
 
-        logs_directory                  = [BaseDir2 'Logs/'];
+        logs_directory                  = [BaseDir 'Logs/'];
 
     case 5 % AWS for debug, not from S3
         %   fixit metadata from Dropbox, 
@@ -188,18 +187,18 @@ switch Option
         %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir1 = '/home/ubuntu/';
-        BaseDir2 = '/home/ubuntu/Documents/Aqua/';
+        BaseDir = '/home/ubuntu/Documents/Aqua/';
 
-        fixit_directory                 = [BaseDir1 'Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/'];
+        fixit_directory                 = '/mnt/s3-uri-gso-pcornillon/';        
+        
         metadata_directory              = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
 
         granules_directory              = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
-        output_file_directory_local     = [BaseDir2 'output/'];
+        output_file_directory_local     = [BaseDir 'output/'];
         output_file_directory_remote    = '';
 
-        logs_directory                  = [BaseDir2 'Logs/'];
+        logs_directory                  = [BaseDir 'Logs/'];
 
 end
 

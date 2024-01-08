@@ -195,8 +195,8 @@ switch Option
 
         granules_directory              = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
-        output_file_directory_local     = [BaseDir 'output/'];
-        output_file_directory_remote    = '';
+        output_file_directory_local     = [BaseDir 'output/SST/'];
+        output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
 
         logs_directory                  = [BaseDir 'Logs/'];
 

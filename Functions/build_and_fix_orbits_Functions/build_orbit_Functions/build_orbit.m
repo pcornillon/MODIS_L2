@@ -161,15 +161,19 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
             % the granule was not near the end of an orbit. Here we are
             % adding the typical duration to this time; i.e., we have
             % already taken this slop into acount with the first orbit
-            % skipped.
+            % skipped. If the orbits are being copied to a remote location
+            % after writing locally, the name found may end in .dummy.
+            % Replace this with .nc4 just in case.
             
-            oinfo(iOrbit).name = [exist_list(1).folder '/' exist_list(1).name];
+            oinfo(iOrbit).name = strrep( [exist_list(1).folder '/' exist_list(1).name], '.dummy', '.nc4');
             [status, oinfo(iOrbit).start_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
 
             oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
             oinfo(iOrbit).orbit_number = oinfo(iOrbit).orbit_number + 1;
 
             granule_start_time_guess = granule_start_time_guess + orbit_duration / secs_per_day;
+
+            fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
             found_one = 0;
         end

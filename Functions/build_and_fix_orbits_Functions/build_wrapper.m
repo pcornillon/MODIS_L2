@@ -91,26 +91,26 @@ switch Option
 
         logs_directory = '/Volumes/MODIS_L2_Modified/OBPG/Logs/';
 
-    case 4 % MacStudio or Satdat1
+    case 4 % MacStudio or Satdat1 -- see sister for AWS test case.
         %   fixit metadata from Dropbox, 
         %   OBPG metadata from Aqua-1, 
         %   granules from Aqua-1 
         % and writing 
-        %   local output to Dropbox
-        %   remote outut to the Cornillon_NAS
+        %   local output to Peter's Data folder
+        %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
 
-        fixit_directory = [BaseDir 'metadata/'];
-        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+        fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
+        metadata_directory              = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
-        granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
+        granules_directory              = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
-        output_file_directory_local = [BaseDir 'output/'];
-        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_local     = [BaseDir 'output/'];
+        output_file_directory_remote    = '';
 
-        logs_directory = [BaseDir 'Logs/'];
+        logs_directory                  = [BaseDir 'Logs/'];
 
     case 5 % AWS for debug, not from S3
         %   fixit metadata from Dropbox, 
@@ -177,6 +177,29 @@ switch Option
         output_file_directory_remote = '';
 
         logs_directory               = '/Volumes/Data_1/Logs/';
+
+    case 8 % AWS sister to case 4 MacStudio or Satdat1
+        %   fixit metadata from Dropbox, 
+        %   OBPG metadata from Aqua-1, 
+        %   granules from Aqua-1 
+        % and writing 
+        %   local output to Peter's Data folder
+        %   No remote outut
+        %   logs output to Dropbobx
+
+        BaseDir = '/home/ubuntu/Documents/Aqua/';
+
+        fixit_directory                 = '/mnt/s3-uri-gso-pcornillon/';        
+        
+        metadata_directory              = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
+
+        granules_directory              = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
+
+        output_file_directory_local     = [BaseDir 'output/SST/'];
+        output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
+
+        logs_directory                  = [BaseDir 'Logs/'];
+
 end
 
 % Initialize arguments for build_and_fix

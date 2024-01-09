@@ -1,22 +1,10 @@
-% processs_01_01_2003_thru_01_14_2003 - Script to submit build_and_fix batch jobs - PCC
+% MacStudio_AWS_batch_test_1 - 
 %
 % The four variables intialized below, start_time, period_to_process, batch_step 
 % and num_batch must be changed for each version of this script. 
 % 
-% The values for this version of the script will submit batch jobs to
-% process the first five orbits for the first day in each month of starting
-% with January 2003 and ending with December 2010
-
-% ANGELINA, you need to change the following four parameters for other
-% runs. Don't forget to change the file name to reflect the period that
-% will be processed. You will also need to expose the file to the project
-% and to push the updated repository to GitHub. To expose the new files you
-% make to the Matlab Project, click on the tab: Project - MODIS_L2 and then
-% on the Add Files tab under Project. This will bring up the 'Add files to
-% the project' window. In this window click on > next to batch_jobs and
-% then on the button for the job you just added.  Ignore the .asv files.
-% When you have saved and tested, remember to commit it since the AWS
-% machine will need it.
+% The values for this version of the script will 3 submit batch jobs to
+% process the first 4 orbits for days 1, 2 and 3 of January 2012
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -26,24 +14,28 @@
 
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-% submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
-% Option = 6; % Reads data from s3 in us-west-2.
-Option = 4; % For debug. Reads from and writes to Cornillon_NAS
-
 % Open the project if on AWS, otherwise, assume that it is already open.
+% Also select Option and num_batch based on whether or not this is an AWS
+% run
 
 machine = pwd;
 if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
+    
+    Option = 8;
+    num_batch = 2;   % The number of batch jobs to submit
+else
+    Option = 4;
+    num_batch = 3;   % The number of batch jobs to submit
 end
 
-if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0) & (submit_as_batch == 1)
-    prj = openProject('/Users/petercornillon/MATLAB/Projects/MODIS_L2/MODIS_L2.prj');
-end
+% % % if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0) & (submit_as_batch == 1)
+% % %     prj = openProject('/Users/petercornillon/MATLAB/Projects/MODIS_L2/MODIS_L2.prj');
+% % % end
 
-% Note that for the start time you need to specify a month and day other
+% Note that for the start time you MUST to specify a month and day other
 % than 0; i.e., [2002 7 1 0 0 0] will start at 00h00 on 1 July 2002. If you
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
@@ -51,7 +43,6 @@ end
 start_time = [2012 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 0 0 6 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 0 1 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 3; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.

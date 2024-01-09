@@ -570,7 +570,7 @@ while granule_start_time_guess <= Matlab_end_time
             end
 
             if status ~= 0
-                fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo.name, status)
+                fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
             end
 
             oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);

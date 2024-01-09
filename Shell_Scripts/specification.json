@@ -1,0 +1,9 @@
+{
+  "ImageId": "ami-09cd9f2cc21d7f16e",
+  "SecurityGroupIds": [ "sg-06fcb6a0539014d04" ],
+  "InstanceType": "t3a.small",
+  "Placement": {
+    "AvailabilityZone": "us-west-2a"
+  },
+  "UserData":"IyEvYmluL2Jhc2gKIyB3cml0ZSBjb21tYW5kcyB0byBleGNlY3V0ZSBoZXJlCgpscyAtbAoKdG91Y2ggL21udC9zMy11cmktZ3NvLXBjb3JuaWxsb24vcGV0ZXJzX3Rlc3QKCg=="
+}

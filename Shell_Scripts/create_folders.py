@@ -1,7 +1,7 @@
 import os
 
 def create_folders():
-    base_directory = "/home/ubuntu/temp"
+    base_directory = "/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/SST/"
 
     # Create folders for each year
     for year in range(2000, 2024):

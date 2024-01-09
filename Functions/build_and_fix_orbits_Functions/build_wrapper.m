@@ -107,7 +107,7 @@ switch Option
 
         granules_directory              = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
-        output_file_directory_local     = [BaseDir 'output/'];
+        output_file_directory_local     = [BaseDir 'output/SST/'];
         output_file_directory_remote    = '';
 
         logs_directory                  = [BaseDir 'Logs/'];

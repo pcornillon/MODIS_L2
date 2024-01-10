@@ -68,7 +68,7 @@ switch Option
 
         logs_directory = [BaseDir 'Logs/'];
 
-    case 3 % MacStudio or Satdat1
+    case 3 % MacStudio or Satdat1 reading from NAS -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 
         %   OBPG metadata from Cornillon_NAS, 
         %   granules from Cornillon_NAS 
@@ -77,21 +77,19 @@ switch Option
         %   remote outut to the Cornillon_NAS
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
 
-        fixit_directory = [BaseDir 'metadata/'];
-        metadata_directory = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
+        fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
+        metadata_directory              = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
-        granules_directory    = '/Volumes/MODIS_L2_Original/OBPG/combined/';
+        granules_directory              = '/Volumes/MODIS_L2_Original/OBPG/combined/';
 
-%         output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
-%         output_file_directory_remote = '';
-        output_file_directory_local = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/SST/';
-        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_local     = [BaseDir 'output/SST/'];
+        output_file_directory_remote    = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 
-        logs_directory = '/Volumes/MODIS_L2_Modified/OBPG/Logs/';
+        logs_directory                  = [BaseDir 'Logs/'];
 
-    case 4 % MacStudio or Satdat1 -- see sister for AWS test case.
+    case 4 % MacStudio or Satdat1 reading from Aqua-1 -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 
         %   OBPG metadata from Aqua-1, 
         %   granules from Aqua-1 

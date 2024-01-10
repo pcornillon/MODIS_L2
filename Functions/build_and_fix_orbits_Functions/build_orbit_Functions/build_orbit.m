@@ -173,8 +173,21 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
             granule_start_time_guess = granule_start_time_guess + orbit_duration / secs_per_day;
 
+            if granule_start_time_guess > Matlab_end_time
+                if print_diagnostics
+                    fprintf('*** Have reached the end of run (%s).\n', datestr(Matlab_end_time))
+                end
+
+                status = populate_problem_list( 902, ['*** Have reached the end of the run: ' datestr(Matlab_end_time)], granule_start_time_guess);
+
+                return
+            end
+
             fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
+            % Step back 5 minutes from the end of the last run and search for next crossing.
+            
+            granule_start_time_guess = oinfo(iOrbit).end_time - 5 * 60 / secs_per_day;
             found_one = 0;
         end
     end        

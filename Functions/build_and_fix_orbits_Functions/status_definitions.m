@@ -111,10 +111,13 @@
 % % % %       continue -- WARNING -- status not passed back.
 
 % END OF RUN
-%
-% 901 - find_next_granule_with_data - Did not find a granule that crosses 78 S since the end of the last orbit. (used to be -999).
-%       status = populate_problem_list( 901, ['*** Did not cross ' num2str(latlim, 6.2) ' between end of previous orbit (' datestr(start_time) ') and (' datestr(Matlab_end_time) ')'], granule_start_time_guess);
-%       return -- ERROR
+% % % %
+% % % % 901 - find_next_granule_with_data - Did not find a granule that crosses 78 S since the end of the last orbit. (used to be -999).
+% % % %       status = populate_problem_list( 901, ['*** Did not cross ' num2str(latlim, 6.2) ' between end of previous orbit (' datestr(start_time) ') and (' datestr(Matlab_end_time) ')'], granule_start_time_guess);
+% % % %       return -- ERROR
+% % % % 902 - build_orbit - End of run. 
+% % % %       status = populate_problem_list( 902, ['*** Have reached the end of the run: ' datestr(Matlab_end_time)], granule_start_time_guess);
+% % % %       return -- ERROR
 
 % 
 % 911 - get_start_of_first_full_orbit - end of run.

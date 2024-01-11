@@ -185,9 +185,19 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
             fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
-            % Step back 5 minutes from the end of the last run and search for next crossing.
+            % % % % Step back 5 minutes from the end of the last run and search for next crossing.
+            % % % 
+            % % % granule_start_time_guess = oinfo(iOrbit).end_time - 5 * 60 / secs_per_day;
             
-            granule_start_time_guess = oinfo(iOrbit).end_time - 5 * 60 / secs_per_day;
+            % Set granule_start_time_guess to the nearest multiple of 5 minutes preceeding oinfo(iOrbit).end_time
+
+            date_vec = datevec(oinfo(iOrbit).end_time);
+            date_vec(5) = date_vec(5) - rem(date_vec(5),5);
+            date_vec(6) = 0;
+            granule_start_time_guess = datenum(date_vec);
+
+            iGranule = 0;
+            
             found_one = 0;
         end
     end        

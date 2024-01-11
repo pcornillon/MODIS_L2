@@ -85,7 +85,8 @@ switch Option
         granules_directory              = '/Volumes/MODIS_L2_Original/OBPG/combined/';
 
         output_file_directory_local     = [BaseDir 'output/SST/'];
-        output_file_directory_remote    = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        % output_file_directory_remote    = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_remote    = '';
 
         logs_directory                  = [BaseDir 'Logs/'];
 
@@ -194,7 +195,8 @@ switch Option
         granules_directory              = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
         output_file_directory_local     = [BaseDir 'output/SST/'];
-        output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
+        % output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
+        output_file_directory_remote    = '';
 
         logs_directory                  = [BaseDir 'Logs/'];
 

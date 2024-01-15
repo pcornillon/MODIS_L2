@@ -189,9 +189,12 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
             % % % 
             % % % granule_start_time_guess = oinfo(iOrbit).end_time - 5 * 60 / secs_per_day;
             
-            % Set granule_start_time_guess to the nearest multiple of 5 minutes preceeding oinfo(iOrbit).end_time
+            % Set granule_start_time_guess to the nearest multiple of 5
+            % minutes preceeding oinfo(iOrbit).end_time. Remember that the
+            % end of the previous orbit is 100 scan lines past the nadir
+            % descending crossing of the satellie.  
 
-            date_vec = datevec(oinfo(iOrbit).end_time);
+            date_vec = datevec(oinfo(iOrbit).end_time - 100 * secs_per_scan_line);
             date_vec(5) = date_vec(5) - rem(date_vec(5),5);
             date_vec(6) = 0;
             granule_start_time_guess = datenum(date_vec);

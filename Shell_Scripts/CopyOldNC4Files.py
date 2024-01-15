@@ -61,7 +61,7 @@ def copy_files(test_mode=False):
                             # print(f'Got to location 6 {filename}.')
                             if test_mode:
                                 print(f'[TEST MODE] Would copy and delete: {filename} to {specific_output_folder}')
-                                start_time = time.time() - 20 * 60
+                                start_time = time.time()
                             else:
                                 # os.makedirs(specific_output_folder, exist_ok=True)
                                 # shutil.copy(file_path, specific_output_folder)

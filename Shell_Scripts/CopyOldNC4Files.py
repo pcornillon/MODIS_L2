@@ -4,6 +4,7 @@ import time
 import re
 import sys
 import subprocess
+from datetime import datetime
 
 base_input_folder = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/SST/'
 base_output_folder = '/Volumes/MODIS_L2_Modified/OBPG/SST/'
@@ -29,14 +30,20 @@ def rsync_copy_and_delete(src, dst):
     # Execute the rsync command
     result = subprocess.run(command, capture_output=True, text=True)
 
-    # Check if the rsync command was successful
+    # Get the current date and time
+    now = datetime.now()
+
+    # Format the date and time in a readable format
+    formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
+
+     # Check if the rsync command was successful
     if result.returncode == 0:
         print(f"rsync successful for: {src}")
         # Delete the original file
         os.remove(src)
-        print(f"Deleted original file: {src}")
+        print(f"Deleted original file: {src} at {formatted_now}.")
     else:
-        print(f"rsync failed for: {src}. Error: {result.stderr}")
+        print(f"rsync failed for: {src}. Error: {result.stderr} at {formatted_now}.")
 
 def copy_files(test_mode=False):
     start_time = time.time()
@@ -75,7 +82,14 @@ def copy_files(test_mode=False):
         if no_new_files and (time.time() - start_time) > 20 * 60:
             break
 
-        print(f'Pausing for 60 seconds.')
+        # Get the current date and time
+        now = datetime.now()
+
+        # Format the date and time in a readable format
+        formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        # Print the formatted date and time
+        print(f'Pausing for 60 seconds at {formatted_now}.')
         time.sleep(60)
 
 # Determine mode based on command line argument

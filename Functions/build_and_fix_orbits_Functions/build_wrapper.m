@@ -77,14 +77,14 @@ switch Option
         %   remote outut to the Cornillon_NAS
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
+        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
 
         fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
         metadata_directory              = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
         granules_directory              = '/Volumes/MODIS_L2_Original/OBPG/combined/';
 
-        output_file_directory_local     = [BaseDir 'output/SST/'];
+        output_file_directory_local     = [BaseDir 'SST/'];
         % output_file_directory_remote    = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
         output_file_directory_remote    = '';
 
@@ -99,14 +99,14 @@ switch Option
         %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/';
+        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
 
         fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
         metadata_directory              = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 
         granules_directory              = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
-        output_file_directory_local     = [BaseDir 'output/SST/'];
+        output_file_directory_local     = [BaseDir 'SST/'];
         output_file_directory_remote    = '';
 
         logs_directory                  = [BaseDir 'Logs/'];
@@ -186,7 +186,7 @@ switch Option
         %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir = '/home/ubuntu/Documents/Aqua/';
+        BaseDir = '/home/ubuntu/Documents/Aqua/output/';
 
         fixit_directory                 = '/mnt/s3-uri-gso-pcornillon/';        
         
@@ -194,7 +194,7 @@ switch Option
 
         granules_directory              = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
-        output_file_directory_local     = [BaseDir 'output/SST/'];
+        output_file_directory_local     = [BaseDir 'SST/'];
         % output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
         output_file_directory_remote    = '';
 

@@ -16,6 +16,13 @@ test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready t
 
 submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
+stopping_threshold = 75; % If percent of batch jobs that finished exceeds this number, exit.
+
+minutes_per_orbit = 100;
+minutes_per_day = 24 * 60;
+
+minutes_to_process_1_orbit = 11;
+
 % Open the project if on AWS, otherwise, assume that it is already open.
 % Also select Option and num_batch based on whether or not this is an AWS
 % run
@@ -41,8 +48,8 @@ end
 % 00h00 on 30 June 2002.
 
 start_time = [2012 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 0 6 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 0 1 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+period_to_process = [0 0 1 0 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 0 1 2 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -68,6 +75,11 @@ secondShift_step = seconds(batch_step(6));
 
 startTime = datetime(start_time);
 endTime = startTime + calmonths(12) * yearShift_period + calmonths(1) * monthShift_period + dayShift_period + hourShift_period;
+
+number_orbits = minutes(endTime-startTime) / minutes_per_orbit;
+minutes_to_process_all_orbits = number_orbits * minutes_to_process_1_orbit;
+
+wall_end_time = datenum(now) + minutes_to_process_all_orbits / minutes_per_day;
 
 % Initialize an array to hold the datetime values
 
@@ -113,3 +125,21 @@ for iJob=1:num_batch
 end
 
 fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
+
+% Now check to see if jobs are running. If they are pause for 5 minutes and
+% check again. If they aren't exit.
+
+while datenum(now) < wall_end_time
+    pause(300)
+
+    how_many_running
+
+    if 100 * number_finished / number_of_jobs > stopping_threshold
+        fprintf('%i of %i batch jobs have finished running. The percentage finished exceeds %i. Exiting.\n', number_finished, number_of_jobs, stopping_threshold)
+        exit
+    end
+
+end
+
+fprintf('Should have finished by now assuming %i minutes to process one orbit. Estimated end time: %s\n', minutes_to_process_1_orbit, wall_end_time)
+exit

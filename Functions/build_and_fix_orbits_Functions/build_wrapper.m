@@ -198,7 +198,7 @@ switch Option
         % output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
         output_file_directory_remote    = '';
 
-        logs_directory                  = [BaseDir 'Logs/'];
+        logs_directory                  = '/mnt/uri-nfs-cornillon/Logs/';
 
 end
 

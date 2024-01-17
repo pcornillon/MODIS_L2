@@ -12,7 +12,7 @@ number_finished = 0;
 
 for iJob=1:number_of_jobs
 
-    status(iJob) = job_number(iJob).State;
+    status(iJob) = string(job_number(iJob).State);
 
     if strcmp(status(iJob), 'running')
         number_running = number_running + 1;

@@ -1,6 +1,8 @@
 #!/bin/bash
 # write commands to excecute here
 
+echo "Starting the script..."
+
 # Define the output directory for the nohup logs to be generated from the Matlab and python commands below.
 
 OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"
@@ -8,6 +10,7 @@ OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"
 # Ensure the output directory exists, if it doesn't, create it.
 
 mkdir -p "$OUTPUT_DIRECTORY"
+echo "Checked for the output directory, created if it did not exist."
 
 # Make sure that we are using the most recent version of MODIS_L2
 
@@ -22,6 +25,7 @@ git pull
 
 CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="matlab_${CURRENT_TIME}.out"
+echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME"
 
 nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'); MacStudio_AWS_batch_test_1"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &
 
@@ -31,5 +35,8 @@ cd Shell_Scripts
 
 CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="AWS_copy_${CURRENT_TIME}.out"
+echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
+
 nohup python AWS_copy_nc4_to_remote.py > "${OUTPUT_DIRECTORY}${FILENAME}" log 2>&1 &
 
+echo "Script execution completed."

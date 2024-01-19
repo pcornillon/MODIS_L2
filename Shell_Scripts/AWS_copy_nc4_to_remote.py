@@ -29,7 +29,12 @@ class DualLogger:
 
 def setup_logging(log_folder, dual_out):
     # Ensure the log folder exists
-    os.makedirs(log_folder, exist_ok=True)
+    # os.makedirs(log_folder, exist_ok=True)
+    try:
+        os.makedirs(log_folder)
+    except OSError as e:
+        if e.errno != os.errno.EEXIST:
+            raise  # Re-raises the error if it's not the "Directory exists" error
 
     # Generate a timestamp for the filename. Start by getting the current date and time
     now = datetime.now()
@@ -65,7 +70,12 @@ def get_year_month_from_filename(filename):
 def rsync_copy_and_delete(src, dst):
 
     # Ensure the destination directory exists
-    os.makedirs(dst, exist_ok=True)
+    # os.makedirs(dst, exist_ok=True)
+    try:
+        os.makedirs(dst)
+    except OSError as e:
+        if e.errno != os.errno.EEXIST:
+            raise  # Re-raises the error if it's not the "Directory exists" error
 
     # Construct the full path of the destination file
     dst_file = os.path.join(dst, os.path.basename(src))

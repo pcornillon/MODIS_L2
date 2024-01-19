@@ -148,7 +148,7 @@ def copy_files(test_mode=False):
                         if (time.time() - file_creation_time) > (time_since_creation * 60):
                             if print_debug:
                                 # print(f'Made it to checkpoint #5')
-                                print(f'Made it to checkpoint #5')
+                                print( "Made it to checkpoint #5")
                             if test_mode:
                                 # print(f'[TEST MODE] Would copy and delete: {filename} to {specific_output_folder}')
                                 print( "[TEST MODE] Would copy and delete: %s to %s." %(filename, specific_output_folder))

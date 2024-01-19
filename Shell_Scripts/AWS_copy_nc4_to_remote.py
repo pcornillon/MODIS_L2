@@ -42,8 +42,8 @@ def setup_logging(log_folder, dual_out):
 
     # Format the date and time in a readable format
     formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
-    # print(f"Diary will be writte to: {log_file_path} starting at: {formatted_now}")
-    print("Diary will be writte to: " %log_file_path " starting at: " %formatted_now)
+    # print(f"Diary will be written to: {log_file_path} starting at: {formatted_now}")
+    print( "Diary will be written to: %s starting at: %s" % (log_file_path, formatted_now))
 
     # Redirect stdout to the log file
     log_file = open(log_file_path, 'a')
@@ -85,14 +85,14 @@ def rsync_copy_and_delete(src, dst):
      # Check if the rsync command was successful
     if result.returncode == 0:
         # print(f"rsync successful for: {src}")
-        print("rsync successful for: " %src)
+        print("rsync successful for: %s" %src)
         # Delete the original file
         os.remove(src)
         # print(f"Deleted original file: {src} at {formatted_now}.")
-        print( "Deleted original file: " %src " at " %formatted_now ".")
+        print( "Deleted original file: %s at %s." %(src, formatted_now))
     else:
         # print(f"rsync failed for: {src}. Error: {result.stderr} at {formatted_now}.")
-        print( "rsync failed for: {" %src ". Error: " %result.stderr " at " %formatted_now ".")
+        print( "rsync failed for: %s. Error: %s at %s." %(src, result.stderr, formatted_now))
 
 def copy_files(test_mode=False):
     # Intialize run parameters

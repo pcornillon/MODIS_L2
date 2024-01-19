@@ -27,9 +27,7 @@ class DualLogger:
         # You might want to specify some extra behavior here.
         pass
 
-def setup_logging(log_folder):
-    dual_out = 1
-    
+def setup_logging(log_folder, dual_out):
     # Ensure the log folder exists
     os.makedirs(log_folder, exist_ok=True)
 
@@ -38,12 +36,14 @@ def setup_logging(log_folder):
 
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     
-    log_file_name = f"copy_nc4_{timestamp}.txt"
+    #log_file_name = f"copy_nc4_{timestamp}.txt"
+    log_file_name = "copy_nc4_%s.txt" % timestamp
     log_file_path = os.path.join(log_folder, log_file_name)
 
     # Format the date and time in a readable format
     formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
     # print(f"Diary will be writte to: {log_file_path} starting at: {formatted_now}")
+    print("Diary will be writte to: " %log_file_path " starting at: " %formatted_now)
 
     # Redirect stdout to the log file
     log_file = open(log_file_path, 'a')
@@ -84,17 +84,20 @@ def rsync_copy_and_delete(src, dst):
 
      # Check if the rsync command was successful
     if result.returncode == 0:
-        print(f"rsync successful for: {src}")
+        # print(f"rsync successful for: {src}")
+        print("rsync successful for: " %src)
         # Delete the original file
         os.remove(src)
-        print(f"Deleted original file: {src} at {formatted_now}.")
+        # print(f"Deleted original file: {src} at {formatted_now}.")
+        print( "Deleted original file: " %src " at " %formatted_now ".")
     else:
-        print(f"rsync failed for: {src}. Error: {result.stderr} at {formatted_now}.")
+        # print(f"rsync failed for: {src}. Error: {result.stderr} at {formatted_now}.")
+        print( "rsync failed for: {" %src ". Error: " %result.stderr " at " %formatted_now ".")
 
 def copy_files(test_mode=False):
     # Intialize run parameters
     dual_out = 1
-    print_debug = 1;
+    print_debug = 0;
 
     # Minutes to sleep before searching, to pause between new search, to terminate the run if no new files found and since file was created before copying.
     initial_sleep = 15;
@@ -104,7 +107,7 @@ def copy_files(test_mode=False):
     
     # Set up logging
     log_folder_path = os.path.join(base_output_folder, "Logs")    
-    log_file = setup_logging(log_folder_path)
+    log_file = setup_logging(log_folder_path, dual_out)
     if print_debug:
         print(f'Returned from starting the output log file {log_file}.')
     

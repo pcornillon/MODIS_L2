@@ -28,6 +28,7 @@ class DualLogger:
         pass
 
 def setup_logging(log_folder, dual_out):
+    print(f"In setup_logging")
     # Ensure the log folder exists
     os.makedirs(log_folder, exist_ok=True)
 

@@ -37,13 +37,12 @@ def setup_logging(log_folder, dual_out):
 
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     
-    print(f"{2 * 21}")
     log_file_name = f"copy_nc4_{timestamp}.txt"
     log_file_path = os.path.join(log_folder, log_file_name)
 
     # Format the date and time in a readable format
     formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"Diary will be writte to: {log_file_path} starting at: {formatted_now}")
+    # print(f"Diary will be writte to: {log_file_path} starting at: {formatted_now}")
 
     # Redirect stdout to the log file
     log_file = open(log_file_path, 'a')
@@ -94,7 +93,7 @@ def rsync_copy_and_delete(src, dst):
 def copy_files(test_mode=False):
     # Intialize run parameters
     dual_out = 1
-    print_debug = 0;
+    print_debug = 1;
 
     # Minutes to sleep before searching, to pause between new search, to terminate the run if no new files found and since file was created before copying.
     initial_sleep = 15;

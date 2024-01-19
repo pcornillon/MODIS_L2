@@ -114,7 +114,9 @@ for iJob=1:num_batch
     base_diary_filename = strrep(strrep([datestr(now) '_Job_' num2str(iJob) '_From_' datestr(mat_start(iJob)) '_To_' datestr(mat_end(iJob))], ':', 'h'), ' ', '_');
 
     fprintf('Submitting job #%i to process from %s to %s. Diary file: %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)), base_diary_filename)
-
+    fprintf('...The build_wrapper equivalent to the submitted job is: build_wrapper(%i, [%i %i %i %i %i %4.2f], [%i %i %i %i %i %4.2f], %s)\n', ...
+        Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+    
     if ~test_run
         if submit_as_batch
             job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);

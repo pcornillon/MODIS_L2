@@ -26,6 +26,6 @@ fprintf('At %s of %i jobs submitted, %i have finished and %i are still running.\
 
 if (number_running + number_finished) ~= number_of_jobs
     fprintf('*** Gulp, the number finished + the number running, %i, is not equal to the number submitted, %i.\n', ...
-        number_of_jobs+number_finished, number_of_jobs)
+        number_running+number_finished, number_of_jobs)
 end
 

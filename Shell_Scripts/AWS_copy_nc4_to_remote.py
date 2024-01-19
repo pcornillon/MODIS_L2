@@ -35,6 +35,7 @@ def setup_logging(log_folder, dual_out):
     now = datetime.now()
 
     timestamp = now.strftime("%Y%m%d_%H%M%S")
+    print(f"copy_nc4_{timestamp}.txt")
     log_file_name = f"copy_nc4_{timestamp}.txt"
     log_file_path = os.path.join(log_folder, log_file_name)
 

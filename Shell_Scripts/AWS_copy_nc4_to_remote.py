@@ -143,7 +143,7 @@ def copy_files(test_mode=False):
 
                         if print_debug:
                             # print(f'specific_ input_folder: {specific_input_folder}, output_folder: {specific_output_folder}, file_path: {file_path}, file_creation_time: {file_creation_time} and time.time: {time.time()}')
-                            print( "specific_ input_folder: %s, output_folder: %s, file_path: %s, file_creation_time: %s and time.time: %s" %(specific_input_folder, specific_output_folder, file_path, file_creation_time, time.time())
+                            # print( "specific_ input_folder: %s, output_folder: %s, file_path: %s, file_creation_time: %s and time.time: %s" %(specific_input_folder, specific_output_folder, file_path, file_creation_time, time.time())
 
                             tempb = time_since_creation * 60
                             # tempa = time.time() - file_creation_time

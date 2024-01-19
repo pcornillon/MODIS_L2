@@ -27,8 +27,9 @@ class DualLogger:
         # You might want to specify some extra behavior here.
         pass
 
-def setup_logging(log_folder, dual_out):
-    print('In setup_logging')
+def setup_logging(log_folder):
+    dual_out = 1
+    
     # Ensure the log folder exists
     os.makedirs(log_folder, exist_ok=True)
 
@@ -103,7 +104,7 @@ def copy_files(test_mode=False):
     
     # Set up logging
     log_folder_path = os.path.join(base_output_folder, "Logs")    
-    log_file = setup_logging(log_folder_path, dual_out)
+    log_file = setup_logging(log_folder_path)
     if print_debug:
         print(f'Returned from starting the output log file {log_file}.')
     

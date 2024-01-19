@@ -28,7 +28,7 @@ class DualLogger:
         pass
 
 def setup_logging(log_folder, dual_out):
-    print(f"In setup_logging")
+    print(f'In setup_logging')
     # Ensure the log folder exists
     os.makedirs(log_folder, exist_ok=True)
 
@@ -36,7 +36,7 @@ def setup_logging(log_folder, dual_out):
     now = datetime.now()
 
     timestamp = now.strftime("%Y%m%d_%H%M%S")
-    print(f"copy_nc4")
+    print(f'copy_nc4')
     log_file_name = f"copy_nc4_{timestamp}.txt"
     log_file_path = os.path.join(log_folder, log_file_name)
 

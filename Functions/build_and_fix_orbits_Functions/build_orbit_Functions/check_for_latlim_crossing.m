@@ -120,7 +120,7 @@ if isempty(scan_line_times)
 end
 
 if abs(mSec(10)-mSec(1)) > 0.01
-    fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Should not get here.\n', metadata_file_list(1).name)
+    fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Should not get here.\n', metadata_granule_file_name)
     granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
 
     status = populate_problem_list( 202, temp_filename, granule_start_time_guess);

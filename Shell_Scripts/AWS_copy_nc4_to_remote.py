@@ -144,7 +144,7 @@ def copy_files(test_mode=False):
                         if print_debug:
                             # print(f'specific_ input_folder: {specific_input_folder}, output_folder: {specific_output_folder}, file_path: {file_path}, file_creation_time: {file_creation_time} and time.time: {time.time()}')
                             print( "specific_ input_folder: %s, output_folder: %s, file_path: %s, file_creation_time: %s and time.time: %s" %(specific_input_folder, specific_output_folder, file_path, file_creation_time, time.time())
-                        if time.time() - file_creation_time > time_since_creation * 60:
+                        if (time.time() - file_creation_time) > time_since_creation*60:
                             if print_debug:
                                 # print(f'Made it to checkpoint #5')
                                 print(f'Made it to checkpoint #5')

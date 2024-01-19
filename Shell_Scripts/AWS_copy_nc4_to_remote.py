@@ -109,7 +109,7 @@ def copy_files(test_mode=False):
     log_folder_path = os.path.join(base_output_folder, "Logs")    
     log_file = setup_logging(log_folder_path, dual_out)
     if print_debug:
-        print(f'Returned from starting the output log file {log_file}.')
+        print( "Returned from starting the output log file %s." %log_file)
     
     # Sleep for initial_sleep minutes to give the jobs time to process the first orbit.
     time.sleep(initial_sleep * 60)
@@ -120,17 +120,21 @@ def copy_files(test_mode=False):
         no_new_files = True
         for root, dirs, files in os.walk(base_input_folder):
             if print_debug:
-                print(f'Made it to checkpoint #1. Root: {root}, Dirs: {dirs}, Files: {files}.')
+                # print(f'Made it to checkpoint #1. Root: {root}, Dirs: {dirs}, Files: {files}.')
+                print( "Made it to checkpoint #1. Root: %s, Dirs: %s, Files: %s." %(root, dirs, files))
             for filename in files:
                 if print_debug:
-                    print(f'Made it to checkpoint #2. Filename: {filename}.')
+                    # print(f'Made it to checkpoint #2. Filename: {filename}.')
+                    print( "Made it to checkpoint #2. Filename: %s." %filename)
                 if filename.endswith('.nc4'):
                     if print_debug:
-                        print(f'Made it to checkpoint #3')
+                        # print(f'Made it to checkpoint #3')
+                        print( "Made it to checkpoint #3")
                     year, month = get_year_month_from_filename(filename)
                     if year and month:
                         if print_debug:
-                            print(f'Made it to checkpoint #4')
+                            # print(f'Made it to checkpoint #4')
+                            print( "Made it to checkpoint #4")
                         specific_input_folder = os.path.join(base_input_folder, year, month)
                         specific_output_folder = os.path.join(base_output_folder, "SST", year, month)
 
@@ -138,22 +142,27 @@ def copy_files(test_mode=False):
                         file_creation_time = os.path.getctime(file_path)
 
                         if print_debug:
-                            print(f'specific_ input_folder: {specific_input_folder}, output_folder: {specific_output_folder}, file_path: {file_path}, file_creation_time: {file_creation_time} and time.time: {time.time()}')
+                            # print(f'specific_ input_folder: {specific_input_folder}, output_folder: {specific_output_folder}, file_path: {file_path}, file_creation_time: {file_creation_time} and time.time: {time.time()}')
+                            print( "specific_ input_folder: %s, output_folder: %s, file_path: %s, file_creation_time: %s and time.time: %s" %(specific_input_folder, specific_output_folder, file_path, file_creation_time, time.time())
                         if time.time() - file_creation_time > time_since_creation * 60:
                             if print_debug:
+                                # print(f'Made it to checkpoint #5')
                                 print(f'Made it to checkpoint #5')
                             if test_mode:
-                                print(f'[TEST MODE] Would copy and delete: {filename} to {specific_output_folder}')
+                                # print(f'[TEST MODE] Would copy and delete: {filename} to {specific_output_folder}')
+                                print( "[TEST MODE] Would copy and delete: %s to %s." %(filename, specific_output_folder))
                                 start_time = time.time()
                             else:
                                 if print_debug:
-                                    print(f'Made it to checkpoint #6')
+                                    # print(f'Made it to checkpoint #6')
+                                    print( "Made it to checkpoint #6")
                                 rsync_copy_and_delete(file_path, specific_output_folder)
                                 start_time = time.time()
 
                         else:
                             if print_debug:
-                                print(f'Made it to checkpoint #7')
+                                # print(f'Made it to checkpoint #7')
+                                print( "Made it to checkpoint #7")
                             no_new_files = False
 
         if no_new_files and (time.time() - start_time) > kill_time * 60:
@@ -172,7 +181,8 @@ def copy_files(test_mode=False):
         formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
 
         # Print the formatted date and time
-        print(f'Pausing for {pause_time * 60} seconds at {formatted_now}.')
+        # print(f'Pausing for {pause_time * 60} seconds at {formatted_now}.')
+        print( "Pausing for %i seconds at %s." %(pause_time*60, formatted_now))
         time.sleep(pause_time * 60)
 
 # Determine mode based on command line argument

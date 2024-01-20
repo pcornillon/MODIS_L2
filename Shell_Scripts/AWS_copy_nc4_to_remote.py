@@ -29,7 +29,6 @@ class DualLogger:
 
 def setup_logging(log_folder, dual_out):
     # Ensure the log folder exists
-    # os.makedirs(log_folder, exist_ok=True)
     try:
         os.makedirs(log_folder)
     except OSError as e:
@@ -41,13 +40,11 @@ def setup_logging(log_folder, dual_out):
 
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     
-    #log_file_name = f"copy_nc4_{timestamp}.txt"
     log_file_name = "copy_nc4_%s.txt" % timestamp
     log_file_path = os.path.join(log_folder, log_file_name)
 
     # Format the date and time in a readable format
     formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
-    # print(f"Diary will be written to: {log_file_path} starting at: {formatted_now}")
     print( "Diary will be written to: %s starting at: %s" % (log_file_path, formatted_now))
 
     # Redirect stdout to the log file
@@ -62,7 +59,6 @@ def setup_logging(log_folder, dual_out):
     
 def get_year_month_from_filename(filename):
     match = re.search(r'_\d{6}_(\d{4})(\d{2})\d{2}T', filename)
-    # print(f'And after the regular expression search: {match}.')
     if match:
         return match.group(1), match.group(2)  # year, month
     return None, None
@@ -70,7 +66,6 @@ def get_year_month_from_filename(filename):
 def rsync_copy_and_delete(src, dst):
 
     # Ensure the destination directory exists
-    # os.makedirs(dst, exist_ok=True)
     try:
         os.makedirs(dst)
     except OSError as e:
@@ -84,7 +79,6 @@ def rsync_copy_and_delete(src, dst):
     command = ["rsync", "-av", src, dst_file]
     
     # Execute the rsync command
-    # result = subprocess.run(command, capture_output=True, text=True)
     result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = result.communicate()
 
@@ -101,36 +95,31 @@ def rsync_copy_and_delete(src, dst):
 
      # Check if the rsync command was successful
     if result.returncode == 0:
-        # print(f"rsync successful for: {src}")
         print("rsync successful for: %s" %src)
+
         # Delete the original file
         os.remove(src)
-        # print(f"Deleted original file: {src} at {formatted_now}.")
         print( "Deleted original file: %s at %s." %(src, formatted_now))
     else:
-        # print(f"rsync failed for: {src}. Error: {result.stderr} at {formatted_now}.")
         print( "rsync failed for: %s. Error: %s at %s." %(src, result.stderr, formatted_now))
 
 def copy_files(test_mode=False):
     # Intialize run parameters
     dual_out = 1
-    print_debug = 0;
 
-    # Minutes to sleep before searching, to pause between new search, to terminate the run if no new files found and since file was created before copying.
-    # initial_sleep = 7
+    # Minutes to pause between new search and time since file was created before copying.
     pause_time = 1
     time_since_creation = 4
     
-    # Initially set the kill time to 30 minutes, probably more than needed but avoids this script stopping before the first orbit has been processed.
-    # The kill time will be reset to 12 minutes after the first orbit has been copied, hopefully longer than the time to process an orbit. 
+    # Initially set kill_time, the time to terminate this script since the last .nc4 file was found (if any) to 30 minutes.
+    # This ore than needed but avoids this script stopping before the first orbit has been processed.
+    # kill_time will be reset to 12 minutes after the first orbit has been copied. This is hopefully longer than the time to process an orbit. 
     kill_time = 30
     reset_kill_time = 12
     
     # Set up logging
     log_folder_path = os.path.join(base_output_folder, "Logs")    
     log_file = setup_logging(log_folder_path, dual_out)
-    if print_debug:
-        print( "Returned from starting the output log file %s." %log_file)
     
     # Sleep for initial_sleep minutes to give the jobs time to process the first orbit.
     # time.sleep(initial_sleep * 60) -- removed this because of the way the kill times are set, initially 30 minutes and then 8. The starting kill_time, 30 minutes, takes care of the initial sleep period. 
@@ -139,45 +128,26 @@ def copy_files(test_mode=False):
 
     while True:
         no_new_files = True
+
         for root, dirs, files in os.walk(base_input_folder):
-            if print_debug:
-                # print(f'Made it to checkpoint #1. Root: {root}, Dirs: {dirs}, Files: {files}.')
-                print( "Made it to checkpoint #1. Root: %s, Dirs: %s, Files: %s." %(root, dirs, files))
+
             for filename in files:
-                if print_debug:
-                    # print(f'Made it to checkpoint #2. Filename: {filename}.')
-                    print( "Made it to checkpoint #2. Filename: %s." %filename)
+
                 if filename.endswith('.nc4'):
-                    if print_debug:
-                        # print(f'Made it to checkpoint #3')
-                        print( "Made it to checkpoint #3")
                     year, month = get_year_month_from_filename(filename)
+
                     if year and month:
-                        if print_debug:
-                            # print(f'Made it to checkpoint #4')
-                            print( "Made it to checkpoint #4")
                         specific_input_folder = os.path.join(base_input_folder, year, month)
                         specific_output_folder = os.path.join(base_output_folder, "SST", year, month)
 
                         file_path = os.path.join(root, filename)
                         file_creation_time = os.path.getctime(file_path)
 
-                        if print_debug:
-                            # print(f'specific_ input_folder: {specific_input_folder}, output_folder: {specific_output_folder}, file_path: {file_path}, file_creation_time: {file_creation_time} and time.time: {time.time()}')
-                            print( "specific_ input_folder: %s, output_folder: %s, file_path: %s, file_creation_time: %s and time.time: %s" %(specific_input_folder, specific_output_folder, file_path, file_creation_time, time.time()))
-
                         if (time.time() - file_creation_time) > (time_since_creation * 60):
-                            if print_debug:
-                                # print(f'Made it to checkpoint #5')
-                                print( "Made it to checkpoint #5")
                             if test_mode:
-                                # print(f'[TEST MODE] Would copy and delete: {filename} to {specific_output_folder}')
                                 print( "[TEST MODE] Would copy and delete: %s to %s." %(filename, specific_output_folder))
                                 start_time = time.time()
                             else:
-                                if print_debug:
-                                    # print(f'Made it to checkpoint #6')
-                                    print( "Made it to checkpoint #6")
                                 rsync_copy_and_delete(file_path, specific_output_folder)
                                 start_time = time.time()
 
@@ -187,7 +157,6 @@ def copy_files(test_mode=False):
 
                         else:
                             if print_debug:
-                                # print(f'Made it to checkpoint #7')
                                 print( "Made it to checkpoint #7")
                             no_new_files = False
 
@@ -207,7 +176,6 @@ def copy_files(test_mode=False):
         formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
 
         # Print the formatted date and time
-        # print(f'Pausing for {pause_time * 60} seconds at {formatted_now}.')
         print( "Pausing for %i seconds at %s." %(pause_time*60, formatted_now))
         time.sleep(pause_time * 60)
 

@@ -117,10 +117,14 @@ def copy_files(test_mode=False):
     print_debug = 0;
 
     # Minutes to sleep before searching, to pause between new search, to terminate the run if no new files found and since file was created before copying.
-    initial_sleep = 7;
-    pause_time = 1;
-    kill_time = 8;
-    time_since_creation = 4;
+    # initial_sleep = 7
+    pause_time = 1
+    time_since_creation = 4
+    
+    # Initially set the kill time to 30 minutes, probably more than needed but avoids this script stopping before the first orbit has been processed.
+    # The kill time will be reset to 12 minutes after the first orbit has been copied, hopefully longer than the time to process an orbit. 
+    kill_time = 30
+    reset_kill_time = 12
     
     # Set up logging
     log_folder_path = os.path.join(base_output_folder, "Logs")    
@@ -129,7 +133,7 @@ def copy_files(test_mode=False):
         print( "Returned from starting the output log file %s." %log_file)
     
     # Sleep for initial_sleep minutes to give the jobs time to process the first orbit.
-    time.sleep(initial_sleep * 60)
+    # time.sleep(initial_sleep * 60) -- removed this because of the way the kill times are set, initially 30 minutes and then 8. The starting kill_time, 30 minutes, takes care of the initial sleep period. 
     
     start_time = time.time()
 
@@ -176,6 +180,10 @@ def copy_files(test_mode=False):
                                     print( "Made it to checkpoint #6")
                                 rsync_copy_and_delete(file_path, specific_output_folder)
                                 start_time = time.time()
+
+                                # Reset the kill time to 7 minutes--if no files created in 7 minutes it is likely that the matlab jobs have ended.
+                                kill_time = reset_kill_time
+
 
                         else:
                             if print_debug:

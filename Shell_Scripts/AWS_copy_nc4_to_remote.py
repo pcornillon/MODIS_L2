@@ -82,9 +82,16 @@ def rsync_copy_and_delete(src, dst):
 
     # Form the rsync command
     command = ["rsync", "-av", src, dst_file]
-
+    
     # Execute the rsync command
-    result = subprocess.run(command, capture_output=True, text=True)
+    # result = subprocess.run(command, capture_output=True, text=True)
+    result = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = result.communicate()
+
+    if result.returncode != 0:
+        print("Error executing rsync:", error)
+    else:
+        print("rsync output:", output)
 
     # Get the current date and time
     now = datetime.now()

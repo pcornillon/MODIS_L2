@@ -117,7 +117,7 @@ def copy_files(test_mode=False):
     print_debug = 0;
 
     # Minutes to sleep before searching, to pause between new search, to terminate the run if no new files found and since file was created before copying.
-    initial_sleep = 0;
+    initial_sleep = 5;
     pause_time = 1;
     kill_time = 8;
     time_since_creation = 4;

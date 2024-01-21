@@ -156,8 +156,6 @@ def copy_files(test_mode=False):
 
 
                         else:
-                            if print_debug:
-                                print( "Made it to checkpoint #7")
                             no_new_files = False
 
         if no_new_files and (time.time() - start_time) > kill_time * 60:

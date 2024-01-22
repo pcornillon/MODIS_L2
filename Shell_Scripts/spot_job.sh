@@ -3,6 +3,8 @@
 
 echo "Starting the script..."
 
+touch /home/ubuntu/proof_of_life
+
 # Define the output directory for the nohup logs to be generated from the Matlab and python commands below.
 
 OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"

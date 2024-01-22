@@ -48,7 +48,7 @@ end
 % 00h00 on 30 June 2002.
 
 start_time = [2012 1 3 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 0 12 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+period_to_process = [0 0 0 24 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 0 1 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
 
 % Define the time shift for the length of the interval to process, days,

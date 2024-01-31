@@ -11,6 +11,8 @@
 which_dataset = 1;
 datasets = {'combined' 'recover'};
 
+temp = 1; % For temporary, i.e., partial directories.
+
 % Set up for either satdat1 or macstudio
 
 [ret, computer_name] = system('hostname');
@@ -79,8 +81,12 @@ for iYear=1:length(year_list) % Loop over years to process .....................
     % Get the list of files to consider for processing.
     
     YearS = year_list{iYear};
-    file_list = dir([ base_dir_in, datasets{which_dataset} '/' YearS '/AQUA*.nc']);
-    
+    if temp
+        file_list = dir([ base_dir_in, datasets{which_dataset} '/temp_' YearS '/AQUA*.nc']);
+    else
+        file_list = dir([ base_dir_in, datasets{which_dataset} '/' YearS '/AQUA*.nc']);
+    end
+
     tic
     for iFile=1:length(file_list) % Loop over granules *******************************************
         
@@ -111,8 +117,12 @@ for iYear=1:length(year_list) % Loop over years to process .....................
         
         if datenum(str2num(YearS), str2num(MonthS), str2num(DayS)) >= matlab_start
             
-            file_out = [base_dir_out YearS '/' good_filename_out];
-            
+            if temp
+                file_out = [base_dir_out 'temp_' YearS '/' good_filename_out];
+            else
+                file_out = [base_dir_out YearS '/' good_filename_out];
+            end
+
             if exist(file_out) == 2
 %                 fprintf('%i: %s has already been processed; skipping to the next file. \n', iFile, convertCharsToStrings(file_list(iFile).name))
             else

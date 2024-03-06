@@ -1,7 +1,9 @@
 % MacStudio_batch_long_test_1 - 
 %
 % The four variables intialized below, start_time, period_to_process, batch_step 
-% and num_batch must be changed for each version of this script. 
+% and num_batch must be changed for each version of this script. For the
+% current values, it will do January and February 2015 and should take
+% about 1 3/4 days, 42 hours to process.
 % 
 % The values for this version of the script will 3 submit batch jobs to
 % process the first 4 orbits for days 1, 2 and 3 of January 2012
@@ -36,9 +38,9 @@ end
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2012 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 2 0 2 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 2 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+start_time = [2015 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 1 0 2 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
 num_batch = 3; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,

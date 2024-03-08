@@ -819,3 +819,20 @@ end
 % % % 
 % % %     copy_output_no = batch( 'copy_output_file', 0, {output_filename, remote_filename}, CaptureDiary=true);
 % % % end
+
+% % % [write_status,msg,msgID] = copyfile(output_filename, remote_filename);
+% % % 
+% % % if write_status == 0
+% % %     if print_diagnostics
+% % %         fprintf('*** Problem copying the output file.\n', latlim, ))
+% % %     end
+% % %     
+% % %     status = populate_problem_list( 601, ['*** Could not copy ' output_filename '. msg: ' msg '    msgID: ' msgID], granule_start_time_guess);
+% % %     
+% % %     return
+% % % else
+% % %     if print_diagnostics
+% % %         fprintf( '%s copied to %s\n', output_filename, remote_filename)
+% % %     end
+% % %     eval(['! rm ' output_filename])
+% % % end

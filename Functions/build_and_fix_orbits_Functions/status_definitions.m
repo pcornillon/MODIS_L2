@@ -84,6 +84,7 @@
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %
 
+% 600 - Wtite_SST_File - error copying file. 
 
 %% **************** fix_MODIS_mask_full_orbit ****************
 

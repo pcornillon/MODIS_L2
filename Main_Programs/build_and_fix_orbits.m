@@ -249,7 +249,7 @@ end
 
 npixels = 1354;
 
-latlim = -78;
+latlim = -78.8;
 
 orbit_length = 40271;
 

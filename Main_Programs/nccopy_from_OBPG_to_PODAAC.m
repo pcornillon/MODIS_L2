@@ -32,7 +32,7 @@ else
 %     diary_dir = '/Users/petercornillon/MATLAB/Projects/Temp_for_MODIS_L2/Logs/';
     diary_dir = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
     % base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
-    base_dir_in = '/Volumes/MODIS_L2_Original/OBPG/combined';
+    base_dir_in = '/Volumes/MODIS_L2_Original/OBPG/';
 
     % base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
     base_dir_out = '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/';

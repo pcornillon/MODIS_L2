@@ -146,11 +146,11 @@ if determine_fn_size; get_job_and_var_mem; end
 %   name
 %   start_time  -- This is the time of the first cscan on this orbit
 %   end_time -- This is the time of the last scan on this orbit. Note, it
-%    includes the 100 extra scan lines following the last descending
+%    includes the 100 extra scan lines following the last ascending
 %    crossing of latlim. This means that the start_time of the next orbit
 %    should be 99 scan line times before this end_time: 100 scan line times
 %    for the extra 100 scans minus one since the last scan before the
-%    previous descending crossing of latlim is one scan time before the
+%    previous ascending crossing of latlim is one scan time before the
 %    first scan on the next orbit.
 %   orbit_number
 %
@@ -249,13 +249,13 @@ end
 
 npixels = 1354;
 
-latlim = -78.8;
+latlim = -79;
 
 orbit_length = 40271;
 
 secs_per_day = 86400;
 
-orbit_duration = 99.1389 * 60;  % Time from descending crossiong of 78 S to 100 pixels past the next descending crossing.
+orbit_duration = 99.1389 * 60;  % Time from ascending crossiong of 79 S to 100 pixels past the next ascending crossing.
 
 % secs_per_scan_line is determined from the script scan_line_timing_info in Main_Programs
 
@@ -404,14 +404,14 @@ if determine_fn_size; get_job_and_var_mem; end
 tic_build_start = tic;
 
 % Start by looking for the first granule after Matlab_start_time with a
-% descending nadir track crossing latlim, nominally 73 S.
+% ascending nadir track crossing latlim, nominally 73 S.
 
 iOrbit = 1;
 
 search_start_time = Matlab_start_time;
 [status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time);
 
-% Either no granules with a 78 crossing or coding problem.
+% Either no granules with a 79 crossing or coding problem.
 
 if (status == 201) | (status == 231) | (status > 900)
     return
@@ -460,7 +460,7 @@ while granule_start_time_guess <= Matlab_end_time
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
         = build_orbit( granule_start_time_guess);
 
-    % No remaining granules with a 78 crossing.
+    % No remaining granules with a 79 crossing.
 
     if status > 900
         fprintf('Exiting.\n')
@@ -470,7 +470,7 @@ while granule_start_time_guess <= Matlab_end_time
     if status == 231
         fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
 
-        % Find the next granule with a descending 78 S crossing.
+        % Find the next granule with a ascending 79 S crossing.
 
         iGranule = 0;
         [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...

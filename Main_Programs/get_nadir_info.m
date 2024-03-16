@@ -6,14 +6,14 @@ function problem_orbits = get_nadir_info(start_date_time, end_date_time)
 %  and the detector number for all scan lines in each orbit (defined below)
 %
 % The start of each orbit is defined as the nearest scan line for the middle 
-% detector of the 10 detector (detnum) to the latlim on the descending part
-% of the orbit. lat lim was set to 78 S when the script was written. The
+% detector of the 10 detector (detnum) to the latlim on the ascending part
+% of the orbit. lat lim was set to 79 S when the script was written. The
 % orbit number assigned to each orbit, pcc_orbit_number is the NASA orbit
 % number for the granule containing the start of the new orbit. 
 %
 % The script will start reading granules looking for the start of the first
 % complete orbit; i.e., it will no save the portion of an orbit found prior
-% to the orbit starting point, 78 S on the descending part of the orbit.
+% to the orbit starting point, 79 S on the ascending part of the orbit.
 %
 % Each new orbit is defined to be 40,271 scan lines long. This should 
 % provide for an approximately 100 scan line overlap of sequential orbits.
@@ -72,7 +72,7 @@ end
 plotem = 0;
 iFig = 1;
 
-latlim = -78;
+latlim = -79;
 
 if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
     disp(['Input start and end time vectors must be 6 elements long. start_date_time: ' ...

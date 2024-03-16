@@ -2,7 +2,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 % build_orbit - build the next unprocessed orbit from data granules - PCC
 %
 % Starting with OBPG metadata file for a granule that includes the start of
-% a new orbit--crosses latlim, nomally 78S as the satellite descends--build
+% a new orbit--crosses latlim, nomally 79S as the satellite ascends--build
 % the file name for the orbit, check if it exists, if it does, search for
 % the next granule that contains the start of an orbit, continuing until it
 % finds one that has not been processed. Then populate lat, lon, SST_In,
@@ -192,7 +192,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
             % Set granule_start_time_guess to the nearest multiple of 5
             % minutes preceeding oinfo(iOrbit).end_time. Remember that the
             % end of the previous orbit is 100 scan lines past the nadir
-            % descending crossing of the satellie.  
+            % ascending crossing of the satellie.  
 
             date_vec = datevec(oinfo(iOrbit).end_time - 100 * secs_per_scan_line / secs_per_day);
             date_vec(5) = date_vec(5) - rem(date_vec(5),5);
@@ -220,7 +220,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         
         if ~isempty(start_line_index)
             % If we get here, the search has found an orbit with a
-            % descending 78S crossing. But this was an orbit that was
+            % ascending 79S crossing. But this was an orbit that was
             % already processed so we need to decrement iOrbit, replacing
             % the current values of oinfo(iOrbit) with those of
             % oinfo(iOrbit+1), which was created in the above search. Note

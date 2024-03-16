@@ -27,7 +27,7 @@ function [ orbit_start_time, time_for_this_orbit, number_of_scans, NASA_orbit_nu
 %   NASA_orbit_number - orbit number read from the file.
 %
 
-latlim = -78;
+latlim = -79;
 
 for iStartTime=1:size(start_date_time,1)
     
@@ -66,7 +66,7 @@ for iStartTime=1:size(start_date_time,1)
     %% Find start of first orbit.
     
     % Next, find the ganule at the beginning of the first complete orbit
-    % defined as starting at descending latlim, nominally 78 S.
+    % defined as starting at ascending latlim, nominally 79 S.
         
     [status, fi_metadata, start_line_index, iMatlab_time, orbit_scan_line_times, orbit_start_timeT, num_scan_lines_in_granule] ...
         = find_start_of_orbit( latlim, metadata_directory, iMatlab_time, Matlab_end_time);

@@ -107,7 +107,7 @@ while 1==1
 
     % Is this time passed the end time of the orbit? Only check if an orbit
     % already exists from which the time has been calculated; i.e., do not
-    % check if the script is looking for the first granule that crosses 78
+    % check if the script is looking for the first granule that crosses 79
     % S. If the orbit does exist but this time is beyond the end of an end
     % of the orbit, flag and return; it means that at least one granule at
     % the end of the orbit was missing. I'm not comfortable with this so
@@ -207,10 +207,10 @@ while 1==1
 
                     if (iGranule == 0) & (iOrbit == 1) & isempty(start_line_index)
 
-                        % Still looking for the first granule with a descending
-                        % crossing of 78 S.
+                        % Still looking for the first granule with a ascending
+                        % crossing of 79 S.
 
-                        fprintf('\nGranule at %s does not descend across 78 S. Will continue searching.\n\n', datestr(granule_start_time_guess))
+                        fprintf('\nGranule at %s does not ascend across 79 S. Will continue searching.\n\n', datestr(granule_start_time_guess))
 
                         % Need to decrement granule_start... because it is
                         % incremented in check_for_latlim... assuming that
@@ -291,7 +291,7 @@ while 1==1
                         if iGranule == 1
                             if iOrbit > 1
                                 % The flow gets here if this is the first granule in an orbit and the
-                                % descending nadir track crosses -78 S. This can happen if all of the
+                                % ascending nadir track crosses -79 S. This can happen if all of the
                                 % other granules in the orbit are missing.
                                 %
                                 % Get the possible location of this granule in the orbit. If it starts in
@@ -299,7 +299,7 @@ while 1==1
                                 % earlier one of the two, smaller scanline, will be chosen; choosing the
                                 % later of the two would mean that only the last few scanlines of the orbit
                                 % would be used in the orbit, which should have already been done if nadir
-                                % track of the previous granule crossed 78 S.
+                                % track of the previous granule crossed 79 S.
 
                                 nnToUse = get_scanline_index;
 
@@ -314,7 +314,7 @@ while 1==1
                                     % of the time it should be the same
                                     % number of when working with an orbit
                                     % that does not start with a granule
-                                    % that crosses 78 S on the southward
+                                    % that crosses 79 S on the southward
                                     % portion of the orbit.
 
                                     indices.current.osscan = nnToUse(1) - rem(nnToUse(1)-1, 10) + 5;
@@ -387,7 +387,7 @@ while 1==1
                             indices.current.osscan = oinfo(iOrbit).ginfo(iGranule-1).oescan + 1 + lines_to_skip;
                         end
 
-                        % If there was a problem determining if the descending
+                        % If there was a problem determining if the ascending
                         % nadir track crosses latlim in this granule, skip the
                         % granule and go to the next one.
 
@@ -454,10 +454,10 @@ while 1==1
                             return
                         else
                             if print_diagnostics
-                                fprintf('*** Problem determining if descending track crosses %6.2f in %s for [iOrbit, iGranule]=[%i, %i]. Time: %s.\n', latlim, oinfo(iOrbit).name, iOrbit, iGranule, datestr(granule_start_time_guess))
+                                fprintf('*** Problem determining if ascending track crosses %6.2f in %s for [iOrbit, iGranule]=[%i, %i]. Time: %s.\n', latlim, oinfo(iOrbit).name, iOrbit, iGranule, datestr(granule_start_time_guess))
                             end
 
-                            status = populate_problem_list( 263, ['*** Problem determining if descending track crosses ' num2str(latlim) ' in ' oinfo(iOrbit).name ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time_guess);
+                            status = populate_problem_list( 263, ['*** Problem determining if ascending track crosses ' num2str(latlim) ' in ' oinfo(iOrbit).name ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time_guess);
 
                             iGranule = iGranule - 1;
                         end

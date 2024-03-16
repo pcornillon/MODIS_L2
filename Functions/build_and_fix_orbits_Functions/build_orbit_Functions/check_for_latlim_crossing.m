@@ -4,15 +4,15 @@ function [status, granule_start_time_guess] = check_for_latlim_crossing( metadat
 
 
 % Read the latitude of the nadir track for this granule and determine
-% whether or not it crosses latlim, nominally 78 S. It also checks to make
+% whether or not it crosses latlim, nominally 79 S. It also checks to make
 % sure that the granule starts with the first detector in a group of 10
 % detectors. It does this by reading the milliseconds of each scan line;
 % it are the same for all scan lines in a detector group.
 %
 % The start of an orbit corresponds to the time of the scan line for which
-% the nadir value is the CLOSEST to 78 S on the descending portion of the
+% the nadir value is the CLOSEST to 79 S on the ascending portion of the
 % orbit. Note that another definition would have been the first scan line
-% with a nadir value south of 78 S on a descending orbit. This is NOT how
+% with a nadir value south of 79 S on a ascending orbit. This is NOT how
 % it is defined. 
 %
 % INPUT
@@ -154,7 +154,7 @@ end
 
 secs_per_granule = ((scan_line_times(end) - scan_line_times(1)) * secs_per_day + secs_per_scan_line) * 2030 / length(scan_line_times);
 
-% Does the descending nadir track crosses latlim?
+% Does the ascending nadir track crosses latlim?
 
 nlat_t = single(ncread( temp_filename, '/scan_line_attributes/clat'));
 
@@ -165,36 +165,37 @@ nlat_t = single(ncread( temp_filename, '/scan_line_attributes/clat'));
 diff_nlat = [diff(nlat_t); nlat_t(end)-nlat_t(end-1)];
 
 % Find groups of scan line nadir values within 0.1 of latlim; could end up
-% with up 2 different crossings of 78 S, but this is very rare if it ever
+% with up 2 different crossings of 79 S, but this is very rare if it ever
 % happens, but, just in case,...
 
-% % % mm = find( (abs(nlat_t-latlim)<0.1) & (diff_nlat<=0));
 aa = find(abs(nlat_t-latlim)<0.1);
 
 % If no crossing found return.
 
 if ~isempty(aa)
 
-    % If more than 10 scan lines separate groups of scan lines found near 78 S
+    % If more than 10 scan lines separate groups of scan lines found near 79 S
     % break them up and analyze separately for direction.
 
     diffaa = diff(aa);
     bb = find(diffaa >10);
 
+    % Changed < to > in the next set of if statements to find ascending crossings.
+
     mm = [];
     if isempty(bb)
         % Only one group
 
-        if nlat_t(aa(end)) < nlat_t(aa(1))
+        if nlat_t(aa(end)) > nlat_t(aa(1))
             mm = aa;
         end
     else
         % Two groups
-        if nlat_t(aa(bb)) < nlat_t(aa(1))
+        if nlat_t(aa(bb)) > nlat_t(aa(1))
             mm = aa(1:bb);
         end
 
-        if nlat_t(aa(end)) < nlat_t(aa(bb+1))
+        if nlat_t(aa(end)) > nlat_t(aa(bb+1))
             mm = aa(bb+1:end);
         end
     end
@@ -204,7 +205,7 @@ if ~isempty(aa)
         % Make sure that the nadir track actually crossed latlim. This addresses
         % the problem of a nadir track that ends before or starts just after
         % crossing latlim. On the canonical orbit there are 3473 scan lines
-        % separationg the descending node crossing of 73 S from the ascending
+        % separationg the descending node crossing of 79 S from the ascending
         % crossing so, in the following, testing on the first scan line and the
         % last scan line in the granule is safe--and easy.
 
@@ -212,8 +213,8 @@ if ~isempty(aa)
 
             nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
 
-            % Find the descending scan line for which the nadir value is
-            % CLOSEST to 78 S and is the 5th scan line in a 10 scan line
+            % Find the ascending scan line for which the nadir value is
+            % CLOSEST to 79 S and is the 5th scan line in a 10 scan line
             % group. But,first make sure that iStart_of_group is at the
             % beginning of a 10 scan line group. Need to check that test
             % values of nlat_t do not extend past either end of nlat_t.
@@ -251,7 +252,7 @@ if ~isempty(aa)
                 end
 
                 % Now find the group of 10 with the point in the middle closest
-                % to 78 S looking at the group of 10 before the one in which
+                % to 79 S looking at the group of 10 before the one in which
                 % the crossing was found, the group of 10 in which the crossing
                 % was found and the next group of 10.
 

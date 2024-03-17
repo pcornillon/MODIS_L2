@@ -135,9 +135,9 @@ region_end(3) = floor(nn(end) / 10) * 10;
 nn = find(nlat_orbit(region_end(3)+2:40271) < south_lat_limit) + region_end(3) + 1;
 
 region_start(4) = region_end(3) + 1;
-region_end(4) = nn(1)-1;
+region_end(4) = floor(nn(1) / 10) * 10 - 1;
 
-region_start(5) = nn(1);
+region_start(5) = floor(nn(1) / 10) * 10;
 region_end(5) =  nscans-1;
 
 if Debug

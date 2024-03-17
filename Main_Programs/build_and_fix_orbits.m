@@ -1,4 +1,4 @@
-function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
 % % % function build_and_fix_orbits( start_date_time, end_date_time)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
@@ -12,7 +12,9 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   fix_bowtie - if 1 fixes lzthe bow-tie problem, otherwise bow-tie effect
 %    not fixed.
 %   regrid_sst - 1 to regrid SST after bowtie effect has been addressed.
-%   fast_regrid - 1 to use fast regridding.
+%   regrid_to_AMSRE - if 1 will read the corresponding AMSR-E orbit and
+%    regrid to AMSR-E native AMSR-E and regrid both AMSR-E and MODIS to a
+%    geogrid. In all cases will use regridded MODIS data.
 %   get_gradients - 1 to calculate eastward and northward gradients, 0
 %    otherwise.
 %   save_core - 1 to save only the core values, regridded lon, lat, SST,
@@ -212,6 +214,8 @@ if exist('save_core') ~= 0
     end
 end
 
+fast_regrid = 0; % Disabling fast regridding since I will not use this.
+
 print_times = 1;
 
 print_diagnostics = 0;
@@ -267,7 +271,7 @@ secs_per_orbit = secs_per_scan_line * (orbit_length - 100 - 1);
 
 secs_per_granule = 299.8532;  % First guess. Will update after reading each granule. Old value 298.3760 assumes 2030 scan lines.
 
-index_of_NASA_orbit_change = 11052;
+index_of_NASA_orbit_change = 9226; % Changed for ascending crossing of 79 S.
 
 iProblem = 0;
 
@@ -545,7 +549,7 @@ while granule_start_time_guess <= Matlab_end_time
 
             if regridded_debug == 1
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+                    regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
 
                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
                 if length(mm) < numel(SST_In_Masked)

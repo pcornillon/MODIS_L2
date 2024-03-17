@@ -81,9 +81,9 @@ switch build_type
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
         
         if nnToUse(1) > index_of_NASA_orbit_change
-             oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number - 1;
-        else
              oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number;
+        else
+             oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number + 1;
         end
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...

@@ -1,11 +1,14 @@
 function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
+    regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
 %   regrid_sst - if 1 will regrid SST. If 0 will just determine new
 %    latitudes and longitudes, which involves simple interpolations along
 %    the track line; no need for griddate.
+%   regrid_to_AMSRE - if 1 will read the corresponding AMSR-E orbit and
+%    regrid to AMSR-E native AMSR-E and regrid both AMSR-E and MODIS to a
+%    geogrid. In all cases will use regridded MODIS data.
 %   augmented_weights - weights used for fast regridding of SST. If empty,
 %    will skip do 'slow' regridding. Fast regridding uses weights and
 %    locations to determine regridded SST values; simple multiplications
@@ -289,6 +292,10 @@ for iSection=[2,4]
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
         end
+    end
+
+    if regrid_to_AMSRE
+        regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
     end
 
     %% Fix problem with longitude going from one side of the dateline to the other.

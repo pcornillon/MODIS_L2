@@ -207,7 +207,7 @@ end
 fix_mask = 1;
 fix_bowtie = 1;
 regrid_sst = 1;
-fast_regrid = 0;
+regrid_to_AMSRE = 1;
 get_gradients = 1;
 save_core = 1;
 print_diag = 1;
@@ -216,7 +216,7 @@ debug = 0;
 
 fprintf('Entering build_and_fix_orbits.\n')
 
-build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, fast_regrid, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
+build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
 
 % % % % Save oinfo and memory structure files for this run.
 % % % 

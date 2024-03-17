@@ -55,7 +55,7 @@ end
 
 % Build the AMSR-E orbit filename.
 
-NASA_orbit = return_a_string( 5, NASA_orbit_t);
+NASA_orbit = return_a_string( 6, NASA_orbit_t);
 
 year_s = return_a_string( 4, MODIS_yr);
 month_s = return_a_string( 2, MODIS_mn);

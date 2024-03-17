@@ -346,7 +346,6 @@ for iSection=[2,4]
             end
         end
     end
-%%
 end
 
 %% Do Section 3.

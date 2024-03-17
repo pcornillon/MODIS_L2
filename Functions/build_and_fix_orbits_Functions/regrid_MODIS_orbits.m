@@ -1,5 +1,5 @@
 function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In)
+    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
@@ -129,8 +129,16 @@ region_end(2) = floor(nn(1) / 10) * 10;
 region_start(3) = region_end(2) + 1;
 region_end(3) = floor(nn(end) / 10) * 10;
 
+region_start(3) = region_end(2) + 1;
+region_end(3) = floor(nn(end) / 10) * 10;
+
+nn = find(nlat_orbit(region_end(3)+2:40271) < south_lat_limit) + region_end(3) + 1;
+
 region_start(4) = region_end(3) + 1;
-region_end(4) = nscans-1;
+region_end(4) = nn(1)-1;
+
+region_start(5) = nn(1);
+region_end(5) =  nscans-1;
 
 if Debug
     disp(['Regions to process'])
@@ -152,63 +160,75 @@ northing = single(new_lon);
 new_easting = single(new_lon);
 new_northing = single(new_lon);
 
-%% Now regrid segment 1
+%% Now regrid segments 1 & 5
 
 % Start by converting from lat,lon to easting, northing. Note that the
-% conversion goes one line beyond the end. That's to get the corresponding
-% line of the next cycle (10 detector set) beyond the end.
+% conversion goes one line beyond the end for segment 1. That's to get the
+% corresponding line of the next cycle (10 detector set) beyond the end.
 
-scans_to_do = [region_start(1):region_end(1)+1];
-[easting(:,scans_to_do), northing(:,scans_to_do)] = ll2ps(latitude(:,scans_to_do), longitude(:,scans_to_do));
-
-% Do the scan lines up to the first complete set of 10 detectors.
-
-mult = [0:9] / num_detectors;
-
-scans_this_section = [];
-for iScan=region_start(1):num_detectors:region_end(1)-9
-    if mod(iScan,101) == 0 & Debug
-        disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
+for iSection=[1,5]
+    if Debug
+        disp(['Doing section ' num2str(iSection) ': ' num2str(toc(tic_regrid_start))])
+        disp(' ')
     end
-    
-    northing_separation = northing(:,iScan+10) - northing(:,iScan);
-    easting_separation  = easting(:,iScan+10)  - easting(:,iScan);
-    
-    iScanVec = [iScan:iScan+9];
-    scans_this_section = [scans_this_section iScanVec];
-    
-    new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
-    new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
-    
-    % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed. 
-    %
-    % % % if regridding_mode == 3
-    % % %     nn_reorder = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), dummy_scans, double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
-    % % % 
-    % % %     temp = SST_In(:,iScanVec);
-    % % %     new_sst(:,iScanVec) = temp(nn_reorder);        
-    % % % end
-end
 
-if regridding_mode==1
-    xx = double(easting(:,scans_this_section)); 
-    yy = double(northing(:,scans_this_section));
-    ss = double(SST_In(:,scans_this_section));
-    
-    pp = find(isnan(xx) == 0);
-
-    if length(pp) == 0
-        fprintf('...All SST_In values in Section 1 are nan for orbit %s.\n', oinfo(iOrbit).name)
-
-        status = populate_problem_list( 1001, ['All SST_In values in Section 1 are nan for orbit ' oinfo(iOrbit).name], '');
+    if iSection == 1
+        scans_to_do = [region_start(iSection):region_end(iSection)+1];
     else
-        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+        scans_to_do = [region_start(iSection):region_end(iSection)];
     end
+    
+    [easting(:,scans_to_do), northing(:,scans_to_do)] = ll2psn(latitude(:,scans_to_do), longitude(:,scans_to_do));
+
+    % Do the scan lines up to the first complete set of 10 detectors.
+
+    mult = [0:9] / num_detectors;
+
+    scans_this_section = [];
+    for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
+        if mod(iScan,101) == 0 & Debug
+            disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
+        end
+
+        northing_separation = northing(:,iScan+10) - northing(:,iScan);
+        easting_separation  = easting(:,iScan+10)  - easting(:,iScan);
+
+        iScanVec = [iScan:iScan+9];
+        scans_this_section = [scans_this_section iScanVec];
+
+        new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
+        new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
+    end
+
+    % And add the last scan line in the orbit (Section 4). It will be
+    % very nearly unaffected by the bowtie effect since it it a middle
+    % detector in the set of 10.
+        
+    if iSection == 5
+        new_lat(:,end) = latitude(:,end);
+        new_lon(:,end) = longitude(:,end);        
+    end
+    
+    if regridding_mode==1
+        xx = double(easting(:,scans_this_section));
+        yy = double(northing(:,scans_this_section));
+        ss = double(SST_In(:,scans_this_section));
+
+        pp = find(isnan(xx) == 0);
+
+        if length(pp) == 0
+            fprintf('...All SST_In values in Section %i are nan for orbit %s.\n', iSection, oinfo(iOrbit).name)
+
+            status = populate_problem_list( 1001, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], '');
+        else
+            new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+        end
+    end
+
+    % And convert from polar to lat, lon.
+
+    [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 end
-
-% And convert from polar to lat, lon.
-
-[new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = ps2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
 % % toc
 
@@ -250,30 +270,6 @@ for iSection=[2,4]
 
         new_lat(:,iScanVec) = latitude(:,jScan) + lat_separation * mult;
         new_lon(:,iScanVec) = longitude(:,jScan) + lon_separation * mult;
-
-        % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed.
-        %
-        % % % if regridding_mode == 3
-        % % %     nn_reorder = griddata( double(longitude(:,iScanVec)), double(latitude(:,iScanVec)), dummy_scans, new_lon(:,iScanVec), new_lat(:,iScanVec), 'nearest');
-        % % % 
-        % % %     temp = SST_In(:,iScanVec);
-        % % %     new_sst(:,iScanVec) = temp(nn_reorder);
-        % % % end
-    end
-    
-    % And add the last scan line in the orbit (Section 4). It will be
-    % very nearly unaffected by the bowtie effect since it it a middle
-    % detector in the set of 10.
-        
-    if iSection == 4
-        new_lat(:,end) = latitude(:,end);
-        new_lon(:,end) = longitude(:,end);
-        
-        % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed.
-        %
-        % % % if regridding_mode == 3
-        % % %     new_sst(:,end) = SST_In(:,end);
-        % % % end
     end
     
     % Regrid SST.
@@ -294,9 +290,9 @@ for iSection=[2,4]
         end
     end
 
-    if regrid_to_AMSRE
-        regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
-    end
+    % % % if regrid_to_AMSRE
+    % % %     regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
+    % % % end
 
     %% Fix problem with longitude going from one side of the dateline to the other.
 
@@ -386,15 +382,6 @@ for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
     
     new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
     new_easting(:,iScanVec) = easting(:,iScan) + easting_separation * mult;
-    
-    % Next lines commented out because regridding_mode can never = 3. This is left over--I think--from earlier work and can be removed. 
-    %
-    % % % if regridding_mode == 3
-    % % %     nn_reorder = griddata(double(easting(:,iScanVec)), double(northing(:,iScanVec)), dummy_scans, double(new_easting(:,iScanVec)), double(new_northing(:,iScanVec)), 'nearest');
-    % % % 
-    % % %     temp = SST_In(:,iScanVec);
-    % % %     new_sst(:,iScanVec) = temp(nn_reorder);
-    % % % end
 end
 
 [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));

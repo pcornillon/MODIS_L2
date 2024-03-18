@@ -96,7 +96,7 @@ end
 
 if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule
     
-    % This case arises if the additional 101 scan lines need to complete
+    % This case arises if the additional 101 scan lines needed to complete
     % the current orbit result in more scan lines being required from
     % the current granule than are available in it. In this case, scan
     % lines will need to be pirated from the next granule, if it

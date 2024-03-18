@@ -10,7 +10,23 @@
 %  Scan line start time anomalies from the average are between -0.002461 and 0.003525
 %
 
-file_list = dir('/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/01/AQUA_MODIS*');
+% file_list = dir('/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/01/AQUA_MODIS*');
+file_list = dir('/Volumes/MODIS_L2_modified/OBPG/SST/2011/01/AQUA_MODIS*.nc4');
+jFile = length(file_list);
+
+file_list_2 = dir('/Volumes/MODIS_L2_modified/OBPG/SST/2011/02/AQUA_MODIS*.nc4');
+
+for iFile=1:length(file_list_2)
+    jFile = jFile + 1;
+    file_list(jFile) = file_list_2(iFile);
+end
+
+file_list_3 = dir('/Volumes/MODIS_L2_modified/OBPG/SST/2011/02/AQUA_MODIS*.nc4');
+
+for iFile=1:length(file_list_3)
+    jFile = jFile + 1;
+    file_list(jFile) = file_list_3(iFile);
+end
 
 % Get the time of the start of each scan line relative to the first scan 
 % line and the nadir latitude value of each scan line.
@@ -29,8 +45,8 @@ nlat_avg = mean(nlat,1,'omitnan');
 
 nlon_typical = nlon(end,:);
 
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg', 'nlon_typical')
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/scan_and_nadir', 'sltimes', 'nlat', 'nlon')
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/NEW_avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg', 'nlon_typical')
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/NEW_scan_and_nadir', 'sltimes', 'nlat', 'nlon')
 
 % Get the anomalies from the average orbit.
 

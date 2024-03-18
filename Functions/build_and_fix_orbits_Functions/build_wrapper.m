@@ -100,8 +100,7 @@ switch Option
         %   No remote outut
         %   logs output to Dropbobx
 
-        % BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
-        BaseDir = 
+        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
 
         fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
         metadata_directory              = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';

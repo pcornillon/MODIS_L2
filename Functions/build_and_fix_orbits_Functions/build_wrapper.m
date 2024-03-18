@@ -77,8 +77,9 @@ switch Option
         %   remote outut to the Cornillon_NAS
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
-
+        % BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
+        BaseDir                         = '/Volumes/MODIS_L2_modified/OBPG/';
+        
         fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
         metadata_directory              = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
@@ -99,7 +100,8 @@ switch Option
         %   No remote outut
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
+        % BaseDir = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/';
+        BaseDir = 
 
         fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
         metadata_directory              = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';

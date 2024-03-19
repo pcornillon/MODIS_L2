@@ -19,7 +19,7 @@ function nnToUse = get_scanline_index
 
 % globals for build_orbit part.
 
-global nlat_avg
+global nlat_avg nlat_t
 
 global oinfo iOrbit iGranule
 

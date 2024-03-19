@@ -1,5 +1,5 @@
-function [found_one, folder_name, file_name, test_time] = get_S3_filename( file_type, arg_2)
-% get_S3_filename - get the name of the NASA data file from the AWS S3 NASA bucket - PCC
+function [found_one, folder_name, file_name, test_time] = get_filename( file_type, arg_2)
+% get_filename - get the name of the NASA data file from the AWS S3 NASA bucket - PCC
 %
 % This function will get the approximate time of the granule to search for
 % from the metadata name and then test a filename second-by-second in the

@@ -133,7 +133,7 @@ while 1==1
     % will be done by backing 5 seconds and then searching forward for 65
     % until a granule is found, or not.
 
-    [found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
+    [found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_filename( 'metadata', granule_start_time_guess);
 
     % Was a metadata file found at this time? If so proceed, if not
     % increment time to search by 5 minutes and search for the next
@@ -182,7 +182,7 @@ while 1==1
             % the time passed in.
 
 
-            [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule_file_name);
+            [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
 
             if found_one == 0
                 if print_diagnostics

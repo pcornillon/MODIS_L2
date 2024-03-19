@@ -42,7 +42,8 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list 
+global oinfo iOrbit iGranule
+global iProblem problem_list 
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 

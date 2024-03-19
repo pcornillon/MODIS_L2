@@ -54,29 +54,22 @@ function [status, granule_start_time_guess] = find_next_granule_with_data( granu
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
-global print_diagnostics print_times debug
-global npixels
+global print_diagnostics
 
 % globals for build_orbit part.
 
-global save_just_the_facts amazon_s3_run
-global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule_minus_10
-global index_of_NASA_orbit_change possible_num_scan_lines_skip
-global sltimes_avg nlat_orbit nlat_avg orbit_length
+global amazon_s3_run
+global secs_per_day secs_per_scan_line
+global possible_num_scan_lines_skip
 global latlim
-global sst_range sst_range_grid_size
 
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
-global Matlab_start_time Matlab_end_time
-
-global s3_expiration_time
+global oinfo iOrbit iGranule
+global scan_line_times start_line_index num_scan_lines_in_granule
+global Matlab_end_time
 
 % globals used in the other major functions of build_and_fix_orbits.
 
-global med_op
+global iProblem problem_list 
 
 % Initialize return variables.
 
@@ -133,7 +126,7 @@ while 1==1
     % will be done by backing 5 seconds and then searching forward for 65
     % until a granule is found, or not.
 
-    [found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_filename( 'metadata', granule_start_time_guess);
+    [found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_S3_filename( 'metadata', granule_start_time_guess);
 
     % Was a metadata file found at this time? If so proceed, if not
     % increment time to search by 5 minutes and search for the next
@@ -182,7 +175,7 @@ while 1==1
             % the time passed in.
 
 
-            [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
+            [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_S3_filename( 'sst_data', metadata_granule_file_name);
 
             if found_one == 0
                 if print_diagnostics

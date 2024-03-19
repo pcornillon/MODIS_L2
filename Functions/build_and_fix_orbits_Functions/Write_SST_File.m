@@ -42,31 +42,20 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
-global print_diagnostics print_times debug regridded_debug
-global npixels
+global regridded_debug
 
 % globals for build_orbit part.
 
-global save_just_the_facts amazon_s3_run
-global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
-global index_of_NASA_orbit_change possible_num_scan_lines_skip
-global sltimes_avg nlat_orbit nlat_avg orbit_length
-global latlim
-global sst_range sst_range_grid_size
+global save_just_the_facts
+global secs_per_day
+global nlat_orbit
 
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
-global Matlab_start_time Matlab_end_time
+global oinfo iOrbit
 
 % globals used in the other major functions of build_and_fix_orbits.
 
-global med_op
-
-global mem_count mem_orbit_count mem_print print_dbStack mem_struct
-
 global determine_fn_size
+global iProblem problem_list 
 
 if determine_fn_size; get_job_and_var_mem; end
 

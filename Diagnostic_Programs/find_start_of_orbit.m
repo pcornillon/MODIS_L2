@@ -20,13 +20,11 @@ function [status, metadata_file_list, data_file_list, indices, granule_start_tim
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
-global oinfo iOrbit iGranule iProblem problem_list
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t sltimes_avg nlat_avg
+global start_line_index
 global Matlab_end_time
-global latlim secs_per_day secs_per_orbit secs_per_scan_line orbit_length
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length time_of_NASA_orbit_change
-global print_diagnostics save_just_the_facts
+global print_diagnostics
+
+global iProblem problem_list 
 
 start_time = granule_start_time_guess;
 

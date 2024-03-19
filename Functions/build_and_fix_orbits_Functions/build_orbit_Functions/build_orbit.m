@@ -38,30 +38,20 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
-global print_diagnostics print_times debug
-global npixels
+global output_file_directory_local
+global print_diagnostics print_times
 
 % globals for build_orbit part.
 
-global save_just_the_facts amazon_s3_run
-global formatOut
-global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 orbit_duration
-global index_of_NASA_orbit_change possible_num_scan_lines_skip
-global sltimes_avg nlat_orbit nlat_avg orbit_length
-global latlim
-global sst_range sst_range_grid_size
+global secs_per_day secs_per_scan_line orbit_length orbit_duration
 
-global oinfo iOrbit iGranule iProblem problem_list 
-global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
-global Matlab_start_time Matlab_end_time 
+global oinfo iOrbit iGranule
+global start_line_index
+global Matlab_end_time 
 
 % globals used in the other major functions of build_and_fix_orbits.
 
-global med_op
-
-global mem_count mem_orbit_count mem_print print_dbStack mem_struct
-
+global iProblem problem_list 
 global determine_fn_size
 
 if determine_fn_size; get_job_and_var_mem; end

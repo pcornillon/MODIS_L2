@@ -31,22 +31,45 @@ end
 % Get the time of the start of each scan line relative to the first scan 
 % line and the nadir latitude value of each scan line.
 
-for i=1:length(file_list)
-    filename = [file_list(i).folder '/' file_list(i).name];
-    sltimes(i,:) = ncread(filename, 'time_from_start_orbit');
-    nlat(i,:) = ncread(filename, 'nadir_latitude');
-    nlon(i,:) = ncread(filename, 'nadir_longitude');
+for iFile=1:length(file_list)
+    filename = [file_list(iFile).folder '/' file_list(iFile).name];
+    sltimes(iFile,:) = ncread(filename, 'time_from_start_orbit');
+    nlat(iFile,:) = ncread(filename, 'nadir_latitude');
+    nlon(iFile,:) = ncread(filename, 'nadir_longitude');
 end
 
 % Average start times by scan line and latitudes and save the average.
 
-sltimes_avg = mean(sltimes,1,'omitnan');
+sltimes_avg_temp = mean(sltimes,1,'omitnan');
 nlat_avg = mean(nlat,1,'omitnan');
-
 nlon_typical = nlon(end,:);
 
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/NEW_avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg', 'nlon_typical')
-save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/NEW_scan_and_nadir', 'sltimes', 'nlat', 'nlon')
+% reformulate sltimes_avg to address it's purpose: 
+%  sltimes_avg is used in generate_output_filename.m (the only place it is
+%  used) to determine the starting time of an orbit where there was a
+%  missing granule for when it should have started. Since the mirror scan
+%  includes 10 detectors, the actual time of the scan repeats in groups of
+%  10. To get the best estimate of the start time, use the scan in the
+%  middle of the group. For this reason, sltimes_avg should start with 6
+%  zeros, then 10 repeats of the next time for the mirror rotation,… This
+%  part of the code addresses this. Specifically, it generates
+%    0 0 0 0 0 0 1.4771 repeated 10 times, 2.9542 repeated 10 times,… 
+%  The actual values, 1.4771, 2.9542 are determined in from the above
+
+sltimes_avg = [0 0 0 0 0 0];
+iLine = 6;
+for iMirror=11:10:length(sltimes_avg_temp)
+    for iTemp=1:10
+        iLine = iLine + 1;
+        if iLine > length(sltimes_avg_temp)
+            break
+        end
+        sltimes_avg(iLine) = sltimes_avg_temp(iMirror);
+    end
+end
+
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg', 'nlon_typical')
+save('~/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/scan_and_nadir', 'sltimes', 'nlat', 'nlon')
 
 % Get the anomalies from the average orbit.
 

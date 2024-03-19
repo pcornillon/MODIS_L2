@@ -119,7 +119,8 @@
 %
 
 base_dir_ancillary_data = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/';
-base_dir_orbital_data = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/';
+% base_dir_orbital_data = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/SST/2010/';
+base_dir_orbital_data = ['/Volumes/MODIS_L2_modified/OBPG/SST/2011/'];
 
 base_dir_output_data = '/Users/petercornillon/Dropbox/Data/MODIS_L2/';
 
@@ -127,7 +128,7 @@ base_dir_output_data = '/Users/petercornillon/Dropbox/Data/MODIS_L2/';
 % filename but be completely specified; i.e., ~/Dropbox... fails when
 % netCDF tries to open it.
 
-output_filename = [base_dir_output_data '/Data/Separation_and_Angle_Arrays.n4'];
+output_filename = [base_dir_output_data '/Data/Separation_and_Angle_Arrays_79Sa.n4'];
 
 if exist(output_filename) == 2
     fprintf('\n ***********************************************************\n Separation_and_Angle_Arrays.n4 Already Exists *************\n ***********************************************************\n\n')
@@ -161,8 +162,8 @@ write_netCDF_file = 1;
 
 % month_start = 1;
 % month_end = 1;
-month_start = 4;
-month_end = 6;
+month_start = 2;
+month_end = 2;
 
 month_list_temp = dir(base_dir_orbital_data);
 
@@ -193,9 +194,9 @@ if do_first_iteration
         
         % Get the list of orbits (files) for this month.
         
-        file_list = dir([base_dir_orbital_data month_list(iMonth).name '/Aqua*']);
+        file_list = dir([base_dir_orbital_data month_list(iMonth).name '/Aqua*.nc4']);
         
-        % Some months in 2010 do not have complete orbits at this point.
+        % Some months in 2011 do not have complete orbits at this point.
         
         if length(file_list) > 0
             
@@ -299,7 +300,7 @@ if do_first_iteration
                     
                     %% Save the basics for this orbit.
                     
-                    kk = strfind( fi_orbit, '_2010');
+                    kk = strfind( fi_orbit, '_2011');
 
 % % %                     file_out = ['/Volumes/Aqua-1/Fronts/Temporary_Separation_Files/' fi_orbit(61:75) '_new_separations_and_angles.mat'];
                     file_out = ['/Volumes/Aqua-1/Fronts/Temporary_Separation_Files/' fi_orbit(kk+1:kk+15) '_new_separations_and_angles.mat'];
@@ -456,7 +457,8 @@ if do_final_smoothing
     % the canonical values of longitude and latitude.
     
 % % %     fi_orbit_1 = [base_dir_ancillary_data 'Data/AQUA_MODIS.20100601T021010.L2.SST.nc4'];
-    fi_orbit_1 = [base_dir_orbital_data '01/AQUA_MODIS_orbit_40757_20100101T002621_L2_SST.nc4'];
+    % % % fi_orbit_1 = [base_dir_orbital_data '01/AQUA_MODIS_orbit_40757_20100101T002621_L2_SST.nc4'];
+    fi_orbit_1 = [base_dir_orbital_data '02/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4'];
     latitude = ncread( fi_orbit_1, 'regridded_latitude');
     longitude = ncread( fi_orbit_1, 'regridded_longitude');
     

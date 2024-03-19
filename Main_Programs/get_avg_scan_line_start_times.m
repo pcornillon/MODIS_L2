@@ -69,7 +69,7 @@ for iMirror=11:10:length(sltimes_avg_temp)
 end
 
 save('/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/avg_scan_line_start_times', 'sltimes_avg', 'nlat_avg', 'nlon_typical')
-save('/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/scan_and_nadir', 'sltimes', 'nlat', 'nlon')
+save('/Users/petercornillon/Dropbox/ComputerPrograms/MATLAB/Projects/MODIS_L2/Data/scan_and_nadir', 'sltimes', 'nlat', 'nlon')
 
 % Get the anomalies from the average orbit.
 

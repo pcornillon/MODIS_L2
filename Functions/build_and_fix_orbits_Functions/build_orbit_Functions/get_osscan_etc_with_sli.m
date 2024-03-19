@@ -66,10 +66,10 @@ indices.current.gescan = start_line_index + 101 - 1;
 
 if indices.current.oescan ~= orbit_length
 
-    kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
     if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
 
         if print_diagnostics
+            kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
             fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length);
         end
     end

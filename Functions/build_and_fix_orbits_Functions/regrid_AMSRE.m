@@ -69,5 +69,42 @@ fiamsre = [AMSR_E_baseDir year_s '/' year_s month_s day_s '-amsre-remss-l2p-l2b_
 
 datestr(datenum([1981,1,1]) + double(ref_time)/86400)
 
+%%
 
+fiamsre = '~/Dropbox/Data/AMSR-R_regridding/20110201-amsre-remss-l2p-l2b_v07_r46525.dat-v01.nc';
+fimodis = '~/Dropbox/Data/AMSR-R_regridding/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4';
+
+% latmodis = ncread( fimodis, 'regridded_latitude');
+% lonmodis = ncread( fimodis, 'regridded_longitude');
+
+latamsre = ncread( fiamsre, 'lat');
+lonamsre = ncread( fiamsre, 'lon');
+
+lonmodisnadir = lonmodis(677,:);
+latmodisnadir = latmodis(677,:);
+
+
+nn = find( abs(latmodisnadir) < 0.01);
+iEq = nn(3);
+
+figure(1)
+clf
+
+plot( lonmodisnadir, latmodisnadir, '.k')
+hold on
+
+for i=0:10
+    plot(lonmodis(:,nn(3)+i), latmodis(:,nn(3)+i), '.b')
 end
+
+% % % dist2nadir1 = sqrt( (lonmodis(1:678,iEq) - lonmodis(678,iEq)).^2 + (latmodis(1:678,iEq) - latmodis(678,iEq)).^2) * 111;
+% % % dist2nadir2 = sqrt( (lonmodis(677:end,iEq) - lonmodis(677,iEq)).^2 + (latmodis(677:end,iEq) - latmodis(677,iEq)).^2) * 111;
+
+dist2nadir1 = sqrt( (lonmodis(1:678,iEq) - lonmodis(678,iEq)).^2 + (latmodis(1:678,iEq) - latmodis(678,iEq)).^2) * 111;
+dist2nadir2 = sqrt( (lonmodis(677:end,iEq) - lonmodis(677,iEq)).^2 + (latmodis(677:end,iEq) - latmodis(677,iEq)).^2) * 111;
+
+for iDist=10:10:1160
+    nn = find( min(abs(dist2nadir-iDist)) == abs(dist2nadir-iDist));
+    Index(iDist/10) = nn;
+end
+

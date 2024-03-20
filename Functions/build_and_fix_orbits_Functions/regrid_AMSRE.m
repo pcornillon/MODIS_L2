@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = regrid_AMSRE( fi, AMSR_E_baseDir, MODIS_lon, MODIS_lat, MODIS_sst)
+function [outputArg1,outputArg2] = regrid_AMSRE( MODIS_fi, AMSR_E_baseDir, MODIS_lon, MODIS_lat, MODIS_sst)
 % regrid_AMSRE and MODIS to L3 and L2 coordinates corresponding to AMSR-E - PCC
 %
 % This function will first determine which AMSR-E orbit corresponds to the
@@ -72,39 +72,85 @@ datestr(datenum([1981,1,1]) + double(ref_time)/86400)
 %%
 
 fiamsre = '~/Dropbox/Data/AMSR-R_regridding/20110201-amsre-remss-l2p-l2b_v07_r46525.dat-v01.nc';
-fimodis = '~/Dropbox/Data/AMSR-R_regridding/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4';
+MODIS_fi = '~/Dropbox/Data/AMSR-R_regridding/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4';
 
-% latmodis = ncread( fimodis, 'regridded_latitude');
-% lonmodis = ncread( fimodis, 'regridded_longitude');
+MODIS_lat = ncread( MODIS_fi, 'regridded_latitude');
+MODIS_lon = ncread( MODIS_fi, 'regridded_longitude');
 
-latamsre = ncread( fiamsre, 'lat');
-lonamsre = ncread( fiamsre, 'lon');
+AMSR_E_lat = ncread( fiamsre, 'lat');
+AMSR_E_lon = ncread( fiamsre, 'lon');
 
-lonmodisnadir = lonmodis(677,:);
-latmodisnadir = latmodis(677,:);
+MODIS_lonnadir = MODIS_lon(677,:);
+MODIS_latnadir = MODIS_lat(677,:);
 
 
-nn = find( abs(latmodisnadir) < 0.01);
+nn = find( abs(MODIS_latnadir) < 0.01);
 iEq = nn(3);
 
-figure(1)
-clf
+% % % figure(1)
+% % % clf
+% % % 
+% % % plot( MODIS_lonnadir, MODIS_latnadir, '.k')
+% % % hold on
+% % % 
+% % % for i=0:10
+% % %     plot(MODIS_lon(:,nn(3)+i), MODIS_lat(:,nn(3)+i), '.b')
+% % % end
 
-plot( lonmodisnadir, latmodisnadir, '.k')
-hold on
+pixsPerScan = size(MODIS_lon,1);
 
-for i=0:10
-    plot(lonmodis(:,nn(3)+i), latmodis(:,nn(3)+i), '.b')
+scanMODIS_lon = MODIS_lon(1:677,iEq);
+scanMODIS_lon(678) = mean(squeeze(MODIS_lon(677:678,iEq)));
+scanMODIS_lon(679:pixsPerScan+1) = MODIS_lon(678:pixsPerScan,iEq);
+
+scanMODIS_lat = MODIS_lat(1:677,iEq);
+scanMODIS_lat(678) = mean(squeeze(MODIS_lat(677:678,iEq)));
+scanMODIS_lat(679:pixsPerScan+1) = MODIS_lat(678:pixsPerScan,iEq);
+
+centerLon = mean(scanMODIS_lon(677:678));
+centerLat = mean(scanMODIS_lat(677:678));
+
+lonSep = diff(scanMODIS_lon);
+latSep = diff(scanMODIS_lat);
+pixSep = sqrt(lonSep.^2 + latSep.^2) * 111;
+
+dist2nadir(677:-1:1) = cumsum(pixSep(677:-1:1));
+dist2nadir(678:pixsPerScan) = cumsum(pixSep(678:pixsPerScan));
+
+for iDist=10:10:1162
+    jDist = iDist / 10;
+
+    nn = find(dist2nadir(1:pixsPerScan/2) >= iDist-10 & dist2nadir(1:pixsPerScan/2) < iDist); 
+    num2avgm(jDist) = length(nn);
+    pixStartm(jDist) = nn(1);
+    pixEndm(jDist) = nn(end);
 end
 
-% % % dist2nadir1 = sqrt( (lonmodis(1:678,iEq) - lonmodis(678,iEq)).^2 + (latmodis(1:678,iEq) - latmodis(678,iEq)).^2) * 111;
-% % % dist2nadir2 = sqrt( (lonmodis(677:end,iEq) - lonmodis(677,iEq)).^2 + (latmodis(677:end,iEq) - latmodis(677,iEq)).^2) * 111;
+for iDist=10:10:1162
+    jDist = iDist / 10;
 
-dist2nadir1 = sqrt( (lonmodis(1:678,iEq) - lonmodis(678,iEq)).^2 + (latmodis(1:678,iEq) - latmodis(678,iEq)).^2) * 111;
-dist2nadir2 = sqrt( (lonmodis(677:end,iEq) - lonmodis(677,iEq)).^2 + (latmodis(677:end,iEq) - latmodis(677,iEq)).^2) * 111;
-
-for iDist=10:10:1160
-    nn = find( min(abs(dist2nadir-iDist)) == abs(dist2nadir-iDist));
-    Index(iDist/10) = nn;
+    nn = find(dist2nadir(pixsPerScan/2+1:end) >= iDist-10 & dist2nadir(pixsPerScan/2+1:end) < iDist);
+    num2avgp(jDist) = length(nn);
+    pixStartp(jDist) = nn(1) + pixsPerScan/2;
+    pixEndp(jDist) = nn(end) + pixsPerScan/2;
 end
 
+%% Now average SST.
+
+numNewPixsm = length(pixStartm);
+for iPix=1:numNewPixsm
+    jScanLine = 0;
+    for iScanLine=1:10:size(sst,2)-10
+        jScanLine = jScanLine + 1;
+        sstNew(numNewPixsm-iPix+1,jScanLine) = mean(MODIS_sst(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
+    end
+end
+
+numNewPixsp = length(pixStartp);
+for iPix=1:numNewPixsp
+    jScanLine = 0;
+    for iScanLine=1:10:size(sst,2)-10
+        jScanLine = jScanLine + 1;
+        sstNew(numNewPixsm + iPix,jScanLine) = mean(MODIS_sst(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
+    end
+end

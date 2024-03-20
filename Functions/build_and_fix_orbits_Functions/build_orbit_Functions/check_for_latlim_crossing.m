@@ -264,6 +264,15 @@ if ~isempty(aa)
                     end
                 end
             end
+        else
+            
+            % Here to check whether or not this granule is immediately
+            % before 79 S. If it is and, if it is then pick the 6th point
+            % in this granule as the starting point.
+
+            if mm(1) == 1
+                start_line_index = 6;
+            end
         end
     end
 end

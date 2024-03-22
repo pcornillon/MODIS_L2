@@ -215,3 +215,22 @@ for iPix=1:numNewPixsp
 end
 
 a = 180;
+
+%% Temp stuff
+
+[MODIS_lon(1,12000) MODIS_lon(675:679,12000)' MODIS_lon(end,12000)]
+
+nn = find( (first_lon < -150) & (last_lon > 150)); whos nn
+mm = find( abs(MODIS_lon(:,nn)) < 150); whos mm
+
+
+jLine = 0;
+
+for iLine=nn
+dline = diff(MODIS_lon(:,nn(iLine)));
+jj = find( abs(dline) > 30);
+if ~isempty(jj)
+jLine = jLine + 1;
+dpix(jLine).pixels = jj;
+end
+end

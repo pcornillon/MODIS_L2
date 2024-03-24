@@ -220,17 +220,52 @@ a = 180;
 
 [MODIS_lon(1,12000) MODIS_lon(675:679,12000)' MODIS_lon(end,12000)]
 
-nn = find( (first_lon < -150) & (last_lon > 150)); whos nn
-mm = find( abs(MODIS_lon(:,nn)) < 150); whos mm
+first_lon = MODIS_lon(1,:);
+last_lon = MODIS_lon(end,:);
 
+nn = find( (first_lon < -150) & (last_lon > 150));
+% mm = find( abs(MODIS_lon(:,nn)) < 150); whos mm
 
-jLine = 0;
-
-for iLine=nn
-dline = diff(MODIS_lon(:,nn(iLine)));
-jj = find( abs(dline) > 30);
-if ~isempty(jj)
-jLine = jLine + 1;
-dpix(jLine).pixels = jj;
+for iLine=1:size(MODIS_lon,2)
+    lonline = MODIS_lon(:, iLine);
+    
+    nn1 = find( abs(lonline+180) < 0.2);
+    if ~isempty(nn1)
+        nn2 = find( abs(lonline-180) < 0.2);
+        if ~isempty(nn2)
+% %             nn = find( (lonline(min(nn1,nn2)+10:max(nn1,nn2)-10)
+            if abs(nn1-nn2) > 1
+                if nn1 > 5
+                    dlinemean = (lonline(nn1) - lonline(nn1-5)) / 5;
+                else
+                    dlinemean = (lonline(nn2+5) - lonline(nn2)) / 5;
+                end
+                
+                for inn=nn1+1:nn2-1
+                    lonline(inn) = lonline(nn1) + dlinemean * inn-nn1;
+                end
+            end
+        end
+    end
 end
-end
+
+% % kLine = 0;
+% % for iLine=nn
+% %     jLine = nn(iLine);
+% %     dline = diff(MODIS_lon(:,jLine));
+% %     jj = find( abs(dline) > 10);
+% %     
+% %     if ~isempty(jj)
+% %         if length(jj) ~= 1
+% %             keyboard
+% %         else
+% %             if jj < 1350
+% %                 dlinemean = mean(dline(jj+1:jj+5));
+% %                 lonline(jj) = lonline(jj + 1) - dlinemean;
+% %             else
+% %                 dlinemean = mean(dline(jj-5:jj-1));
+% %                 lonline(jj) = lonline(jj - 1) + dlinemean;
+% %             end
+% %         end
+% %     end
+% % end

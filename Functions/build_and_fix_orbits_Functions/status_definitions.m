@@ -92,6 +92,11 @@
 % % % %       status = populate_problem_list( 701, 'No good data in SST_In. Set Final_Mask field to 1 and returned.');
 % % % %       return == no action on return; status not passed back.
 
+%% **************** regrid_MODIS_orbits ****************
+
+% % % % 301 - regrid_MODIS_orbits - Found too many very large changes in longitude. 
+% % % %       status = populate_problem_list( 301, ['Too many large longitudinal changes for scan line ' num2str(jpix)']);
+% % % %       return == no action on return; status not passed back.
 
 %% **************** get_scanline_index ****************
 

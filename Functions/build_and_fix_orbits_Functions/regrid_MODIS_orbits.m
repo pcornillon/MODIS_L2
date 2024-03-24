@@ -160,6 +160,76 @@ northing = single(new_lon);
 new_easting = single(new_lon);
 new_northing = single(new_lon);
 
+%% Recast longitude to not go from -180 to + 180
+
+% Start by fixing the along-scan direction. Get the separation of longitude values in the along-scan direction.
+
+difflon = diff(longitude);
+
+% Find pixel locations where it changes sign by more than 150 degrees.
+
+[ipix, jpix] = find( abs(difflon) > 150);
+
+% If found some longitudes with large changes, fix them.
+
+if ~isempty(jpix)
+
+    % Check that it doesn't change twice on the same line.
+
+    diffjpix = diff(jpix);
+    nn = find(abs(diffjpix) < 0.5);
+    if ~isempty(nn)
+        iProblem = 301;
+        status = populate_problem_list( iProblem, ['Too many large longitudinal changes for scan line ' num2str(jpix(nn(1)))']);
+        for inn=1:nn
+            fprintf('  *** Too many large longitudinal changes for scan line %i\n', jpix(nn(inn)))
+        end
+    end
+
+    % Add 360 degrees to all negative values on those lines where it changes dramatically.
+
+    for j=1:length(jpix)
+        xx = longitude(:,jpix(j));
+        xx(xx<0) = xx(xx<0) + 360;
+
+        longitude(:,jpix(j)) = xx;
+    end
+end
+
+% Now fix the along-track direction.
+
+diffcol = diff(longitude, 1, 2);
+
+for iCol=1:size(longitude,1)
+
+    xx = longitude(iCol,:);
+
+    [~, jpix] = find( abs(diffcol(iCol,:)) > 150);
+
+    if ~isempty(jpix)
+
+        % If number of jpix elements is odd, add one more element
+        % corresponding to the number of scans in the orbit.
+
+        if rem(length(jpix),2)
+            jpix(length(jpix)+1) = size(longitude,2);
+        end
+
+        lonsign = 1;
+        for ifix=1:2:length(jpix)
+
+            if xx(jpix(ifix)) < xx(jpix(ifix)+1)
+                lonsign = -1 * lonsign;
+            end
+
+            locs2fix = [jpix(ifix)+1:jpix(ifix+1)];
+
+            xx(locs2fix) = xx(locs2fix) + lonsign * 360;
+        end
+        longitude(iCol,:) = xx;
+    end
+end
+
 %% Now regrid segments 1 & 5
 
 % Start by converting from lat,lon to easting, northing. Note that the

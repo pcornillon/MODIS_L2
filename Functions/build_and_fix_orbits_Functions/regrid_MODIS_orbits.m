@@ -208,23 +208,62 @@ for iCol=1:size(longitude,1)
 
     if ~isempty(jpix)
 
+        for kPix=1:length(jpix)
+            lonStep(kPix) = -sign(xx(jpix(kPix)+1) - xx(jpix(kPix))) * 360;
+        end
+
+        % Need to deal with longitude for the orbit near 90 degrees north.
+        % Start by looking for a large step between elements 19200 and
+        % 19300, corresponding to nadir latitudes of about 81.8 N. The max
+        % nadir latitude is 81.84 N for AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4
+        % If the step is to larger longitudes, then remove jpix values
+        % between 19200 and 19300 and set a new jpix value that is closest
+        % to half way between the longitude values at 19200 and 19300. It
+        % may find several, choose the last one; i.e., the one closest to
+        % 19300. 360 degrees will be subtracted from all longitudes
+        % starting at this location until a step down is found or the end
+        % of the orbit. Sort of a cludge but there are likely very few if
+        % any SST values in this region and ugly things happen to the
+        % longitude here.
+        
+        ind1 = 19200;
+        ind2 = 19300;
+
+        if (xx(ind2) - xx(ind1)) > 150
+
+            nn = find( ( (xx(ind1:ind2-1) > xxbar) & (xx(ind1+1:ind2) < xxbar) ) | ( (xx(ind1:ind2-1) < xxbar) & (xx(ind1+1:ind2) > xxbar) ) ) + ind1 - 1;
+
+            llpix = find(jpix<19200);
+            if ~isempty(llpix)
+                tpix = [jpix(llpix) nn(end)];
+                tStep = [lonStep(llpix) -sign(xx(ind2)-xx(ind1))*180];
+            else
+                tpix = nn(end);
+                tStep = -sign(xx(ind2) - xx(ind1)) * 180;
+            end
+
+            llpix = find(jpix>19300);
+            if ~isempty(llpix)
+                jpix = [tpix jpix(llpix(1)) jpix(llpix)];
+                lonStep = [tStep lonStep(llpix(1)) lonStep(llpix)];
+            else
+                jpix = tpix;
+                lonStep = tStep;
+            end
+        end
+
         % If number of jpix elements is odd, add one more element
-        % corresponding to the number of scans in the orbit.
+        % corresponding to the number of scans in the orbit. We don't need
+        % to add the last lonStep, since it wouldn't be used.
 
         if rem(length(jpix),2)
             jpix(length(jpix)+1) = size(longitude,2);
         end
 
-        lonsign = 1;
         for ifix=1:2:length(jpix)
-
-            if xx(jpix(ifix)) < xx(jpix(ifix)+1)
-                lonsign = -1 * lonsign;
-            end
-
             locs2fix = [jpix(ifix)+1:jpix(ifix+1)];
 
-            xx(locs2fix) = xx(locs2fix) + lonsign * 360;
+            xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
         end
         longitude(iCol,:) = xx;
     end

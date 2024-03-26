@@ -137,8 +137,8 @@ if save_just_the_facts == 0
     ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
     ncwriteatt( output_filename, 'longitude', 'add_offset', 0)
     ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, 'longitude', 'valid_min', -180000)
-    ncwriteatt( output_filename, 'longitude', 'valid_max', 1800000)
+    ncwriteatt( output_filename, 'longitude', 'valid_min', -360000)
+    ncwriteatt( output_filename, 'longitude', 'valid_max',  360000)
     
     ncwrite(  output_filename, 'longitude', longitude)
     
@@ -248,8 +248,8 @@ if fix_bowtie
     ncwriteatt( output_filename, 'regridded_longitude', 'units', 'degrees_east')
     ncwriteatt( output_filename, 'regridded_longitude', 'add_offset', 0)
     ncwriteatt( output_filename, 'regridded_longitude', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, 'regridded_longitude', 'valid_min', -180000)
-    ncwriteatt( output_filename, 'regridded_longitude', 'valid_max', 1800000)
+    ncwriteatt( output_filename, 'regridded_longitude', 'valid_min', -360000)
+    ncwriteatt( output_filename, 'regridded_longitude', 'valid_max',  360000)
     
     ncwrite(  output_filename, 'regridded_longitude', regridded_longitude)
     

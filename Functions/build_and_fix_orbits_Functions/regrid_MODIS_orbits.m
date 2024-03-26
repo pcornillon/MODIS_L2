@@ -166,9 +166,12 @@ new_northing = single(new_lon);
 
 difflon = diff(longitude);
 
-% Find pixel locations where it changes sign by more than 150 degrees.
+% Find pixel locations where it changes sign by more than
+% lon_step_threshold degrees, whic is set to 190 for now.
 
-[ipix, jpix] = find( abs(difflon) > 150);
+lon_step_threshold = 190;
+
+[ipix, jpix] = find( abs(difflon) > lon_step_threshold);
 
 % If found some longitudes with large changes, fix them.
 
@@ -180,7 +183,7 @@ if ~isempty(jpix)
     nn = find(abs(diffjpix) < 0.5);
     if ~isempty(nn)
         iProblem = 301;
-        status = populate_problem_list( iProblem, ['Too many large longitudinal changes for scan line ' num2str(jpix(nn(1)))']);
+        status = populate_problem_list( iProblem, ['Too many large longitudinal changes for scan line ' num2str(jpix(nn(1)))]);
         for inn=1:nn
             fprintf('  *** Too many large longitudinal changes for scan line %i\n', jpix(nn(inn)))
         end
@@ -198,6 +201,9 @@ end
 
 % Now fix the along-track direction.
 
+indN1 = 19200;
+indN2 = 19300;
+
 latNadir = latitude(677,:);
 
 diffcol = diff(longitude, 1, 2);
@@ -206,15 +212,56 @@ for iCol=1:size(longitude,1)
 
     xx = longitude(iCol,:);
 
-    [~, jpix] = find( abs(diffcol(iCol,:)) > 150);
+    [~, jpix] = find( abs(diffcol(iCol,:)) > lon_step_threshold);
 
     if ~isempty(jpix)
 
-        [xx] = fix_lon_at_poles( xx, jpix);
+        % % % [xx] = fix_lon_at_poles( xx, jpix);
+
+        for kPix=1:length(jpix)
+            lonStep(kPix) = -sign(xx(jpix(kPix)+1) - xx(jpix(kPix))) * 360;
+        end
+
+        if ~isempty(jpix)
+
+            % Now get steps excluding ones between indN1 and indN2
+            llpix = find( (jpix<indN1) | (jpix>indN2) );
+            if ~isempty(llpix)
+                jpix = jpix(llpix);
+                lonStep = lonStep(llpix);
+            end
+        end
+
+        % If number of jpix elements is odd, add one more element
+        % corresponding to the number of scans in the orbit. We don't need
+        % to add the last lonStep, since it wouldn't be used.
+
+        if ~isempty(jpix)
+            if rem(length(jpix),2)
+                jpix(length(jpix)+1) = length(xx);
+            end
+
+            for ifix=1:2:length(jpix)
+                locs2fix = [jpix(ifix)+1:jpix(ifix+1)];
+
+                xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
+            end
+        end
 
         longitude(iCol,:) = xx;
     end
 end
+
+% Now fix problem, which results in very large values. This appears to
+% occur at the seam between large negative and large positive values
+% resulting when the scan line crosses the 90 S. Just in case do the same
+% if the value is very negative.
+
+nn = find(longitude > 360);
+longitude(nn) = longitude(nn) - 360;
+
+nn = find(longitude < -360);
+longitude(nn) = longitude(nn) + 360;
 
 %% Now regrid segments 1 & 5
 
@@ -256,7 +303,7 @@ for iSection=[1,5]
         new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
     end
 
-    % And add the last scan line in the orbit (Section 4). It will be
+    % And add the last scan line in the orbit (Section 5). It will be
     % very nearly unaffected by the bowtie effect since it it a middle
     % detector in the set of 10.
         
@@ -264,13 +311,26 @@ for iSection=[1,5]
         new_lat(:,end) = latitude(:,end);
         new_lon(:,end) = longitude(:,end);        
     end
+
+    % Fix the longitude jump introduced by psn2ll. (19250 corresponds to the
+    % highest latitude reached by the satellite-the nadir track.)
+
+    aa = new_lon(:,region_start(1):region_end(1));
+    rr = find(aa<0); whos rr
+    aa(rr) = aa(rr) + 360;
+    new_lon(:,region_start(1):region_end(1)) = aa;
+
+    clear aa
+
+    % Now regrid using easting and northing.
     
     if regridding_mode==1
         xx = double(easting(:,scans_this_section));
         yy = double(northing(:,scans_this_section));
         ss = double(SST_In(:,scans_this_section));
 
-        pp = find(isnan(xx) == 0);
+        % % pp = find(isnan(xx) == 0);
+        pp = find(isnan(ss) == 0);
 
         if length(pp) == 0
             fprintf('...All SST_In values in Section %i are nan for orbit %s.\n', iSection, oinfo(iOrbit).name)
@@ -286,8 +346,6 @@ for iSection=[1,5]
     [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 end
 
-% % toc
-
 %% Regrid segments 2 and 4.
 
 for iSection=[2,4]
@@ -299,7 +357,8 @@ for iSection=[2,4]
     imult = [0:9] / num_detectors;
     
     scans_this_section = [];
-    for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
+    % for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
+    for iScan=region_start(iSection):num_detectors:region_end(iSection)
         if mod(iScan,1001) == 0 & Debug
             disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
         end
@@ -335,7 +394,8 @@ for iSection=[2,4]
         yy = double(latitude(:,scans_this_section));
         ss = double(SST_In(:,scans_this_section));
         
-        pp = find(isnan(xx) == 0);
+        % % pp = find(isnan(xx) == 0);
+        pp = find(isnan(ss) == 0);
 
         if length(pp) == 0
             fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
@@ -350,58 +410,58 @@ for iSection=[2,4]
     % % %     regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
     % % % end
 
-    %% Fix problem with longitude going from one side of the dateline to the other.
-
-    diff_lon = diff(longitude);
-    [icdl, jcdl] = find(abs(diff_lon) > 10);
-
-    Range = 5;
-    
-    for iScan=region_start(iSection):region_end(iSection)
-        nn = find(jcdl == iScan);
-
-        if ~isempty(nn)
-
-            fix_start = min(icdl(nn));
-            fix_end = max(icdl(nn));
-
-            % Do not fix if the dateline is near (within 5 pixels) of the 
-            % beginning or the end of the scanline.
-
-            if (fix_start > Range) & (fix_end < size(new_sst,1)-Range)
-
-                % Do not fix if new_sst is nan to Range (nominally 5)
-                % pixels on either side of the identified range.  
-
-                nn = find(isnan(new_sst(fix_start-Range:fix_start-1, iScan))==0);
-                mm = find(isnan(new_sst(fix_end+1:fix_end+Range, iScan))==0);
-                
-                fix_start = fix_start - Range + max(nn);
-                fix_end = fix_end + min(mm) - 1;
-
-                if (isnan(new_sst(fix_start-1, iScan)) == 0) & (isnan(new_sst(fix_end+1, iScan))== 0)
-                    num_fill = fix_end - fix_start + 1;
-
-                    step_size = new_sst(fix_end+1, iScan) - new_sst(fix_start-1, iScan);
-                    pixel_step_size = step_size / (num_fill + 1);
-
-                    for iElement=fix_start:fix_end
-
-                        % Only fill this element if it is a nan in new_sst.
-                        % This happens when the orbit is bending over at high
-                        % latitudes. Could get fancy and fill between the
-                        % pixels that have legit values but this occurs rarely
-                        % in the orbit and it's not clear how much fixing it
-                        % helps at these locations.
-
-                        if isnan(new_sst(iElement,iScan))
-                            new_sst(iElement, iScan) = new_sst(fix_start-1, iScan) + pixel_step_size * (iElement - (fix_start - 1));
-                        end
-                    end
-                end
-            end
-        end
-    end
+    % % % % % %% Fix problem with longitude going from one side of the dateline to the other.
+    % % % % % 
+    % % % % % diff_lon = diff(longitude);
+    % % % % % [icdl, jcdl] = find(abs(diff_lon) > 10);
+    % % % % % 
+    % % % % % Range = 5;
+    % % % % % 
+    % % % % % for iScan=region_start(iSection):region_end(iSection)
+    % % % % %     nn = find(jcdl == iScan);
+    % % % % % 
+    % % % % %     if ~isempty(nn)
+    % % % % % 
+    % % % % %         fix_start = min(icdl(nn));
+    % % % % %         fix_end = max(icdl(nn));
+    % % % % % 
+    % % % % %         % Do not fix if the dateline is near (within 5 pixels) of the 
+    % % % % %         % beginning or the end of the scanline.
+    % % % % % 
+    % % % % %         if (fix_start > Range) & (fix_end < size(new_sst,1)-Range)
+    % % % % % 
+    % % % % %             % Do not fix if new_sst is nan to Range (nominally 5)
+    % % % % %             % pixels on either side of the identified range.  
+    % % % % % 
+    % % % % %             nn = find(isnan(new_sst(fix_start-Range:fix_start-1, iScan))==0);
+    % % % % %             mm = find(isnan(new_sst(fix_end+1:fix_end+Range, iScan))==0);
+    % % % % % 
+    % % % % %             fix_start = fix_start - Range + max(nn);
+    % % % % %             fix_end = fix_end + min(mm) - 1;
+    % % % % % 
+    % % % % %             if (isnan(new_sst(fix_start-1, iScan)) == 0) & (isnan(new_sst(fix_end+1, iScan))== 0)
+    % % % % %                 num_fill = fix_end - fix_start + 1;
+    % % % % % 
+    % % % % %                 step_size = new_sst(fix_end+1, iScan) - new_sst(fix_start-1, iScan);
+    % % % % %                 pixel_step_size = step_size / (num_fill + 1);
+    % % % % % 
+    % % % % %                 for iElement=fix_start:fix_end
+    % % % % % 
+    % % % % %                     % Only fill this element if it is a nan in new_sst.
+    % % % % %                     % This happens when the orbit is bending over at high
+    % % % % %                     % latitudes. Could get fancy and fill between the
+    % % % % %                     % pixels that have legit values but this occurs rarely
+    % % % % %                     % in the orbit and it's not clear how much fixing it
+    % % % % %                     % helps at these locations.
+    % % % % % 
+    % % % % %                     if isnan(new_sst(iElement,iScan))
+    % % % % %                         new_sst(iElement, iScan) = new_sst(fix_start-1, iScan) + pixel_step_size * (iElement - (fix_start - 1));
+    % % % % %                     end
+    % % % % %                 end
+    % % % % %             end
+    % % % % %         end
+    % % % % %     end
+    % % % % % end
 end
 
 %% Do Section 3.
@@ -441,12 +501,25 @@ end
 
 [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
+% Fix the longitude jump introduced by psn2ll. (19250 corresponds to the
+% highest latitude reached by the satellite-the nadir track.)
+
+aa = new_lon(:,region_start(3):19250);
+rr = find(aa<0); whos rr
+aa(rr) = aa(rr) + 360;
+new_lon(:,region_start(3):19300) = aa;
+
+clear aa
+
+% Now regrid using easting and northing.
+
 if regridding_mode==1
     xx = double(easting(:,scans_this_section)); 
     yy = double(northing(:,scans_this_section));
     ss = double(SST_In(:,scans_this_section));
 
-    pp = find(isnan(xx) == 0);
+    % % pp = find(isnan(xx) == 0);
+    pp = find(isnan(ss) == 0);
 
     if length(pp) == 0
         fprintf('...All SST_In values in Sections 3 are nan for orbit %s.\n', oinfo(iOrbit).name)

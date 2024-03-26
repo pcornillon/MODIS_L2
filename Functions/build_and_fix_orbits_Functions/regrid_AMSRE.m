@@ -242,7 +242,7 @@ for iLine=1:size(MODIS_lon,2)
                 end
                 
                 for inn=nn1+1:nn2-1
-                    lonline(inn) = lonline(nn1) + dlinemean * inn-nn1;
+                    lonline(inn) = lonline(nn1) + dlinemean * (inn-nn1);
                 end
             end
         end

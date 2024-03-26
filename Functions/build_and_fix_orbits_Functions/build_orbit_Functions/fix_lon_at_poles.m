@@ -1,4 +1,4 @@
-function [xx] = fix_lon_at_poles( latNadir, xx, jpix)
+function [xx] = fix_lon_at_poles( xx, jpix)
 % fix_lon_at_poles - remove steps in the along-track longitude values near the poles - PCC
 %
 % This function deals with longitude for the orbit near the poles.
@@ -40,108 +40,12 @@ for kPix=1:length(jpix)
     lonStep(kPix) = -sign(xx(jpix(kPix)+1) - xx(jpix(kPix))) * 360;
 end
 
-% Work on the northern region near the point at which the satellite moves
-% from ascending to descending.
-
-tpix = [];
-tStep = [];
-
-if (xx(indN2) - xx(indN1)) < -150
-
-    xxbar = (xx(indN1) + xx(indN2)) / 2;
-    nn = find( ( (xx(indN1:indN2-1) > xxbar) & (xx(indN1+1:indN2) < xxbar) ) | ( (xx(indN1:indN2-1) < xxbar) & (xx(indN1+1:indN2) > xxbar) ) ) + indN1 - 1;
-
-    llpix = find(jpix<indN1);
-
-    thisStep = -sign(xx(indN2)-xx(indN1)) * 180;
-
-    if ~isempty(llpix)
-
-        % If the number of jumps before the start of the northern region is
-        % odd, this means that there must be a step up in the northern region
-        % that will be missed in the following so add one it one scane line
-        % before the location at which we determine a step down for the region.
-        % It's only necessary if there are steps before the northern region.
-
-        if rem(length(llpix),2)
-            tpix = [jpix(llpix) nn(end)-1];
-            tStep = [lonStep(llpix) -lonStep(llpix(end))];
-        end
-
-        % Now add in the new step down.
-
-        tpix = [jpix(llpix) nn(end)];
-        tStep = [lonStep(llpix) thisStep];
-    else
-        tpix = nn(end);
-        tStep = thisStep;
-    end
-
-    llpix = find( (jpix>indN2) & (jpix<indS1) );
-    if ~isempty(llpix)
-        tpix = [tpix jpix(llpix)];
-        tStep = [tStep lonStep(llpix)];
-    % % % else
-    % % %     tpix = tpix;
-    % % %     tStep = tStep;
-    end
-else
-    llpix = find(jpix<indS1);
-    if ~isempty(llpix)
-        tpix = jpix(llpix);
-        tStep = lonStep(llpix);
-    end
-end
-
-% Now work on the sourthern region near the point at which the satellite
-% moves from descending to ascending.
-
-if abs(xx(indS2) - xx(indS1)) > 150
-
-    % Find the locations at which xx crosses xxbar in the southern interval.
-
-    xxbar = (xx(indS1) + xx(indS2)) / 2;
-    nn = find( ( (xx(indS1:indS2-1) > xxbar) & (xx(indS1+1:indS2) < xxbar) ) | ( (xx(indS1:indS2-1) < xxbar) & (xx(indS1+1:indS2) > xxbar) ) ) + indS1 - 1;
-
-    % % % llpix = find(jpix<indS1);
-    % % % if ~isempty(llpix)
-    if ~isempty(tpix)
-        
-        thisStep = sign(xx(indS2) - xx(indS1)) * 180;
-
-        % If tpix has an odd number of values, this means that there is a
-        % start of a region to modify but no end. Set the end to just
-        % before the location determined for the step up in this region.
-
-        if rem(length(tpix),2)
-            tpix(length(tpix)+1) = nn(1)-1;
-            tStep(length(tpix)+1) = -sign(xx(indS1) - xx(indS1-1)) * 180;
-        end
-
-        % % % tpix = [jpix(llpix) nn(1)];
-        % % % tStep = [lonStep(llpix) -sign(xx(indS2)-xx(indS1))*180];
-        tpix = [tpix nn(1)];
-        tStep = [tStep thisStep];
-    else
-        % % % tpix = nn(1);
-        % % % tStep = -sign(xx(indS2) - xx(indS1)) * 180;
-        tpix = nn(1);
-        tStep = thisStep;
-    end
-
-    llpix = find(jpix>indS2);
-    if ~isempty(llpix)
-        jpix = [tpix jpix(llpix)];
-        lonStep = [tStep lonStep(llpix)];
-    else
-        jpix = tpix;
-        lonStep = tStep;
-    end
-else
-    llpix = find(jpix>indS2);
+if ~isempty(jpix)
+%     llpix = find( (jpix<indN1) | ((jpix>indN2) & (jpix<indS1)) | (jpix>indS2) );
+    llpix = find( (jpix<indN1) | (jpix>indN2) );
     if ~isempty(llpix)
         jpix = jpix(llpix);
-        jStep = lonStep(llpix);
+        lonStep = lonStep(llpix);
     end
 end
 

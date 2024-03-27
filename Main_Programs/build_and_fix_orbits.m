@@ -575,7 +575,7 @@ while granule_start_time_guess <= Matlab_end_time
                 regridded_sst_alternate = [];
             end
 
-            if status ~= 0
+            if (status ~= 0) & (status ~= 1001)
                 fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
             end
 

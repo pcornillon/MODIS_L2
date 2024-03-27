@@ -313,23 +313,18 @@ for iSection=[1,5]
     end
 
     % Now regrid using easting and northing.
-    
-% % %     if regridding_mode==1
-        xx = double(easting(:,scans_this_section));
-        yy = double(northing(:,scans_this_section));
-        ss = double(SST_In(:,scans_this_section));
 
-        % % pp = find(isnan(xx) == 0);
-        pp = find(isnan(ss) == 0);
+    xx = double(easting(:,scans_this_section));
+    yy = double(northing(:,scans_this_section));
+    ss = double(SST_In(:,scans_this_section));
 
-        if length(pp) == 0
-            fprintf('...All SST_In values in Section %i are nan for orbit %s.\n', iSection, oinfo(iOrbit).name)
+    pp = find(isnan(xx) == 0);
 
-            status = populate_problem_list( 1001, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], '');
-        else
-            new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
-        end
-% % %     end
+    if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
+        status = populate_problem_list( 1001, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], '');
+    else
+        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+    end
 
     % And convert from polar to lat, lon.
 
@@ -390,27 +385,20 @@ for iSection=[2,4]
     end
     
     % Regrid SST.
-    
-% % %     if regridding_mode==1
-        xx = double(longitude(:,scans_this_section));
-        yy = double(latitude(:,scans_this_section));
-        ss = double(SST_In(:,scans_this_section));
-        
-        % % pp = find(isnan(xx) == 0);
-        pp = find(isnan(ss) == 0);
 
-        if length(pp) == 0
-            fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
+    xx = double(longitude(:,scans_this_section));
+    yy = double(latitude(:,scans_this_section));
+    ss = double(SST_In(:,scans_this_section));
 
-            status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
-        else
-            new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
-        end
-% % %     end
+    pp = find(isnan(xx) == 0);
 
-    % % % if regrid_to_AMSRE
-    % % %     regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
-    % % % end
+    if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
+        fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
+
+        status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
+    else
+        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
+    end
 
     % % % % % %% Fix problem with longitude going from one side of the dateline to the other.
     % % % % % 
@@ -515,22 +503,17 @@ clear aa
 
 % Now regrid using easting and northing.
 
-% % % if regridding_mode==1
-    xx = double(easting(:,scans_this_section)); 
-    yy = double(northing(:,scans_this_section));
-    ss = double(SST_In(:,scans_this_section));
+xx = double(easting(:,scans_this_section));
+yy = double(northing(:,scans_this_section));
+ss = double(SST_In(:,scans_this_section));
 
-    % % pp = find(isnan(xx) == 0);
-    pp = find(isnan(ss) == 0);
+pp = find(isnan(xx) == 0);
 
-    if length(pp) == 0
-        fprintf('...All SST_In values in Sections 3 are nan for orbit %s.\n', oinfo(iOrbit).name)
-
-        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
-    else
-        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
-    end
-% % % end
+if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
+    status = populate_problem_list( 1001, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
+else
+    new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+end
 
 % % % %% Regrid SST using fast grid if requested.
 % % % 
@@ -573,4 +556,13 @@ region_end(end) = region_end(end) + 1;
 
 if Debug
     disp(['Finished regridding after: ' num2str(toc(tic_regrid_start)) ' seconds.'])
+end
+
+%% Now average to 10x10 km L2eqa grid and regrid AMSR-E to this grid and L2eqa_MODIS_SST to the AMSR-E grid
+
+
+if regrid_to_AMSRE
+    regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
+    [L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
+    regrid_AMSRE( oinfo(iOrbit-1).name, AMSR_E_baseDir, new_lon, new_lat, new_sst);
 end

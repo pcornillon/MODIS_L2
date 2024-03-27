@@ -1,4 +1,4 @@
-function pcolor_orbit(iFig, sensorName, filename, longitude, latitude, SST)
+function pcolor_orbit(iFig, sensorName, filename, stride, Lon, Lat, SST)
 % pcolor_orbit - plot an orbit with nadir track, end scans and end pixels - PCC
 %
 % INPUT
@@ -20,8 +20,9 @@ load coastlines.mat
 % line. I think that this is faster.
 
 figure(iFig)
+clf
 
-pcolor(Lon,Lat,sst); shading flat; colormap(jet); colorbar; hold on; plot(coastlon, coastlat,'k')
+pcolor(Lon(1:stride:end,1:stride:end),Lat(1:stride:end,1:stride:end),SST(1:stride:end,1:stride:end)); shading flat; colormap(jet); colorbar; hold on; plot(coastlon, coastlat,'k')
 
 % Now add the nadir track, the swath edges and the beginning and end of the
 % orbit.
@@ -42,12 +43,24 @@ plot(Lon(:,end),Lat(:,end),'.r',linewidth=2)
 
 set(gca, fontsize=20)
 
-nn = strfind(filename, 'orbit_');
-orbit = filename(nn+6:nn+11);
-year = filename(nn+13:nn+16);
-month = filename(nn+17:nn+18);
-day = filename(nn+19:nn+20);
-hour = filename(nn+22:nn+23);
-minute = filename(nn+24:nn+25);
+if strcmp(sensorName, 'MODIS')
+    nn = strfind(filename, 'orbit_');
+    orbit = filename(nn+6:nn+11);
+    year = filename(nn+13:nn+16);
+    month = filename(nn+17:nn+18);
+    day = filename(nn+19:nn+20);
+    hour = filename(nn+22:nn+23);
+    minute = filename(nn+24:nn+25);
 
-title(['Orbit: ' orbit ' on ' month '/' day '/' year ' at ' hour ':' minute], fontsize=30)
+    titleDate = [year '-' month '-' day];
+    titleTime = [hour ':' minute];
+else
+    nn = strfind(filename, '7_r');
+    orbit = filename(nn+3:nn+7);
+
+    titleDate = ncreadatt(filename, '/', 'start_date');
+    TT = ncreadatt(filename, '/', 'start_time');
+    titleTime = TT(1:5);
+end
+
+title(['Orbit: ' orbit ' on ' titleDate ' at ' titleTime ' for ' sensorName], fontsize=30)

@@ -1,17 +1,30 @@
 % test_regrid_AMSRE
 
+global oinfo iOrbit iGranule iProblem problem_list
+
+aa = load('~/Dropbox/TempForTransfer/oinfo');
+
+oinfo = aa.oinfo(1:2);
+iOrbit = 2; 
+
 % Test MODIS orbit. Get lon, lat and SST from this orbit.
 
 if ~exist('MODIS_fi')
     % MODIS_fi = '~/Dropbox/Data/AMSR-R_regridding/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4';
-    MODIS_fi = '/Volumes/MODIS_L2_modified/OBPG/SST/2009/01/AQUA_MODIS_orbit_035443_20090101T010244_L2_SST.nc4';
+    % MODIS_fi = '/Volumes/MODIS_L2_modified/OBPG/SST/2009/01/AQUA_MODIS_orbit_035443_20090101T010244_L2_SST.nc4';
+
+    filelist = dir('/Volumes/MODIS_L2_modified/OBPG/SST/2009/01/AQUA_MODIS_orbit_03544*nc4');
+
+    i = 2;
+    MODIS_fi = [filelist(i).folder '/' filelist(i).name];
     
     MODIS_lon = ncread(MODIS_fi, 'regridded_longitude');
     MODIS_lat = ncread(MODIS_fi, 'regridded_latitude');
     MODIS_sst = ncread(MODIS_fi, 'regridded_sst');
     
     % AMSR_E_baseDir = '/Volumes/Aqua-1/AMSR-E_L2-v7/';
-    AMSR_E_baseDir = '/Users/petercornillon/Dropbox/Data/AMSR-R_regridding/';
+    % AMSR_E_baseDir = '/Users/petercornillon/Dropbox/Data/AMSR-R_regridding/';
+    AMSR_E_baseDir = '/Volumes/AMSR-E_L2-v7/';
 end
 
 % Test AMSR-E orbit.

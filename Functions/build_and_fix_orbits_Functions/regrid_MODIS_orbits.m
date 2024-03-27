@@ -1,5 +1,6 @@
 function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
+    regrid_MODIS_orbits( regrid_sst, longitude, latitude, SST_In)
+% % %     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
@@ -9,11 +10,11 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %   regrid_to_AMSRE - if 1 will read the corresponding AMSR-E orbit and
 %    regrid to AMSR-E native AMSR-E and regrid both AMSR-E and MODIS to a
 %    geogrid. In all cases will use regridded MODIS data.
-%   augmented_weights - weights used for fast regridding of SST. If empty,
-%    will skip do 'slow' regridding. Fast regridding uses weights and
-%    locations to determine regridded SST values; simple multiplications
-%    instead of using griddata, which can be painfully slow.
-%   augmented_locations - used with augmented weights for fast regridding.
+% % % % %   augmented_weights - weights used for fast regridding of SST. If empty,
+% % % % %    will skip do 'slow' regridding. Fast regridding uses weights and
+% % % % %    locations to determine regridded SST values; simple multiplications
+% % % % %    instead of using griddata, which can be painfully slow.
+% % % % %   augmented_locations - used with augmented weights for fast regridding.
 %   longitude - array to be fixed.
 %   latitude - needed for high latitude locations.
 %   base_dir_out - the directory to which the new lon, lat, SST_In and mask
@@ -53,29 +54,29 @@ if Debug
     tic_regrid_start = tic;
 end
 
-% regridding_mode is used to tell the remainder of this function what to do:
-%
-% regridding_mode = 1 - determine new lat, lon grid and regrid SST to it 
-%                   using griddata. Regridding is done after all of the new
-%                   grid points have been determined for the given region.
-% regridding_mode = 2 - determine new lat, lon grid and regrid SST to it 
-%                   using fast regridding. Regridding is done after all of 
-%                   the newgrid points have been determined for the given 
-%                   region.
-% regridding_mode = 3 - determine new lat, lon grid and regrid SST to it 
-%                   using fast regridding. Regridding is done for each
-%                   group of 10 detectors.
-% regridding_mode = 0 - determine new lat, lon grid but don't regrid SST.
-
-if regrid_sst == 1
-    if isempty(augmented_weights)
-        regridding_mode = 1;
-    else
-        regridding_mode = 2;  % Set to -1 to use fast regridding **************************
-    end
-else
-    regridding_mode = 0;
-end
+% % % % regridding_mode is used to tell the remainder of this function what to do:
+% % % %
+% % % % regridding_mode = 1 - determine new lat, lon grid and regrid SST to it 
+% % % %                   using griddata. Regridding is done after all of the new
+% % % %                   grid points have been determined for the given region.
+% % % % regridding_mode = 2 - determine new lat, lon grid and regrid SST to it 
+% % % %                   using fast regridding. Regridding is done after all of 
+% % % %                   the newgrid points have been determined for the given 
+% % % %                   region.
+% % % % regridding_mode = 3 - determine new lat, lon grid and regrid SST to it 
+% % % %                   using fast regridding. Regridding is done for each
+% % % %                   group of 10 detectors.
+% % % % regridding_mode = 0 - determine new lat, lon grid but don't regrid SST.
+% % % 
+% % % if regrid_sst == 1
+% % %     if isempty(augmented_weights)
+% % %         regridding_mode = 1;
+% % %     else
+% % %         regridding_mode = 2;  % Set to -1 to use fast regridding **************************
+% % %     end
+% % % else
+% % %     regridding_mode = 0;
+% % % end
 
 % Get the data
 
@@ -95,15 +96,16 @@ num_steps = num_detectors - 1;
 
 %% Next find the four sections of this orbit. 
 
-% Assume that the orbits start descending at 75 S. The orbit will be broken 
-% up into 4 sections:
-%   1) scan lines with nadir values south of 75 S east-to-west,
-%   2) lines with nadir values ascending from 75 S to 75 N,
-%   3) lines with nadir values north of 75 N east-to-west and
-%   4) lines with nadir values from 75 N descending to 75 S.
+% Assume that the orbits start ascending at 79 S. The orbit will be broken 
+% up into 5 sections:
+%   1) scan lines with nadir values between 79 S and 75 S.
+%   2) scan lines with nadir values ascending from 75 S to 75 N.
+%   3) lines with nadir values 75 N to 75 N moving from west to east.
+%   4) lines with nadir values from 75 N to 75 S, descending.
+%   5) lines with nadir values from 75 S descending to the end of the orbit
 %
 % latitude will be empty where there are missing granules. Fill them in
-% with the canonical orbit.
+% with the canonical orbit???
 
 nn = find(isnan(nlat_orbit) == 1);
 
@@ -142,7 +144,7 @@ region_end(5) =  nscans-1;
 
 if Debug
     disp(['Regions to process'])
-    for iRegion=1:4
+    for iRegion=1:5
         disp([' Region ' num2str(iRegion) ': ' num2str(region_start(iRegion)) ' to ' num2str(region_end(iRegion)) ])
     end
     disp([' '])
@@ -150,9 +152,9 @@ end
 
 %% Preallocate output arrays
 
-new_lon = nan(size(longitude));
+new_lon = nan(mpixels, nscans);
 new_lat = new_lon;
-new_sst = single(nan(size(longitude)));
+new_sst = single(nan(mpixels, nscans));
 
 easting = single(new_lon);
 northing = single(new_lon);
@@ -208,7 +210,7 @@ latNadir = latitude(677,:);
 
 diffcol = diff(longitude, 1, 2);
 
-for iCol=1:size(longitude,1)
+for iCol=1:mpixels
 
     xx = longitude(iCol,:);
 
@@ -312,19 +314,9 @@ for iSection=[1,5]
         new_lon(:,end) = longitude(:,end);        
     end
 
-    % Fix the longitude jump introduced by psn2ll. (19250 corresponds to the
-    % highest latitude reached by the satellite-the nadir track.)
-
-    aa = new_lon(:,region_start(1):region_end(1));
-    rr = find(aa<0); whos rr
-    aa(rr) = aa(rr) + 360;
-    new_lon(:,region_start(1):region_end(1)) = aa;
-
-    clear aa
-
     % Now regrid using easting and northing.
     
-    if regridding_mode==1
+% % %     if regridding_mode==1
         xx = double(easting(:,scans_this_section));
         yy = double(northing(:,scans_this_section));
         ss = double(SST_In(:,scans_this_section));
@@ -339,11 +331,21 @@ for iSection=[1,5]
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
         end
-    end
+% % %     end
 
     % And convert from polar to lat, lon.
 
     [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
+
+    % Fix the longitude jump introduced by psn2ll. (19250 corresponds to the
+    % highest latitude reached by the satellite-the nadir track.)
+
+    aa = new_lon(:,region_start(iSection):region_end(iSection));
+    rr = find(aa<0); 
+    aa(rr) = aa(rr) + 360;
+    new_lon(:,region_start(iSection):region_end(iSection)) = aa;
+
+    clear aa
 end
 
 %% Regrid segments 2 and 4.
@@ -389,7 +391,7 @@ for iSection=[2,4]
     
     % Regrid SST.
     
-    if regridding_mode==1
+% % %     if regridding_mode==1
         xx = double(longitude(:,scans_this_section));
         yy = double(latitude(:,scans_this_section));
         ss = double(SST_In(:,scans_this_section));
@@ -404,7 +406,7 @@ for iSection=[2,4]
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
         end
-    end
+% % %     end
 
     % % % if regrid_to_AMSRE
     % % %     regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
@@ -505,15 +507,15 @@ end
 % highest latitude reached by the satellite-the nadir track.)
 
 aa = new_lon(:,region_start(3):19250);
-rr = find(aa<0); whos rr
+rr = find(aa<0);
 aa(rr) = aa(rr) + 360;
-new_lon(:,region_start(3):19300) = aa;
+new_lon(:,region_start(3):19250) = aa;
 
 clear aa
 
 % Now regrid using easting and northing.
 
-if regridding_mode==1
+% % % if regridding_mode==1
     xx = double(easting(:,scans_this_section)); 
     yy = double(northing(:,scans_this_section));
     ss = double(SST_In(:,scans_this_section));
@@ -528,36 +530,36 @@ if regridding_mode==1
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end
-end
+% % % end
 
-%% Regrid SST using fast grid if requested.
-
-if regridding_mode == 2
-
-    [nElements, nScans] = size(SST_In);
-    [nMax, mElements, mScans] = size(augmented_weights);
-
-    % Truncate weights array to same number of scan lines as SST array.
-    
-    weights = augmented_weights(:,:,1:nScans);
-    locations = augmented_locations(:,:,1:nScans);
-    
-    % Now regrid.
-    
-    new_sst = zeros([nElements, nScans]);
-    
-    for iC=1:nMax
-        weights_temp = squeeze(weights(iC,:,:));
-        locations_temp = squeeze(locations(iC,:,:));
-        
-        non_zero_weights = find((weights_temp ~= 0) & (isnan(weights_temp) == 0));
-
-        SST_temp = zeros([nElements, nScans]);
-        SST_temp(non_zero_weights) = weights_temp(non_zero_weights) .* SST_In(locations_temp(non_zero_weights));
-        
-        new_sst = new_sst + SST_temp;
-    end
-end
+% % % %% Regrid SST using fast grid if requested.
+% % % 
+% % % if regridding_mode == 2
+% % % 
+% % %     [nElements, nScans] = size(SST_In);
+% % %     [nMax, mElements, mScans] = size(augmented_weights);
+% % % 
+% % %     % Truncate weights array to same number of scan lines as SST array.
+% % %     
+% % %     weights = augmented_weights(:,:,1:nScans);
+% % %     locations = augmented_locations(:,:,1:nScans);
+% % %     
+% % %     % Now regrid.
+% % %     
+% % %     new_sst = zeros([nElements, nScans]);
+% % %     
+% % %     for iC=1:nMax
+% % %         weights_temp = squeeze(weights(iC,:,:));
+% % %         locations_temp = squeeze(locations(iC,:,:));
+% % %         
+% % %         non_zero_weights = find((weights_temp ~= 0) & (isnan(weights_temp) == 0));
+% % % 
+% % %         SST_temp = zeros([nElements, nScans]);
+% % %         SST_temp(non_zero_weights) = weights_temp(non_zero_weights) .* SST_In(locations_temp(non_zero_weights));
+% % %         
+% % %         new_sst = new_sst + SST_temp;
+% % %     end
+% % % end
 
 % Add 1 to region_end(end), generally region_end(4). This is because the
 % scans in each subregion analyzed go from the middle scan line in one

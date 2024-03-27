@@ -214,7 +214,7 @@ if exist('save_core') ~= 0
     end
 end
 
-fast_regrid = 0; % Disabling fast regridding since I will not use this.
+% % % fast_regrid = 0; % Disabling fast regridding since I will not use this.
 
 print_times = 1;
 
@@ -363,17 +363,17 @@ for i_range_image=1:12
     sst_range(:,:,i_range_image) = xx;
 end
 
-%% Read in the arrays for fast regridding (first) and those used to calculate gradients (second).
-
-% Fast regridding arrays.
-
-if fix_bowtie & fast_regrid
-    load([fixit_directory 'weights_and_locations_41616_fixed.mat'])
-else
-    augmented_weights = [];
-    augmented_locations = [];
-end
-
+% % % %% Read in the arrays for fast regridding (first) and those used to calculate gradients (second).
+% % % 
+% % % % Fast regridding arrays.
+% % % 
+% % % if fix_bowtie & fast_regrid
+% % %     load([fixit_directory 'weights_and_locations_41616_fixed.mat'])
+% % % else
+% % %     augmented_weights = [];
+% % %     augmented_locations = [];
+% % % end
+% % % 
 % Gradient stuff
 
 if get_gradients
@@ -538,18 +538,19 @@ while granule_start_time_guess <= Matlab_end_time
 
             start_address_bowtie = tic;
 
-            % ******************************************************************************************
-            % Need to add augmented_weights, augmented_locations as the first
-            % two arugments of the call to regrid... if you want to use fast
-            % regridding.
-            % ******************************************************************************************
+% % %             % ******************************************************************************************
+% % %             % Need to add augmented_weights, augmented_locations as the first
+% % %             % two arugments of the call to regrid... if you want to use fast
+% % %             % regridding.
+% % %             % ******************************************************************************************
 
             % [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
             %     regrid_MODIS_orbits( regrid_sst, [],[], longitude, latitude, SST_In_Masked);
 
             if regridded_debug == 1
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                    regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+                    regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
+% % %                     regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
 
                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
                 if length(mm) < numel(SST_In_Masked)
@@ -564,7 +565,8 @@ while granule_start_time_guess <= Matlab_end_time
                 end
             else
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ~, ~, ~, ~] = ...
-                    regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+                    regrid_MODIS_orbits( regrid_sst, longitude, latitude, SST_In_Masked);
+% % %                     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
 
                 easting = [];
                 northing = [];

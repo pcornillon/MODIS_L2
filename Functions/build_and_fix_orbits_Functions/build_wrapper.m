@@ -169,14 +169,14 @@ switch Option
         BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
 
         fixit_directory              = [BaseDir 'metadata/'];
-        metadata_directory           = '/Volumes/Data_1/Data_from_OBPG_for_PO-DAAC/';
+        metadata_directory           = '/Volumes/Data_1/MODIS_L2/Data_from_OBPG_for_PO-DAAC/';
 
-        granules_directory           = '/Volumes/Data_1/combined/';
+        granules_directory           = '/Volumes/Data_1/MODIS_L2/combined/';
 
-        output_file_directory_local  = '/Volumes/Data_1/output/';
+        output_file_directory_local  = '/Volumes/Data_1/MODIS_L2/output/';
         output_file_directory_remote = '';
 
-        logs_directory               = '/Volumes/Data_1/Logs/';
+        logs_directory               = '/Volumes/Data_1/MODIS_L2/Logs/';
 
     case 8 % AWS sister to case 4 MacStudio or Satdat1
         %   fixit metadata from Dropbox, 

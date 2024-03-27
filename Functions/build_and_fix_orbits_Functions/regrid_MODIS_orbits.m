@@ -206,8 +206,6 @@ end
 indN1 = 19200;
 indN2 = 19300;
 
-latNadir = latitude(677,:);
-
 diffcol = diff(longitude, 1, 2);
 
 for iCol=1:mpixels
@@ -337,15 +335,17 @@ for iSection=[1,5]
 
     [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
-    % Fix the longitude jump introduced by psn2ll. (19250 corresponds to the
-    % highest latitude reached by the satellite-the nadir track.)
+    % Fix the longitude jump introduced by psn2ll. Only did this for
+    % section 1; not too sure why.
 
-    aa = new_lon(:,region_start(iSection):region_end(iSection));
-    rr = find(aa<0); 
-    aa(rr) = aa(rr) + 360;
-    new_lon(:,region_start(iSection):region_end(iSection)) = aa;
+    if iSection == 1
+        aa = new_lon(:,region_start(iSection):region_end(iSection));
+        rr = find(aa<-100);
+        aa(rr) = aa(rr) + 360;
+        new_lon(:,region_start(iSection):region_end(iSection)) = aa;
 
-    clear aa
+        clear aa
+    end
 end
 
 %% Regrid segments 2 and 4.
@@ -507,7 +507,7 @@ end
 % highest latitude reached by the satellite-the nadir track.)
 
 aa = new_lon(:,region_start(3):19250);
-rr = find(aa<0);
+rr = find(aa<-100);
 aa(rr) = aa(rr) + 360;
 new_lon(:,region_start(3):19250) = aa;
 

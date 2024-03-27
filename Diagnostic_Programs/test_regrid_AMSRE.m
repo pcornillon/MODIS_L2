@@ -3,7 +3,8 @@
 % Test MODIS orbit. Get lon, lat and SST from this orbit.
 
 if ~exist('MODIS_fi')
-    MODIS_fi = '~/Dropbox/Data/AMSR-R_regridding/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4';
+    % MODIS_fi = '~/Dropbox/Data/AMSR-R_regridding/AQUA_MODIS_orbit_046525_20110201T005330_L2_SST.nc4';
+    MODIS_fi = '/Volumes/MODIS_L2_modified/OBPG/SST/2009/01/AQUA_MODIS_orbit_035443_20090101T010244_L2_SST.nc4';
     
     MODIS_lon = ncread(MODIS_fi, 'regridded_longitude');
     MODIS_lat = ncread(MODIS_fi, 'regridded_latitude');

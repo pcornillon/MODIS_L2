@@ -75,14 +75,70 @@ AMSR_E_fi = [AMSR_E_baseDir year_s '/' year_s month_s day_s '-amsre-remss-l2p-l2
 % MODIS_lat = ncread( MODIS_fi, 'regridded_latitude');
 % MODIS_lon = ncread( MODIS_fi, 'regridded_longitude');
 
-AMSR_E_lat = ncread( AMSR_E_fi, 'lat');
-AMSR_E_lon = ncread( AMSR_E_fi, 'lon');
+% Note that the AMSR_E data are transposed, i<==>j, to be compatible with
+% MODIS data.
+
+AMSR_E_lat = ncread( AMSR_E_fi, 'lat')';
+AMSR_E_lon = ncread( AMSR_E_fi, 'lon')';
+AMSR_E_sst = ncread( AMSR_E_fi, 'sea_surface_temperature')';
+
+% The beginning and end of the orbit appears to be nan values. Get rid of
+% them.
+
+nn = find(isnan(AMSR_E_lon(10,:)) == 0);
+AMSR_E_sst = AMSR_E_sst(:,nn);
+AMSR_E_lat = AMSR_E_lat(:,nn);
+AMSR_E_lon = AMSR_E_lon(:,nn);
+
+% Get rid of big jumps in longitude for AMSR-E. Do this for each pixel
+% (column) location in the along-scan direction for the length of the
+% orbit. Start by getting the step in longitude in the along-track
+% direction at each pixel location. (Will use the same threshold for the
+% longitudinal step as used for MODIS. 
+
+lon_step_threshold = 190;
+
+diffcol = diff(AMSR_E_lon, 1, 2);
+
+for iCol=1:size(AMSR_E_lon,1)
+    xx = AMSR_E_lon(iCol,:);
+
+    % Find large longitude jumps for this column
+
+    [~, jpix] = find( abs(diffcol(iCol,:)) > lon_step_threshold);
+
+    if ~isempty(jpix)
+
+        % Get the step where there is a large jump and set to 360 times the
+        % sign of the step.
+
+        for kPix=1:length(jpix)
+            lonStep(kPix) = -sign(xx(jpix(kPix)+1) - xx(jpix(kPix))) * 360;
+        end
+
+        % If there is only one step set a second step at the end of the
+        % orbit.
+
+        if rem(length(jpix),2)
+            jpix(length(jpix)+1) = length(xx);
+        end
+
+        % Now offset for each step.
+
+        for ifix=1:2:length(jpix)
+            locs2fix = [jpix(ifix)+1:jpix(ifix+1)];
+            xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
+        end
+        
+        AMSR_E_lon(iCol,:) = xx;
+    end
+end
 
 % % % MODIS_lonnadir = MODIS_lon(677,:);
 % % % MODIS_latnadir = MODIS_lat(677,:);
 
-% Get the closes equatorial crossing of the nadir track on the descending
-% portion of the orbit.
+% Get the closes equatorial crossing of the MODIS nadir track on the
+% descending portion of the orbit.
 
 iEq = find( min(abs(squeeze(MODIS_lat(677,20000:end)))) == abs(squeeze(MODIS_lat(677,20000:end)))) + 20000 - 1;
 

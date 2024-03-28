@@ -25,6 +25,7 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %   fi_in = '~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Original/2010/AQUA_MODIS.20100619T000124.L2.SST.mat';
 %   regrid_MODIS_orbits( fi_in, [])
 
+global pixStartm pixEndm pixStartp pixEndp
 global iOrbit oinfo nlat_orbit nlat_avg
 global npixels
 

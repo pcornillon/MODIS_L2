@@ -130,6 +130,7 @@ global s3_expiration_time
 % globals used in the other major functions of build_and_fix_orbits.
 
 global med_op
+global pixStartm pixEndm pixStartp pixEndp
 
 % Open diary for this run.
 

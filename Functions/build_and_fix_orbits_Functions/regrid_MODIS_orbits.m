@@ -481,7 +481,7 @@ for iPix=1:numNewPixsm
         else
             tt = tt(kk);
             L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(tt,'all','omitnan');
-            L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(std(tt,'all','omitnan'));
+            L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(std(tt,[],'all','omitnan'));
             L2eqa_MODIS_num_SST(numNewPixsm-iPix+1,jScanLine) = int16(length(kk));
         end
         
@@ -504,7 +504,7 @@ for iPix=1:numNewPixsp
         else        
             tt = tt(kk);
             L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = mean(tt,'all','omitnan');
-            L2eqa_MODIS_std_SST(numNewPixsp + iPix,jScanLine) = single(std(tt,'all','omitnan'));
+            L2eqa_MODIS_std_SST(numNewPixsp + iPix,jScanLine) = single(std(tt,[],'all','omitnan'));
             L2eqa_MODIS_num_SST(numNewPixsp + iPix,jScanLine) = int16(length(kk));
         end
 

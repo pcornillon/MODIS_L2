@@ -616,7 +616,7 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_min', -360000)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_max',  360000)
     
-    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqaLon))
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', L2eqaLon)
     
     % 10x10 km grid overlayed on MODIS L2 orbital grid: latitude
     
@@ -633,7 +633,7 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_min', -360000)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_max',  360000)
     
-    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqaLat))
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLat', L2eqaLat)
     
     % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST average to grid.
 
@@ -650,7 +650,7 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'valid_min', -600)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'valid_max',  9600)
     
-    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqa_MODIS_SST))
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', L2eqa_MODIS_SST)
     
     % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST average to grid.
 
@@ -667,7 +667,7 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_std_SST', 'valid_min', 0)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_std_SST', 'valid_max',  1000)
     
-    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqa_MODIS_SST))
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_std_SST', L2eqa_MODIS_std_SST)
     
     % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST average to grid.
 
@@ -684,7 +684,7 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_num_SST', 'valid_min', 0)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_num_SST', 'valid_max',  121)
     
-    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqa_MODIS_SST))
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_num_SST', L2eqa_MODIS_num_SST)
     
     %% Now for the regridded values.
     
@@ -707,7 +707,7 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_min', -360000)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_max',  360000)
         
-        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(AMSR_E_lon))
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', AMSR_E_lon)
         
         % 10x10 km grid overlayed on MODIS L2 orbital grid: latitude
         
@@ -724,7 +724,7 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_min', -360000)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_max',  360000)
         
-        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(AMSR_E_lat))
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', AMSR_E_lat)
         
         % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST average to grid.
         
@@ -741,7 +741,7 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'valid_min', -600)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'valid_max',  9600)
         
-        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(AMSR_E_SST))
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', AMSR_E_SST)
         
         % 10x10 km grid overlayed on MODIS L2 orbital grid: AMSR-E SST regridded to the L2eqa grid using griddata.
         
@@ -758,7 +758,7 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'valid_min', -600)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'valid_max',  9600)
         
-        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqa_AMSR_E_SST))
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', L2eqa_AMSR_E_SST)
 
         % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST regridded to the AMSR-E L2 grid using griddata.
         
@@ -775,7 +775,7 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'valid_min', -600)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'valid_max',  9600)
         
-        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(MODIS_SST_on_AMSR_E_grid))
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', MODIS_SST_on_AMSR_E_grid)
     end
     
 end

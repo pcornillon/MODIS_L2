@@ -165,7 +165,7 @@ AMSR_E_lon = AMSR_E_lon + 360;
 
 L2eqa_AMSR_E_SST = griddata( AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqaLon, L2eqaLat, 'natural');
 
-MODIS_SST_on_AMSR_E_grid = griddata( L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, AMSR_E_lon, AMSR_E_lat,'natural');
+MODIS_SST_on_AMSR_E_grid = griddata( L2eqaLon, L2eqaLat, double(L2eqa_MODIS_SST), AMSR_E_lon, AMSR_E_lat,'natural');
 else
     % Here if no AMSR-E orbit
     

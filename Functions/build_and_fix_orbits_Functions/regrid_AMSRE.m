@@ -167,7 +167,20 @@ if exist(AMSR_E_fi) == 2
 
     L2eqa_AMSR_E_SST = griddata( AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqaLon, L2eqaLat, 'natural');
 
-    MODIS_SST_on_AMSR_E_grid = griddata( L2eqaLon, L2eqaLat, double(L2eqa_MODIS_SST), AMSR_E_lon, AMSR_E_lat,'natural');
+    xx = double(L2eqaLon);
+    yy = double(L2eqaLat);
+    ss = double(L2eqa_MODIS_SST);
+
+    pp = find(isnan(xx) == 0);
+
+    if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
+        fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
+
+        status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
+    else
+        MODIS_SST_on_AMSR_E_grid = griddata( xx(pp), yy(pp), ss(pp), AMSR_E_lon, AMSR_E_lat,'natural');
+    end
+
 else
     % Here if no AMSR-E orbit
 

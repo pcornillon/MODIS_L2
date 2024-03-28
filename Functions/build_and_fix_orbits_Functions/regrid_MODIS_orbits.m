@@ -456,7 +456,7 @@ end
 
 % Get the elements to use in the regridding if this is the first orbit processed.
 
-if iOrbit == 2
+if iOrbit == 1
     iEq = find( min(abs(squeeze(new_lat(677,20000:end)))) == abs(squeeze(new_lat(677,20000:end)))) + 20000 - 1;
 
     get_MODIS_elements_for_L2eqa_grid(new_lat(:,iEq), new_lon(:,iEq));

@@ -27,7 +27,7 @@ global pixStartm pixEndm pixStartp pixEndp
 global oinfo iOrbit iGranule iProblem problem_list
 global AMSR_E_baseDir
 
-MODIS_fi = oinfo(iOrbit-1).name;
+MODIS_fi = oinfo(iOrbit).name;
 
 % Get the AMSR-E data. Start by determining the correct AMSR-E orbit. 
 

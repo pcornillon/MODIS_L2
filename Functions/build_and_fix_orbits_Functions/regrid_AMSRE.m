@@ -48,9 +48,9 @@ tic
 % % %
 % % %     [MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(matlab_time_MODIS_start);
 % % % else
-NASA_orbit_t = oinfo(end).orbit_number;
+NASA_orbit_t = oinfo(iOrbit).orbit_number;
 
-[MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(oinfo(end).start_time);
+[MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(oinfo(iOrbit).start_time);
 % % % end
 
 % Build the AMSR-E orbit filename.
@@ -66,7 +66,7 @@ AMSR_E_fi = [AMSR_E_baseDir year_s '/' year_s month_s day_s '-amsre-remss-l2p-l2
 if exist(AMSR_E_fi) == 2
 
     fprintf('Pairing this MODIS orbit with %s\n', AMSR_E_fi)
-    
+
     % Note that the AMSR_E data are transposed, i<==>j, in the following to be
     % compatible with MODIS data.
 

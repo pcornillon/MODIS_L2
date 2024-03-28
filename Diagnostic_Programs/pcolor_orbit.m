@@ -54,7 +54,7 @@ if strcmp(sensorName, 'MODIS')
 
     titleDate = [year '-' month '-' day];
     titleTime = [hour ':' minute];
-else
+elseif ~isempty(filename)
     nn = strfind(filename, '7_r');
     orbit = filename(nn+3:nn+7);
 

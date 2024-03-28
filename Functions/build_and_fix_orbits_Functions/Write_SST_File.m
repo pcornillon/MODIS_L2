@@ -1,7 +1,9 @@
 function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, scan_seconds_from_start, ...
     regridded_longitude, regridded_latitude, regridded_sst, easting, northing, regridded_easting, regridded_northing, ...
-    regridded_sst_alternate, along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
-    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients)
+    along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
+    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
+    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+    AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, MODIS_SST_on_AMSR_E_grid)
 % Write_SST_File - will create and write a file for the gradient/fronts workflow SST and mask data - PCC
 %
 % The SST field (raw), SST_In, passed in is masked based on refined_mask,
@@ -588,6 +590,163 @@ ncwriteatt( output_filename, 'DateTime', 'standard_name', 'time')
 ncwriteatt( output_filename, 'DateTime', 'units', 'seconds')
 
 ncwrite( output_filename, 'DateTime', time_coverage_start)
+
+%% /Regrid_to_L2eqa/ To be written out if there is data to write out.
+
+% This group containes the 10x10 km SST grid L2eqa and MODIS 1km SST
+% average to the grid, AMSR-E regridded to it and L2eqa_MODIS_SST regridded
+% to AMSR-E coordinate suste
+
+if   ~isempty(L2eqaLon)
+        
+    % 10x10 km grid overlayed on MODIS L2 orbital grid: longitude
+    
+    [nxL2eqaDimension nxL2eqaDimension] = size(L2eqaLon);
+    
+    nccreate( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'Datatype', 'int32', ...
+        'Dimensions', {'nx' nxL2eqaDimension 'ny' nyL2eqaDimension}, ...
+        'Chunksize', [min(1024,nxL2eqaDimension) min(1024,nyL2eqaDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'long_name', 'L2 equal area longitude')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon',  'standard_name', 'L2eqaLon')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'units', 'degrees_east')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'add_offset', 0)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'scale_factor', LatLonScaleFactor)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_min', -360000)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_max',  360000)
+    
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqaLon))
+    
+    % 10x10 km grid overlayed on MODIS L2 orbital grid: latitude
+    
+    nccreate( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'Datatype', 'int32', ...
+        'Dimensions', {'nx' nxL2eqaDimension 'ny' nyL2eqaDimension}, ...
+        'Chunksize', [min(1024,nxL2eqaDimension) min(1024,nyL2eqaDimension)], ...
+        'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'long_name', 'L2 equal area Latitude')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat',  'standard_name', 'L2eqaLat')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'units', 'degrees_north')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'add_offset', 0)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'scale_factor', LatLonScaleFactor)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_min', -360000)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_max',  360000)
+    
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqaLat))
+    
+    % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST average to grid.
+
+    nccreate( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'Datatype', 'int16', ...
+        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+        'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+    
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'long_name', 'L2 equal area MODIS SST')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST',  'standard_name', 'L2eqa_MODIS_SST')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'units', 'C')
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'add_offset', 0)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'scale_factor', sstScaleFactor)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'valid_min', -600)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_MODIS_SST', 'valid_max',  9600)
+    
+    ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqa_MODIS_SST))
+    
+    %% Now for the regridded values.
+    
+    if ~isempty(AMSR_E_lon)
+        
+        % 10x10 km grid overlayed on MODIS L2 orbital grid: longitude
+        
+        [nyAMSR_EDimension nxAMSR_EDimension] = size(AMSR_E_lon);
+        
+        nccreate( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxAMSR_EDimension 'ny' nyAMSR_EDimension}, ...
+            'Chunksize', [min(1024, nxAMSR_EDimension) min(1024, nyAMSR_EDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
+        
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'long_name', 'AMSR-E L2 longitude')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon',  'standard_name', 'AMSR_E_lon')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'units', 'degrees_east')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'add_offset', 0)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'scale_factor', LatLonScaleFactor)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_min', -360000)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_max',  360000)
+        
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(AMSR_E_lon))
+        
+        % 10x10 km grid overlayed on MODIS L2 orbital grid: latitude
+        
+        nccreate( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'Datatype', 'int32', ...
+            'Dimensions', {'nx' nxAMSR_EDimension 'ny' nyAMSR_EDimension}, ...
+            'Chunksize', [min(1024, nxAMSR_EDimension) min(1024, nyAMSR_EDimension)], ...
+            'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
+        
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'long_name', 'AMSR-E L2 Latitude')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat',  'standard_name', 'AMSR_E_lat')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'units', 'degrees_north')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'add_offset', 0)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'scale_factor', LatLonScaleFactor)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_min', -360000)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_max',  360000)
+        
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(AMSR_E_lat))
+        
+        % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST average to grid.
+        
+        nccreate( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'Datatype', 'int16', ...
+            'Dimensions', {'nx' nxAMSR_EDimension 'ny' nyAMSR_EDimension}, ...
+            'Chunksize', [min(1024, nxAMSR_EDimension) min(1024, nyAMSR_EDimension)], ...
+            'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+        
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'long_name', 'AMSR-E L2 SST')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST',  'standard_name', 'AMSR_E_SST')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'units', 'C')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'add_offset', 0)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'scale_factor', sstScaleFactor)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'valid_min', -600)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_SST', 'valid_max',  9600)
+        
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(AMSR_E_SST))
+        
+        % 10x10 km grid overlayed on MODIS L2 orbital grid: AMSR-E SST regridded to the L2eqa grid using griddata.
+        
+        nccreate( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'Datatype', 'int16', ...
+            'Dimensions', {'nx' nxL2eqaDimension 'ny' nyL2eqaDimension}, ...
+            'Chunksize', [min(1024, nxL2eqaDimension) min(1024, nyL2eqaDimension)], ...
+            'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+        
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'long_name', 'L2 equal area AMSR-E SST')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST',  'standard_name', 'L2eqa_AMSR_E_SST')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'units', 'C')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'add_offset', 0)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'scale_factor', sstScaleFactor)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'valid_min', -600)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqa_AMSR_E_SST', 'valid_max',  9600)
+        
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(L2eqa_AMSR_E_SST))
+
+        % 10x10 km grid overlayed on MODIS L2 orbital grid: MODIS SST regridded to the AMSR-E L2 grid using griddata.
+        
+        nccreate( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'Datatype', 'int16', ...
+            'Dimensions', {'nx' nxAMSR_EDimension 'ny' nyAMSR_EDimension}, ...
+            'Chunksize', [min(1024, nxAMSR_EDimension) min(1024, nyAMSR_EDimension)], ...
+            'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+        
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'long_name', 'MODIS L2eqa SST Regridded to AMSR-E grid')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid',  'standard_name', 'MODIS_SST_on_AMSR_E_grid')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'units', 'C')
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'add_offset', 0)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'scale_factor', sstScaleFactor)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'valid_min', -600)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/MODIS_SST_on_AMSR_E_grid', 'valid_max',  9600)
+        
+        ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', single(MODIS_SST_on_AMSR_E_grid))
+    end
+    
+end
+
+%% /contributing_granules/
 
 % Contributing granules. Put these in a group. There are no high level
 % Matlab commands to do this so must open the file, create the group, add

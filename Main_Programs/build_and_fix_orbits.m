@@ -106,7 +106,7 @@ if determine_fn_size; get_job_and_var_mem; end
 
 % globals for the run as a whole.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
 global print_diagnostics print_times debug regridded_debug
 global npixels
 
@@ -538,42 +538,38 @@ while granule_start_time_guess <= Matlab_end_time
 
             start_address_bowtie = tic;
 
-% % %             % ******************************************************************************************
-% % %             % Need to add augmented_weights, augmented_locations as the first
-% % %             % two arugments of the call to regrid... if you want to use fast
-% % %             % regridding.
-% % %             % ******************************************************************************************
+% % %             if regridded_debug == 1
+% % %                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing, ... 
+% % %                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+% % %                     AMSR_E_lat, AMSR_E_lon, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
+% % %                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
+% % % % % %                     regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+% % % 
+% % %                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
+% % %                 
+% % %                 if length(mm) < numel(SST_In_Masked)
+% % %                     clear xx
+% % %                     xx(mm) = double(SST_In_Masked(mm));
+% % %                     lonxx(mm) = double(longitude(mm));
+% % %                     latxx(mm) = double(latitude(mm));
+% % % 
+% % %                     regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
+% % %                 else
+% % %                     regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
+% % %                 end
+% % %             else
+                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ...
+                    easting, northing, new_easting, new_northing, ... 
+                    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+                    AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
+                    regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
 
-            % [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-            %     regrid_MODIS_orbits( regrid_sst, [],[], longitude, latitude, SST_In_Masked);
-
-            if regridded_debug == 1
-                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing] = ...
-                    regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
-% % %                     regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
-
-                mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
-                if length(mm) < numel(SST_In_Masked)
-                    clear xx
-                    xx(mm) = double(SST_In_Masked(mm));
-                    lonxx(mm) = double(longitude(mm));
-                    latxx(mm) = double(latitude(mm));
-
-                    regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
-                else
-                    regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
-                end
-            else
-                [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ~, ~, ~, ~] = ...
-                    regrid_MODIS_orbits( regrid_sst, longitude, latitude, SST_In_Masked);
-% % %                     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
-
-                easting = [];
-                northing = [];
-                new_easting = [];
-                new_northing = [];
-                regridded_sst_alternate = [];
-            end
+% %                 easting = [];
+% %                 northing = [];
+% %                 new_easting = [];
+% %                 new_northing = [];
+% %                 regridded_sst_alternate = [];
+% % %             end
 
             if (status ~= 0) & (status ~= 1001)
                 fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
@@ -598,7 +594,6 @@ while granule_start_time_guess <= Matlab_end_time
             northing = nan;
             new_easting = nan;
             new_northing = nan;
-            regridded_sst_alternate = [];
 
             oinfo(iOrbit).time_to_address_bowtie = 0;
         end
@@ -655,9 +650,13 @@ while granule_start_time_guess <= Matlab_end_time
         time_to_save_orbit = tic;
 
         if save_orbits
-            Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, regridded_longitude, regridded_latitude, ...
-                regridded_sst, easting, northing, new_easting, new_northing, regridded_sst_alternate, grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
-                region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients);
+            Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, ...
+                regridded_longitude, regridded_latitude, regridded_sst, ...
+                easting, northing, new_easting, new_northing, ...
+                grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
+                region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
+                L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+                AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid);
 
             oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 

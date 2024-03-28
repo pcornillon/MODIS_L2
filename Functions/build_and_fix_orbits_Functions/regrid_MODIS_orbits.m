@@ -1,12 +1,11 @@
-function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing] = ...
-    regrid_MODIS_orbits( regrid_sst, longitude, latitude, SST_In)
+function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing, ...
+    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+    AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
+    regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In)
 % % %     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
 %  regrid_MODIS_orbits - regrid MODIS orbit - PCC
 %
 % INPUT
-%   regrid_sst - if 1 will regrid SST. If 0 will just determine new
-%    latitudes and longitudes, which involves simple interpolations along
-%    the track line; no need for griddate.
 %   regrid_to_AMSRE - if 1 will read the corresponding AMSR-E orbit and
 %    regrid to AMSR-E native AMSR-E and regrid both AMSR-E and MODIS to a
 %    geogrid. In all cases will use regridded MODIS data.
@@ -53,30 +52,6 @@ Debug = 0;
 if Debug
     tic_regrid_start = tic;
 end
-
-% % % % regridding_mode is used to tell the remainder of this function what to do:
-% % % %
-% % % % regridding_mode = 1 - determine new lat, lon grid and regrid SST to it 
-% % % %                   using griddata. Regridding is done after all of the new
-% % % %                   grid points have been determined for the given region.
-% % % % regridding_mode = 2 - determine new lat, lon grid and regrid SST to it 
-% % % %                   using fast regridding. Regridding is done after all of 
-% % % %                   the newgrid points have been determined for the given 
-% % % %                   region.
-% % % % regridding_mode = 3 - determine new lat, lon grid and regrid SST to it 
-% % % %                   using fast regridding. Regridding is done for each
-% % % %                   group of 10 detectors.
-% % % % regridding_mode = 0 - determine new lat, lon grid but don't regrid SST.
-% % % 
-% % % if regrid_sst == 1
-% % %     if isempty(augmented_weights)
-% % %         regridding_mode = 1;
-% % %     else
-% % %         regridding_mode = 2;  % Set to -1 to use fast regridding **************************
-% % %     end
-% % % else
-% % %     regridding_mode = 0;
-% % % end
 
 % Get the data
 
@@ -399,59 +374,6 @@ for iSection=[2,4]
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
     end
-
-    % % % % % %% Fix problem with longitude going from one side of the dateline to the other.
-    % % % % % 
-    % % % % % diff_lon = diff(longitude);
-    % % % % % [icdl, jcdl] = find(abs(diff_lon) > 10);
-    % % % % % 
-    % % % % % Range = 5;
-    % % % % % 
-    % % % % % for iScan=region_start(iSection):region_end(iSection)
-    % % % % %     nn = find(jcdl == iScan);
-    % % % % % 
-    % % % % %     if ~isempty(nn)
-    % % % % % 
-    % % % % %         fix_start = min(icdl(nn));
-    % % % % %         fix_end = max(icdl(nn));
-    % % % % % 
-    % % % % %         % Do not fix if the dateline is near (within 5 pixels) of the 
-    % % % % %         % beginning or the end of the scanline.
-    % % % % % 
-    % % % % %         if (fix_start > Range) & (fix_end < size(new_sst,1)-Range)
-    % % % % % 
-    % % % % %             % Do not fix if new_sst is nan to Range (nominally 5)
-    % % % % %             % pixels on either side of the identified range.  
-    % % % % % 
-    % % % % %             nn = find(isnan(new_sst(fix_start-Range:fix_start-1, iScan))==0);
-    % % % % %             mm = find(isnan(new_sst(fix_end+1:fix_end+Range, iScan))==0);
-    % % % % % 
-    % % % % %             fix_start = fix_start - Range + max(nn);
-    % % % % %             fix_end = fix_end + min(mm) - 1;
-    % % % % % 
-    % % % % %             if (isnan(new_sst(fix_start-1, iScan)) == 0) & (isnan(new_sst(fix_end+1, iScan))== 0)
-    % % % % %                 num_fill = fix_end - fix_start + 1;
-    % % % % % 
-    % % % % %                 step_size = new_sst(fix_end+1, iScan) - new_sst(fix_start-1, iScan);
-    % % % % %                 pixel_step_size = step_size / (num_fill + 1);
-    % % % % % 
-    % % % % %                 for iElement=fix_start:fix_end
-    % % % % % 
-    % % % % %                     % Only fill this element if it is a nan in new_sst.
-    % % % % %                     % This happens when the orbit is bending over at high
-    % % % % %                     % latitudes. Could get fancy and fill between the
-    % % % % %                     % pixels that have legit values but this occurs rarely
-    % % % % %                     % in the orbit and it's not clear how much fixing it
-    % % % % %                     % helps at these locations.
-    % % % % % 
-    % % % % %                     if isnan(new_sst(iElement,iScan))
-    % % % % %                         new_sst(iElement, iScan) = new_sst(fix_start-1, iScan) + pixel_step_size * (iElement - (fix_start - 1));
-    % % % % %                     end
-    % % % % %                 end
-    % % % % %             end
-    % % % % %         end
-    % % % % %     end
-    % % % % % end
 end
 
 %% Do Section 3.
@@ -515,35 +437,6 @@ else
     new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
 end
 
-% % % %% Regrid SST using fast grid if requested.
-% % % 
-% % % if regridding_mode == 2
-% % % 
-% % %     [nElements, nScans] = size(SST_In);
-% % %     [nMax, mElements, mScans] = size(augmented_weights);
-% % % 
-% % %     % Truncate weights array to same number of scan lines as SST array.
-% % %     
-% % %     weights = augmented_weights(:,:,1:nScans);
-% % %     locations = augmented_locations(:,:,1:nScans);
-% % %     
-% % %     % Now regrid.
-% % %     
-% % %     new_sst = zeros([nElements, nScans]);
-% % %     
-% % %     for iC=1:nMax
-% % %         weights_temp = squeeze(weights(iC,:,:));
-% % %         locations_temp = squeeze(locations(iC,:,:));
-% % %         
-% % %         non_zero_weights = find((weights_temp ~= 0) & (isnan(weights_temp) == 0));
-% % % 
-% % %         SST_temp = zeros([nElements, nScans]);
-% % %         SST_temp(non_zero_weights) = weights_temp(non_zero_weights) .* SST_In(locations_temp(non_zero_weights));
-% % %         
-% % %         new_sst = new_sst + SST_temp;
-% % %     end
-% % % end
-
 % Add 1 to region_end(end), generally region_end(4). This is because the
 % scans in each subregion analyzed go from the middle scan line in one
 % group of 10 detectors to the middle scan line in the next group of 10
@@ -558,11 +451,52 @@ if Debug
     disp(['Finished regridding after: ' num2str(toc(tic_regrid_start)) ' seconds.'])
 end
 
-%% Now average to 10x10 km L2eqa grid and regrid AMSR-E to this grid and L2eqa_MODIS_SST to the AMSR-E grid
+%% Now average MODIS SST to 10x10 km L2eqa grid
 
+% Get the elements to use in the regridding if this is the first orbit processed.
+
+if iOrbit == 2
+    iEq = find( min(abs(squeeze(new_lat(677,20000:end)))) == abs(squeeze(new_lat(677,20000:end)))) + 20000 - 1;
+
+    get_MODIS_elements_for_L2eqa_grid(new_lat(:,iEq), new_lon(:,iEq));
+end
+
+%% Average SST, lat and lon for each cell in the new 10x10 km grid.
+
+numNewPixsm = length(pixStartm);
+for iPix=1:numNewPixsm
+    jScanLine = 0;
+    for iScanLine=1:10:size(new_sst,2)-10
+        jScanLine = jScanLine + 1;
+        L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(new_sst(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
+        
+        L2eqaLon(numNewPixsm-iPix+1,jScanLine) = mean(new_lon(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
+        L2eqaLat(numNewPixsm-iPix+1,jScanLine) = mean(new_lat(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
+    end
+end
+
+numNewPixsp = length(pixStartp);
+for iPix=1:numNewPixsp
+    jScanLine = 0;
+    for iScanLine=1:10:size(new_sst,2)-10
+        jScanLine = jScanLine + 1;
+        L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = mean(new_sst(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
+        
+        L2eqaLon(numNewPixsp + iPix,jScanLine) = mean(new_lon(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
+        L2eqaLat(numNewPixsp + iPix,jScanLine) = mean(new_lat(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
+    end
+end
+
+%% Finally regrid AMSR-E to the L2eqa grid and the 10x10 km MODIS SST to the AMSR-E grid
 
 if regrid_to_AMSRE
-    regrid_AMSRE( longitude(:,scans_this_section), latitude(:,scans_this_section), new_sst(:,scans_this_section))
-    [L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
-    regrid_AMSRE( oinfo(iOrbit-1).name, AMSR_E_baseDir, new_lon, new_lat, new_sst);
+    [  AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
+    regrid_AMSRE( L2eqaLon, L2eqaLat);
+else
+    AMSR_E_lat = nan;
+    AMSR_E_lon = nan;
+    AMSR_E_SST = nan;
+    
+    L2eqa_AMSR_E_SST = nan;
+    MODIS_SST_on_AMSR_E_grid = nan;
 end

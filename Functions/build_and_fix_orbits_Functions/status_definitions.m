@@ -97,6 +97,9 @@
 % % % % 301 - regrid_MODIS_orbits - Found too many very large changes in longitude. 
 % % % %       status = populate_problem_list( 301, ['Too many large longitudinal changes for scan line ' num2str(jpix)']);
 % % % %       return == no action on return; status not passed back.
+% % % % 305 - regrid_AMSRE - No AMSR-E  orbit corresponding to this MODIS orbit. 
+% % % %       status = populate_problem_list( 305, ['***** Could not find AMSR-E orbit ' AMSR_E_fi ' corresponding to MODIS orbit ' MODIS_fi]);
+% % % %       return == no action on return; status not passed back.
 
 %% **************** get_scanline_index ****************
 

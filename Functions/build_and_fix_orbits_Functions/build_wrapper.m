@@ -19,7 +19,7 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 
 % Set up directories for this job.
 
-global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote
+global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
 
 % Set directories.
 
@@ -84,7 +84,9 @@ switch Option
         metadata_directory              = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
         granules_directory              = '/Volumes/MODIS_L2_Original/OBPG/combined/';
-
+        
+        AMSR_E_baseDir                  = '/VolumesAMSR-E_L2-v7/';
+        
         output_file_directory_local     = [BaseDir 'SST/'];
         % output_file_directory_remote    = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
         output_file_directory_remote    = '';

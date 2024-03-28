@@ -1,5 +1,5 @@
 function [ AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
-    regrid_AMSRE( L2eqaLon, L2eqaLat)
+    regrid_AMSRE( L2eqaLon, L2eqaLat, L2eqa_MODIS_SST)
 
 % regrid_AMSRE and MODIS to L3 and L2 coordinates corresponding to AMSR-E - PCC
 %
@@ -15,6 +15,7 @@ function [ AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AM
 %   L2eqaLon: longitude for the new 10x10 km grid averaged from all
 %    latitudes falling in the the original grid,
 %   L2eqaLat: latitude for the new 10x10 km grid, averaged as for Lon.
+%   L2eqa_MODIS_SST: 1 km MODIS SST averaged to L2eqa grid.
 %
 % OUTPUT
 %   AMSR_E_lon: AMSR-E longitudes read in from the AMSR-E orbit.
@@ -168,7 +169,7 @@ MODIS_SST_on_AMSR_E_grid = griddata( L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, AMSR_E
 else
     % Here if no AMSR-E orbit
     
-    fprintf('***** Could not find AMSR-E orbit % corresponding to MODIS orbit %s\n', AMSR_E_fi, MODIS_fi)
+    fprintf('***** Could not find AMSR-E orbit %s corresponding to MODIS orbit %s\n', AMSR_E_fi, MODIS_fi)
     
     status = populate_problem_list( 305, ['***** Could not find AMSR-E orbit ' AMSR_E_fi ' corresponding to MODIS orbit ' MODIS_fi]);
     

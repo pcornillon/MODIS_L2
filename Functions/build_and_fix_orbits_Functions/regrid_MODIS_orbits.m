@@ -492,7 +492,7 @@ end
 
 if regrid_to_AMSRE
     [  AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
-    regrid_AMSRE( L2eqaLon, L2eqaLat);
+    regrid_AMSRE( L2eqaLon, L2eqaLat, L2eqa_MODIS_SST);
 else
     AMSR_E_lat = nan;
     AMSR_E_lon = nan;

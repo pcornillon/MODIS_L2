@@ -38,19 +38,19 @@ MODIS_fi = oinfo(iOrbit).name;
 % corresponding AMSR-E orbit and we can check that the start times of the
 % AMSR-E and MODIS orbits are similar.
 tic
-if ~isempty(MODIS_fi)
-    temp_time = ncread( MODIS_fi, 'DateTime');
-    matlab_time_MODIS_start = datenum([1970,1,1]) + double(temp_time)/86400;
-
-    kk = strfind( MODIS_fi, '_orbit_');
-    NASA_orbit_t = str2num(MODIS_fi(kk+7:kk+12));
-
-    [MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(matlab_time_MODIS_start);
-else
+% % % if ~isempty(MODIS_fi)
+% % %     temp_time = ncread( MODIS_fi, 'DateTime');
+% % %     matlab_time_MODIS_start = datenum([1970,1,1]) + double(temp_time)/86400;
+% % % 
+% % %     kk = strfind( MODIS_fi, '_orbit_');
+% % %     NASA_orbit_t = str2num(MODIS_fi(kk+7:kk+12));
+% % % 
+% % %     [MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(matlab_time_MODIS_start);
+% % % else
     NASA_orbit_t = oinfo(end).orbit_number;
     
     [MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(oinfo(end).start_time);
-end
+% % % end
 
 % Build the AMSR-E orbit filename.
 

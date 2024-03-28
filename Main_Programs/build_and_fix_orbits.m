@@ -364,18 +364,11 @@ for i_range_image=1:12
     sst_range(:,:,i_range_image) = xx;
 end
 
-% % % %% Read in the arrays for fast regridding (first) and those used to calculate gradients (second).
-% % % 
-% % % % Fast regridding arrays.
-% % % 
-% % % if fix_bowtie & fast_regrid
-% % %     load([fixit_directory 'weights_and_locations_41616_fixed.mat'])
-% % % else
-% % %     augmented_weights = [];
-% % %     augmented_locations = [];
-% % % end
-% % % 
-% Gradient stuff
+% Load the element locations to use when calculating averages for the new L2eqa grid.
+
+load([fixit_directory 'L2eqa_elements.mat'])
+
+% Load the separations and angles used to calculate gradients.
 
 if get_gradients
     gradient_filename = [fixit_directory 'abbreviated_Separation_and_Angle_Arrays.mat'];
@@ -561,7 +554,7 @@ while granule_start_time_guess <= Matlab_end_time
 % % %             else
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ...
                     easting, northing, new_easting, new_northing, ... 
-                    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+                    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
 
@@ -656,7 +649,7 @@ while granule_start_time_guess <= Matlab_end_time
                 easting, northing, new_easting, new_northing, ...
                 grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
                 region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
-                L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+                L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
                 AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid);
 
             oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);

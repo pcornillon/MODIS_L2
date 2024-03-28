@@ -1,5 +1,5 @@
 function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting, northing, new_easting, new_northing, ...
-    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
     AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, MODIS_SST_on_AMSR_E_grid] = ...
     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In)
 % % %     regrid_MODIS_orbits( regrid_sst, augmented_weights, augmented_locations, longitude, latitude, SST_In)
@@ -19,6 +19,9 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %   base_dir_out - the directory to which the new lon, lat, SST_In and mask
 %    will be writte. The output filename will the same as the input filename
 %    with '_fixed' appended.
+%
+% OUTPUT
+%   ...
 %
 % EXAMPLE
 %  ........
@@ -452,15 +455,15 @@ if Debug
     disp(['Finished regridding after: ' num2str(toc(tic_regrid_start)) ' seconds.'])
 end
 
-%% Now average MODIS SST to 10x10 km L2eqa grid
-
-% Get the elements to use in the regridding if this is the first orbit processed.
-
-if iOrbit == 1
-    iEq = find( min(abs(squeeze(new_lat(677,20000:end)))) == abs(squeeze(new_lat(677,20000:end)))) + 20000 - 1;
-
-    get_MODIS_elements_for_L2eqa_grid(new_lat(:,iEq), new_lon(:,iEq));
-end
+% % % %% Now average MODIS SST to 10x10 km L2eqa grid
+% % % 
+% % % % Get the elements to use in the regridding if this is the first orbit processed.
+% % % 
+% % % if iOrbit == 1
+% % %     iEq = find( min(abs(squeeze(new_lat(677,20000:end)))) == abs(squeeze(new_lat(677,20000:end)))) + 20000 - 1;
+% % % 
+% % %     get_MODIS_elements_for_L2eqa_grid(new_lat(:,iEq), new_lon(:,iEq));
+% % % end
 
 %% Average SST, lat and lon for each cell in the new 10x10 km grid.
 
@@ -469,7 +472,18 @@ for iPix=1:numNewPixsm
     jScanLine = 0;
     for iScanLine=1:10:size(new_sst,2)-10
         jScanLine = jScanLine + 1;
-        L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(new_sst(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
+        tt = new_sst(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10);
+        kk = find(isnan(tt)==0);
+        if isempty(kk)
+            L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = nan;
+            L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(nan);
+            L2eqa_MODIS_num_SST(numNewPixsm-iPix+1,jScanLine) = int16(0);
+        else
+            tt = tt(kk);
+            L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(tt,'all','omitnan');
+            L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(std(tt,'all','omitnan'));
+            L2eqa_MODIS_num_SST(numNewPixsm-iPix+1,jScanLine) = int16(length(kk));
+        end
         
         L2eqaLon(numNewPixsm-iPix+1,jScanLine) = mean(new_lon(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
         L2eqaLat(numNewPixsm-iPix+1,jScanLine) = mean(new_lat(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
@@ -481,8 +495,19 @@ for iPix=1:numNewPixsp
     jScanLine = 0;
     for iScanLine=1:10:size(new_sst,2)-10
         jScanLine = jScanLine + 1;
-        L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = mean(new_sst(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
-        
+        tt = new_sst(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10);
+        kk = find(isnan(tt)==0);
+        if isempty(kk)
+            L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = nan;
+            L2eqa_MODIS_std_SST(numNewPixsp + iPix,jScanLine) = single(nan);
+            L2eqa_MODIS_num_SST(numNewPixsp + iPix,jScanLine) = int16(0);
+        else        
+            tt = tt(kk);
+            L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = mean(tt,'all','omitnan');
+            L2eqa_MODIS_std_SST(numNewPixsp + iPix,jScanLine) = single(std(tt,'all','omitnan'));
+            L2eqa_MODIS_num_SST(numNewPixsp + iPix,jScanLine) = int16(length(kk));
+        end
+
         L2eqaLon(numNewPixsp + iPix,jScanLine) = mean(new_lon(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
         L2eqaLat(numNewPixsp + iPix,jScanLine) = mean(new_lat(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
     end

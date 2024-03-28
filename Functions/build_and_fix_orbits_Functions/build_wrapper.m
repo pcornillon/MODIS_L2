@@ -85,7 +85,7 @@ switch Option
 
         granules_directory              = '/Volumes/MODIS_L2_Original/OBPG/combined/';
         
-        AMSR_E_baseDir                  = '/VolumesAMSR-E_L2-v7/';
+        AMSR_E_baseDir                  = '/Volumes/AMSR-E_L2-v7/';
         
         output_file_directory_local     = [BaseDir 'SST/'];
         % output_file_directory_remote    = '/Volumes/MODIS_L2_Modified/OBPG/SST/';

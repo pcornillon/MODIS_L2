@@ -188,11 +188,11 @@ else
 
     status = populate_problem_list( 305, ['***** Could not find AMSR-E orbit ' AMSR_E_fi ' corresponding to MODIS orbit ' MODIS_fi]);
 
-    AMSR_E_SST = nan;
-    AMSR_E_lat = nan;
-    AMSR_E_lon = nan;
+    AMSR_E_SST = [];
+    AMSR_E_lat = [];
+    AMSR_E_lon = [];
 
-    L2eqa_AMSR_E_SST = nan;
-    MODIS_SST_on_AMSR_E_grid = nan;
+    L2eqa_AMSR_E_SST = [];
+    MODIS_SST_on_AMSR_E_grid = [];
 end
 

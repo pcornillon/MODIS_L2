@@ -165,7 +165,7 @@ if ~isempty(jpix)
     if ~isempty(nn)
         iProblem = 301;
         status = populate_problem_list( iProblem, ['Too many large longitudinal changes for scan line ' num2str(jpix(nn(1)))]);
-        for inn=1:nn
+        for inn=1:length(nn)
             fprintf('  *** Too many large longitudinal changes for scan line %i\n', jpix(nn(inn)))
         end
     end

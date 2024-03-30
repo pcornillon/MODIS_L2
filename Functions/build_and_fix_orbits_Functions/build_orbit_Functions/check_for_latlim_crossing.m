@@ -266,11 +266,25 @@ if ~isempty(aa)
             end
         else
             
-            % Here to check whether or not this granule is immediately
-            % before 79 S. If it is and, if it is then pick the 6th point
-            % in this granule as the starting point.
+            % Here to check if this 79 S is between the last pixel in
+            % the previous orbit and the first pixel in this orbit. It
+            % determines this if the nadir track does not cross 79 S and if
+            % 1.3 times 1/2 of the separation of the first two pixes in the
+            % current orbit is greater than the separation between the
+            % first pixel in the current orbit and 79 S. The reason for
+            % taking 1/2 of the separation is that the separation of along
+            % track pixels in a group of 10 on the nadir line is about
+            % twice that between the last pixel in one group of 10 and the
+            % first pixel in the next group of ten. The reason for the
+            % extra 30% is that it is not exactly 1/2. This could result in
+            % a problem if the distance between 79 S and the first pixel in
+            % this granule is less than 1.3 *... The probability of this is
+            % quite slim.
+            %
+            % In any case, if the above happens, then select start_line_index
+            % as 6, since we start our orbit in the middle of a group of 10.
 
-            if mm(1) == 1
+            if (mm(1) == 1) & (abs(nlat_t(2) - nlat_t(1)/2)*1.3 > (abs(nlat_t(1) - latlim)))
                 start_line_index = 6;
             end
         end

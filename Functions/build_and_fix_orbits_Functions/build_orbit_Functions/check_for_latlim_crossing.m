@@ -284,7 +284,7 @@ if ~isempty(aa)
             % In any case, if the above happens, then select start_line_index
             % as 6, since we start our orbit in the middle of a group of 10.
 
-            if (mm(1) == 1) & (abs(nlat_t(2) - nlat_t(1)/2)*1.3 > (abs(nlat_t(1) - latlim)))
+            if (mm(1) == 1) & ( (1.3 * abs(nlat_t(2) - nlat_t(1)) / 2) > (abs(nlat_t(1) - latlim)))
                 start_line_index = 6;
             end
         end

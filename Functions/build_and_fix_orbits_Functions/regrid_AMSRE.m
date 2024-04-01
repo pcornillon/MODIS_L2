@@ -65,6 +65,8 @@ AMSR_E_fi = [AMSR_E_baseDir year_s '/' year_s month_s day_s '-amsre-remss-l2p-l2
 
 if exist(AMSR_E_fi) == 2
 
+    lat_lon_step_threshold = 190;
+
     fprintf('Pairing this MODIS orbit with %s\n', AMSR_E_fi)
 
     % Note that the AMSR_E data are transposed, i<==>j, in the following to be
@@ -81,13 +83,55 @@ if exist(AMSR_E_fi) == 2
     AMSR_E_lat = AMSR_E_lat(:,nn);
     AMSR_E_lon = AMSR_E_lon(:,nn);
 
+    % First get rid of jumps in the first scan line, since these carry to
+    % all subsequent scan lines.
+    
+    xx = AMSR_E_lon(:,1);
+    diffrow = diff(xx);
+    jpix = find( abs(diffrow) > lat_lon_step_threshold);
+
+    if ~isempty(jpix)
+
+        % Get the step where there is a large jump and set to 360 times the
+        % sign of the step.
+
+        for kPix=1:length(jpix)
+            lonStep(kPix) = -sign(xx(jpix(kPix)+1) - xx(jpix(kPix))) * 360;
+        end
+
+        % If there is only one step set a second step at the end of the
+        % scan line.
+
+        if rem(length(jpix),2)
+            jpix(length(jpix)+1) = length(xx);
+        end
+
+        % Now offset for each step.
+
+        for ifix=1:2:length(jpix)
+            locs2fix = [jpix(ifix)+1:jpix(ifix+1)];
+            xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
+        end
+
+        % Finally shift the longitude values so that most are between -180
+        % and 180.
+
+        while mean(xx,'omitnan') < -180
+            xx = xx + 360;
+        end
+
+        while mean(xx,'omitnan') > 180
+            xx = xx - 360;
+        end
+
+        AMSR_E_lon(:,1) = xx;
+    end
+
     % Get rid of big jumps in longitude for AMSR-E. Do this for each pixel
     % (column) location in the along-scan direction for the length of the
     % orbit. Start by getting the step in longitude in the along-track
     % direction at each pixel location. (Will use the same threshold for the
     % longitudinal step as used for MODIS.
-
-    lon_step_threshold = 190;
 
     diffcol = diff(AMSR_E_lon, 1, 2);
 
@@ -96,7 +140,7 @@ if exist(AMSR_E_fi) == 2
 
         % Find large longitude jumps for this column
 
-        [~, jpix] = find( abs(diffcol(iCol,:)) > lon_step_threshold);
+        [~, jpix] = find( abs(diffcol(iCol,:)) > lat_lon_step_threshold);
 
         if ~isempty(jpix)
 
@@ -125,43 +169,30 @@ if exist(AMSR_E_fi) == 2
         end
     end
 
-    % Add 360 since AMSR-E logitudes start low.
+    % Next make sure that the AMSR-E longitudes are similar to those of the
+    % L2eqa grid. Will do this by histogramming the longitude values and
+    % compariong histograms.
 
-    AMSR_E_lon = AMSR_E_lon + 360;
+    histEdges = [-250:1:250];
+    [hist_L2eqa, ~] = histcounts(L2eqaLon, histEdges);
 
-    % % % % Get the elements to use in the regridding.
-    % % %
-    % % % if iOrbit == 2
-    % % %     iEq = find( min(abs(squeeze(MODIS_lat(677,20000:end)))) == abs(squeeze(MODIS_lat(677,20000:end)))) + 20000 - 1;
-    % % %
-    % % %     get_MODIS_elements_for_L2eqa_grid(MODIS_lat(:,iEq), MODIS_lon(:,iEq));
-    % % % end
-    % % %
-    % % % %% Average SST, lat and lon for each cell in the new 10x10 km grid.
-    % % %
-    % % % numNewPixsm = length(pixStartm);
-    % % % for iPix=1:numNewPixsm
-    % % %     jScanLine = 0;
-    % % %     for iScanLine=1:10:size(MODIS_SST,2)-10
-    % % %         jScanLine = jScanLine + 1;
-    % % %         L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(MODIS_SST(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
-    % % %
-    % % %         L2eqaLon(numNewPixsm-iPix+1,jScanLine) = mean(MODIS_lon(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
-    % % %         L2eqaLat(numNewPixsm-iPix+1,jScanLine) = mean(MODIS_lat(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
-    % % %     end
-    % % % end
-    % % %
-    % % % numNewPixsp = length(pixStartp);
-    % % % for iPix=1:numNewPixsp
-    % % %     jScanLine = 0;
-    % % %     for iScanLine=1:10:size(MODIS_SST,2)-10
-    % % %         jScanLine = jScanLine + 1;
-    % % %         L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = mean(MODIS_SST(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
-    % % %
-    % % %         L2eqaLon(numNewPixsp + iPix,jScanLine) = mean(MODIS_lon(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
-    % % %         L2eqaLat(numNewPixsp + iPix,jScanLine) = mean(MODIS_lat(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
-    % % %     end
-    % % % end
+    MinHistMeanDiff = 1000000;
+
+    for LonShift=[-720:360:720];
+        [hist_amsre, ~] = histcounts(AMSR_E_lon + LonShift, histEdges);
+        histMeanDiff = abs(mean(hist_L2eqa - hist_amsre, 'omitnan'));
+
+        if histMeanDiff < MinHistMeanDiff
+            MinHistMeanDiff = histMeanDiff;
+            bestLonShift = LonShift;
+        end
+    end
+    
+    if bestLonShift ~= 0
+        fprintf('Shifting longitudes by %f degrees.\n', bestLonShift)
+
+        AMSR_E_lon = AMSR_E_lon + bestLonShift;
+    end
 
     %% Finally regrid AMSR-E to the L2eqa grid and L2eqa_MODIS_SST to the AMSR-E grid
 

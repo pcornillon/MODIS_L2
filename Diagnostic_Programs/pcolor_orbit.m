@@ -53,14 +53,25 @@ if strcmp(sensorName, 'MODIS')
     minute = filename(nn+24:nn+25);
 
     titleDate = [year '-' month '-' day];
-    titleTime = [hour ':' minute];
+    titleTime = [' at ' hour ':' minute];
 elseif ~isempty(filename)
     nn = strfind(filename, '7_r');
     orbit = filename(nn+3:nn+7);
 
-    titleDate = ncreadatt(filename, '/', 'start_date');
-    TT = ncreadatt(filename, '/', 'start_time');
-    titleTime = TT(1:5);
+    if exist(filename) == 2
+        titleDate = [' on' ncreadatt(filename, '/', 'start_date')];
+        TT = ncreadatt(filename, '/', 'start_time');
+        titleTime = [' at ' TT(1:5)];
+    else
+        titleDate = [];
+        titleTime = [];
+    end
 end
 
-title(['Orbit: ' orbit ' on ' titleDate ' at ' titleTime ' for ' sensorName], fontsize=30)
+if isempty(sensorName)
+    titleSensorName = [];
+else
+    titleSensorName = [' for ' sensorName];
+end
+
+title(['Orbit: ' orbit ' on ' titleDate titleTime titleSensorName], fontsize=30)

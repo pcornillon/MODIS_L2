@@ -152,38 +152,13 @@ difflon = diff(longitude);
 
 lon_step_threshold = 190;
 
-[ipix, jpix] = find( abs(difflon) > lon_step_threshold);
-
-% If found some longitudes with large changes, fix them.
-
-if ~isempty(jpix)
-
-    % Check that it doesn't change twice on the same line.
-
-    diffjpix = diff(jpix);
-    nn = find(abs(diffjpix) < 0.5);
-    if ~isempty(nn)
-        iProblem = 301;
-        status = populate_problem_list( iProblem, ['Too many large longitudinal changes for scan line ' num2str(jpix(nn(1)))]);
-        for inn=1:length(nn)
-            fprintf('  *** Too many large longitudinal changes for scan line %i\n', jpix(nn(inn)))
-        end
-    end
-
-    % Add 360 degrees to all negative values on those lines where it changes dramatically.
-
-    for j=1:length(jpix)
-        xx = longitude(:,jpix(j));
-        xx(xx<0) = xx(xx<0) + 360;
-
-        longitude(:,jpix(j)) = xx;
-    end
-end
-
 % Now fix the along-track direction.
 
-indN1 = 19200;
-indN2 = 19300;
+% % indN1 = 19200;
+% % indN2 = 19300;
+
+indN1 = 18821;
+indN2 = 19681;
 
 diffcol = diff(longitude, 1, 2);
 
@@ -231,16 +206,105 @@ for iCol=1:mpixels
     end
 end
 
-% Now fix problem, which results in very large values. This appears to
-% occur at the seam between large negative and large positive values
-% resulting when the scan line crosses the 90 S. Just in case do the same
-% if the value is very negative.
+% Now for scan lines.
 
-nn = find(longitude > 360);
-longitude(nn) = longitude(nn) - 360;
+for iRow=1:nscans
+    xx = longitude(677:end,iRow);
+    diffrow = diff(xx);
+    ipix = find(abs(diffrow) > lon_step_threshold);
+    if ~isempty(ipix)
+        for kPix=1:length(ipix)
+            lonStep(kPix) = -sign(xx(ipix(kPix)+1) - xx(ipix(kPix))) * 360;
+        end
+        if rem(length(ipix),2)
+            ipix(length(ipix)+1) = length(xx);
+        end
+        for ifix=1:2:length(ipix)
+            locs2fix = [ipix(ifix)+1:ipix(ifix+1)];
+            xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
+        end
+    end
+    longitude(677:end,iRow) = xx; 
+end
 
-nn = find(longitude < -360);
-longitude(nn) = longitude(nn) + 360;
+for iRow=1:nscans
+    xx = longitude(1:677,iRow);
+    diffrow = diff(xx);
+    ipix = find(abs(diffrow) > lon_step_threshold);
+    if ~isempty(ipix)
+
+        % Reverse the order since we are going from nadir.
+        
+        ipix = flip(ipix);
+        
+        clear lonStep
+        for kPix=1:length(ipix)
+            if xx(ipix(kPix)+1) > xx(ipix(kPix))
+                lonStep(kPix) = 360;
+            else
+                lonStep(kPix) = -360;
+            end
+        end
+        if rem(length(ipix),2)
+            ipix(length(ipix)+1) = 1;
+        end
+        for ifix=1:2:length(ipix)
+            locs2fix = [ipix(ifix+1):ipix(ifix)];
+            xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
+        end
+    end
+    longitude(1:677,iRow) = xx; 
+end
+
+% Now shift the entire longitude range if too positive or too negative.
+
+if min(longitude(:)) < -360
+    longitude = longitude + 360;
+elseif max(longitude) > 360
+    longitude = longitude - 360;
+end
+
+% Now get move outliers, which seem to have escaped the above.
+
+[Values, Edges] = histcounts(longitude);
+
+nn = find(Values > 0);
+
+cc = 0;
+for jBin=nn(1):nn(end)
+    iBin = nn(1) + jBin - 1;
+
+    if Values(iBin) == 0
+        cc = cc + 1;
+        if cc > 10
+            edgeToUse = Edges(iBin);
+            break
+        end
+    else
+        cc = 0;
+    end
+end
+
+% If cc == 10, it found a pretty long area with no values. That means that
+% there are likely outliers so we need to shift them.
+
+if cc >= 10
+    nn = find(longitude < edgeToUse);
+
+    % If the number of elements found is less than 1/2, then shift these
+    % up, otherwise find the ones > edgeToUse and shift them down.
+
+    if length(nn) < nscans * mpixels / 2
+        longitude(nn) = longitude(nn) + 360;
+    else
+        nn = find(longitude > edgeToUse);
+       longitude(nn) = longitude(nn) - 360;
+    end
+end
+
+if (min(longitude) < -360) | (max(longitude) > 360)
+    fprintf('Longitude values range from %f to %f, which is going to results in an error from ll2 function.\n', min(longitude), max(longitude))
+end
 
 %% Now regrid segments 1 & 5
 
@@ -260,7 +324,48 @@ for iSection=[1,5]
         scans_to_do = [region_start(iSection):region_end(iSection)];
     end
     
-    [easting(:,scans_to_do), northing(:,scans_to_do)] = ll2psn(latitude(:,scans_to_do), longitude(:,scans_to_do));
+    % longitude values can't be less than -360 or probably larger than 360
+    % for the ll2p functions so need to recast making sure that the range
+    % is less than about 420 and that there are no values less than -360
+    % and +360.
+
+    zz = longitude(:,scans_to_do);
+
+    nn = find(zz < -360);
+    mm = find(zz > 360);
+
+    if ~isempty(nn)
+        zz(nn) = zz(nn) + 360; 
+    end
+
+    if ~isempty(mm)
+        zz(mm) = zz(mm) - 360; 
+    end
+
+    % % % dd = max(zz(:)) - min(zz(:));
+    % % % 
+    % % % less_than_zero_shift_up = 0;
+    % % % 
+    % % % while dd>400
+    % % %     [Values, Edges] = histcounts(longitude);
+    % % %     nn = find(Values == 0);
+    % % %     mm = find( zz < Edges(floor(mean(nn))));
+    % % %     if length(mm) < 10
+    % % %         break
+    % % %     end
+    % % %     zz(mm) = zz(mm) + 360;
+    % % %     less_than_zero_shift_up = less_than_zero_shift_up + 360;
+    % % % 
+    % % %     dd = max(zz(:)) - min(zz(:));
+    % % % end
+    % % % 
+    % % % overall_shift_down = 0;
+    % % % while max(zz(:)) > 400
+    % % %     zz = zz - 360;
+    % % %     overall_shift_down = overall_shift_down - 360;
+    % % % end
+
+    [easting(:,scans_to_do), northing(:,scans_to_do)] = ll2psn(latitude(:,scans_to_do), zz);
 
     % Do the scan lines up to the first complete set of 10 detectors.
 
@@ -309,17 +414,35 @@ for iSection=[1,5]
 
     [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
-    % Fix the longitude jump introduced by psn2ll. Only did this for
-    % section 1; not too sure why.
+    % Now need to undo the shifting around that was done to accommodate ll2
 
-    if iSection == 1
-        aa = new_lon(:,region_start(iSection):region_end(iSection));
-        rr = find(aa<-100);
-        aa(rr) = aa(rr) + 360;
-        new_lon(:,region_start(iSection):region_end(iSection)) = aa;
+    % % % if (overall_shift_down ~= 0) | (less_than_zero_shift_up ~= 0)
+    % % %     zz = new_lon(:,scans_this_section);
+    % % %     zz = zz - overall_shift_down;
+    % % %     zz(mm) = zz(mm) - less_than_zero_shift_up;
+    % % %     new_lon(:,scans_this_section) = zz;
+    % % % end
+    % % % 
+    % % % % Fix the longitude jump introduced by psn2ll. Only did this for
+    % % % % section 1; not too sure why.
+    % % % 
+    % % % if iSection == 1
+    % % %     aa = new_lon(:,region_start(iSection):region_end(iSection));
+    % % %     rr = find(aa<-100);
+    % % %     aa(rr) = aa(rr) + 360;
+    % % %     new_lon(:,region_start(iSection):region_end(iSection)) = aa;
+    % % % 
+    % % %     clear aa
+    % % % end
 
-        clear aa
+    if ~isempty(nn)
+        new_lon(nn) = new_lon(nn) - 360;
     end
+
+    if ~isempty(mm)
+        new_lon(mm) = new_lon(mm) + 360;
+    end
+
 end
 
 %% Regrid segments 2 and 4.

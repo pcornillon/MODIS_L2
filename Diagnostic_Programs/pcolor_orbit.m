@@ -74,4 +74,7 @@ else
     titleSensorName = [' for ' sensorName];
 end
 
-title(['Orbit: ' orbit ' on ' titleDate titleTime titleSensorName], fontsize=30)
+if exist('orbit')
+    title(['Orbit: ' orbit ' on ' titleDate titleTime titleSensorName], fontsize=30)
+end
+

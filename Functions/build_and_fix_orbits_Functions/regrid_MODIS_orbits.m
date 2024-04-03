@@ -121,6 +121,16 @@ region_end(4) = floor(nn(1) / 10) * 10 - 1;
 region_start(5) = floor(nn(1) / 10) * 10;
 region_end(5) =  nscans-1;
 
+% Add 1 to region_end(end), generally region_end(5). This is because the
+% scans in each subregion analyzed go from the middle scan line in one
+% group of 10 detectors to the middle scan line in the next group of 10
+% detectors. (These values are not changed in the regridding.) This means
+% that there are 10n+1 scan lines in the entire orbit as opposed to 10 but
+% to facilitate processiong, region_end(end) was set to the length of the
+% orbit -1 above. Adding 1 here will reset it to the proper value.
+
+region_end(end) = region_end(end) + 1;
+
 if Debug
     disp(['Regions to process'])
     for iRegion=1:5
@@ -141,170 +151,7 @@ northing = single(new_lon);
 new_easting = single(new_lon);
 new_northing = single(new_lon);
 
-% % % %% Recast longitude to not go from -180 to + 180
-% % %
-% % % % % % % Start by fixing the along-scan direction. Get the separation of longitude values in the along-scan direction.
-% % % % % %
-% % % % % % difflon = diff(longitude);
-% % %
-% % % % Find pixel locations where it changes sign by more than
-% % % % lon_step_threshold degrees, whic is set to 190 for now.
-% % %
-% % % lon_step_threshold = 190;
-% % %
-% % % % Now fix the along-track direction.
-% % %
-% % % % % indN1 = 19200;
-% % % % % indN2 = 19300;
-% % %
-% % % indN1 = 18821;
-% % % indN2 = 19681;
-% % %
-% % % diffcol = diff(longitude, 1, 2);
-% % %
-% % % for iCol=1:mpixels
-% % %
-% % %     xx = longitude(iCol,:);
-% % %
-% % %     [~, jpix] = find( abs(diffcol(iCol,:)) > lon_step_threshold);
-% % %
-% % %     if ~isempty(jpix)
-% % %
-% % %         % % % [xx] = fix_lon_at_poles( xx, jpix);
-% % %
-% % %         for kPix=1:length(jpix)
-% % %             lonStep(kPix) = -sign(xx(jpix(kPix)+1) - xx(jpix(kPix))) * 360;
-% % %         end
-% % %
-% % %         if ~isempty(jpix)
-% % %
-% % %             % Now get steps excluding ones between indN1 and indN2
-% % %             llpix = find( (jpix<indN1) | (jpix>indN2) );
-% % %             if ~isempty(llpix)
-% % %                 jpix = jpix(llpix);
-% % %                 lonStep = lonStep(llpix);
-% % %             end
-% % %         end
-% % %
-% % %         % If number of jpix elements is odd, add one more element
-% % %         % corresponding to the number of scans in the orbit. We don't need
-% % %         % to add the last lonStep, since it wouldn't be used.
-% % %
-% % %         if ~isempty(jpix)
-% % %             if rem(length(jpix),2)
-% % %                 jpix(length(jpix)+1) = length(xx);
-% % %             end
-% % %
-% % %             for ifix=1:2:length(jpix)
-% % %                 locs2fix = [jpix(ifix)+1:jpix(ifix+1)];
-% % %
-% % %                 xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
-% % %             end
-% % %         end
-% % %
-% % %         longitude(iCol,:) = xx;
-% % %     end
-% % % end
-% % %
-% % % % Now for scan lines.
-% % %
-% % % for iRow=1:nscans
-% % %     xx = longitude(677:end,iRow);
-% % %     diffrow = diff(xx);
-% % %     ipix = find(abs(diffrow) > lon_step_threshold);
-% % %     if ~isempty(ipix)
-% % %         for kPix=1:length(ipix)
-% % %             lonStep(kPix) = -sign(xx(ipix(kPix)+1) - xx(ipix(kPix))) * 360;
-% % %         end
-% % %         if rem(length(ipix),2)
-% % %             ipix(length(ipix)+1) = length(xx);
-% % %         end
-% % %         for ifix=1:2:length(ipix)
-% % %             locs2fix = [ipix(ifix)+1:ipix(ifix+1)];
-% % %             xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
-% % %         end
-% % %     end
-% % %     longitude(677:end,iRow) = xx;
-% % % end
-% % %
-% % % for iRow=1:nscans
-% % %     xx = longitude(1:677,iRow);
-% % %     diffrow = diff(xx);
-% % %     ipix = find(abs(diffrow) > lon_step_threshold);
-% % %     if ~isempty(ipix)
-% % %
-% % %         % Reverse the order since we are going from nadir.
-% % %
-% % %         ipix = flip(ipix);
-% % %
-% % %         clear lonStep
-% % %         for kPix=1:length(ipix)
-% % %             if xx(ipix(kPix)+1) > xx(ipix(kPix))
-% % %                 lonStep(kPix) = 360;
-% % %             else
-% % %                 lonStep(kPix) = -360;
-% % %             end
-% % %         end
-% % %         if rem(length(ipix),2)
-% % %             ipix(length(ipix)+1) = 1;
-% % %         end
-% % %         for ifix=1:2:length(ipix)
-% % %             locs2fix = [ipix(ifix+1):ipix(ifix)];
-% % %             xx(locs2fix) = xx(locs2fix) + lonStep(ifix);
-% % %         end
-% % %     end
-% % %     longitude(1:677,iRow) = xx;
-% % % end
-% % %
-% % % % Now shift the entire longitude range if too positive or too negative.
-% % %
-% % % if min(longitude(:)) < -360
-% % %     longitude = longitude + 360;
-% % % elseif max(longitude) > 360
-% % %     longitude = longitude - 360;
-% % % end
-% % %
-% % % % Now move outliers, which seem to have escaped the above.
-% % %
-% % % [Values, Edges] = histcounts(longitude);
-% % %
-% % % nn = find(Values > 0);
-% % %
-% % % cc = 0;
-% % % for jBin=nn(1):nn(end)
-% % %     iBin = nn(1) + jBin - 1;
-% % %
-% % %     if Values(iBin) == 0
-% % %         cc = cc + 1;
-% % %         if cc > 10
-% % %             edgeToUse = Edges(iBin);
-% % %             break
-% % %         end
-% % %     else
-% % %         cc = 0;
-% % %     end
-% % % end
-% % %
-% % % % If cc >= 10, it found a pretty long area with no values. That means that
-% % % % there are likely outliers so we need to shift them.
-% % %
-% % % if cc >= 10
-% % %     nn = find(longitude < edgeToUse);
-% % %
-% % %     % If the number of elements found is less than 1/2, then shift these
-% % %     % up, otherwise find the ones > edgeToUse and shift them down.
-% % %
-% % %     if length(nn) < nscans * mpixels / 2
-% % %         longitude(nn) = longitude(nn) + 360;
-% % %     else
-% % %         nn = find(longitude > edgeToUse);
-% % %        longitude(nn) = longitude(nn) - 360;
-% % %     end
-% % % end
-% % %
-% % % if (min(longitude) < -360) | (max(longitude) > 360)
-% % %     fprintf('Longitude values range from %f to %f, which is going to results in an error from ll2 function.\n', min(longitude), max(longitude))
-% % % end
+% Now recast longitudes so that there are no 360 degree steps--I hope.
 
 zz = longitude;
 [longitude, nnSave, mmSave] = fix_lon_steps_and_constrain( 'fixSteps', zz);
@@ -328,70 +175,23 @@ for iSection=[1,5]
         scans_this_section = [region_start(iSection):region_end(iSection)];
     end
     
-    % % %     % longitude values can't be less than -360 or probably larger than 360
-    % % %     % for the ll2p functions so will shift all values < -360 up by 360 and
-    % % %     % those > 360 down by 360.
-    % % %
-    % % %     zz = longitude(:,scans_this_section);
-    % % %
-    % % %     nn = find(zz < -360);
-    % % %     mm = find(zz > 360);
-    % % %
-    % % %     if ~isempty(nn)
-    % % %         zz(nn) = zz(nn) + 360;
-    % % %     end
-    % % %
-    % % %     if ~isempty(mm)
-    % % %         zz(mm) = zz(mm) - 360;
-    % % %     end
-    % % %
-    % % %     % Now move outliers, which seem to have escaped the above.
-    % % %
-    % % %     [Values, Edges] = histcounts(zz);
-    % % %
-    % % %     nn = find(Values > 0);
-    % % %
-    % % %     cc = 0;
-    % % %     for jBin=nn(1):nn(end)
-    % % %         iBin = nn(1) + jBin - 1;
-    % % %
-    % % %         if Values(iBin) == 0
-    % % %             cc = cc + 1;
-    % % %             if cc > 10
-    % % %                 edgeToUse = Edges(iBin);
-    % % %                 break
-    % % %             end
-    % % %         else
-    % % %             cc = 0;
-    % % %         end
-    % % %     end
-    % % %
-    % % %     % If cc >= 10, it found a pretty long area with no values. That means that
-    % % %     % there are likely outliers so we need to shift them.
-    % % %
-    % % %     if cc >= 10
-    % % %         nn = find(zz < edgeToUse);
-    % % %
-    % % %         % If the number of elements found is less than 1/2, then shift these
-    % % %         % up, otherwise find the ones > edgeToUse and shift them down.
-    % % %
-    % % %         if length(nn) < nscans * mpixels / 2
-    % % %             zz(nn) = zz(nn) + 360;
-    % % %         else
-    % % %             nn = find(longitude > edgeToUse);
-    % % %             zz(nn) = zz(nn) - 360;
-    % % %         end
-    % % %     end
+    % longstude values can't be less than -360 or probably larger than 360
+    % for the ll2pS functions so will shift all values < -360 up by 360 and
+    % those > 360 down by 360; i.e., will make sure that there are no
+    % longituds <-360 or >360. 
     
     [lonArray, nnSave, mmSave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
     
-    % % %     [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2psn(latitude(:,scans_this_section), lonArray);
+    % Convert longitude, latitude to a polar stereographic coordinate system. 
+    
     [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2ps(latitude(:,scans_this_section), lonArray);
     
-    % Do the scan lines up to the first complete set of 10 detectors.
+    % Regrid northing and easting to lie on a straight line between the 1st
+    % pixel in each group and the 1st pixel in the next group of 10 scans.
     
     mult = [0:9] / num_detectors;
     
+    save_scans_this_section = scans_this_section;
     scans_this_section = [];
     for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
         if mod(iScan,101) == 0 & Debug
@@ -408,7 +208,13 @@ for iSection=[1,5]
         new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
     end
     
-    % Now regrid using easting and northing.
+    % Check that it is still working on the same range of scans that it started with.
+    
+    if scans_this_section ~= save_scans_this_section
+        fprint('Problem recalculating the scans to process for Section %i.\n', iSection)
+    end
+    
+    % Now regrid SST using easting and northing.
     
     xx = double(easting(:,scans_this_section));
     yy = double(northing(:,scans_this_section));
@@ -422,9 +228,8 @@ for iSection=[1,5]
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end
     
-    % And convert from polar to lat, lon.
+    % And convert from polar back to lat, lon.
     
-    % % %     [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
     [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = ps2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
     
     % And add the last scan line in the orbit (Section 5). It will be
@@ -436,23 +241,7 @@ for iSection=[1,5]
         new_lon(:,end) = longitude(:,end);
     end
     
-    
-    % % %     % Now need to undo the shifting around that was done to accommodate ll2
-    % % %
-    % % %     zz = new_lon(:,scans_this_section);
-    % % %
-    % % %     if ~isempty(nn)
-    % % %         zz(nn) = zz(nn) - 360;
-    % % %     end
-    % % %
-    % % %     if ~isempty(mm)
-    % % %         zz(mm) = zz(mm) + 360;
-    % % %     end
-    % % %
-    % % %     if ~isempty(nn) | ~isempty(mm)
-    % % %         new_lon(nn) = zz;
-    % % %     end
-    
+    % Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
     
     if ~isempty(nnSave) | ~isempty(mmSave)
         [lonArray, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section));
@@ -529,30 +318,48 @@ if Debug
     disp(' ')
 end
 
-% % clear easting northing new_easting new_northing
-
 scans_this_section = [region_start(iSection):region_end(iSection)+1];
 
-% longitude values can't be less than -360 or probably larger than 360
-% for the ll2p functions so will shift all values < -360 up by 360 and
-% those > 360 down by 360.
+% longstude values can't be less than -360 or probably larger than 360
+% for the ll2pS functions so will shift all values < -360 up by 360 and
+% those > 360 down by 360; i.e., will make sure that there are no
+% longituds <-360 or >360.
 
 [lonArray, nnSave, mmSave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
 
-% % % [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
+% Convert longitude, latitude to a polar stereographic coordinate system.
+
 [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2psn(latitude(:,scans_this_section), lonArray);
 
-% % % % Fix the longitude jump introduced by psn2ll. (19250 corresponds to the
-% % % % highest latitude reached by the satellite-the nadir track.)
-% % %
-% % % aa = new_lon(:,region_start(3):19250);
-% % % rr = find(aa<-100);
-% % % aa(rr) = aa(rr) + 360;
-% % % new_lon(:,region_start(3):19250) = aa;
-% % %
-% % % clear aa
+% Regrid northing and easting to lie on a straight line between the 1st
+% pixel in each group and the 1st pixel in the next group of 10 scans.
 
-% Now regrid using easting and northing.
+mult = [0:9] / num_detectors;
+
+save_scans_this_section = scans_this_section;
+scans_this_section = [];
+for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
+    if mod(iScan,101) == 0 & Debug
+        disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
+    end
+    
+    northing_separation = northing(:,iScan+10) - northing(:,iScan);
+    easting_separation  = easting(:,iScan+10)  - easting(:,iScan);
+    
+    iScanVec = [iScan:iScan+9];
+    scans_this_section = [scans_this_section iScanVec];
+    
+    new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
+    new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
+end
+
+% Check that it is still working on the same range of scans with which it started. 
+
+if scans_this_section ~= save_scans_this_section
+    fprint('Problem recalculating the scans to process for Section %i.\n', iSection)
+end
+
+% Now regrid SST using easting and northing.
 
 xx = double(easting(:,scans_this_section));
 yy = double(northing(:,scans_this_section));
@@ -570,35 +377,19 @@ end
 
 [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
 
-[lonArray, ~, ~] = fix_lon_steps_and_constrain( 'constrainLongitude', new_lon(:,scans_this_section));
+% Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
+
+[lonArray, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section));
 
 if ~isempty(nnSave) | ~isempty(mmSave)
     new_lon(:,scans_this_section) = lonArray;
 end
 
-% Add 1 to region_end(end), generally region_end(5). This is because the
-% scans in each subregion analyzed go from the middle scan line in one
-% group of 10 detectors to the middle scan line in the next group of 10
-% detectors. (These values are not changed in the regridding.) This means
-% that there are 10n+1 scan lines in the entire orbit as opposed to 10 but
-% to facilitate processiong, region_end(end) was set to the length of the
-% orbit -1 above. Adding 1 here will reset it to the proper value.
-
-region_end(end) = region_end(end) + 1;
+%% All done regridding input grid to Peter's new grid dealing with bow-tie.
 
 if Debug
     disp(['Finished regridding after: ' num2str(toc(tic_regrid_start)) ' seconds.'])
 end
-
-% % % %% Now average MODIS SST to 10x10 km L2eqa grid
-% % %
-% % % % Get the elements to use in the regridding if this is the first orbit processed.
-% % %
-% % % if iOrbit == 1
-% % %     iEq = find( min(abs(squeeze(new_lat(677,20000:end)))) == abs(squeeze(new_lat(677,20000:end)))) + 20000 - 1;
-% % %
-% % %     get_MODIS_elements_for_L2eqa_grid(new_lat(:,iEq), new_lon(:,iEq));
-% % % end
 
 %% Average SST, lat and lon for each cell in the new 10x10 km grid.
 
@@ -607,18 +398,28 @@ for iPix=1:numNewPixsm
     jScanLine = 0;
     for iScanLine=1:10:size(new_sst,2)-10
         jScanLine = jScanLine + 1;
+        
+        % Get the SST values for this cell, tt, and find the ones that are cloud-free, kk. 
+        
         tt = new_sst(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10);
         kk = find(isnan(tt)==0);
+        
+        % Now average the cloud-free SST values.
+        
         if isempty(kk)
             L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = nan;
             L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(nan);
             L2eqa_MODIS_num_SST(numNewPixsm-iPix+1,jScanLine) = int16(0);
         else
             tt = tt(kk);
-            L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(tt,'all','omitnan');
-            L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(std(tt,[],'all','omitnan'));
+            L2eqa_MODIS_SST(numNewPixsm-iPix+1,jScanLine) = mean(tt);
+            L2eqa_MODIS_std_SST(numNewPixsm-iPix+1,jScanLine) = single(std(tt));
             L2eqa_MODIS_num_SST(numNewPixsm-iPix+1,jScanLine) = int16(length(kk));
         end
+        
+        % Note that L2eqaLon and Lat are at the center of the cell, while
+        % L2eqa_MODIS_SST is at the center of the location of cloud-free
+        % pixels.
         
         L2eqaLon(numNewPixsm-iPix+1,jScanLine) = mean(new_lon(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
         L2eqaLat(numNewPixsm-iPix+1,jScanLine) = mean(new_lat(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10),'all','omitnan');
@@ -630,8 +431,14 @@ for iPix=1:numNewPixsp
     jScanLine = 0;
     for iScanLine=1:10:size(new_sst,2)-10
         jScanLine = jScanLine + 1;
+        
+        % Get the SST values for this cell, tt, and find the ones that are cloud-free, kk. 
+        
         tt = new_sst(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10);
         kk = find(isnan(tt)==0);
+        
+        % Now average the cloud-free SST values.
+        
         if isempty(kk)
             L2eqa_MODIS_SST(numNewPixsp + iPix,jScanLine) = nan;
             L2eqa_MODIS_std_SST(numNewPixsp + iPix,jScanLine) = single(nan);
@@ -642,6 +449,10 @@ for iPix=1:numNewPixsp
             L2eqa_MODIS_std_SST(numNewPixsp + iPix,jScanLine) = single(std(tt,[],'all','omitnan'));
             L2eqa_MODIS_num_SST(numNewPixsp + iPix,jScanLine) = int16(length(kk));
         end
+        
+        % Note that L2eqaLon and Lat are at the center of the cell, while
+        % L2eqa_MODIS_SST is at the center of the location of cloud-free
+        % pixels.
         
         L2eqaLon(numNewPixsp + iPix,jScanLine) = mean(new_lon(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');
         L2eqaLat(numNewPixsp + iPix,jScanLine) = mean(new_lat(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10),'all','omitnan');

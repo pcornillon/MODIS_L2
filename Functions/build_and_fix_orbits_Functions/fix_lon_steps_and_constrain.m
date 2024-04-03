@@ -1,4 +1,4 @@
-function [lonArray, nn, mm] = fix_lon_steps_and_constrain(Case, lonArray, nn, mm)
+function [lonArray, nn, mm] = fix_lon_steps_and_constrain(Case, lonArrayIn, nn, mm)
 % fix_lon_steps_and_constrain - shifts longitudes to elminiate steps and constrain longitudes to -360 to +360 for ll2 algorithms - PCC
 %
 % This function takes a input an array of longitude values and then
@@ -30,10 +30,14 @@ function [lonArray, nn, mm] = fix_lon_steps_and_constrain(Case, lonArray, nn, mm
 % above or below will be shifted by +/- 360 degrees.
 
 binCountThreshold = 10;
+lonArray = lonArrayIn;
 
 % longitude values can't be less than -360 or probably larger than 360
 % for the ll2p functions so will shift all values < -360 up by 360 and
 % those > 360 down by 360.
+
+nn = [];
+mm = [];
 
 switch Case
     
@@ -45,8 +49,8 @@ switch Case
         indN1 = 18821;
         indN2 = 19681;
  
-        [mpixels, nscans] = size(longitude);
-        nadirPixel = ceil(mppixels / 2);
+        [mpixels, nscans] = size(lonArray);
+        nadirPixel = ceil(mpixels / 2);
                
         % Start by fixing the along-track direction. Will work on the
         % along-track pixels first.
@@ -197,7 +201,7 @@ switch Case
         end
         
         if (min(lonArray) < -360) | (max(lonArray) > 360)
-            fprintf('Longitude values range from %f to %f, which is going to results in an error from ll2 function.\n', min(longitude), max(longitude))
+            fprintf('Longitude values range from %f to %f, which is going to results in an error from ll2 function.\n', min(lonArray), max(lonArray))
         end
         
 %% Constrain longitudes for ll2psx
@@ -250,7 +254,7 @@ switch Case
             if length(nn) < nscans * mpixels / 2
                 lonArray(nn) = lonArray(nn) + 360;
             else
-                nn = find(longitude > edgeToUse);
+                nn = find(lonArray > edgeToUse);
                 lonArray(nn) = lonArray(nn) - 360;
             end
         end

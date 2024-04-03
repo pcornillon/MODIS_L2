@@ -306,7 +306,9 @@ new_northing = single(new_lon);
 % % %     fprintf('Longitude values range from %f to %f, which is going to results in an error from ll2 function.\n', min(longitude), max(longitude))
 % % % end
 
-[longitude, nnSave, mmSave] = fix_lon_steps_and_constrain( 'fixSteps', longitude);
+zz = longitude;
+[longitude, nnSave, mmSave] = fix_lon_steps_and_constrain( 'fixSteps', zz);
+clear zz
 
 %% Now regrid segments 1 & 5
 

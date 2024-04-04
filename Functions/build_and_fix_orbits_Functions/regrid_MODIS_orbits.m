@@ -121,15 +121,15 @@ region_end(4) = floor(nn(1) / 10) * 10 - 1;
 region_start(5) = floor(nn(1) / 10) * 10;
 region_end(5) =  nscans-1;
 
-% Add 1 to region_end(end), generally region_end(5). This is because the
-% scans in each subregion analyzed go from the middle scan line in one
-% group of 10 detectors to the middle scan line in the next group of 10
-% detectors. (These values are not changed in the regridding.) This means
-% that there are 10n+1 scan lines in the entire orbit as opposed to 10 but
-% to facilitate processiong, region_end(end) was set to the length of the
-% orbit -1 above. Adding 1 here will reset it to the proper value.
-
-region_end(end) = region_end(end) + 1;
+% % % % Add 1 to region_end(end), generally region_end(5). This is because the
+% % % % scans in each subregion analyzed go from the middle scan line in one
+% % % % group of 10 detectors to the middle scan line in the next group of 10
+% % % % detectors. (These values are not changed in the regridding.) This means
+% % % % that there are 10n+1 scan lines in the entire orbit as opposed to 10 but
+% % % % to facilitate processiong, region_end(end) was set to the length of the
+% % % % orbit -1 above. Adding 1 here will reset it to the proper value.
+% % % 
+% % % region_end(end) = region_end(end) + 1;
 
 if Debug
     disp(['Regions to process'])
@@ -154,7 +154,7 @@ new_northing = single(new_lon);
 % Now recast longitudes so that there are no 360 degree steps--I hope.
 
 zz = longitude;
-[longitude, nnSave, mmSave] = fix_lon_steps_and_constrain( 'fixSteps', zz);
+[longitude, ~, ~, ~] = fix_lon_steps_and_constrain( 'fixSteps', zz);
 clear zz
 
 %% Now regrid segments 1 & 5
@@ -180,7 +180,7 @@ for iSection=[1,5]
     % those > 360 down by 360; i.e., will make sure that there are no
     % longituds <-360 or >360. 
     
-    [lonArray, nnSave, mmSave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
+    [lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
     
     % Convert longitude, latitude to a polar stereographic coordinate system. 
     
@@ -210,8 +210,8 @@ for iSection=[1,5]
     
     % Check that it is still working on the same range of scans that it started with.
     
-    if scans_this_section ~= save_scans_this_section
-        fprint('Problem recalculating the scans to process for Section %i.\n', iSection)
+    if length(scans_this_section) ~= length(save_scans_this_section) - 1
+        fprintf('Problem recalculating the scans to process for Section %i.\n', iSection)
     end
     
     % Now regrid SST using easting and northing.
@@ -244,7 +244,7 @@ for iSection=[1,5]
     % Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
     
     if ~isempty(nnSave) | ~isempty(mmSave)
-        [lonArray, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section));
+        [lonArray, ~, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section), nnSave, mmSave, shiftBySave);
     
         new_lon(:,scans_this_section) = lonArray;
     end
@@ -325,7 +325,7 @@ scans_this_section = [region_start(iSection):region_end(iSection)+1];
 % those > 360 down by 360; i.e., will make sure that there are no
 % longituds <-360 or >360.
 
-[lonArray, nnSave, mmSave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
+[lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
 
 % Convert longitude, latitude to a polar stereographic coordinate system.
 
@@ -355,7 +355,7 @@ end
 
 % Check that it is still working on the same range of scans with which it started. 
 
-if scans_this_section ~= save_scans_this_section
+if length(scans_this_section) ~= length(save_scans_this_section) - 1
     fprint('Problem recalculating the scans to process for Section %i.\n', iSection)
 end
 
@@ -379,7 +379,7 @@ end
 
 % Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
 
-[lonArray, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section));
+[lonArray, ~, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section), nnSave, mmSave, shiftBySave);
 
 if ~isempty(nnSave) | ~isempty(mmSave)
     new_lon(:,scans_this_section) = lonArray;

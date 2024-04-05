@@ -128,7 +128,7 @@ region_end(5) =  nscans-1;
 % % % % that there are 10n+1 scan lines in the entire orbit as opposed to 10 but
 % % % % to facilitate processiong, region_end(end) was set to the length of the
 % % % % orbit -1 above. Adding 1 here will reset it to the proper value.
-% % % 
+% % %
 % % % region_end(end) = region_end(end) + 1;
 
 if Debug
@@ -175,23 +175,175 @@ for iSection=[1,5]
         scans_this_section = [region_start(iSection):region_end(iSection)];
     end
     
+    % Make sure that there is data in this section; i.e., not all granules
+    % contributing to it are missing.
+    
+    if ~isempty(find(isnan(longitude(:,scans_this_section)) == 0))
+        
+        % longstude values can't be less than -360 or probably larger than 360
+        % for the ll2pS functions so will shift all values < -360 up by 360 and
+        % those > 360 down by 360; i.e., will make sure that there are no
+        % longituds <-360 or >360.
+        
+        [lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
+        
+        % Convert longitude, latitude to a polar stereographic coordinate system.
+        
+        [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2ps(latitude(:,scans_this_section), lonArray);
+        
+        % Regrid northing and easting to lie on a straight line between the 1st
+        % pixel in each group and the 1st pixel in the next group of 10 scans.
+        
+        mult = [0:9] / num_detectors;
+        
+        scans_this_section = [];
+        for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
+            if mod(iScan,101) == 0 & Debug
+                disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
+            end
+            
+            northing_separation = northing(:,iScan+10) - northing(:,iScan);
+            easting_separation  = easting(:,iScan+10)  - easting(:,iScan);
+            
+            iScanVec = [iScan:iScan+9];
+            scans_this_section = [scans_this_section iScanVec];
+            
+            new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
+            new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
+        end
+        
+        % Now regrid SST using easting and northing.
+        
+        xx = double(easting(:,scans_this_section));
+        yy = double(northing(:,scans_this_section));
+        ss = double(SST_In(:,scans_this_section));
+        
+        pp = find(isnan(xx) == 0);
+        
+        if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
+            status = populate_problem_list( 1001, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], '');
+        else
+            new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
+        end
+        
+        % And convert from polar back to lat, lon.
+        
+        [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = ps2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
+        
+        % And add the last scan line in the orbit (Section 5). It will be
+        % very nearly unaffected by the bowtie effect since it it a middle
+        % detector in the set of 10.
+        
+        if iSection == 5
+            new_lat(:,end) = latitude(:,end);
+            new_lon(:,end) = longitude(:,end);
+        end
+        
+        % Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
+        
+        if ~isempty(nnSave) | ~isempty(mmSave)
+            [lonArray, ~, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section), nnSave, mmSave, shiftBySave);
+            
+            new_lon(:,scans_this_section) = lonArray;
+        end
+    end
+end
+
+%% Regrid segments 2 and 4.
+
+for iSection=[2,4]
+    if Debug
+        disp(['Doing section ' num2str(iSection) ': ' num2str(toc(tic_regrid_start))])
+        disp(' ')
+    end
+    
+    % Make sure that there is data in this section; i.e., not all granules
+    % contributing to it are missing.
+    
+    if ~isempty(find(isnan(longitude(:,region_start(iSection):region_end(iSection))) == 0))
+        
+        imult = [0:9] / num_detectors;
+        
+        scans_this_section = [];
+        for iScan=region_start(iSection):num_detectors:region_end(iSection)
+            if mod(iScan,1001) == 0 & Debug
+                disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
+            end
+            
+            jScan = iScan;
+            kScan = iScan + 10;
+            
+            lat_separation = latitude(:,kScan) - latitude(:,jScan);
+            lon_separation = longitude(:,kScan) - longitude(:,jScan);
+            
+            iScanVec = [jScan:kScan-1];
+            
+            % Check to see if the first value in this goup has been changed. If
+            % it has, it was decremented by one so remove the last scan line
+            % reference from scans_this_section.
+            
+            if jScan == iScan
+                scans_this_section = [scans_this_section iScanVec];
+            else
+                scans_this_section = [scans_this_section(1:end-1) iScanVec];
+            end
+            
+            mult = [0:kScan-jScan-1] / (kScan - jScan);
+            
+            new_lat(:,iScanVec) = latitude(:,jScan) + lat_separation * mult;
+            new_lon(:,iScanVec) = longitude(:,jScan) + lon_separation * mult;
+        end
+        
+        % Regrid SST.
+        
+        xx = double(longitude(:,scans_this_section));
+        yy = double(latitude(:,scans_this_section));
+        ss = double(SST_In(:,scans_this_section));
+        
+        pp = find(isnan(xx) == 0);
+        
+        if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
+            fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
+            
+            status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
+        else
+            new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
+        end
+    end
+end
+
+%% Do Section 3.
+
+iSection = 3;
+
+if Debug
+    disp(['Doing section ' num2str(iSection) ': ' num2str(toc)])
+    disp(' ')
+end
+
+scans_this_section = [region_start(iSection):region_end(iSection)+1];
+
+% Make sure that there is data in this section; i.e., not all granules
+% contributing to it are missing.
+
+if ~isempty(find(isnan(longitude(:,scans_this_section)) == 0))
+    
     % longstude values can't be less than -360 or probably larger than 360
     % for the ll2pS functions so will shift all values < -360 up by 360 and
     % those > 360 down by 360; i.e., will make sure that there are no
-    % longituds <-360 or >360. 
+    % longituds <-360 or >360.
     
     [lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
     
-    % Convert longitude, latitude to a polar stereographic coordinate system. 
+    % Convert longitude, latitude to a polar stereographic coordinate system.
     
-    [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2ps(latitude(:,scans_this_section), lonArray);
+    [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2psn(latitude(:,scans_this_section), lonArray);
     
     % Regrid northing and easting to lie on a straight line between the 1st
     % pixel in each group and the 1st pixel in the next group of 10 scans.
     
     mult = [0:9] / num_detectors;
     
-    save_scans_this_section = scans_this_section;
     scans_this_section = [];
     for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
         if mod(iScan,101) == 0 & Debug
@@ -208,12 +360,6 @@ for iSection=[1,5]
         new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
     end
     
-    % Check that it is still working on the same range of scans that it started with.
-    
-    if length(scans_this_section) ~= length(save_scans_this_section) - 1
-        fprintf('Problem recalculating the scans to process for Section %i.\n', iSection)
-    end
-    
     % Now regrid SST using easting and northing.
     
     xx = double(easting(:,scans_this_section));
@@ -223,166 +369,22 @@ for iSection=[1,5]
     pp = find(isnan(xx) == 0);
     
     if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-        status = populate_problem_list( 1001, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], '');
+        status = populate_problem_list( 1001, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end
     
-    % And convert from polar back to lat, lon.
+    % Convert regridded easting and northing back to longitude and latitude.
     
-    [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = ps2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
-    
-    % And add the last scan line in the orbit (Section 5). It will be
-    % very nearly unaffected by the bowtie effect since it it a middle
-    % detector in the set of 10.
-    
-    if iSection == 5
-        new_lat(:,end) = latitude(:,end);
-        new_lon(:,end) = longitude(:,end);
-    end
+    [new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
     
     % Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
     
-    if ~isempty(nnSave) | ~isempty(mmSave)
-        [lonArray, ~, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section), nnSave, mmSave, shiftBySave);
+    [lonArray, ~, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section), nnSave, mmSave, shiftBySave);
     
+    if ~isempty(nnSave) | ~isempty(mmSave)
         new_lon(:,scans_this_section) = lonArray;
     end
-    
-end
-
-%% Regrid segments 2 and 4.
-
-for iSection=[2,4]
-    if Debug
-        disp(['Doing section ' num2str(iSection) ': ' num2str(toc(tic_regrid_start))])
-        disp(' ')
-    end
-    
-    imult = [0:9] / num_detectors;
-    
-    scans_this_section = [];
-    % for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
-    for iScan=region_start(iSection):num_detectors:region_end(iSection)
-        if mod(iScan,1001) == 0 & Debug
-            disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
-        end
-        
-        jScan = iScan;
-        kScan = iScan + 10;
-        
-        lat_separation = latitude(:,kScan) - latitude(:,jScan);
-        lon_separation = longitude(:,kScan) - longitude(:,jScan);
-        
-        iScanVec = [jScan:kScan-1];
-        
-        % Check to see if the first value in this goup has been changed. If
-        % it has, it was decremented by one so remove the last scan line
-        % reference from scans_this_section.
-        
-        if jScan == iScan
-            scans_this_section = [scans_this_section iScanVec];
-        else
-            scans_this_section = [scans_this_section(1:end-1) iScanVec];
-        end
-        
-        mult = [0:kScan-jScan-1] / (kScan - jScan);
-        
-        new_lat(:,iScanVec) = latitude(:,jScan) + lat_separation * mult;
-        new_lon(:,iScanVec) = longitude(:,jScan) + lon_separation * mult;
-    end
-    
-    % Regrid SST.
-    
-    xx = double(longitude(:,scans_this_section));
-    yy = double(latitude(:,scans_this_section));
-    ss = double(SST_In(:,scans_this_section));
-    
-    pp = find(isnan(xx) == 0);
-    
-    if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-        fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
-        
-        status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
-    else
-        new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
-    end
-end
-
-%% Do Section 3.
-
-iSection = 3;
-
-if Debug
-    disp(['Doing section ' num2str(iSection) ': ' num2str(toc)])
-    disp(' ')
-end
-
-scans_this_section = [region_start(iSection):region_end(iSection)+1];
-
-% longstude values can't be less than -360 or probably larger than 360
-% for the ll2pS functions so will shift all values < -360 up by 360 and
-% those > 360 down by 360; i.e., will make sure that there are no
-% longituds <-360 or >360.
-
-[lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
-
-% Convert longitude, latitude to a polar stereographic coordinate system.
-
-[easting(:,scans_this_section), northing(:,scans_this_section)] = ll2psn(latitude(:,scans_this_section), lonArray);
-
-% Regrid northing and easting to lie on a straight line between the 1st
-% pixel in each group and the 1st pixel in the next group of 10 scans.
-
-mult = [0:9] / num_detectors;
-
-save_scans_this_section = scans_this_section;
-scans_this_section = [];
-for iScan=region_start(iSection):num_detectors:region_end(iSection)-9
-    if mod(iScan,101) == 0 & Debug
-        disp(['Am working on scan ' num2str(iScan) ' at time ' num2str(toc(tic_regrid_start))])
-    end
-    
-    northing_separation = northing(:,iScan+10) - northing(:,iScan);
-    easting_separation  = easting(:,iScan+10)  - easting(:,iScan);
-    
-    iScanVec = [iScan:iScan+9];
-    scans_this_section = [scans_this_section iScanVec];
-    
-    new_northing(:,iScanVec) = northing(:,iScan) + northing_separation * mult;
-    new_easting(:,iScanVec)  = easting(:,iScan)  + easting_separation  * mult;
-end
-
-% Check that it is still working on the same range of scans with which it started. 
-
-if length(scans_this_section) ~= length(save_scans_this_section) - 1
-    fprint('Problem recalculating the scans to process for Section %i.\n', iSection)
-end
-
-% Now regrid SST using easting and northing.
-
-xx = double(easting(:,scans_this_section));
-yy = double(northing(:,scans_this_section));
-ss = double(SST_In(:,scans_this_section));
-
-pp = find(isnan(xx) == 0);
-
-if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-    status = populate_problem_list( 1001, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
-else
-    new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
-end
-
-% Convert regridded easting and northing back to longitude and latitude.
-
-[new_lat(:,scans_this_section), new_lon(:,scans_this_section)] = psn2ll(new_easting(:,scans_this_section), new_northing(:,scans_this_section));
-
-% Now need to undo the shifting around that was done to accommodate ll2. ACTUALLY CHECK TO MAKE SURE THAT THIS IS THE CASE.
-
-[lonArray, ~, ~, ~] = fix_lon_steps_and_constrain( 'unconstrainLongitude', new_lon(:,scans_this_section), nnSave, mmSave, shiftBySave);
-
-if ~isempty(nnSave) | ~isempty(mmSave)
-    new_lon(:,scans_this_section) = lonArray;
 end
 
 %% All done regridding input grid to Peter's new grid dealing with bow-tie.
@@ -399,7 +401,7 @@ for iPix=1:numNewPixsm
     for iScanLine=1:10:size(new_sst,2)-10
         jScanLine = jScanLine + 1;
         
-        % Get the SST values for this cell, tt, and find the ones that are cloud-free, kk. 
+        % Get the SST values for this cell, tt, and find the ones that are cloud-free, kk.
         
         tt = new_sst(pixStartm(iPix):pixEndm(iPix),iScanLine:iScanLine+10);
         kk = find(isnan(tt)==0);
@@ -432,7 +434,7 @@ for iPix=1:numNewPixsp
     for iScanLine=1:10:size(new_sst,2)-10
         jScanLine = jScanLine + 1;
         
-        % Get the SST values for this cell, tt, and find the ones that are cloud-free, kk. 
+        % Get the SST values for this cell, tt, and find the ones that are cloud-free, kk.
         
         tt = new_sst(pixStartp(iPix):pixEndp(iPix),iScanLine:iScanLine+10);
         kk = find(isnan(tt)==0);

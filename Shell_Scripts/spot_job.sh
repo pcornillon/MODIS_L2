@@ -43,7 +43,6 @@ CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="AWS_copy_${CURRENT_TIME}.out"
 echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
 
-#nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}${FILENAME}" log 2>&1 &
 nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
 
 echo "Script execution completed."

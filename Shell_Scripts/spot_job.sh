@@ -5,6 +5,10 @@ echo "Starting the script..."
 
 touch /home/ubuntu/proof_of_life
 
+# Define the Matlab Project directory.
+
+MATLAB_PROJECT_DIRECTORY = "/home/ubuntu/Documents/MODIS_L2/"
+
 # Define the output directory for the nohup logs to be generated from the Matlab and python commands below.
 
 OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"
@@ -16,7 +20,7 @@ echo "Checked for the output directory, created if it did not exist."
 
 # Make sure that we are using the most recent version of MODIS_L2
 
-cd ~/Documents/MODIS_L2/
+cd "$MATLAB_PROJECT_DIRECTORY"
 git pull
 
 # Start Matlab and run test script. The script it runs will exit after at least 75% (which could be changed, e.g./ to 100%) of the jobs have finished
@@ -39,6 +43,7 @@ CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="AWS_copy_${CURRENT_TIME}.out"
 echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
 
-nohup python AWS_copy_nc4_to_remote.py > "${OUTPUT_DIRECTORY}${FILENAME}" log 2>&1 &
+#nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}${FILENAME}" log 2>&1 &
+nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
 
 echo "Script execution completed."

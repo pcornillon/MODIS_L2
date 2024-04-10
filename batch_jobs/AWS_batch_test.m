@@ -1,4 +1,4 @@
-% MacStudio_batch_long_test_1 - 
+% AWS_batch_test - 
 %
 % The four variables intialized below, start_time, period_to_process, batch_step 
 % and num_batch must be changed for each version of this script. For the
@@ -20,7 +20,7 @@ submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
-Option = 3; % Reads data from s3 in us-west-2.
+Option = 8; % Reads data from s3 in us-west-2.
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 

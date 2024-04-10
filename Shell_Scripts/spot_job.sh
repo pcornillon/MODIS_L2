@@ -7,7 +7,7 @@ touch /home/ubuntu/proof_of_life
 
 # Define the Matlab Project directory.
 
-MATLAB_PROJECT_DIRECTORY = "/home/ubuntu/Documents/MODIS_L2/"
+MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
 
 # Define the output directory for the nohup logs to be generated from the Matlab and python commands below.
 
@@ -22,6 +22,8 @@ echo "Checked for the output directory, created if it did not exist."
 
 cd "$MATLAB_PROJECT_DIRECTORY"
 git pull
+
+# more "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m"
 
 # Start Matlab and run test script. The script it runs will exit after at least 75% (which could be changed, e.g./ to 100%) of the jobs have finished
 # or after the estimated required processing time has elapsed. It estimates this time based on the time for one of the submitted batch jobs to finish.

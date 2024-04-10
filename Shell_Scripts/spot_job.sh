@@ -29,7 +29,7 @@ CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="matlab_${CURRENT_TIME}.out"
 echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME"
 
-nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'); MacStudio_batch_long_test_1"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &
+nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'); AWS_batch_test"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 

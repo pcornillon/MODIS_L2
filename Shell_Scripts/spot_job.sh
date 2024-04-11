@@ -21,9 +21,12 @@ echo "Checked for the output directory, created if it did not exist."
 # Make sure that we are using the most recent version of MODIS_L2
 
 cd "$MATLAB_PROJECT_DIRECTORY"
+echo "Pulling to $MATLAB_PROJECT_DIRECTORY"
 git pull
 
-# more "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m"
+# Sanity check to make sure that it pulled properly.
+
+sed -n '41p' "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m"
 
 # Start Matlab and run test script. The script it runs will exit after at least 75% (which could be changed, e.g./ to 100%) of the jobs have finished
 # or after the estimated required processing time has elapsed. It estimates this time based on the time for one of the submitted batch jobs to finish.
@@ -35,7 +38,7 @@ CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="matlab_${CURRENT_TIME}.out"
 echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME"
 
-nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'); AWS_batch_test"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &
+nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 

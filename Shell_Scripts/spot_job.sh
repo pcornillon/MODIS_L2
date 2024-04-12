@@ -6,6 +6,18 @@ MYID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 
 su ubuntu -c "/usr/local/bin/aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-095c69c402b90902b --instance-id ${MYID}"
 
+while true; do
+    myip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+    if [[ "$myip" == "44.235.238.218" ]]; then
+        break
+    else
+        sleep 2
+    fi
+done
+
+umount /mnt/uri-nfs-cornillon
+mount /mnt/uri-nfs-cornillon
+
 # write commands to excecute here
 
 echo "" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt

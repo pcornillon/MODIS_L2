@@ -2,7 +2,9 @@
 
 # Associate fixed IP address.
 
-su ubuntu -c 'aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-095c69c402b90902b --instance-id i-0da5f2a1336c0cd6f'
+MYID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+
+su ubuntu -c "/usr/local/bin/aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-095c69c402b90902b --instance-id ${MYID}"
 
 # write commands to excecute here
 

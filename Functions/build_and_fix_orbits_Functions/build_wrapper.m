@@ -197,6 +197,8 @@ switch Option
 
         granules_directory              = 's3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/';
 
+        AMSR_E_baseDir                  = '/mnt/s3-uri-gso-pcornillon/AMSR-E_L2-v7/';
+
         output_file_directory_local     = [BaseDir 'SST/'];
         % output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
         output_file_directory_remote    = '';

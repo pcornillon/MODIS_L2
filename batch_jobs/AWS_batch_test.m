@@ -1,4 +1,4 @@
-% MacStudio_batch_long_test_1 - 
+% AWS_batch_test - 
 %
 % The four variables intialized below, start_time, period_to_process, batch_step 
 % and num_batch must be changed for each version of this script. For the
@@ -16,11 +16,11 @@
 
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
-Option = 3; % Reads data from s3 in us-west-2.
+Option = 8; % Reads data from s3 in us-west-2.
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
@@ -38,8 +38,8 @@ end
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2015 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 1 0 2 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+start_time = [2004 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 0 0 6 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
 num_batch = 2; % The number of batch jobs to submit
 

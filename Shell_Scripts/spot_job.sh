@@ -26,6 +26,8 @@ date 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 echo "" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 echo "Starting the script..." 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 
+echo "I am $(whoami) and proud of it" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
+
 touch /home/ubuntu/proof_of_life
 
 # Define the Matlab Project directory.
@@ -61,7 +63,24 @@ CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="matlab_${CURRENT_TIME}.out"
 echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 
+echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
+
 nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &
+
+echo "I just started Matlab. Am still $(whoami). It should be running in the background. Now I will run the python copying script." 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
+echo "Here are the running Matlab jobs $(ps aux | grep MATLAB | grep -v grep)" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
+
+echo "Wait for 60 seconds..."
+sleep 60
+echo "Continuing now."
+
+echo "Check again for running Matlab jobs $(ps aux | grep MATLAB | grep -v grep)" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
+
+echo "Wait for 60 seconds..."
+sleep 60
+echo "Continuing now."
+
+echo "Check again for running Matlab jobs $(ps aux | grep MATLAB | grep -v grep)" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 

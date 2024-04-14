@@ -59,8 +59,8 @@ FILENAME="matlab_${CURRENT_TIME}.out"
 echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
 echo "" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
 echo "Now you need to ssh to the spot instance: ssh -o StrictHostKeyChecking=no ubuntu@44.235.238.218" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
-echo "and submit Matlab job as follows: "
-echo "nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2MODIS_L2.prj'); AWS_batch_test"  > "/mnt/uri-nfs-cornillon/Logs/nohup/$FILENAME" 2>&1 &'
+echo "and submit Matlab job as follows: " 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
+echo "nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2MODIS_L2.prj'); AWS_batch_test"  > "/mnt/uri-nfs-cornillon/Logs/nohup/$FILENAME" 2>&1 &' 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 
@@ -68,8 +68,10 @@ cd Shell_Scripts
 
 CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
 FILENAME="AWS_copy_${CURRENT_TIME}.out"
-echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
+
+echo "" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
+echo "Current time is $CURRENT_TIME, will write the output of the copy operation to $FILENAME" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
 
 nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
 
-echo "Script execution completed."
+echo "Script execution completed." 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt

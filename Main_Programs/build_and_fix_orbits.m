@@ -136,7 +136,7 @@ global pixStartm pixEndm pixStartp pixEndp
 
 rng('shuffle')  % This to make it start with a different random number.
 
-diary_filename = [logs_directory base_diary_filename '.txt'];
+diary_filename = [logs_directory 'build-and-fix_diaries/' base_diary_filename '.txt'];
 diary(diary_filename)
 
 fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))

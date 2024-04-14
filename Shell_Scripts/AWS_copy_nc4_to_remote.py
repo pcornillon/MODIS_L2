@@ -118,7 +118,7 @@ def copy_files(test_mode=False):
     reset_kill_time = 12
     
     # Set up logging
-    log_folder_path = os.path.join(base_output_folder, "Logs/copy_AWS_to_mnt-uri_logs")    
+    log_folder_path = os.path.join(base_output_folder, "Logs/copy_AWS_to_mnt-uri_logs/python_logs/")    
     log_file = setup_logging(log_folder_path, dual_out)
     
     # Sleep for initial_sleep minutes to give the jobs time to process the first orbit.

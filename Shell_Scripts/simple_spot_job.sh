@@ -72,6 +72,6 @@ FILENAME="AWS_copy_${CURRENT_TIME}.out"
 echo "" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
 echo "Current time is $CURRENT_TIME, will write the output of the copy operation to $FILENAME" 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt
 
-nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
+nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/copy_AWS_to_mnt-uri_logs/${FILENAME}" 2>&1 &
 
 echo "Script execution completed." 2>&1 | tee -a /mnt/uri-nfs-cornillon/simple_session_log.txt

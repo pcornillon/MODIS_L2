@@ -15,6 +15,8 @@ get_spot_instance_ip() {
     aws ec2 describe-spot-instance-requests --profile $PROFILE --spot-instance-request-ids $REQUEST_ID --query 'SpotInstanceRequests[0].InstanceId' --output text | xargs -I {} aws ec2 describe-instances --profile $PROFILE --instance-ids {} --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
 }
 
+sleep 30 # Wait for 30 seconds before checking for 44.235.238.218
+
 # Poll for the spot request to be fulfilled and for the IP to be the expected one
 while true; do
     PUBLIC_IP=$(get_spot_instance_ip)
@@ -28,7 +30,7 @@ while true; do
         echo "Spot instance has a different IP: $PUBLIC_IP"
     fi
 
-    sleep 10 # Wait for 10 seconds before checking again
+    sleep 20 # Wait for 20 seconds before checking again
 done
 
 # SSH into the instance once ready

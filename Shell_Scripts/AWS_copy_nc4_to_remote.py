@@ -112,7 +112,7 @@ def copy_files(test_mode=False):
     time_since_creation = 4
     
     # Initially set kill_time, the time to terminate this script since the last .nc4 file was found (if any) to 30 minutes.
-    # This ore than needed but avoids this script stopping before the first orbit has been processed.
+    # This is more than needed but avoids this script stopping before the first orbit has been processed.
     # kill_time will be reset to 12 minutes after the first orbit has been copied. This is hopefully longer than the time to process an orbit. 
     kill_time = 30
     reset_kill_time = 12
@@ -164,7 +164,6 @@ def copy_files(test_mode=False):
                 sys.stdout.log.close()
             else:
                 log_file.close()
-                    
             break
 
         # Get the current date and time

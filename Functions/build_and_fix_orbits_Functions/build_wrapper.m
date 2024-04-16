@@ -21,8 +21,8 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
 
-tempDiary = ['/mnt/uri-nfs-cornillon/Logs/' strrep(strrep( datestr(now), ':', 'h'), ' ', '_') '_debug.log'];
-diary(tempDiary)
+% tempDiary = ['/mnt/uri-nfs-cornillon/Logs/' strrep(strrep( datestr(now), ':', 'h'), ' ', '_') '_debug.log'];
+% diary(tempDiary)
 
 fprintf('Entering build_wrapper at %s\n', datetime)
 

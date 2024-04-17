@@ -8,7 +8,7 @@ fprintf('You passed %f into this function. It''s squared value is: %f\n', A, A2)
 
 % Pause for 3 minutes
 
-pause(180)
+% pause(30)
 
 A4 = A2^2;
 

@@ -1,22 +1,27 @@
 #!/bin/bash
 
-# Associate fixed IP address.
+# Associate fixed IP address if on spot instance
 
-MYID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
+# Check if the current user is not 'ubuntu'
+if [ "$(whoami)" != "ubuntu" ]; then
+    MYID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 
-su ubuntu -c "/usr/local/bin/aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-095c69c402b90902b --instance-id ${MYID}"
+    su ubuntu -c "/usr/local/bin/aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-095c69c402b90902b --instance-id ${MYID}"
 
-while true; do
-    myip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-    if [[ "$myip" == "44.235.238.218" ]]; then
-        break
-    else
-        sleep 2
-    fi
-done
+    while true; do
+        myip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+        if [[ "$myip" == "44.235.238.218" ]]; then
+            break
+        else
+            sleep 2
+        fi
+    done
 
-umount /mnt/uri-nfs-cornillon
-mount /mnt/uri-nfs-cornillon
+    umount /mnt/uri-nfs-cornillon
+    mount /mnt/uri-nfs-cornillon
+else
+    echo "Running as user: $(whoami)"
+fi
 
 # write commands to excecute here
 
@@ -69,7 +74,7 @@ echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a /mnt/uri-
 # sudo -u ubuntu -i bash -c 'nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
 #  sudo -u ubuntu -i bash -c 'export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"; export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"; CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S"); FILENAME="matlab_${CURRENT_TIME}.out"; 
 # nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
-nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test; exit" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"
+nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_tester; exit" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background." 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 echo -e "Here are the running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt

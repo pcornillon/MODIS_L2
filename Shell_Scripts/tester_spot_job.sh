@@ -33,7 +33,7 @@ then
     umount /mnt/uri-nfs-cornillon
     mount /mnt/uri-nfs-cornillon
 else
-    OUTPUT_DIRECTORY="/Users/petercornillon/Desktop/Logs/"
+    OUTPUT_DIRECTORY="/Users/petercornillon/Logs/"
     MATLAB_DIRECTORY="/Users/petercornillon/Git_repos/MODIS_L2/" 
 
     echo "Local, OUTPUT_DIRECTORY is $OUTPUT_DIRECTORY"

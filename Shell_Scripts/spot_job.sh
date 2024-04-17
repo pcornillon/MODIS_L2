@@ -67,7 +67,9 @@ echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a /mnt/uri-
 
 # su ubuntu -c 'nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
 # sudo -u ubuntu -i bash -c 'nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
-sudo -u ubuntu -i bash -c 'export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"; export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"; CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S"); FILENAME="matlab_${CURRENT_TIME}.out"; nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
+#  sudo -u ubuntu -i bash -c 'export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"; export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"; CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S"); FILENAME="matlab_${CURRENT_TIME}.out"; 
+# nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
+nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test; exit" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background." 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt
 echo -e "Here are the running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" 2>&1 | tee -a /mnt/uri-nfs-cornillon/session_log.txt

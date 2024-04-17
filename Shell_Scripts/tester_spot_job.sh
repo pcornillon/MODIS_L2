@@ -63,4 +63,4 @@ echo "nohup matlab -nodisplay -nosplash -nodesktop -r \"prj=openProject('${MATLA
 echo "" 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_session_log.txt
 echo "Script execution completed." 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_session_log.txt
 
-nohup matlab -nodisplay -nosplash -nodesktop -r \"prj=openProject('${MATLAB_DIRECTORY}MODIS_L2.prj'), AWS_batch_tester, exit\" > \"${OUTPUT_DIRECTORY_NOHUP}$FILENAME\" 2>&1 " 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_session_log.txt
+nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_DIRECTORY}MODIS_L2.prj'), AWS_batch_tester, exit" > "${OUTPUT_DIRECTORY_NOHUP}${FILENAME}" 2>&1 & tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"

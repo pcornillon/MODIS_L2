@@ -16,7 +16,7 @@
 
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 

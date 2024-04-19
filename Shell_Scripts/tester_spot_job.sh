@@ -53,7 +53,8 @@ echo "Starting the script..." 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_session_lo
 # Generate the output filename for this job.s
 
 CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
-FILENAME="tester_${CURRENT_TIME}.out"
+FILENAME_TESTER="tester_${CURRENT_TIME}.out"
+FILENAME_COMMAND="command_${CURRENT_TIME}.out"
 
 echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME" 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_session_log.txt
 echo "" 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_session_log.txt
@@ -67,5 +68,5 @@ echo "Script execution completed." 2>&1 | tee -a ${OUTPUT_DIRECTORY}tester_sessi
 # nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_DIRECTORY}MODIS_L2.prj'), AWS_batch_test, exit" > "${OUTPUT_DIRECTORY_NOHUP}${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"
 
 nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/Users/petercornillon/Git_repos/MODIS_L2/MODIS_L2.prj'), AWS_batch_test, exit" > "/Users/petercornillon/Logs/command_log.txt" 2>&1 | tee -a "/Users/petercornillon/Logs/tester_session_log.txt"
-nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'), AWS_batch_test, exit" > "/mnt/uri-nfs-cornillon/Logs/command_log.txt" 2>&1 | tee -a "/mnt/uri-nfs-cornillon/Logs/tester_session_log.txt"
+nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'), AWS_batch_test, exit" > "/mnt/uri-nfs-cornillon/Logs/${FILENAME_COMMAND}" 2>&1 | tee -a "/mnt/uri-nfs-cornillon/Logs/${FILENAME_TESTER}"
 

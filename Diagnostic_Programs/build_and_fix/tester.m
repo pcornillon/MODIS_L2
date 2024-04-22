@@ -1,4 +1,4 @@
-function tester(A
+function tester(A)
 % tester - a simple function to test batch job submission.
 %
 

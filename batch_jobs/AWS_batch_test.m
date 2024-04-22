@@ -16,7 +16,7 @@
 
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
@@ -102,15 +102,16 @@ for iJob=1:num_batch
 
     fprintf('Submitting job #%i to process from %s to %s. Diary file: %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)), base_diary_filename)
 
+    Var1 = datevec(mat_start(iJob));  % This line for debug, get rid of it later.
+
     if ~test_run
         if submit_as_batch
             % fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
             % job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''tester'', 0, {' num2str(iJob^2) '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( 'tester', 0, {iJob^2}, CaptureDiary=true);
+            job_number(iJob) = batch( 'tester', 0, {iJob^2, Var1}, CaptureDiary=true);
         else
             % build_wrapper(Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
-            Var1 = datevec(mat_start(iJob));
             tester(iJob^2, Var1)
         end
     end

@@ -60,11 +60,12 @@ echo "Checked for the output directory, created if it did not exist." | tee -a "
 # Make sure that we are using the most recent version of MODIS_L2
 
 cd "$MATLAB_PROJECT_DIRECTORY"
-echo "Pulling to $MATLAB_PROJECT_DIRECTORY" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
+    echo "Pulling to $MATLAB_PROJECT_DIRECTORY suing too user ubuntu" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
     su ubuntu -c 'git pull' 
 else
+    echo "Pulling to $MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
     git pull
 fi
 

@@ -2,6 +2,12 @@ function tester(A, aDate)
 % tester - a simple function to test batch job submission.
 %
 
+if A == 2
+    touch /Users/petercornillon/Logs/proof_of_life_1"
+else
+    touch /Users/petercornillon/Logs/proof_of_life_2"
+end
+
 disp(aDate)
 
 A2 = A^2;

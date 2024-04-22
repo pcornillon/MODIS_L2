@@ -1,6 +1,8 @@
-function tester(A)
+function tester(A, aDate)
 % tester - a simple function to test batch job submission.
 %
+
+disp(aDate)
 
 A2 = A^2;
 

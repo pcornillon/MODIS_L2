@@ -3,9 +3,9 @@ function tester(A, aDate)
 %
 
 if A == 2
-    touch /Users/petercornillon/Logs/proof_of_life_1"
+    ! touch /Users/petercornillon/Logs/proof_of_life_1"
 else
-    touch /Users/petercornillon/Logs/proof_of_life_2"
+    ! touch /Users/petercornillon/Logs/proof_of_life_2"
 end
 
 disp(aDate)

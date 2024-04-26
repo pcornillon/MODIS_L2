@@ -24,7 +24,7 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
-local_debug = 0;
+local_debug = 1;
 
 % globals for the run as a whole.
 

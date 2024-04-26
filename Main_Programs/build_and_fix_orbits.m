@@ -315,6 +315,8 @@ end
 acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
 
+fprintf('Got to line 318.\n')
+
 if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
     fprintf('Input start and end time vectors must be 6 elements long. start_date_time: %s to %s.\n', num2str(start_date_time), num2str(end_date_time))
     return
@@ -366,6 +368,8 @@ end
 
 % Load the element locations to use when calculating averages for the new L2eqa grid.
 
+fprintf('Got to line 371.\n')
+
 load([fixit_directory 'L2eqa_elements.mat'])
 
 % Load the separations and angles used to calculate gradients.
@@ -406,6 +410,8 @@ tic_build_start = tic;
 
 iOrbit = 1;
 
+fprintf('Got to line 413.\n')
+
 search_start_time = Matlab_start_time;
 [status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time);
 
@@ -414,6 +420,8 @@ search_start_time = Matlab_start_time;
 if (status == 201) | (status == 231) | (status > 900)
     return
 end
+
+fprintf('Got to line 424.\n')
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 

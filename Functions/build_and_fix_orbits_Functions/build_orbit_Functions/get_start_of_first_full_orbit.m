@@ -107,6 +107,8 @@ else
             return
         end
 
+        if local_debug; fprintf('dir operation to do: %s\n', [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']); end
+
         file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
 
         if local_debug; fprintf('%s\n', [file_list(1).folder '/' file_list(1).name]); end

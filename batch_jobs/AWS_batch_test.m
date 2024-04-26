@@ -111,7 +111,7 @@ for iJob=1:num_batch
 %             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''tester'', 0, {' num2str(iJob^2) ', ' num2str(Var1) '}, CaptureDiary=true);'])
 %             job_number(iJob) = batch( 'tester', 0, {iJob^2, Var1}, CaptureDiary=true)
         else
-            build_wrapper(Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+            build_wrapper( 3, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
 %             tester(iJob^2, Var1)
         end
     end

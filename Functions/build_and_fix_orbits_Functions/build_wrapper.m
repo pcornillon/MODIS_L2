@@ -29,7 +29,6 @@ end
 
 diary(tempDiary)
 
-
 fprintf('Entering build_wrapper at %s\n', datetime)
 
 % Set directories.

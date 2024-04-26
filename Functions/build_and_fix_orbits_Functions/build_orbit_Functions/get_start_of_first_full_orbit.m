@@ -110,7 +110,7 @@ else
         if local_debug; fprintf('dir operation to do: %s\n', [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']); end
 
         baseName = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmdd) 'T'];
-        [file_list, granule_start_time_guess] = search_for_file( baseName, '_L2_SST_OBPG_extras.nc4', granule_start_time_guess);
+        file_list = search_for_file( baseName, '_L2_SST_OBPG_extras.nc4');
 
         % file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
 

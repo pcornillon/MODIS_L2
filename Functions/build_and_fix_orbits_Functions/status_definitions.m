@@ -144,6 +144,11 @@
 % % % %        status = populate_problem_list( 1003, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], fi_granule);
 % % % %   continue -- WARMING -- status not passed back. 
 % % % % 
-% % % % 1010 - regrid_MODIS_orbits - Longitude values in polar regions either >360 or less than -360, even after shifting. 
+% % % % 1011 - regrid_MODIS_orbits - Longitude values in polar regions either >360 or less than -360, even after shifting. 
 % % % %                 status = populate_problem_list( 1010, ['Maximum longitude ' num2str(longitude(:,scans_this_section))) ' >360 in Section 3 for orbit: ' oinfo(iOrbit).name '. This will result in bogus gradient values.'], '');
 % % % %   continue -- WARMING -- status status returned but processing continues after shifting values >360 down by 360.
+% % % % 
+% % % % 1012 - regrid_MODIS_orbits - Longitude values in polar regions either >360 or less than -360, even after shifting. 
+% % % %                 status = populate_problem_list( 1012, ['Minimum longitude ' num2str(min(lonArray,[],'all','omitnan')) ' <-360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by 360 which will result in bogus gradient values.'], '');
+% % % %   continue -- WARMING -- status status returned but processing continues after shifting values >360 down by 360.
+

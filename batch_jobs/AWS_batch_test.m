@@ -16,11 +16,11 @@
 
 test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-submit_as_batch = 0; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
-Option = 8; % Reads data from s3 in us-west-2.
+Option = 3; % Reads data from s3 in us-west-2.
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
@@ -38,9 +38,9 @@ end
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2005 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 1 0 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+start_time = [2015 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 0 0 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 0 2 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
 num_batch = 2; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
@@ -102,13 +102,21 @@ for iJob=1:num_batch
 
     fprintf('Submitting job #%i to process from %s to %s. Diary file: %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)), base_diary_filename)
 
+    Var1 = datevec(mat_start(iJob));  % This line for debug, get rid of it later.
+
     if ~test_run
         if submit_as_batch
+            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
             job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
+%             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''tester'', 0, {' num2str(iJob^2) ', ' num2str(Var1) '}, CaptureDiary=true);'])
+%             job_number(iJob) = batch( 'tester', 0, {iJob^2, Var1}, CaptureDiary=true)
         else
-            build_wrapper(Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+            build_wrapper( 3, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+%             tester(iJob^2, Var1)
         end
     end
 end
+
+job_number(1)
 
 fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')

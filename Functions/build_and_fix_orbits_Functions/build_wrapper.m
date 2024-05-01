@@ -21,8 +21,13 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
 
-% tempDiary = ['/mnt/uri-nfs-cornillon/Logs/' strrep(strrep( datestr(now), ':', 'h'), ' ', '_') '_debug.log'];
-% diary(tempDiary)
+if ~isempty(strfind(pwd, 'petercornillon'))
+    tempDiary = ['/Users/petercornillon/Logs/' strrep(strrep( datestr(now), ':', 'h'), ' ', '_') '_debug.log'];
+else
+    tempDiary = ['/mnt/uri-nfs-cornillon/Logs/' strrep(strrep( datestr(now), ':', 'h'), ' ', '_') '_debug.log'];
+end
+
+diary(tempDiary)
 
 fprintf('Entering build_wrapper at %s\n', datetime)
 
@@ -97,6 +102,7 @@ switch Option
         output_file_directory_remote    = '';
 
         logs_directory                  = [BaseDir 'Logs/'];
+        logs_directory                  = '/Users/petercornillon/Logs/';
 
     case 4 % MacStudio or Satdat1 reading from Aqua-1 -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 

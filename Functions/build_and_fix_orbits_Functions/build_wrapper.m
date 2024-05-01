@@ -102,7 +102,7 @@ switch Option
         output_file_directory_remote    = '';
 
         logs_directory                  = [BaseDir 'Logs/'];
-        logs_directory                  = '/Users/petercornillon/Logs/';
+        % logs_directory                  = '/Users/petercornillon/Logs/';
 
     case 4 % MacStudio or Satdat1 reading from Aqua-1 -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 

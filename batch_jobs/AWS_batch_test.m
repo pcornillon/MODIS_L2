@@ -8,6 +8,10 @@
 % The values for this version of the script will 3 submit batch jobs to
 % process the first 4 orbits for days 1, 2 and 3 of January 2012
 
+AWS_batch_test_version = '1.0';
+
+fprintf('\nVersion %s of AWS_batch_test.\n\n', AWS_batch_test_version)
+
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
 % to process. You should always run a test first and then remember to
@@ -22,11 +26,15 @@ submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
 Option = 3; % Reads data from s3 in us-west-2.
 
-% Open the project if on AWS, otherwise, assume that it is already open.
+% Open the Matlab Project MODIS_L2.
 
 machine = pwd;
 if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
+    fprintf('Opened /home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj \n')
+% else
+%     prj=openProject('/Users/petercornillon/Git_repos/MODIS_L2/MODIS_L2.prj'); 
+%     fprintf('Opened /Users/petercornillon/Git_repos/MODIS_L2/MODIS_L2.prj \n')
 end
 
 % % % if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0) & (submit_as_batch == 1)

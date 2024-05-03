@@ -18,7 +18,7 @@ fprintf('\nVersion %s of AWS_batch_test.\n\n', AWS_batch_test_version)
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
 submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 

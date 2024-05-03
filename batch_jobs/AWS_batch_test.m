@@ -125,6 +125,4 @@ for iJob=1:num_batch
     end
 end
 
-job_number(1)
-
 fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')

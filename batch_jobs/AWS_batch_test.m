@@ -24,7 +24,7 @@ submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
-Option = 3; % Reads data from s3 in us-west-2.
+Option = 8; % Reads data from s3 in us-west-2.
 
 % Open the Matlab Project MODIS_L2.
 

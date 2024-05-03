@@ -70,8 +70,21 @@ else
 fi
 
 # Sanity check to make sure that it pulled properly.
-# 
-# sed -n '41p' "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+ 
+sed -n '49p' "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+
+# Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
+
+if [ "$(whoami)" != "petercornillon" ]; then
+
+    cd Shell_Scripts
+
+    CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
+    FILENAME="AWS_copy_${CURRENT_TIME}.out"
+    echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
+
+    nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
+fi
 
 # Start Matlab and run test script. The script it runs will exit after at least 75% (which could be changed, e.g./ to 100%) of the jobs have finished
 # or after the estimated required processing time has elapsed. It estimates this time based on the time for one of the submitted batch jobs to finish.
@@ -95,6 +108,8 @@ nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJE
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
+% Check to see if the batch jobs are running.
+
 if [ "$(whoami)" != "petercornillon" ]; then
     echo -e "Here are the running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
@@ -108,16 +123,7 @@ if [ "$(whoami)" != "petercornillon" ]; then
     sleep 60
     echo "Continuing now."
 
-
-    # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
-
-    cd Shell_Scripts
-
-    CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
-    FILENAME="AWS_copy_${CURRENT_TIME}.out"
-    echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
-
-    nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
+    echo -e "Check again for running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 fi
 
 echo "Script execution completed."

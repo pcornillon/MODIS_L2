@@ -1,4 +1,4 @@
-function [file_list] = search_for_file(baseName, Trailer)
+function [file_list] = search_for_file(baseName, HHMMSS, Trailer)
 % search_for_file - searches times in filenames containing HHMMSS for one day returns the time when one is found - PCC
 %
 % INPUT
@@ -11,25 +11,42 @@ function [file_list] = search_for_file(baseName, Trailer)
 %       - folder - in which the file is.
 %
 
+global version_struct
+version_struct.search_for_file = '1.0.0';
+
+hourStart = str2num(HHMMSS(1:2));
+
 % Set exit flag.
 
 exitLoops = false;
 
-for iHour=0:23
+for iHour=hourStart:23
     if iHour>9
         HH = num2str(iHour);
     else
         HH = ['0' num2str(iHour)];
     end
 
-    for iMinute=0:59
+    if iHour == hourStart
+        minuteStart = str2num(HHMMSS(3:4));
+    else 
+        minuteStart = 0;
+    end
+
+    for iMinute=minuteStart:59
         if iMinute>9
             MM = num2str(iMinute);
         else
             MM = ['0' num2str(iMinute)];
         end
 
-        for kSecond=0:59
+        if iMinute == minuteStart
+            secondStart = str2num(HHMMSS(5:6));
+        else
+            secondStart = 0;
+        end
+
+        for kSecond=secondStart:59
             if kSecond>9
                 SS = num2str(kSecond);
             else

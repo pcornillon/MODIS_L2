@@ -24,6 +24,9 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %   granule_start_time_guess - the matlab_time of the granule to start with.
 %
 
+global version_struct
+version_struct.get_start_of_first_full_orbit = '1.0.0';
+
 local_debug = 0;
 
 % globals for the run as a whole.
@@ -110,7 +113,7 @@ else
         if local_debug; fprintf('dir operation to do: %s\n', [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']); end
 
         baseName = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmdd) 'T'];
-        file_list = search_for_file( baseName, '_L2_SST_OBPG_extras.nc4');
+        file_list = search_for_file( baseName, datestr(granule_start_time_guess, formatOut.HHMMSS), '_L2_SST_OBPG_extras.nc4');
 
         % file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
 

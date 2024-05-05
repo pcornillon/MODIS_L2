@@ -72,7 +72,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %  directories as well as parameters needed for the run. Nothing is passed
 %  into the function.
 
-build_and_fix_orbits_version = '1.0';
+global version_struct
+version_struct.build_and_fix_orbits_version = '1.0.0';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -143,7 +144,7 @@ diary(diary_filename)
 
 fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))
 
-fprintf('\nVersion %s of build_and_fix_orbits.\n\n', build_and_fix_orbits_version)
+fprintf('\nVersion %s of build_and_fix_orbits.\n\n', version_struct.build_and_fix_orbits_version)
 
 if determine_fn_size; get_job_and_var_mem; end
 
@@ -713,7 +714,7 @@ while granule_start_time_guess <= Matlab_end_time
 
     % Save oinfo and memory structure files for this run.
 
-    save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list')
+    save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
 
     % Save the diary to this point
 

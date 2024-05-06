@@ -51,7 +51,6 @@ echo "" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 echo "Starting the script..." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 echo "I am $(whoami) and proud of it" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
-
 # Ensure the output directory exists, if it doesn't, create it.
 
 mkdir -p "$OUTPUT_DIRECTORY"
@@ -71,7 +70,7 @@ fi
 
 # Sanity check to make sure that it pulled properly.
  
-sed -n '49p' "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+sed -n '51p' "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 
@@ -102,9 +101,10 @@ echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a "${OUTPUT
 # sudo -u ubuntu -i bash -c 'nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
 #  sudo -u ubuntu -i bash -c 'export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"; export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"; CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S"); FILENAME="matlab_${CURRENT_TIME}.out"; 
 # nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
-
-nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}/MODIS_L2.prj'); disp('Starting AWS_batch_test'); AWS_batch_test; disp('Finished AWS_batch_test')" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt"
 # nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/Users/petercornillon/Git_repos/MODIS_L2/MODIS_L2.prj'); AWS_batch_test" > "/Users/petercornillon/Logs/local_test_1" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"
+
+# nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}/MODIS_L2.prj'); disp('Starting AWS_batch_test'); AWS_batch_test; disp('Finished AWS_batch_test')" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt"
+nohup matlab -nodisplay -nosplash -nodesktop -batch "prj=openProject('${MATLAB_PROJECT_DIRECTORY}/MODIS_L2.prj'); disp('Starting AWS_batch_test'); AWS_batch_test; disp('Finished AWS_batch_test')" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt"
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 

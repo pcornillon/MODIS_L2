@@ -8,9 +8,11 @@
 % The values for this version of the script will 3 submit batch jobs to
 % process the first 4 orbits for days 1, 2 and 3 of January 2012
 
-AWS_batch_test_version = '1.0';
+% Versions.
+%   1.0.0 - 6/6/2024 - Initial version - PCC
 
-fprintf('\nVersion %s of AWS_batch_test.\n\n', AWS_batch_test_version)
+global version_struct
+version_struct.AWS_batch_test = '1.0.0';
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -126,3 +128,9 @@ for iJob=1:num_batch
 end
 
 fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
+
+for iJob=1:num_batch
+    job_number(iJob).wait();
+end
+
+exit

@@ -2,7 +2,9 @@
 
 # Associate fixed IP address if on spot instance
 
-# Check if the current user is not 'ubuntu'
+# If the current user is not 'ubuntu' or 'petercornillon', then it is likely root, which 
+# means that we are probably running a spot instance so need to attach the uri-nfs-cornillon
+# disk.
 
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
     MYID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
@@ -24,7 +26,7 @@ else
     echo "Running as user: $(whoami)"
 fi
 
-# Now define the output directory
+# Now define the output directory for the log file for the local linux session.
 
 if [ "$(whoami)" = "petercornillon" ]; then
     LOCAL_OUTPUT_DIRECTORY="/Users/petercornillon/Logs/"
@@ -42,7 +44,12 @@ else
     touch /home/ubuntu/proof_of_life
 fi
 
-# write commands to excecute here
+# Ensure the output directory exists, if it doesn't, create it.
+
+mkdir -p "$LOCAL_OUTPUT_DIRECTORY"
+echo "Checked for the output directory, created if it did not exist." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+
+# Some output.
 
 echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
@@ -51,12 +58,7 @@ echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 echo "Starting the script..." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 echo "I am $(whoami) and proud of it" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
-# Ensure the output directory exists, if it doesn't, create it.
-
-mkdir -p "$LOCAL_OUTPUT_DIRECTORY"
-echo "Checked for the output directory, created if it did not exist." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-
-# Change to the directory and pull the latest changes as user ubuntu
+# Change to the git repo directory for this project and pull the latest changes as user ubuntu
 
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
     echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user ubuntu" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
@@ -80,14 +82,14 @@ if [ "$(whoami)" != "petercornillon" ]; then
 
     cd Shell_Scripts
 
-    CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
-    FILENAME="AWS_copy_${CURRENT_TIME}.out"
-    echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
+    LOCAL_CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
+    LOCAL_FILENAME="AWS_copy_${LOCAL_CURRENT_TIME}.out"
+    echo "Current time is $LOCAL_CURRENT_TIME and it will write the output for the Python portion to $LOCAL_FILENAME"
 
-    nohup python "${LOCAL_MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
+    nohup python "${LOCAL_MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${LOCAL_OUTPUT_DIRECTORY}/${LOCAL_FILENAME}" 2>&1 &
 fi
 
-# Start Matlab and run test script. 
+# Start Matlab and submit the jobs to submit batch jobs for processing. 
 
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 

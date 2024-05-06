@@ -4,7 +4,7 @@ echo "Running as user: $(whoami)"
 
 OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
 MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
-OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+# OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
 
 # write commands to excecute here
 
@@ -23,12 +23,20 @@ git pull
 
 # Start Matlab and run test script. 
 
-CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
-FILENAME="matlab_${CURRENT_TIME}.out"
-echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+# CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
+# FILENAME="matlab_${CURRENT_TIME}.out"
+# echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
 echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
-sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test;" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt" &'
+# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test;" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt" &'
+# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('\''/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj'\''); AWS_batch_test;" > "/mnt/uri-nfs-cornillon/Logs/'"${FILENAME}"'" 2>&1 &'
+
+sudo -u ubuntu bash -c '
+  export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
+  export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
+  export OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+  nohup matlab -batch "prj=openProject('\''$MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); AWS_batch_test;" > "$OUTPUT_DIRECTORY/matlab_$(date +"%Y-%m-%d_%H-%M-%S").out" 2>&1 &'
+
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"

@@ -16,8 +16,6 @@ echo "I am $(whoami) and proud of it" | tee -a "${OUTPUT_DIRECTORY}/session_log.
 
 # Start Matlab and run test script. 
 
-echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-
 sudo -u ubuntu bash -c '
   export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
   export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
@@ -27,7 +25,8 @@ sudo -u ubuntu bash -c '
   echo "Pulling to $MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${OUTPUT_DIRECTORY}/inner_session_log.txt"
   git pull
   FILENAME="matlab_$(date +'%Y-%m-%d_%H-%M-%S').out"
+  echo "Starting Matlab as user $(whoami)" | tee -a "${OUTPUT_DIRECTORY}/inner_session_log.txt"
   nohup matlab -batch "prj=openProject('\''$MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); AWS_batch_test;" > "$OUTPUT_DIRECTORY/$FILENAME" 2>&1 &
-  echo "Just started Matlab mother job"  | tee -a "${OUTPUT_DIRECTORY}/inner_session_log.txt" '
+  echo "Just started Matlab."  | tee -a "${OUTPUT_DIRECTORY}/inner_session_log.txt" '
 
-echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+echo "Following the sudo...matlab commands. Am still $(whoami). Batch jobs should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"

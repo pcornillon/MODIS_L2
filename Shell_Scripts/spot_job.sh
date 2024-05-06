@@ -27,50 +27,52 @@ fi
 # Now define the output directory
 
 if [ "$(whoami)" = "petercornillon" ]; then
-    OUTPUT_DIRECTORY="/Users/petercornillon/Logs/"
-    MATLAB_PROJECT_DIRECTORY="/Users/petercornillon/Git_repos/MODIS_L2/"
+    LOCAL_OUTPUT_DIRECTORY="/Users/petercornillon/Logs/"
+    LOCAL_MATLAB_PROJECT_DIRECTORY="/Users/petercornillon/Git_repos/MODIS_L2/"
 
-    OUTPUT_DIRECTORY_NOHUP=$OUTPUT_DIRECTORY
+    LOCAL_OUTPUT_DIRECTORY_NOHUP=$LOCAL_OUTPUT_DIRECTORY
 
-    touch "${OUTPUT_DIRECTORY}/proof_of_life"
+    touch "${LOCAL_OUTPUT_DIRECTORY}/proof_of_life"
 else
-    OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
-    MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
+    LOCAL_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
+    LOCAL_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
 
-    OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+    LOCAL_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
 
     touch /home/ubuntu/proof_of_life
 fi
 
 # write commands to excecute here
 
-echo "" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-echo "" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-date  | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-echo "" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-echo "Starting the script..." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-echo "I am $(whoami) and proud of it" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+date  | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "Starting the script..." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "I am $(whoami) and proud of it" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
 # Ensure the output directory exists, if it doesn't, create it.
 
-mkdir -p "$OUTPUT_DIRECTORY"
-echo "Checked for the output directory, created if it did not exist." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+mkdir -p "$LOCAL_OUTPUT_DIRECTORY"
+echo "Checked for the output directory, created if it did not exist." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
-# Make sure that we are using the most recent version of MODIS_L2
-
-cd "$MATLAB_PROJECT_DIRECTORY"
+# Change to the directory and pull the latest changes as user ubuntu
 
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
-    echo "Pulling to $MATLAB_PROJECT_DIRECTORY suing too user ubuntu" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-    su ubuntu -c 'git pull' 
+    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user ubuntu" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+    sudo -u ubuntu bash -c "
+        cd "$LOCAL_MATLAB_PROJECT_DIRECTORY" &&
+        git pull
+    "
 else
-    echo "Pulling to $MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+    cd "$LOCAL_MATLAB_PROJECT_DIRECTORY"
     git pull
 fi
 
 # Sanity check to make sure that it pulled properly.
  
-sed -n '51p' "${MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+sed -n '51p' "${LOCAL_MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 
@@ -82,50 +84,30 @@ if [ "$(whoami)" != "petercornillon" ]; then
     FILENAME="AWS_copy_${CURRENT_TIME}.out"
     echo "Current time is $CURRENT_TIME and it will write the output for the Python portion to $FILENAME"
 
-    nohup python "${MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
+    nohup python "${LOCAL_MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 &
 fi
 
-# Start Matlab and run test script. The script it runs will exit after at least 75% (which could be changed, e.g./ to 100%) of the jobs have finished
-# or after the estimated required processing time has elapsed. It estimates this time based on the time for one of the submitted batch jobs to finish.
-# It estimates this time assuming 100 minutes per orbit and 11 minutes to process an orbit. These numbers are changeable depending on how fast the CPU is.
-# Note that the command opens the Matlab project for MODIS_L2. From there it finds all of the functions it needs. First, construct the output filename
-# then execute the command
+# Start Matlab and run test script. 
 
-CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S")
-FILENAME="matlab_${CURRENT_TIME}.out"
-echo "Current time is $CURRENT_TIME and it will write the output for the Matlab portion to $FILENAME" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
-echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
+# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${LOCAL_MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test;" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/tester_session_log.txt" &'
 
-# su ubuntu -c 'nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test"  > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
-# sudo -u ubuntu -i bash -c 'nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
-# sudo -u ubuntu -i bash -c 'export MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"; export OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/nohup/"; CURRENT_TIME=$(date +"%Y-%m-%d_%H-%M-%S"); FILENAME="matlab_${CURRENT_TIME}.out"; 
-# nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('\''${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'\''); AWS_batch_test" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 &'
-# nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('/Users/petercornillon/Git_repos/MODIS_L2/MODIS_L2.prj'); AWS_batch_test" > "/Users/petercornillon/Logs/local_test_1" > "${OUTPUT_DIRECTORY}${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}tester_session_log.txt"
 
-# nohup matlab -nodisplay -nosplash -nodesktop -r "prj=openProject('${MATLAB_PROJECT_DIRECTORY}/MODIS_L2.prj'); disp('Starting AWS_batch_test'); AWS_batch_test; disp('Finished AWS_batch_test')" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt"
+sudo -u ubuntu bash -c '
+  export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
+  export REMOTE_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
+  export REMOTE_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+  echo "Am running in sudo submitted version of script." | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
+  cd "$REMOTE_MATLAB_PROJECT_DIRECTORY"
+  echo "Pulling to $REMOTE_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
+  git pull
+  FILENAME="matlab_$(date +'%Y-%m-%d_%H-%M-%S').out"
+  echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
+  nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); AWS_batch_test;" > "$REMOTE_OUTPUT_DIRECTORY/$FILENAME" 2>&1 &
+  echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt" '
 
-sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test;" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt" &'
-
-echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-
-% Check to see if the batch jobs are running.
-
-if [ "$(whoami)" != "petercornillon" ]; then
-    echo -e "Here are the running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-
-    echo "Wait for 60 seconds..."
-    sleep 60
-    echo "Continuing now."
-
-    echo -e "Check again for running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-
-    echo "Wait for 60 seconds..."
-    sleep 60
-    echo "Continuing now."
-
-    echo -e "Check again for running Matlab jobs \n$(ps aux | grep MATLAB | grep -v grep)\n" | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
-fi
+echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
 echo "Script execution completed."
 

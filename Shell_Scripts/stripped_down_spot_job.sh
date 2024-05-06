@@ -29,6 +29,6 @@ echo "Current time is $CURRENT_TIME and it will write the output for the Matlab 
 
 echo "I am still $(whoami) and about to fire up Matlab." 2>&1 | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"
 
-nohup matlab -batch "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test;" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt" &
+sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_test;" > "${OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${OUTPUT_DIRECTORY}/tester_session_log.txt" &'
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background." | tee -a "${OUTPUT_DIRECTORY}/session_log.txt"

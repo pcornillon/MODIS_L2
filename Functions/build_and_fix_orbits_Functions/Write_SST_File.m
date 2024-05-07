@@ -32,15 +32,13 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 % OUTPUT
 %   Status - 1 if all operations ended successfully; 0 otherwise.
 %
-%  CHANGE LOG
+%  CHANGE LOG 
+%   v. #  -  data    - description     - who
 %
-%   Version 1.00
-%
-%   6/6/2021 - PCC - Original version of this function.
-%
-%   Version 3.00
-%
-%   3/26/2022 - PCC - Major modifications to include other variables.
+%   1.0.0 - 6/6/2021 - Initial version - PCC
+
+global version_struct
+version_struct.Write_SST_File = '1.0.0';
 
 % globals for the run as a whole.
 

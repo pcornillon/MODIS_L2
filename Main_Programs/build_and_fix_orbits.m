@@ -71,9 +71,16 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %  For test runs, the function will define the location of the various
 %  directories as well as parameters needed for the run. Nothing is passed
 %  into the function.
+%
+%  CHANGE LOG 
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/6/2024 - Initial version - PCC
+%   1.0.1 - 5/6/2024 - Added check for trailing slash on remote output
+%           directory name - PCC
 
 global version_struct
-version_struct.build_and_fix_orbits_version = '1.0.0';
+version_struct.build_and_fix_orbits = '1.0.1';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -338,8 +345,13 @@ if (Matlab_end_time < acceptable_start_time) | (Matlab_end_time > acceptable_end
     return
 end
 
-if strcmp((1:2), '~/')
-    fprintf('The output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_local)
+if strcmp(output_file_directory_local(1:2), '~/')
+    fprintf('The local output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_local)
+    return
+end
+
+if strcmp(output_file_directory_remote(1:2), '~/')
+    fprintf('The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_remote)
     return
 end
 

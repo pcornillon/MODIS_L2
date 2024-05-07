@@ -35,10 +35,20 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   scan_seconds_from_start - seconds since start of orbit to this granule.
 %   granule_start_time_guess - estimated start time for the next granule.
 %
+%  CHANGE LOG 
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/6/2024 - Initial version - PCC
+%   1.1.0 - 5/6/2024 - Added check on remote output directory. This change
+%           is being made to allow checking of the remote directory for the
+%           existence of the output file. 
+
+global version_struct
+version_struct.build_orbit = '1.1.0';
 
 % globals for the run as a whole.
 
-global output_file_directory_local
+global output_file_directory_local output_file_directory_remote
 global print_diagnostics print_times
 
 % globals for build_orbit part.
@@ -141,8 +151,12 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
             'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
         
-        exist_list_remote = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
+        if ~isempty(output_file_directory_remote)
+            exist_list_remote = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
             'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
+        else
+            exist_list_remote = '';
+        end
         
         if ~isempty(exist_list) | ~isempty(exist_list_remote)
 

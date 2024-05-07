@@ -100,7 +100,16 @@ def rsync_copy_and_delete(src, dst):
         # Delete the original file
         os.remove(src)
         print( "Deleted original file: %s at %s." %(src, formatted_now))
-    else:
+
+        # Create or touch a .dummy file in the destination directory
+        dummy_filename = os.path.splitext(os.path.basename(src))[0] + ".dummy"
+        dummy_filepath = os.path.join(dst, dummy_filename)
+
+        with open(dummy_filepath, 'w'):
+            pass  # This creates the file if it doesn't exist or updates the timestamp
+        print(f"Created or touched dummy file: {dummy_filepath}")
+
+        else:
         print( "rsync failed for: %s. Error: %s at %s." %(src, result.stderr, formatted_now))
 
 def copy_files(test_mode=False):

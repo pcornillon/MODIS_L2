@@ -9,10 +9,11 @@
 % process the first 4 orbits for days 1, 2 and 3 of January 2012
 
 % Versions.
-%   1.0.0 - 6/6/2024 - Initial version - PCC
+%   1.0.0 - 6/6/2024 - Initial version for test. - PCC
+%   1.1.0 - 6/6/2024 - First major processing - PCC
 
 global version_struct
-version_struct.AWS_batch_test = '1.0.0';
+version_struct.AWS_batch_test = '1.1.0';
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -48,10 +49,10 @@ end
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2015 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 1 0 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 0 2 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 2; % The number of batch jobs to submit
+start_time = [2011 1 1 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 1 0 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+num_batch = 90; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.

@@ -141,7 +141,10 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
             'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
         
-        if ~isempty(exist_list)
+        exist_list_remote = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
+            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
+        
+        if ~isempty(exist_list) | ~isempty(exist_list_remote)
 
             % If this orbit is present, reset all of the oinfo values that
             % we can extract from the title of the next orbit. Then skip

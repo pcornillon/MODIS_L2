@@ -78,9 +78,11 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   1.0.0 - 5/6/2024 - Initial version - PCC
 %   1.0.1 - 5/6/2024 - Added check for trailing slash on remote output
 %           directory name - PCC
+%   1.0.2 - 5/7/2024 - Fixed print out of version number and test for
+%           empty output_file_directory_remote.
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.0.1';
+version_struct.build_and_fix_orbits = '1.0.2';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -350,9 +352,11 @@ if strcmp(output_file_directory_local(1:2), '~/')
     return
 end
 
-if strcmp(output_file_directory_remote(1:2), '~/')
-    fprintf('The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_remote)
-    return
+if ~isempty(output_file_directory_remote)
+    if strcmp(output_file_directory_remote(1:2), '~/')
+        fprintf('The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_remote)
+        return
+    end
 end
 
 %% Initialize parameters

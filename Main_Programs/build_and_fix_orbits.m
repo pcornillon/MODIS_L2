@@ -151,7 +151,7 @@ diary(diary_filename)
 
 fprintf('Processing from %s to %s.\n', datestr(start_date_time), datestr(end_date_time))
 
-fprintf('\nVersion %s of build_and_fix_orbits.\n\n', version_struct.build_and_fix_orbits_version)
+fprintf('\nVersion %s of build_and_fix_orbits.\n\n', version_struct.build_and_fix_orbits)
 
 if determine_fn_size; get_job_and_var_mem; end
 

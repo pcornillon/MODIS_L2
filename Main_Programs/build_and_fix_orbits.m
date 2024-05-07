@@ -72,14 +72,15 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %  directories as well as parameters needed for the run. Nothing is passed
 %  into the function.
 %
-%  CHANGE LOG 
+%  CHANGE LOG
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 5/6/2024 - Initial version - PCC
 %   1.0.1 - 5/6/2024 - Added check for trailing slash on remote output
 %           directory name - PCC
 %   1.0.2 - 5/7/2024 - Fixed print out of version number and test for
-%           empty output_file_directory_remote.
+%           empty output_file_directory_remote. Also added code to address
+%           the problem of large number of missing granules. - PCC
 
 global version_struct
 version_struct.build_and_fix_orbits = '1.0.2';
@@ -433,6 +434,7 @@ search_start_time = Matlab_start_time;
 % Either no granules with a 79 crossing or coding problem.
 
 if (status == 201) | (status == 231) | (status > 900)
+    fprintf('Problem building this orbit or end of run.\n')
     return
 end
 
@@ -466,7 +468,7 @@ while granule_start_time_guess <= Matlab_end_time
         % Return if end of run.
 
         if (status == 201) | (status == 231) | (status > 900)
-            fprintf('Problem building this orbit, return to builds_and_fix_orbit.\n')
+            fprintf('Problem building this orbit or end of run.\n')
             return
         end
     end
@@ -497,233 +499,248 @@ while granule_start_time_guess <= Matlab_end_time
 
     else
 
-        % latitude will be empty where there are missing granules. Fill them in
-        % with the canonical orbit.
+        if length(latitude)==1
 
-        nlat_orbit = latitude(677,:);
+            % There was a problem with this orbit, go to the next one.
 
-        nn = find(isnan(nlat_orbit) == 1);
-
-        if ~isempty(nn)
-            nlat_orbit(nn) = nlat_avg(nn);
-        end
-
-        %% Next fix the mask if requested.
-
-        SST_In_Masked = SST_In;
-
-        if fix_mask
-            start_time_to_fix_mask = tic;
-
-            [~, Month, ~, ~, ~, ~] = datevec(oinfo(iOrbit).start_time);
-            [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, Month);
-
-            oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
-
-            if print_times
-                fprintf('   Time to fix the mask for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_fix_mask, datestr(now))
+            if print_diagnostics
+                fprintf('*** Bad latitude, skip 5 minutes to %s and search for the start of the next orbit.\n', datestr(granule_start_time_guess + 5/24/60))
             end
+
+            status = populate_problem_list( 178, ['*** Bad latitude, skip 1 hour to ' datestr(granule_start_time_guess + 1/24) ' and search for the start of the next orbit.'], granule_start_time_guess);
+            
+            granule_start_time_guess = granule_start_time_guess + 1/24;
+            [status, granule_start_time_guess] = get_start_of_first_full_orbit(granule_start_time_guess);
         else
-            Final_Mask = zeros(size(SST_In));
-            Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
 
-            oinfo(iOrbit).time_to_fix_mask = 0;
-        end
+            % latitude will be empty where there are missing granules. Fill them in
+            % with the canonical orbit.
 
-        SST_In_Masked(Final_Mask==1) = nan;
+            nlat_orbit = latitude(677,:);
 
-        % At this point,
-        %   if the mask has been fixed, final_mask will have values of 0
-        %    where the SST value is 'good' and 1 where it is 'bad'.
-        %   if the mask has NOT been fixed, final_mask is set 0 if
-        %    qual_sst<2, the value is 'good' according to the input mask
-        %    and it will be set to 1 otherwise, the pixel is 'bad'.
-        % AND
-        %   if the mask has been fixed, SST_In_Masked is the input SST
-        %    field, SST_In, with values for which final_mask is 1 set to
-        %    nan; i.e., the corrected mask.
-        %   if the mask has NOT been fixed, SST_In_Masked is the input SST
-        %    field, SST_In,again with values for which final_mask is 1 set
-        %    to nan but in this case using qual_sst values.
+            nn = find(isnan(nlat_orbit) == 1);
 
-        %% Fix the bowtie problem, again if requested.
+            if ~isempty(nn)
+                nlat_orbit(nn) = nlat_avg(nn);
+            end
 
-        if fix_bowtie
-            if determine_fn_size; get_job_and_var_mem; end
+            %% Next fix the mask if requested.
 
-            start_address_bowtie = tic;
+            SST_In_Masked = SST_In;
 
-% % %             if regridded_debug == 1
-% % %                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing, ... 
-% % %                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
-% % %                     AMSR_E_lat, AMSR_E_lon, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
-% % %                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
-% % % % % %                     regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
-% % % 
-% % %                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
-% % %                 
-% % %                 if length(mm) < numel(SST_In_Masked)
-% % %                     clear xx
-% % %                     xx(mm) = double(SST_In_Masked(mm));
-% % %                     lonxx(mm) = double(longitude(mm));
-% % %                     latxx(mm) = double(latitude(mm));
-% % % 
-% % %                     regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
-% % %                 else
-% % %                     regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
-% % %                 end
-% % %             else
+            if fix_mask
+                start_time_to_fix_mask = tic;
+
+                [~, Month, ~, ~, ~, ~] = datevec(oinfo(iOrbit).start_time);
+                [Final_Mask] = fix_MODIS_mask_full_orbit( oinfo(iOrbit).name, longitude, latitude, SST_In, qual_sst, flags_sst, sstref, Month);
+
+                oinfo(iOrbit).time_to_fix_mask = toc(start_time_to_fix_mask);
+
+                if print_times
+                    fprintf('   Time to fix the mask for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_fix_mask, datestr(now))
+                end
+            else
+                Final_Mask = zeros(size(SST_In));
+                Final_Mask(qual_sst>=2) = 1;  % Need this for bow-tie fix.
+
+                oinfo(iOrbit).time_to_fix_mask = 0;
+            end
+
+            SST_In_Masked(Final_Mask==1) = nan;
+
+            % At this point,
+            %   if the mask has been fixed, final_mask will have values of 0
+            %    where the SST value is 'good' and 1 where it is 'bad'.
+            %   if the mask has NOT been fixed, final_mask is set 0 if
+            %    qual_sst<2, the value is 'good' according to the input mask
+            %    and it will be set to 1 otherwise, the pixel is 'bad'.
+            % AND
+            %   if the mask has been fixed, SST_In_Masked is the input SST
+            %    field, SST_In, with values for which final_mask is 1 set to
+            %    nan; i.e., the corrected mask.
+            %   if the mask has NOT been fixed, SST_In_Masked is the input SST
+            %    field, SST_In,again with values for which final_mask is 1 set
+            %    to nan but in this case using qual_sst values.
+
+            %% Fix the bowtie problem, again if requested.
+
+            if fix_bowtie
+                if determine_fn_size; get_job_and_var_mem; end
+
+                start_address_bowtie = tic;
+
+                % % %             if regridded_debug == 1
+                % % %                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing, ...
+                % % %                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
+                % % %                     AMSR_E_lat, AMSR_E_lon, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
+                % % %                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
+                % % % % % %                     regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
+                % % %
+                % % %                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
+                % % %
+                % % %                 if length(mm) < numel(SST_In_Masked)
+                % % %                     clear xx
+                % % %                     xx(mm) = double(SST_In_Masked(mm));
+                % % %                     lonxx(mm) = double(longitude(mm));
+                % % %                     latxx(mm) = double(latitude(mm));
+                % % %
+                % % %                     regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
+                % % %                 else
+                % % %                     regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
+                % % %                 end
+                % % %             else
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ...
-                    easting, northing, new_easting, new_northing, ... 
+                    easting, northing, new_easting, new_northing, ...
                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
 
-% %                 easting = [];
-% %                 northing = [];
-% %                 new_easting = [];
-% %                 new_northing = [];
-% %                 regridded_sst_alternate = [];
-% % %             end
+                % %                 easting = [];
+                % %                 northing = [];
+                % %                 new_easting = [];
+                % %                 new_northing = [];
+                % %                 regridded_sst_alternate = [];
+                % % %             end
 
-            if (status ~= 0) & (status ~= 1001)
-                fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
+                if (status ~= 0) & (status ~= 1001)
+                    fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
+                end
+
+                oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
+
+                if print_times
+                    fprintf('   Time to address bowtie for this orbit: %6.1f seconds. Current date/time: %s\n',  oinfo(iOrbit).time_to_address_bowtie, datestr(now))
+                end
+            else
+                regridded_sst = SST_In_Masked; % Need this for gradients.
+
+                regridded_longitude = nan;
+                regridded_latitude = nan;
+                regridded_flags_sst = nan;
+                regridded_qual = nan;
+                regridded_sstref = nan;
+                region_start = nan;
+                region_end = nan;
+                easting = nan;
+                northing = nan;
+                new_easting = nan;
+                new_northing = nan;
+
+                oinfo(iOrbit).time_to_address_bowtie = 0;
             end
 
-            oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
+            %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
 
-            if print_times
-                fprintf('   Time to address bowtie for this orbit: %6.1f seconds. Current date/time: %s\n',  oinfo(iOrbit).time_to_address_bowtie, datestr(now))
+            % Note that if the bow-tie problem has not been fixed, the
+            % regridded_sst field is actually the input SST field masked wither
+            % with the qual_sst mask if the mask has not been fixed or the
+            % fixed mixed mask if it has been fixed. Since some orbits are
+            % shorter than the separation and angle arrays, only use the first
+            % part; all orbits should start at about the same location.
+
+            if get_gradients
+                if determine_fn_size; get_job_and_var_mem; end
+
+                start_time_to_determine_gradient = tic;
+
+                medfilt2_sst = 1;
+                if medfilt2_sst
+                    sstp = medfilt2(regridded_sst);
+                else
+                    sstp = regridded_sst;
+                end
+
+                [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
+                    sstp, ...
+                    along_track_seps_array(:,1:size(regridded_sst,2)), ...
+                    along_scan_seps_array(:,1:size(regridded_sst,2)));
+                clear sstp
+
+                eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
+                northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
+
+                oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
+
+                if print_times
+                    fprintf('   Time to determine the gradient for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_determine_gradient, datestr(now))
+                end
+            else
+                grad_at_per_km = nan;
+                grad_as_per_km = nan;
+
+                eastward_gradient = nan;
+                northward_gradient = nan;
+
+                oinfo(iOrbit).time_to_determine_gradient = 0;
             end
-        else
-            regridded_sst = SST_In_Masked; % Need this for gradients.
 
-            regridded_longitude = nan;
-            regridded_latitude = nan;
-            regridded_flags_sst = nan;
-            regridded_qual = nan;
-            regridded_sstref = nan;
-            region_start = nan;
-            region_end = nan;
-            easting = nan;
-            northing = nan;
-            new_easting = nan;
-            new_northing = nan;
+            %% Wrap-up for this orbit.
 
-            oinfo(iOrbit).time_to_address_bowtie = 0;
-        end
-
-        %% Finally calculate the eastward and northward gradients from the regridded SSTs if requested.
-
-        % Note that if the bow-tie problem has not been fixed, the
-        % regridded_sst field is actually the input SST field masked wither
-        % with the qual_sst mask if the mask has not been fixed or the
-        % fixed mixed mask if it has been fixed. Since some orbits are
-        % shorter than the separation and angle arrays, only use the first
-        % part; all orbits should start at about the same location.
-
-        if get_gradients
             if determine_fn_size; get_job_and_var_mem; end
 
-            start_time_to_determine_gradient = tic;
+            time_to_save_orbit = tic;
 
-            medfilt2_sst = 1;
-            if medfilt2_sst
-                sstp = medfilt2(regridded_sst);
-            else
-                sstp = regridded_sst;
-            end
+            if save_orbits
+                Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, ...
+                    regridded_longitude, regridded_latitude, regridded_sst, ...
+                    easting, northing, new_easting, new_northing, ...
+                    grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
+                    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
+                    L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
+                    AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid);
 
-            [grad_at_per_km, grad_as_per_km, ~] = sobel_gradient_degrees_per_kilometer( ...
-                sstp, ...
-                along_track_seps_array(:,1:size(regridded_sst,2)), ...
-                along_scan_seps_array(:,1:size(regridded_sst,2)));
-            clear sstp
+                oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 
-            eastward_gradient = grad_at_per_km .* cos_track_angle(:,1:size(regridded_sst,2)) - grad_as_per_km .* sin_track_angle(:,1:size(regridded_sst,2));
-            northward_gradient = grad_at_per_km .* sin_track_angle(:,1:size(regridded_sst,2)) + grad_as_per_km .* cos_track_angle(:,1:size(regridded_sst,2));
-
-            oinfo(iOrbit).time_to_determine_gradient = toc(start_time_to_determine_gradient);
-
-            if print_times
-                fprintf('   Time to determine the gradient for this orbit: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).time_to_determine_gradient, datestr(now))
-            end
-        else
-            grad_at_per_km = nan;
-            grad_as_per_km = nan;
-
-            eastward_gradient = nan;
-            northward_gradient = nan;
-
-            oinfo(iOrbit).time_to_determine_gradient = 0;
-        end
-
-        %% Wrap-up for this orbit.
-
-        if determine_fn_size; get_job_and_var_mem; end
-
-        time_to_save_orbit = tic;
-
-        if save_orbits
-            Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, Final_Mask, scan_seconds_from_start, ...
-                regridded_longitude, regridded_latitude, regridded_sst, ...
-                easting, northing, new_easting, new_northing, ...
-                grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
-                region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
-                L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
-                AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid);
-
-            oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
-
-            % % Copy the file using rsyn if a remote directory has been specified.
-            % 
-            % if ~isempty(output_file_directory_remote)
-            %     output_filename = oinfo(iOrbit).name;
-            % 
-            %     time_to_copy_orbit = tic;
-            % 
-            %     nn = strfind(output_filename, '/SST/');
-            %     remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
-            % 
-            %     eval(['! rsync -avq ' output_filename ' ' remote_filename])
-            % 
-            %     % Make sure that the file copied properly.
-            % 
-            %     output_details = dir(output_filename);
-            %     remote_details = dir(remote_filename);
-            % 
-            %     if (output_details.bytes == remote_details.bytes) & (remote_details.bytes > 10^8)
-            %         eval(['! rm ' output_filename])
-            %     else
-            %         if print_diagnostics
-            %             fprintf('*** Failed to copy  %s to %s.\n', output_filename, remote_filename)
-            %         end
-            % 
-            %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
-            %     end
-            % 
-            %     oinfo(iOrbit).time_to_copy_orbit = toc(time_to_copy_orbit);
-            % end
-            
-            oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
-
-            oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
-
-            if print_times
-                fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
-                
+                % % Copy the file using rsyn if a remote directory has been specified.
+                %
                 % if ~isempty(output_file_directory_remote)
-                %     fprintf('   Time to copy %s to %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_copy_orbit, output_file_directory_remote, datestr(now))
+                %     output_filename = oinfo(iOrbit).name;
+                %
+                %     time_to_copy_orbit = tic;
+                %
+                %     nn = strfind(output_filename, '/SST/');
+                %     remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
+                %
+                %     eval(['! rsync -avq ' output_filename ' ' remote_filename])
+                %
+                %     % Make sure that the file copied properly.
+                %
+                %     output_details = dir(output_filename);
+                %     remote_details = dir(remote_filename);
+                %
+                %     if (output_details.bytes == remote_details.bytes) & (remote_details.bytes > 10^8)
+                %         eval(['! rm ' output_filename])
+                %     else
+                %         if print_diagnostics
+                %             fprintf('*** Failed to copy  %s to %s.\n', output_filename, remote_filename)
+                %         end
+                %
+                %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
+                %     end
+                %
+                %     oinfo(iOrbit).time_to_copy_orbit = toc(time_to_copy_orbit);
                 % end
-                
-                fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
-            end
 
-        else
-            oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+                oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 
-            if print_times
-                fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
+                if print_times
+                    fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
+
+                    % if ~isempty(output_file_directory_remote)
+                    %     fprintf('   Time to copy %s to %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_copy_orbit, output_file_directory_remote, datestr(now))
+                    % end
+
+                    fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                end
+
+            else
+                oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
+
+                if print_times
+                    fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                end
             end
         end
     end

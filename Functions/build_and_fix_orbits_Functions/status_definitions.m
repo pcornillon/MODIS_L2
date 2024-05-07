@@ -58,6 +58,11 @@
 % % % %   175 - build_and_fix_orbits - failed to copy output file to remote location.
 % % % %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
 % % % %         error - nothing done here but need to fix quickly because it will result in a buildup of files in the local output directory.
+% % % %
+% % % %   178 - build_and_fix_orbits - bad latitude going to the next orbit.
+% % % %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
+% % % %         error - nothing done here but need to fix quickly because it will result in a buildup of files in the local output directory.
+
 
 % ACTION REQUIRED ON RETURN
 %

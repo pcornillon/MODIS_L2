@@ -25,6 +25,13 @@ function status = generate_output_filename(build_type)
 %    that is at the end of an orbit but the first granule on the current
 %    orbit.
 %
+%  CHANGE LOG 
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/7/2024 - Initial version - PCC
+
+global version_struct
+version_struct.generate_output_filename = '1.0.0';
 
 % globals for the run as a whole.
 

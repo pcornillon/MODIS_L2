@@ -219,7 +219,7 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         % Return if end of run.
         
         if (status == 201) | (status == 231) | (status > 900)
-            fprintf('Problem building this orbit, return to builds_and_fix_orbit.\n')
+            fprintf('Problem building this orbit. End of run.\n')
             return
         end
         

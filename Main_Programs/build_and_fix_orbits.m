@@ -146,6 +146,8 @@ global s3_expiration_time
 global med_op
 global pixStartm pixEndm pixStartp pixEndp
 
+lofs_of_astericks = '****************************************************************';
+
 % Open diary for this run.
 
 rng('shuffle')  % This to make it start with a different random number.
@@ -332,7 +334,9 @@ acceptable_start_time = datenum(2002, 7, 1);
 acceptable_end_time = datenum(2022, 12, 31);
 
 if (length(start_date_time) ~= 6) | (length(end_date_time) ~= 6)
-    fprintf('Input start and end time vectors must be 6 elements long. start_date_time: %s to %s.\n', num2str(start_date_time), num2str(end_date_time))
+    fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+    fprintf('*    Input start and end time vectors must be 6 elements long. start_date_time: %s to %s.\n*\n', num2str(start_date_time), num2str(end_date_time))
+    fprintf('%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
     return
 end
 
@@ -340,23 +344,31 @@ Matlab_start_time = datenum(start_date_time);
 Matlab_end_time = datenum(end_date_time);
 
 if (Matlab_start_time < acceptable_start_time) | (Matlab_start_time > acceptable_end_time)
-    fprintf('Specified start time %s not between %s and %s\n', datestr(Matlab_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+    fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+    fprintf('*    Specified start time %s not between %s and %s.\n*\n', datestr(Matlab_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+    fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)    
     return
 end
 
 if (Matlab_end_time < acceptable_start_time) | (Matlab_end_time > acceptable_end_time)
-    fprintf('Specified end time %s not between %s and %s\n', datestr(Matlab_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+    fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+    fprintf('*    Specified end time %s not between %s and %s\n*\n', datestr(Matlab_start_time), datestr(Matlab_start_time), datestr(Matlab_end_time))
+    fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
     return
 end
 
 if strcmp(output_file_directory_local(1:2), '~/')
-    fprintf('The local output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_local)
+    fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+    fprintf('*    The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n*\n', output_file_directory_local)
+    fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
     return
 end
 
 if ~isempty(output_file_directory_remote)
     if strcmp(output_file_directory_remote(1:2), '~/')
-        fprintf('The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n', output_file_directory_remote)
+        fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+        fprintf('*    The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n*\n', output_file_directory_remote)
+        fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
         return
     end
 end
@@ -435,7 +447,14 @@ search_start_time = Matlab_start_time;
 % Either no granules with a 79 crossing or coding problem.
 
 if (status == 201) | (status == 231) | (status > 900)
-    fprintf('Problem building this orbit or end of run.\n')
+    fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+    fprintf('*    Problem building this orbit or end of run.\n*\n')
+    fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
+    fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+    fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
+
+    save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
+
     return
 end
 
@@ -469,7 +488,14 @@ while granule_start_time_guess <= Matlab_end_time
         % Return if end of run.
 
         if (status == 201) | (status == 231) | (status > 900)
-            fprintf('Problem building this orbit or end of run.\n')
+            fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+            fprintf('*    Problem building this orbit or end of run.\n*\n')
+            fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
+            fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+            fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
+
+            save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
+
             return
         end
     end
@@ -485,7 +511,14 @@ while granule_start_time_guess <= Matlab_end_time
     % No remaining granules with a 79 crossing.
 
     if status > 900
-        fprintf('Exiting.\n')
+        fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+        fprintf('*    No remaining granules with an ascending 79 S crossing.  \n*\n')
+        fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
+        fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+        fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
+
+        save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
+
         return
     end
 
@@ -502,16 +535,10 @@ while granule_start_time_guess <= Matlab_end_time
 
         if length(latitude)==1
 
-            % There was a problem with this orbit, go to the next one.
+            status = populate_problem_list( 178, ['*** Bad latitude. Exiting this run.'], granule_start_time_guess);
 
-            if print_diagnostics
-                fprintf('*** Bad latitude, skip 1 hour to %s and search for the start of the next orbit.\n', datestr(granule_start_time_guess + 5/24/60))
-            end
-
-            status = populate_problem_list( 178, ['*** Bad latitude, skip 1 hour to ' datestr(granule_start_time_guess + 1/24) ' and search for the start of the next orbit.'], granule_start_time_guess);
-            
-            granule_start_time_guess = granule_start_time_guess + 1/24;
-            [status, granule_start_time_guess] = get_start_of_first_full_orbit(granule_start_time_guess);
+            fprintf('\n\n\n%s\n%s\n*\n*    Bad latitude somewhere before %s\n*\n*    Exiting run.\n*\n%s\n%s\n', lofs_of_astericks, lofs_of_astericks, datestr(granule_start_time_guess), lofs_of_astericks, lofs_of_astericks)
+            return
         else
 
             % latitude will be empty where there are missing granules. Fill them in
@@ -703,5 +730,8 @@ while granule_start_time_guess <= Matlab_end_time
     iOrbit = iOrbit + 1;
 end
 
-fprintf('   Time for this run: %8.1f seconds or, in minutes, %5.1f\n', toc(tic_build_start), toc(tic_build_start/60))
+fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+fprintf('*    No remaining granules with an ascending 79 S crossing. \n*\n')
+fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
 

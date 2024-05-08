@@ -18,10 +18,13 @@ with open(summary_file, 'w') as summary:
                     last_lines = lines[-20:] if len(lines) >= 20 else lines
                 
                 # Write formatted output to summary file
-                summary.write('\n\n********** {} **********\n\n'.format(filename))
+                summary.write('\n\n********** {0} **********\n\n'.format(filename))
                 summary.write(''.join(last_lines) + '\n')
             
             except Exception as e:
-                print(f"Error processing file {filename}: {e}")
-
-print(f"Summary file created: {summary_file}")
+                # Handle any exceptions encountered while reading/writing files
+                error_message = 'Error processing file {0}: {1}\n'.format(filename, str(e))
+                summary.write(error_message)
+                # Optionally, log the error to the console or another file for review
+                
+print("Summary file created:", summary_file)

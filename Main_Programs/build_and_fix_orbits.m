@@ -81,9 +81,10 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   1.0.2 - 5/7/2024 - Fixed print out of version number and test for
 %           empty output_file_directory_remote. Also added code to address
 %           the problem of large number of missing granules. - PCC
+%   1.0.3 - 5/7/2024 - Removed commented out code - PCC
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.0.2';
+version_struct.build_and_fix_orbits = '1.0.3';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -569,38 +570,11 @@ while granule_start_time_guess <= Matlab_end_time
 
                 start_address_bowtie = tic;
 
-                % % %             if regridded_debug == 1
-                % % %                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, easting, northing, new_easting, new_northing, ...
-                % % %                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_AMSR_E_SST, ...
-                % % %                     AMSR_E_lat, AMSR_E_lon, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
-                % % %                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
-                % % % % % %                     regrid_MODIS_orbits( regrid_sst, regrid_to_AMSRE, augmented_weights, augmented_locations, longitude, latitude, SST_In_Masked);
-                % % %
-                % % %                 mm = find( (isnan(SST_In_Masked) == 0) & (isinf(SST_In_Masked) == 0) );
-                % % %
-                % % %                 if length(mm) < numel(SST_In_Masked)
-                % % %                     clear xx
-                % % %                     xx(mm) = double(SST_In_Masked(mm));
-                % % %                     lonxx(mm) = double(longitude(mm));
-                % % %                     latxx(mm) = double(latitude(mm));
-                % % %
-                % % %                     regridded_sst_alternate = griddata( lonxx, latxx, xx, regridded_longitude, regridded_latitude);
-                % % %                 else
-                % % %                     regridded_sst_alternate = griddata( double(longitude), double(latitude), double(SST_In_Masked), regridded_longitude, regridded_latitude);
-                % % %                 end
-                % % %             else
                 [status, regridded_longitude, regridded_latitude, regridded_sst, region_start, region_end, ...
                     easting, northing, new_easting, new_northing, ...
                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
-
-                % %                 easting = [];
-                % %                 northing = [];
-                % %                 new_easting = [];
-                % %                 new_northing = [];
-                % %                 regridded_sst_alternate = [];
-                % % %             end
 
                 if (status ~= 0) & (status ~= 1001)
                     fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
@@ -690,36 +664,6 @@ while granule_start_time_guess <= Matlab_end_time
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid);
 
                 oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
-
-                % % Copy the file using rsyn if a remote directory has been specified.
-                %
-                % if ~isempty(output_file_directory_remote)
-                %     output_filename = oinfo(iOrbit).name;
-                %
-                %     time_to_copy_orbit = tic;
-                %
-                %     nn = strfind(output_filename, '/SST/');
-                %     remote_filename = [output_file_directory_remote output_filename(nn+5:end)];
-                %
-                %     eval(['! rsync -avq ' output_filename ' ' remote_filename])
-                %
-                %     % Make sure that the file copied properly.
-                %
-                %     output_details = dir(output_filename);
-                %     remote_details = dir(remote_filename);
-                %
-                %     if (output_details.bytes == remote_details.bytes) & (remote_details.bytes > 10^8)
-                %         eval(['! rm ' output_filename])
-                %     else
-                %         if print_diagnostics
-                %             fprintf('*** Failed to copy  %s to %s.\n', output_filename, remote_filename)
-                %         end
-                %
-                %         status = populate_problem_list( 175, ['Failed to copy ' output_filename ' to ' remote_filename '.']);
-                %     end
-                %
-                %     oinfo(iOrbit).time_to_copy_orbit = toc(time_to_copy_orbit);
-                % end
 
                 oinfo(iOrbit).time_to_save_orbit = toc(time_to_save_orbit);
 

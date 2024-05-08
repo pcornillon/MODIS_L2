@@ -82,9 +82,13 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           empty output_file_directory_remote. Also added code to address
 %           the problem of large number of missing granules. - PCC
 %   1.0.3 - 5/7/2024 - Removed commented out code - PCC
+%   1.0.4 - 5/8/2024 - Added text to  be written when job ends. Also will
+%           save the oinfo file at that point. 
+%           Also will exit if latitude is one element and nan. - PCC
+% 
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.0.3';
+version_struct.build_and_fix_orbits = '1.0.4';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the

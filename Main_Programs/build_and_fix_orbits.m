@@ -516,7 +516,7 @@ while granule_start_time_guess <= Matlab_end_time
 
     if status > 900
         fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
-        fprintf('*    No remaining granules with an ascending 79 S crossing.  \n*\n')
+        fprintf('*    Have reached the end of this run.  \n*\n')
         fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
         fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
         fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)

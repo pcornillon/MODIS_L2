@@ -453,6 +453,7 @@ search_start_time = Matlab_start_time;
 if (status == 201) | (status == 231) | (status > 900)
     fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
     fprintf('*    Problem building this orbit or end of run.\n*\n')
+    fprintf('*    Processed %i orbits\n*\n', iOrbit)
     fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
     fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
     fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
@@ -494,6 +495,7 @@ while granule_start_time_guess <= Matlab_end_time
         if (status == 201) | (status == 231) | (status > 900)
             fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
             fprintf('*    Problem building this orbit or end of run.\n*\n')
+            fprintf('*    Processed %i orbits\n*\n', iOrbit)
             fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
             fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
             fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
@@ -517,6 +519,7 @@ while granule_start_time_guess <= Matlab_end_time
     if status > 900
         fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
         fprintf('*    Have reached the end of this run.  \n*\n')
+        fprintf('*    Processed %i orbits\n*\n', iOrbit)
         fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
         fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
         fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
@@ -541,7 +544,15 @@ while granule_start_time_guess <= Matlab_end_time
 
             status = populate_problem_list( 178, ['*** Bad latitude. Exiting this run.'], granule_start_time_guess);
 
-            fprintf('\n\n\n%s\n%s\n*\n*    Bad latitude somewhere before %s\n*\n*    Exiting run.\n*\n%s\n%s\n', lofs_of_astericks, lofs_of_astericks, datestr(granule_start_time_guess), lofs_of_astericks, lofs_of_astericks)
+            fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+            fprintf('*    Bad latitude somewhere before %s\n*\n',  datestr(granule_start_time_guess))
+            fprintf('*    Processed %i orbits\n*\n', iOrbit)
+            fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
+            fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+            fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
+
+            save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
+
             return
         else
 

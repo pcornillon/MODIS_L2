@@ -1,7 +1,7 @@
 {
   "ImageId": "ami-0c1bdd71fe5c1ba3d",
   "SecurityGroupIds": [ "sg-06fcb6a0539014d04" ],
-  "InstanceType": "x2iedn.xlarge",
+  "InstanceType": "r7i.xlarge",
   "Placement": {
     "AvailabilityZone": "us-west-2a"
   },

@@ -505,7 +505,7 @@ while granule_start_time_guess <= Matlab_end_time
             % There was a problem with this orbit, go to the next one.
 
             if print_diagnostics
-                fprintf('*** Bad latitude, skip 5 minutes to %s and search for the start of the next orbit.\n', datestr(granule_start_time_guess + 5/24/60))
+                fprintf('*** Bad latitude, skip 1 hour to %s and search for the start of the next orbit.\n', datestr(granule_start_time_guess + 5/24/60))
             end
 
             status = populate_problem_list( 178, ['*** Bad latitude, skip 1 hour to ' datestr(granule_start_time_guess + 1/24) ' and search for the start of the next orbit.'], granule_start_time_guess);

@@ -104,7 +104,7 @@ if amazon_s3_run
 else
     while isempty(file_list)
 
-        granule_start_time_guess = granule_start_time_guess + 1/24;
+%         granule_start_time_guess = granule_start_time_guess + 1/24;
 
         if local_debug; fprintf('In while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
 

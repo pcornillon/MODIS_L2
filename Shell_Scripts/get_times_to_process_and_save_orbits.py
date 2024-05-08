@@ -38,6 +38,6 @@ with open(output_file, 'w') as out:
     out.write('Orbit Number,Time to Process (seconds)\n')
     for orbit, times in sorted(orbit_times.items()):
         for time in times:
-            out.write(f'{orbit},{time}\n')
+            out.write('{0},{1}\n'.format(orbit, time))
 
-print("Output file created:", output_file)
+print("Output file created: {0}".format(output_file))

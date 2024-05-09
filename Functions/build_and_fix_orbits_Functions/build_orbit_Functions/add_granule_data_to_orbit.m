@@ -44,7 +44,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Added line to check if S3 
 %           credentials need to be updated, update if they do. 
-
+ 
 global version_struct
 version_struct.add_granule_data_to_orbit = '1.0.1';
 

@@ -92,7 +92,9 @@ switch file_type
 
             % make sure that access credentials for NASA S3 files are still active.
 
-            if (now - s3_expiration_time) > 55 / (60 * 24)
+            % I don't think that these lines are needed here.
+            
+            if (now - s3_expiration_time) > 30 / (60 * 24)
                 s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
             end
 

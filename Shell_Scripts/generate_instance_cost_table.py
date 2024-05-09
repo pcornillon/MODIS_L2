@@ -26,7 +26,7 @@ instance_details_command = (
     "aws --profile iam_pcornillon ec2 describe-instances --query "
     "\"Reservations[*].Instances[*].{InstanceID:InstanceId,Name:Tags[?Key=='Name'].Value|[0],"
     "InstanceType:InstanceType,ImageID:ImageId,State:State.Name,PublicIP:PublicIpAddress,"
-    "SpotInstanceRequestID:SpotInstanceRequestId}\" --output json"
+    "SpotInstanceRequestID:SpotInstanceRequestId,AvailabilityZone:Placement.AvailabilityZone}\" --output json"
 )
 instance_details_json = run_aws_cli_command(instance_details_command)
 
@@ -41,12 +41,11 @@ instance_data = json.loads(instance_details_json)
 table = PrettyTable()
 table.field_names = ["Instance ID", "Name", "Instance Type", "Image ID", "State", "Public IP", "Spot Instance Request ID", "On-Demand Price", "Spot Price"]
 
-# Function to get the current spot price for an instance type
-def get_spot_price(instance_type):
+# Function to get the most recent spot price for an instance type in a specific availability zone
+def get_spot_price(instance_type, availability_zone):
     spot_price_command = (
         f"aws --profile iam_pcornillon ec2 describe-spot-price-history --instance-types {instance_type} "
-        "--start-time 2024-01-01T00:00:00Z --end-time 2024-01-01T01:00:00Z "
-        "--query 'SpotPriceHistory[0].SpotPrice' --output text"
+        f"--availability-zone {availability_zone} --query 'SpotPriceHistory[0].SpotPrice' --output text"
     )
     spot_price = run_aws_cli_command(spot_price_command)
     return spot_price if spot_price else 'N/A'
@@ -61,13 +60,14 @@ for reservation in instance_data:
         state = instance.get('State', 'N/A')
         public_ip = instance.get('PublicIP', 'N/A')
         spot_instance_request_id = instance.get('SpotInstanceRequestID', 'N/A')
+        availability_zone = instance.get('AvailabilityZone', 'N/A')
         
         # Get on-demand price
         on_demand_price = on_demand_pricing.get(instance_type, 'N/A')
         formatted_on_demand_price = f"${on_demand_price}" if on_demand_price != 'N/A' else 'N/A'
 
         # Get spot price if applicable
-        spot_price = get_spot_price(instance_type) if spot_instance_request_id not in ['N/A', None] else 'N/A'
+        spot_price = get_spot_price(instance_type, availability_zone) if spot_instance_request_id not in ['N/A', None] else 'N/A'
         formatted_spot_price = f"${spot_price}" if spot_price != 'N/A' else 'N/A'
         
         # Add a row to the table

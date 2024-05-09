@@ -62,6 +62,8 @@ function [status, granule_start_time_guess] = find_next_granule_with_data( granu
 global version_struct
 version_struct.find_next_granule_with_data = '1.0.1';
 
+global s3_expiration_time
+
 % globals for the run as a whole.
 
 global print_diagnostics

@@ -34,6 +34,8 @@ function [ AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AM
 global version_struct
 version_struct.regrid_AMSRE = '1.0.1';
 
+global s3_expiration_time
+
 global pixStartm pixEndm pixStartp pixEndp
 global oinfo iOrbit iGranule iProblem problem_list
 global AMSR_E_baseDir

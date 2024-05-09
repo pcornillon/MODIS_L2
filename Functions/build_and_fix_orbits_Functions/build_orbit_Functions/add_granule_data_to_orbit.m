@@ -48,6 +48,8 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 global version_struct
 version_struct.add_granule_data_to_orbit = '1.0.1';
 
+global s3_expiration_time
+
 % globals for the run as a whole.
 
 global npixels

@@ -1,5 +1,4 @@
 function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
-% % % function build_and_fix_orbits( start_date_time, end_date_time)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -85,10 +84,11 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   1.0.4 - 5/8/2024 - Added text to  be written when job ends. Also will
 %           save the oinfo file at that point. 
 %           Also will exit if latitude is one element and nan. - PCC
+%   1.0.5 - 5/9/2024 - Removed commented out code. - PCC
 % 
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.0.4';
+version_struct.build_and_fix_orbits = '1.0.5';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -133,7 +133,6 @@ global npixels
 global save_just_the_facts amazon_s3_run
 global formatOut
 global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule orbit_duration
-% % % global secs_per_granule_minus_10
 global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
@@ -236,8 +235,6 @@ if exist('save_core') ~= 0
         save_just_the_facts = 0;
     end
 end
-
-% % % fast_regrid = 0; % Disabling fast regridding since I will not use this.
 
 print_times = 1;
 
@@ -415,9 +412,6 @@ if get_gradients
     cos_track_angle = cosd(track_angle);
     sin_track_angle = sind(track_angle);
     clear track_angle
-
-    % along_scan_seps_array = ncread(gradient_filename, 'along_scan_seps_array');
-    % along_track_seps_array = ncread(gradient_filename, 'along_track_seps_array');
 end
 
 %% Get the relative scan line start times and latitudes.
@@ -432,8 +426,6 @@ load([fixit_directory 'avg_scan_line_start_times.mat'])
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
 %______________________________________________________________________________________________
-
-% % % check = check + 1; fprintf('Made it to checkpoint %i\n', check)
 
 if determine_fn_size; get_job_and_var_mem; end
 

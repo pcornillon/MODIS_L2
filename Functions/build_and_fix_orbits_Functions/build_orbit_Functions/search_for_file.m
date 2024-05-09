@@ -16,7 +16,7 @@ function [file_list, granule_start_time_guess] = search_for_file(baseName, granu
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 5/6/2024 - Initial version - PCC
-%   1.1.0 - 5/67/2024 - passed in time to start the search. Determined the
+%   1.1.0 - 5/7/2024 - passed in time to start the search. Determined the
 %           time of the granule found, if one was, or the start of the next
 %           day if a granule was not found. - PCC
 %

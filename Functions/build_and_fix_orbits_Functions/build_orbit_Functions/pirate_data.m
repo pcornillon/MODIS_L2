@@ -31,6 +31,16 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   granule_start_time_guess - the matlab_time of the first scan line in
 %    the current granule.
 %
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/9/2024 - Initial version - PCC
+%   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
+%
+
+global version_struct
+version_struct.pirate_data = '1.0.1';
+
 
 % globals for the run as a whole.
 
@@ -51,20 +61,6 @@ status = 0;
 % that this granule starts near the end of the granule with the descending
 % nadir crossing of 78 S.
 
-% % % found_one = 0;
-% % % test_time = oinfo(iOrbit).ginfo(end).end_time - 5 / 86400;
-% % % for iSecond=1:65
-% % %     test_time = test_time + 1 / 86400;
-% % % 
-% % %     metadata_granule = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-% % % 
-% % %     if exist(metadata_granule)
-% % %         found_one = 1;
-% % %         break
-% % %     end
-% % % end
-
-% % % [found_one, metadata_granule, ~] = get_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
 [found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
 
 if found_one == 0
@@ -74,25 +70,6 @@ if found_one == 0
 else    
     metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
     
-    % % % if amazon_s3_run
-    % % %     % Here for s3.
-    % % %     % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
-    % % % 
-    % % %     % % % data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/' datestr( granule_start_time_guess, formatOut.yyyymmddhhmm) '*-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc']);
-    % % % 
-    % % %     [found_one, data_granule, ~] = get_filename( 'sst_data', metadata_granule);
-    % % % else
-    % % %     data_file_list = dir( [granules_directory datestr( granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS.' datestr( granule_start_time_guess, formatOut.yyyymmddThhmm) '*']);
-    % % % 
-    % % %     if isempty(data_file_list)
-    % % %         found_one = 0;
-    % % %     else
-    % % %         found_one = 1;
-    % % %         data_granule = [data_file_list(1).folder '/' data_file_list(1).name];
-    % % %     end
-    % % % end
-
-    % % % [found_one, data_granule, ~] = get_filename( 'sst_data', metadata_granule);
     [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
 
     if found_one == 0

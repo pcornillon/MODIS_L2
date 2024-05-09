@@ -28,6 +28,15 @@ function [status, granule_start_time_guess] = check_for_latlim_crossing( metadat
 %    times are obtained for this granule, granule_start_time_guess will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/9/2024 - Initial version - PCC
+%   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
+%
+
+global version_struct
+version_struct.check_for_latlim_crossing = '1.0.1';
 
 % globals for the run as a whole.
 
@@ -52,12 +61,7 @@ nlat_t = [];
 
 % Build temporaty filename.
 
-% % % temp_filename = [metadata_file_list(1).folder '/' metadata_file_list(1).name];
 temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
-
-% Read the mirror side information
-
-% % % mside = single(ncread( temp_filename, '/scan_line_attributes/mside'));
 
 % Read time info from metadata granule.
 
@@ -68,9 +72,6 @@ mSec = ncread( temp_filename, '/scan_line_attributes/msec');
 % Now determine the start times for each scanline and the number of
 % scanlines in this granule. Be careful because the start times for scanlines
 % occur are the same for all detectors in a group.
-
-% % % scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
-
 % Actual time is in groups of 10. scan_line_times, below, is the time of 
 % scans had each scan line been done separately.
 

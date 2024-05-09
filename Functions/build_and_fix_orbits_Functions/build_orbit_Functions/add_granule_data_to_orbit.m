@@ -38,6 +38,15 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   sstref - the array for the reference SST field in this orbit.
 %   scan_seconds_from_start - seconds for from the start of the orbit.
 %
+%  CHANGE LOG 
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/9/2024 - Initial version - PCC
+%   1.0.1 - 5/9/2024 - Added versioning. Added line to check if S3 
+%           credentials need to be updated, update if they do. 
+
+global version_struct
+version_struct.add_granule_data_to_orbit = '1.0.1';
 
 % globals for the run as a whole.
 
@@ -96,8 +105,12 @@ end
 scan_lines_to_read = gescan - gsscan + 1;
 
 if amazon_s3_run
-    
-    % Read from the data file
+
+    % Make sure S3 credentials are up-to-date, then read from the data file
+
+    if (now - s3_expiration_time) > 30 / (60 * 24)
+        s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+    end
 
     file_id = H5F.open( data_granule, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 

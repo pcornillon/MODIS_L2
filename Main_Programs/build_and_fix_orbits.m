@@ -267,7 +267,6 @@ if strcmp( granules_directory(1:2), 's3') == 1
     % Get the credentials, will need them shortly.
 
     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
-    s3_expiration_time = now;
 else
     fprintf('\n%s\n', 'This is not an Amazon S3 run; will read data from local disks.')
 end

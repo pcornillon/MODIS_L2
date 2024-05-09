@@ -51,6 +51,16 @@ function [status, granule_start_time_guess] = find_next_granule_with_data( granu
 % Local metadata granule: ~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/2010/AQUA_MODIS_20100619T052000_L2_SST_OBPG_extras.nc4
 %
 % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc
+%
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/6/2024 - Initial version - PCC
+%   1.0.1 - 5/6/2024 - Added line to update s3 credentials if needed- PCC
+% 
+
+global version_struct
+version_struct.find_next_granule_with_data = '1.0.1';
 
 % globals for the run as a whole.
 
@@ -254,6 +264,13 @@ while 1==1
                         % granules
 
                         if amazon_s3_run == 0
+
+                            % Make sure S3 credentials are up-to-date
+
+                            if (now - s3_expiration_time) > 30 / (60 * 24)
+                                s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+                            end
+
                             if iGranule ~= 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
                                 mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).data_name, '/scan_line_attributes/mside'));

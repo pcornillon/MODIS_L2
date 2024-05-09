@@ -22,6 +22,16 @@ function [found_one, folder_name, file_name, test_time] = get_filename( file_typ
 %   file_name - the name of the data file found.
 %   test_time - the start time, which was altered in the call for 'metadata'.
 %
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/6/2024 - Initial version - PCC
+%   1.0.1 - 5/6/2024 - Added  versioning and added some comment lines
+%           related to the need to check for s3 credentials - PCC 
+% 
+
+global version_struct
+version_struct.get_filename = '1.0.1';
 
 % globals for the run as a whole.
 
@@ -75,13 +85,6 @@ switch file_type
         % Get the time of the metadata file. Start by finding where in the
         % string the data and time info is. 
 
-% % %         kk = findstr( metadata_name, '/');
-% % %         if isempty(kk)
-% % %             kk = 0;
-% % %         end
-% % %         
-% % %         md_date = metadata_name(kk+12:kk+19);
-% % %         md_time = metadata_name(kk+21:kk+26);
         md_date = metadata_name(12:19);
         md_time = metadata_name(21:26);
 
@@ -90,9 +93,10 @@ switch file_type
 
         if amazon_s3_run
 
-            % make sure that access credentials for NASA S3 files are still active.
-
-            % I don't think that these lines are needed here.
+            % make sure that access credentials for NASA S3 files are still
+            % active. Note that the s3 access is further down (lines 133,
+            % 147, 165 and 169 in this function where an exist is done on
+            % the filename. 
             
             if (now - s3_expiration_time) > 30 / (60 * 24)
                 s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
@@ -122,7 +126,6 @@ switch file_type
 
         % Build the filename.
 
-% % %         data_filename = [granules_directory dir_year filename_start md_date 'T' md_time filename_end_day];
         data_filename = [granules_directory dir_year filename_start md_date date_time_separator md_time filename_end_day];
 
         % Well, does this sucker exist? If not, continue searching for a file.
@@ -142,17 +145,12 @@ switch file_type
             data_filename = [granules_directory dir_year filename_start md_date md_time filename_end_night];
 
             if ~exist(data_filename)
-                % If the file does not exist search all seconds for this metadata minute.
 
-                % % % data_filename = [granules_directory md_date md_time '-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc'];
+                % If the file does not exist search all seconds for this metadata minute.
 
                 granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
 
                 yymmddhhmm = datestr(granule_guess_time, formatOut.yyyymmddhhmm);
-
-% % %                 if amazon_s3_run == 0
-% % %                     yymmddhhmm = [yymmddhhmm(1:8) 'T' yymmddhhmm(9:12)];
-% % %                 end
 
                 for iSec=0:59
                     iSecC = num2str(iSec);

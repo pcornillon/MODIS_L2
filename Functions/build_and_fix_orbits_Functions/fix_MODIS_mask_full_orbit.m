@@ -130,11 +130,15 @@ function [Final_Mask] = fix_MODIS_full_orbit( file_in, longitude, latitude, SST_
 % object labels marked. The value of the pixels in the mask equals that of
 % the object index.
 %
-% VERSION #
-%   1.0 - original run
-%   1.1 - added code to use a space-time temperature difference threshold
-%    for comparisons with the reference field. This entailed moving the
-%    call to generate the geolocation file up front.
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/9/2024 - Initial version - PCC
+%   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
+%
+
+global version_struct
+version_struct.fix_MODIS_full_orbit = '1.0.1';
 
 tic
 Start_Time = tic;
@@ -320,7 +324,6 @@ tic
 No_Fronts_Mask = zeros(sizSST_In);
 Flags_9_Plus_10 = zeros(sizSST_In);
 Mask_Bits_1_3_4_5_6p_9_10_11_16 = zeros(sizSST_In);
-% % % Mask_Excluding_Ref_Temp = int32(zeros(sizSST_In));
 
 Meanings_of_flags_sst = {'ISMASKED'   'BTBAD'      'BTRANGE'   'BTDIFF'    'SSTRANGE' ...
     'SSTREFDIFF' 'SST4DIFF'   'SST4VDIFF' 'BTNONUNIF' 'BTVNONUNIF' ...
@@ -626,7 +629,6 @@ end
 % eccentricity exceeds Thresholds.Eccentricity and the filled area is less than
 % Thresholds.FilledArea pixels.
 %
-% % Get region properties.
 
 CC = bwconncomp(logical(dd_9x9));
 Object_Labels = labelmatrix(CC);
@@ -722,26 +724,6 @@ Object_Labels_After_Pruning = labelmatrix(CC);
 
 % % Figno = Plot_Masks( Plot_Object_Labels_After_Pruning, Figno, inLiveScript, Object_Labels_After_Pruning, 'Object Labels After Pruning');
 
-% The following was an attempt to reduce the number of objects early on as
-% well possibly finding a good measure to reject some of the problem
-% objects. It takes a long time and didn't help to reject objects.
-%
-% % Skeletilize this object, get the number of branch points and the
-% % ratio of the object areas to the number of pixels in the skeleton
-%
-% for i=1:length(nnReduced)
-%     Skel_Test_Array = Object_Labels_After_Pruning;
-%     Skel_Test_Array(Skel_Test_Array~=i) = 0;
-%
-%     Skel_Test_Skeleton = single(bwskel(logical(Skel_Test_Array)));
-%     Skel_Test_Area_Number(i) = length(find(Skel_Test_Array > 0));
-%     Skel_Test_Skel_Number(i) = length(find(Skel_Test_Skeleton > 0));
-%     Skel_Test_Ratio(i) = Skel_Test_Skel_Number(i) / Skel_Test_Area_Number(i);
-%
-%     Skel_Test_Branch_Points = bwmorph( Skel_Test_Skeleton, 'branchpoints');
-%     Skel_Test_Branch_Points_Number(i) = length(find(Skel_Test_Branch_Points > 0));
-% end
-
 % Initialize the final masks
 
 Quality_Declouded = logical(zeros(sizSST_In));
@@ -799,12 +781,6 @@ for iObject=objects_to_inspect
     
     [I, J] = ind2sub(sizSST_In,Pixel_List);
     
-    % % %     % Plot these pixels in the Debug_Array
-    % % %
-    % % %     for i=1:length(I)
-    % % %         Debug_Array(I(i),J(i)) = iObject;
-    % % %     end
-    
     % Next get the indices in the new region.
     
     NewI = I - Bottom + 1;
@@ -856,7 +832,6 @@ for iObject=objects_to_inspect
         
         Object_Mask = zeros(sizSST_In_Object);
         Object_Mask(Linear_Indices) = 1;
-        % % %         Dilated_Mask = imdilate( Object_Mask, SE);
         Dilated_Mask = imdilate( Object_Mask, strel( 'disk', 3));
         Dilated_Mask_Excluding_Object = Dilated_Mask - Object_Mask;
         

@@ -23,6 +23,16 @@ function [ AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AM
 %   AMSR_E_aat: AMSR-E SSTs read in from the AMSR-E orbit.
 %   L2eqa_AMSR_E_SST: AMSR-E SST regridded to the L2eqa grid.
 %   MODIS_SST_on_AMSR_E_grid: MODIS SST regridded to the AMSR-E grid.
+%
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/9/2024 - Initial version - PCC
+%   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
+%
+
+global version_struct
+version_struct.regrid_AMSRE = '1.0.1';
 
 global pixStartm pixEndm pixStartp pixEndp
 global oinfo iOrbit iGranule iProblem problem_list
@@ -39,15 +49,6 @@ MODIS_fi = oinfo(iOrbit).name;
 % corresponding AMSR-E orbit and we can check that the start times of the
 % AMSR-E and MODIS orbits are similar.
 tic
-% % % if ~isempty(MODIS_fi)
-% % %     temp_time = ncread( MODIS_fi, 'DateTime');
-% % %     matlab_time_MODIS_start = datenum([1970,1,1]) + double(temp_time)/86400;
-% % %
-% % %     kk = strfind( MODIS_fi, '_orbit_');
-% % %     NASA_orbit_t = str2num(MODIS_fi(kk+7:kk+12));
-% % %
-% % %     [MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(matlab_time_MODIS_start);
-% % % else
 NASA_orbit_t = oinfo(iOrbit).orbit_number;
 
 [MODIS_yr, MODIS_mn, MODIS_day, MODIS_hr, MODIS_min, MODIS_sec] = datevec(oinfo(iOrbit).start_time);

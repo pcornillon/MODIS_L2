@@ -1,4 +1,3 @@
-% % % function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = get_start_of_first_full_orbit
 function [status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time)
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
@@ -28,9 +27,12 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %
 %   1.0.0 - 5/6/2024 - Initial version - PCC
 %   1.0.1 - 5/7/2024 - Arguments to search_for_file modified. - PCC
+%   1.1.0 - 5/7/2024 - Commented out search for metadata granules for s3
+%           separately from the search for URI. Hopeully, there is no
+%           difference between the two. - PCC  
 
 global version_struct
-version_struct.get_start_of_first_full_orbit = '1.0.1';
+version_struct.get_start_of_first_full_orbit = '1.1.0';
 
 local_debug = 0;
 
@@ -72,36 +74,36 @@ file_list = [];
 
 granule_start_time_guess = floor(search_start_time * 24) / 24 - 1 / 24;
 
-if amazon_s3_run
-
-    % Will look for the first good granule stepping through the granule
-    % times one second at a time until it finds one.
-
-    granule_start_time_guess = granule_start_time_guess - 1 / 86400;
-    while 1==1
-        granule_start_time_guess = granule_start_time_guess + 1 / 86400;
-
-        if granule_start_time_guess > Matlab_end_time
-            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
-
-            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(search_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
-            return
-        end
-
-        filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-
-        % If a filename is found, get a list of files here since the
-        % function was set up to deal with this list previously, before I
-        % sorted out the above so this is really for legacy reasons.
-
-        if exist(filename)
-
-            file_list = dir(filename);
-            break
-        end
-    end
-
-else
+% % if amazon_s3_run
+% % 
+% %     % Will look for the first good granule stepping through the granule
+% %     % times one second at a time until it finds one.
+% % 
+% %     granule_start_time_guess = granule_start_time_guess - 1 / 86400;
+% %     while 1==1
+% %         granule_start_time_guess = granule_start_time_guess + 1 / 86400;
+% % 
+% %         if granule_start_time_guess > Matlab_end_time
+% %             fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
+% % 
+% %             status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(search_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
+% %             return
+% %         end
+% % 
+% %         filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
+% % 
+% %         % If a filename is found, get a list of files here since the
+% %         % function was set up to deal with this list previously, before I
+% %         % sorted out the above so this is really for legacy reasons.
+% % 
+% %         if exist(filename)
+% % 
+% %             file_list = dir(filename);
+% %             break
+% %         end
+% %     end
+% % 
+% % else
     while isempty(file_list)
 
 %         granule_start_time_guess = granule_start_time_guess + 1/24;
@@ -124,7 +126,7 @@ else
 
         if local_debug; fprintf('%s\n', [file_list(1).folder '/' file_list(1).name]); end
     end
-end
+% % end
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
 % corresponding to this file (yyyy mm dd T hh mm ss is good enough) and

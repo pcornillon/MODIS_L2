@@ -12,12 +12,12 @@ def extract_processing_times(input_filename, output_filename='processing_times.t
     with open(input_filename, 'r') as file:
         for line in file:
             # Debug: Print each line being processed
-            print("Processing line:", line.strip())
+            # print("Processing line:", line.strip())
             time_match = time_pattern.search(line)
             if time_match:
                 processing_time = float(time_match.group(1))
                 # Debug: Print the extracted time
-                print("Extracted time:", processing_time)
+                # print("Extracted time:", processing_time)
                 processing_times.append(processing_time)
 
     # Write the extracted times to the output file

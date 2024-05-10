@@ -1,6 +1,7 @@
 import re
 import argparse
 from datetime import datetime
+import time
 
 def extract_processing_times(input_filename, output_filename='processing_times.txt'):
     # Improved regex pattern to capture the processing time and the timestamp at the end of the line
@@ -20,15 +21,15 @@ def extract_processing_times(input_filename, output_filename='processing_times.t
 
                 # Convert the date/time string to a Unix timestamp
                 dt = datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
-                unix_timestamp = int(dt.timestamp())
+                unix_timestamp = int(time.mktime(dt.timetuple()))
 
                 # Add the processing time and timestamp to the list
                 processing_times.append((processing_time, unix_timestamp))
 
     # Write the extracted times to the output file
     with open(output_filename, 'w') as output_file:
-        for time, timestamp in processing_times:
-            output_file.write('{} {}\n'.format(time, timestamp))
+        for time_val, timestamp in processing_times:
+            output_file.write('{} {}\n'.format(time_val, timestamp))
 
     print("Processing times and timestamps extracted and saved to:", output_filename)
 

@@ -2,8 +2,8 @@ import re
 import argparse
 
 def extract_processing_times(input_filename, output_filename='processing_times.txt'):
-    # Regex pattern to match the required lines and extract the time
-    time_pattern = re.compile(r'Time to process and save .*\.nc4: ([\d.]+) seconds')
+    # Improved regex pattern to match the required lines and extract the time
+    time_pattern = re.compile(r'Time to process and save .*\.nc4:\s*([\d.]+)\s*seconds')
 
     # List to store extracted times
     processing_times = []

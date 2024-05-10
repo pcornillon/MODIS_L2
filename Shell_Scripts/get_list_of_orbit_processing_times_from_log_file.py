@@ -1,35 +1,40 @@
 import re
 import argparse
+from datetime import datetime
 
 def extract_processing_times(input_filename, output_filename='processing_times.txt'):
-    # Improved regex pattern to match the required lines and extract the time
-    time_pattern = re.compile(r'Time to process and save .*\.nc4:\s*([\d.]+)\s*seconds')
+    # Improved regex pattern to capture the processing time and the timestamp at the end of the line
+    time_pattern = re.compile(r'Time to process and save .*\.nc4:\s*([\d.]+)\s*seconds\. Current date/time:\s*(\d{2}-\w{3}-\d{4} \d{2}:\d{2}:\d{2})')
 
-    # List to store extracted times
+    # List to store extracted times and their corresponding timestamps
     processing_times = []
 
     # Read the input file and extract times
     with open(input_filename, 'r') as file:
         for line in file:
-            # Debug: Print each line being processed
-            # print("Processing line:", line.strip())
             time_match = time_pattern.search(line)
             if time_match:
+                # Extract the processing time and the date/time string
                 processing_time = float(time_match.group(1))
-                # Debug: Print the extracted time
-                # print("Extracted time:", processing_time)
-                processing_times.append(processing_time)
+                date_time_str = time_match.group(2)
+
+                # Convert the date/time string to a Unix timestamp
+                dt = datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
+                unix_timestamp = int(dt.timestamp())
+
+                # Add the processing time and timestamp to the list
+                processing_times.append((processing_time, unix_timestamp))
 
     # Write the extracted times to the output file
     with open(output_filename, 'w') as output_file:
-        for time in processing_times:
-            output_file.write('{}\n'.format(time))
+        for time, timestamp in processing_times:
+            output_file.write('{} {}\n'.format(time, timestamp))
 
-    print("Processing times extracted and saved to:", output_filename)
+    print("Processing times and timestamps extracted and saved to:", output_filename)
 
 if __name__ == "__main__":
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description='Extract processing times from a log file.')
+    parser = argparse.ArgumentParser(description='Extract processing times and timestamps from a log file.')
     parser.add_argument('input_filename', help='Input text file name containing log data')
     parser.add_argument('-o', '--output', default='processing_times.txt', help='Output file name to save processing times (default: processing_times.txt)')
     args = parser.parse_args()

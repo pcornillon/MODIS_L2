@@ -46,6 +46,7 @@ global formatOut
 global s3_expiration_time amazon_s3_run
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
 
+status = 0;
 found_one = 0;
 
 folder_name = '';

@@ -35,6 +35,8 @@ global iProblem problem_list
 
 global s3_expiration_time
 
+status = 0;
+
 % Make sure S3 credentials are up-to-date
 
 if (now - s3_expiration_time) > 30 / (60 * 24)

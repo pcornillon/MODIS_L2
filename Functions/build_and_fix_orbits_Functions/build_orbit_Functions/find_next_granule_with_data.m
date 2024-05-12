@@ -280,7 +280,7 @@ while 1==1
                             % Make sure S3 credentials are up-to-date
                             
                             if (now - s3_expiration_time) > 30 / (60 * 24)
-                                s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+                                [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
                                 
                                 if status == 921
                                     return

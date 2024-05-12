@@ -270,7 +270,7 @@ if strcmp( granules_directory(1:2), 's3') == 1
 
     % Get the credentials, will need them shortly.
     
-    s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+    [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
     
     if status == 921
         return

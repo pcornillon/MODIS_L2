@@ -43,7 +43,7 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
                     unix_timestamp = calendar.timegm(dt_utc.timetuple())
 
                     # Debug: Print the original and converted timestamps for verification
-                    print("Original time: {0}, Local time: {1}, UTC time: {2}, Unix timestamp: {3}".format(
+                    # print("Original time: {0}, Local time: {1}, UTC time: {2}, Unix timestamp: {3}".format(
                         date_time_str, dt_local, dt_utc, unix_timestamp))
 
                     # Add the data to the list
@@ -67,8 +67,8 @@ if __name__ == "__main__":
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Extract processing times and timestamps from log files.')
     parser.add_argument('-d', '--directory', default='/mnt/uri-nfs-cornillon/Logs/', help='Directory containing log files (default: /mnt/uri-nfs-cornillon/Logs/)')
-    parser.add_argument('-o', '--data_output', default='processing_times.txt', help='Output file name to save processing times (default: processing_times.txt)')
-    parser.add_argument('-i', '--index_output', default='file_index.txt', help='Output file name to save file index (default: file_index.txt)')
+    parser.add_argument('-o', '--data_output', default='processing_times.txt', help='Output file name to save processing times (default: /mnt/uri-nfs-cornillon/Logs/processing_times.txt)')
+    parser.add_argument('-i', '--index_output', default='file_index.txt', help='Output file name to save file index (default: /mnt/uri-nfs-cornillon/Logs/file_index.txt)')
     args = parser.parse_args()
 
     # Call the function with the parsed arguments

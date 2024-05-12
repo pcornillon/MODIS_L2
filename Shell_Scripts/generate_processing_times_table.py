@@ -21,7 +21,7 @@ def extract_processing_times(single_file_path, data_output_filename='processing_
     orbit_number = 0
     line_count = 0
 
-    print(f"Processing file {file_number}: {filename}")
+    print("Processing file {}: {}".format(file_number, filename))
     
     with open(single_file_path, 'r') as file:
         for line in file:
@@ -43,13 +43,13 @@ def extract_processing_times(single_file_path, data_output_filename='processing_
                 unix_timestamp = calendar.timegm(dt_utc.timetuple())
 
                 # Debug: Print the original and converted timestamps for verification
-                print(f"Original time: {date_time_str}, Local time: {dt_local}, UTC time: {dt_utc}, Unix timestamp: {unix_timestamp}")
+                print("Original time: {}, Local time: {}, UTC time: {}, Unix timestamp: {}".format(date_time_str, dt_local, dt_utc, unix_timestamp))
 
                 # Add the data to the list
                 processing_data.append((file_number, orbit_number, unix_timestamp, processing_time))
         
         # Debug: Print the number of lines processed for the file
-        print(f"Processed {line_count} lines in file {file_number}: {filename}")
+        print("Processed {} lines in file {}: {}".format(line_count, file_number, filename))
 
     # Write the extracted times to the data output file
     with open(data_output_filename, 'w') as data_output_file:

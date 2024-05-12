@@ -132,6 +132,9 @@
 % % % % 902 - build_orbit - End of run. 
 % % % %       status = populate_problem_list( 902, ['*** Have reached the end of the run: ' datestr(Matlab_end_time)], granule_start_time_guess);
 % % % %       return -- ERROR
+% % % % 921 - loadAWSCredentials - End of run. 
+% % % %       status = populate_problem_list(921, ['*** Failed ' num2str(numTries) ' times to get the NASA S3 credentials exiting this run.']);
+% % % %       return -- ERROR
 
 % 
 % 911 - get_start_of_first_full_orbit - end of run.

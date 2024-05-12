@@ -2,7 +2,7 @@ import re
 import os
 import argparse
 from datetime import datetime
-import time
+import calendar
 import pytz
 
 def extract_processing_times(directory, data_output_filename='processing_times.txt', index_output_filename='file_index.txt'):
@@ -40,7 +40,7 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
                     dt = datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
                     dt_local = local_tz.localize(dt)
                     dt_utc = dt_local.astimezone(pytz.utc)
-                    unix_timestamp = int(time.mktime(dt_utc.timetuple()))
+                    unix_timestamp = calendar.timegm(dt_utc.timetuple())
 
                     # Debug: Print the original and converted timestamps for verification
                     print("Original time: {0}, Local time: {1}, UTC time: {2}, Unix timestamp: {3}".format(

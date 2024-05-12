@@ -52,22 +52,16 @@ while true
     numTries = numTries + 1;
     
     try
-        % Attempt to fetch data from the URL
-        
-        data = webread(url, options);
-        
         % Get S3 credentials from EarthData
-        
         opts = weboptions('ContentType', 'json', 'HeaderFields', ...
-            {'Authorization', ['Basic ', matlab.net.base64encode([login, ':', password])]});
-        s3Credentials = webread(daacCredentialsEndpoint, opts);
+            {'Authorization', ['Basic ',matlab.net.base64encode([login,':',password])]});
+        s3Credentials = webread(daacCredentialsEndpoint, opts) ;
         
         % Set relevant environment variables with AWS credentials/region
-        
-        setenv('AWS_ACCESS_KEY_ID', s3Credentials.accessKeyId);
-        setenv('AWS_SECRET_ACCESS_KEY', s3Credentials.secretAccessKey);
-        setenv('AWS_SESSION_TOKEN', s3Credentials.sessionToken);
-        setenv('AWS_DEFAULT_REGION', 'us-west-2');
+        setenv('AWS_ACCESS_KEY_ID', s3Credentials.accessKeyId) ;
+        setenv('AWS_SECRET_ACCESS_KEY', s3Credentials.secretAccessKey) ;
+        setenv('AWS_SESSION_TOKEN',  s3Credentials.sessionToken) ;
+        setenv('AWS_DEFAULT_REGION', 'us-west-2') ;
         
         % If successful, break out of the loop
         

@@ -264,9 +264,9 @@ if strcmp( granules_directory(1:2), 's3') == 1
     fprintf('\n%s\n', 'This is an Amazon S3 run; will read data from s3 storage.')
     amazon_s3_run = 1;
 
-    % Set the time to wait for credentials from AWS.
-    
-    setCredentialsTimeout( 20);
+% % %     % Set the time to wait for credentials from AWS.
+% % %     
+% % %     setCredentialsTimeout( 20);
 
     % Get the credentials, will need them shortly.
     

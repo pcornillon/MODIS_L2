@@ -44,9 +44,12 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Added line to check if S3 
 %           credentials need to be updated, update if they do. 
- 
+%   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
+%           end the run if this is the case with status=921. Added status
+%           to the returned variable for calls to read_variable_HDF.
+
 global version_struct
-version_struct.add_granule_data_to_orbit = '1.0.1';
+version_struct.add_granule_data_to_orbit = '1.0.2';
 
 global s3_expiration_time
 
@@ -111,16 +114,29 @@ if amazon_s3_run
     % Make sure S3 credentials are up-to-date, then read from the data file
 
     if (now - s3_expiration_time) > 30 / (60 * 24)
-        s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+        [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+        
+        if status == 921
+            return
+        end
     end
 
     file_id = H5F.open( data_granule, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 
-    latitude(:,osscan:oescan) = read_variable_HDF( file_id, data_granule, 'lat', npixels, gsscan, scan_lines_to_read);
+    [status, latitude(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'lat', npixels, gsscan, scan_lines_to_read);
+    if status == 921
+        return
+    end
+    
+    [status, longitude(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'lon', npixels, gsscan, scan_lines_to_read);
+    if status == 921
+        return
+    end
 
-    longitude(:,osscan:oescan) = read_variable_HDF( file_id, data_granule, 'lon', npixels, gsscan, scan_lines_to_read);
-
-    SST_In(:,osscan:oescan) = read_variable_HDF( file_id, data_granule, 'sea_surface_temperature', npixels, gsscan, scan_lines_to_read);
+    [status, SST_In(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'sea_surface_temperature', npixels, gsscan, scan_lines_to_read);
+    if status == 921
+        return
+    end
 
     H5F.close(file_id)
 

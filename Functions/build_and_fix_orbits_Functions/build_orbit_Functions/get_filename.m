@@ -1,4 +1,4 @@
-function [found_one, folder_name, file_name, test_time] = get_filename( file_type, arg_2)
+function [status, found_one, folder_name, file_name, test_time] = get_filename( file_type, arg_2)
 % get_filename - get the name of the NASA data file from the AWS S3 NASA bucket - PCC
 %
 % This function will get the approximate time of the granule to search for
@@ -16,6 +16,7 @@ function [found_one, folder_name, file_name, test_time] = get_filename( file_typ
 %    which will be ignored. Will be set to metadata_name if 'data'.
 %
 % OUTPUT
+%   status - 921 if timed out on credentials request, 0 otherwise.
 %   found_one - 1 if a data file was found corresponding to the metadata
 %    file and 0 if none was found within one minute.
 %   folder_name - the folder in which the file was found.
@@ -28,10 +29,12 @@ function [found_one, folder_name, file_name, test_time] = get_filename( file_typ
 %   1.0.0 - 5/6/2024 - Initial version - PCC
 %   1.0.1 - 5/6/2024 - Added  versioning and added some comment lines
 %           related to the need to check for s3 credentials - PCC 
-% 
+%   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
+%           end the run if this is the case with status=921. Addes status
+%           to return.
 
 global version_struct
-version_struct.get_filename = '1.0.1';
+version_struct.get_filename = '1.0.2';
 
 % globals for the run as a whole.
 
@@ -99,7 +102,11 @@ switch file_type
             % the filename. 
             
             if (now - s3_expiration_time) > 30 / (60 * 24)
-                s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+                [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+                
+                if status == 921
+                    return
+                end
             end
 
             % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100419015508-JPL-L2P_GHRSST-SSTskin-MODIS_A-N-v02.0-fv01.0.nc

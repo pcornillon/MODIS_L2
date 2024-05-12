@@ -30,9 +30,10 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %   1.1.0 - 5/7/2024 - Commented out search for metadata granules for s3
 %           separately from the search for URI. Hopeully, there is no
 %           difference between the two. - PCC  
+%   1.1.1 - 5/12/2024 - Return if status=921 after call to find_next_full...
 
 global version_struct
-version_struct.get_start_of_first_full_orbit = '1.1.0';
+version_struct.get_start_of_first_full_orbit = '1.1.1';
 
 local_debug = 0;
 
@@ -168,6 +169,10 @@ while granule_start_time_guess <= Matlab_end_time
     % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
 
+    if status == 921
+        return
+    end
+    
     % find_next_granule_with_data, used in the loop above, looks for the next
     % granule with data in it and it looks to see if the nadir track of the
     % granule crosses 78 S while descending. It if does, it finds the pixel at

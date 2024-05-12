@@ -36,10 +36,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
-%
+%   1.0.2 - 5/12/2024 - Added status return to get_filename. - PCC
 
 global version_struct
-version_struct.pirate_data = '1.0.1';
+version_struct.pirate_data = '1.0.2';
 
 
 % globals for the run as a whole.
@@ -61,7 +61,11 @@ status = 0;
 % that this granule starts near the end of the granule with the descending
 % nadir crossing of 78 S.
 
-[found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
+[status, found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
+
+if status == 921
+    return
+end
 
 if found_one == 0
     fprintf('*** No data metadata granule found for %s. This means there is no file from which to pirate data. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
@@ -70,8 +74,12 @@ if found_one == 0
 else    
     metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
     
-    [found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
-
+    [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
+    
+    if status == 921
+        return
+    end
+    
     if found_one == 0
         if print_diagnostics
             fprintf('*** Could not find a NASA S3 granule corresponding to %s.\n', metadata_granule)

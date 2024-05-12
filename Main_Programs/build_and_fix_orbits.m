@@ -85,10 +85,13 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           save the oinfo file at that point. 
 %           Also will exit if latitude is one element and nan. - PCC
 %   1.0.5 - 5/9/2024 - Removed commented out code. - PCC
-% 
+%   1.1.0 - 5/12/2024 - Test to see if failure to get NASA se credentials
+%           end the run if this is the case with status=921. Also test
+%           status for 921 for functions that may have called
+%           loadAWSCredentials and end run. 
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.0.5';
+version_struct.build_and_fix_orbits = '1.1.0';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -261,9 +264,17 @@ if strcmp( granules_directory(1:2), 's3') == 1
     fprintf('\n%s\n', 'This is an Amazon S3 run; will read data from s3 storage.')
     amazon_s3_run = 1;
 
-    % Get the credentials, will need them shortly.
+    % Set the time to wait for credentials from AWS.
+    
+    setCredentialsTimeout( 20);
 
+    % Get the credentials, will need them shortly.
+    
     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+    
+    if status == 921
+        return
+    end
 else
     fprintf('\n%s\n', 'This is not an Amazon S3 run; will read data from local disks.')
 end

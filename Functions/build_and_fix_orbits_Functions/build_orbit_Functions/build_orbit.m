@@ -42,6 +42,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.1.0 - 5/6/2024 - Added check on remote output directory. This change
 %           is being made to allow checking of the remote directory for the
 %           existence of the output file. 
+%   1.1.1 - 5/12/2024 - Return if status=921 after call to pirate_data
 
 global version_struct
 version_struct.build_orbit = '1.1.0';
@@ -290,6 +291,10 @@ if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
         = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
         scan_seconds_from_start, granule_start_time_guess);
+    
+    if status == 921
+        return
+    end
 end
 
 %% Loop over the remainder of granules in this orbit.

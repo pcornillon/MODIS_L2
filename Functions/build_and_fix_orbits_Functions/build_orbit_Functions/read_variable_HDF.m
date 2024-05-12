@@ -1,4 +1,4 @@
-function [VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixels, gsscan, scan_lines_to_read)
+function [status, VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixels, gsscan, scan_lines_to_read)
 % read_variable_HDF - reads a variable from a netCDF file using HDF.
 %
 % This function will get the missing value for the variable to be read as
@@ -15,6 +15,7 @@ function [VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixels, gssca
 %   scan_lines_to_read - and going to gsscan+scan_lines_to_read-1.
 %
 % OUTPUT
+%   status - 921 if failed to get credentials, 0 otherwise.
 %   VarOut - the scaled input value with nans at missing value locations.
 %
 %  CHANGE LOG 
@@ -23,9 +24,14 @@ function [VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixels, gssca
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Added line to update the time at
 %           which the credentials were set - PCC
+%   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
+%           end the run if this is the case with status=921. Also added
+%           status to the returned variables.
 
 global version_struct
-version_struct.read_variable_HDF = '1.0.1';
+version_struct.read_variable_HDF = '1.0.2';
+
+global iProblem problem_list 
 
 global s3_expiration_time
 
@@ -33,6 +39,10 @@ global s3_expiration_time
 
 if (now - s3_expiration_time) > 30 / (60 * 24)
     s3Credentials = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+    
+    if status == 921
+        return
+    end
 end
 
 VarOut = [];

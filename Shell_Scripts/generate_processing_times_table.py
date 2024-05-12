@@ -43,8 +43,8 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
                     unix_timestamp = int(dt_utc.timestamp())
 
                     # Debug: Print the original and converted timestamps for verification
-                    print(f"Original time: {date_time_str}, Local time: {dt_local}, UTC time: {dt_utc}, Unix timestamp: {unix_timestamp}")
-
+                    print("Original time: {0}, Local time: {1}, UTC time: {2}, Unix timestamp: {3}".format(date_time_str, dt_local, dt_utc, unix_timestamp
+))
                     # Add the data to the list
                     processing_data.append((file_number, orbit_number, unix_timestamp, processing_time))
 

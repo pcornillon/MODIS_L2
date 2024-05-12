@@ -40,11 +40,12 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
                     dt = datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
                     dt_local = local_tz.localize(dt)
                     dt_utc = dt_local.astimezone(pytz.utc)
-                    unix_timestamp = int(dt_utc.timestamp())
+                    unix_timestamp = int(time.mktime(dt_utc.timetuple()))
 
                     # Debug: Print the original and converted timestamps for verification
-                    print("Original time: {0}, Local time: {1}, UTC time: {2}, Unix timestamp: {3}".format(date_time_str, dt_local, dt_utc, unix_timestamp
-))
+                    print("Original time: {0}, Local time: {1}, UTC time: {2}, Unix timestamp: {3}".format(
+                        date_time_str, dt_local, dt_utc, unix_timestamp))
+
                     # Add the data to the list
                     processing_data.append((file_number, orbit_number, unix_timestamp, processing_time))
 

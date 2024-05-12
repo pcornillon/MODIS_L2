@@ -3,6 +3,7 @@ import os
 import argparse
 from datetime import datetime
 import time
+import pytz
 
 def extract_processing_times(directory, data_output_filename='processing_times.txt', index_output_filename='file_index.txt'):
     # Improved regex pattern to capture the processing time and the timestamp at the end of the line
@@ -11,6 +12,9 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
     # List to store extracted times and their corresponding timestamps
     processing_data = []
     file_index = []
+
+    # Time zone for the logs (assumed to be local time zone; adjust if needed)
+    local_tz = pytz.timezone('America/New_York')
 
     # Step through all files in the directory matching the pattern
     files = [f for f in os.listdir(directory) if re.match(r'.*May.*\.txt$', f)]
@@ -32,9 +36,14 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
                     processing_time = float(time_match.group(1))
                     date_time_str = time_match.group(2)
 
-                    # Convert the date/time string to a Unix timestamp
+                    # Convert the date/time string to a Unix timestamp in local time
                     dt = datetime.strptime(date_time_str, '%d-%b-%Y %H:%M:%S')
-                    unix_timestamp = int(time.mktime(dt.timetuple()))
+                    dt_local = local_tz.localize(dt)
+                    dt_utc = dt_local.astimezone(pytz.utc)
+                    unix_timestamp = int(dt_utc.timestamp())
+
+                    # Debug: Print the original and converted timestamps for verification
+                    print(f"Original time: {date_time_str}, Local time: {dt_local}, UTC time: {dt_utc}, Unix timestamp: {unix_timestamp}")
 
                     # Add the data to the list
                     processing_data.append((file_number, orbit_number, unix_timestamp, processing_time))

@@ -25,4 +25,4 @@ last_files = get_last_file_in_folders(base_path, year)
 
 # Print the results
 for folder, file in last_files.items():
-    print(f"Folder: {folder}, Last file: {file}")
+    print("Folder: {}, Last file: {}".format(folder, file))

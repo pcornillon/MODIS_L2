@@ -96,9 +96,11 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           commented out lines of code as well. Added build_and_fix_orbits
 %           version number as a global attribute to the output file written
 %           by Write_SST_File - PCC 
+%   1.1.2 - 5/13/2024 -Added code to write out a test for access to the
+%           remote output directory - PCC
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.1.1';
+version_struct.build_and_fix_orbits = '1.1.2';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -388,6 +390,10 @@ if ~isempty(output_file_directory_remote)
         fprintf('*    The remote output base directory must be fully specified; cannot start with ~/. Won''t work with netCDF. You entered: %s.\n*\n', output_file_directory_remote)
         fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
         return
+    else
+        xx = dir(output_file_directory_remote); 
+        fprintf('\n Test access to %s :**: %s \n\n', output_file_directory_remote, [xx(3).folder '/' xx(3).name])
+        clear xx
     end
 end
 

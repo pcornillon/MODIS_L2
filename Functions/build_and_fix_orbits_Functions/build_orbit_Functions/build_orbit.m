@@ -43,6 +43,8 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           is being made to allow checking of the remote directory for the
 %           existence of the output file. 
 %   1.1.1 - 5/12/2024 - Return if status=921 after call to pirate_data
+%   1.2.0 - 5/13/2024 - Test if remote directory for output is present was
+%           not being done where it should have been. Test modified - PCC
 
 global version_struct
 version_struct.build_orbit = '1.1.0';
@@ -128,7 +130,21 @@ end
 
 already_processed = 0;
 
-if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', '.dummy')) == 2)
+% Build the test for whether or not this file has already been processed.
+
+test_name{1} = oinfo(iOrbit).name;
+test_name{2} = strrep(oinfo(iOrbit).name, '.nc4', '.dummy');
+
+name_test = (exist(test_name{1}) == 2) | (exist(test_name{2} ) == 2)
+
+if ~isempty(output_file_directory_remote)
+    test_name{3} = strrep(oinfo(iOrbit).name, output_file_directory_local, output_file_directory_remote);
+    test_name{4} = strrep(test_name{3}, '.nc4', '.dummy');
+
+    name_test = name_test | (exist(test_name{3}) == 2) | (exist(test_name{4} ) == 2)
+end
+
+if name_test
     
     already_processed = 1;
     
@@ -152,16 +168,16 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
             'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
 
-        fprintf('/n/n*****************************/nAfter test on %s :**: %s/n*****************************/n/n/', output_file_directory_local, [exist_list(1).folder '/' exist_list(1).name])
-        fprintf('/n/n*****************************/n%s/n*****************************/n/n/',[output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
-            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*'])
+        % % % fprintf('/n/n*****************************/nAfter test on %s :**: %s/n*****************************/n/n/', output_file_directory_local, [exist_list(1).folder '/' exist_list(1).name])
+        % % % fprintf('/n/n*****************************/n%s/n*****************************/n/n/',[output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
+        % % %     'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*'])
 
         if ~isempty(output_file_directory_remote) & isempty(exist_list)
             exist_list = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
                 'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
         end
-        
-        fprintf('/n/n*****************************/nAfter test on %s :**: %s/n*****************************/n/n/', output_file_directory_remote, [exist_list(1).folder '/' exist_list(1).name])
+
+        % % % fprintf('/n/n*****************************/nAfter test on %s :**: %s/n*****************************/n/n/', output_file_directory_remote, [exist_list(1).folder '/' exist_list(1).name])
 
         if ~isempty(exist_list)
 

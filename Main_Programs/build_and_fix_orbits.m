@@ -90,10 +90,15 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           status for 921 for functions that may have called
 %           loadAWSCredentials and end run. 
 %   1.1.1 - 5/13/2024 - Modified code in regrid_MODIS_orbits to address
-%           longitudes >360 or <-360 before call to ll2ps
+%           longitudes >360 or <-360 before call to ll2ps. Also addressed a
+%           problem in fix_lon_steps_and_constrain. Added -URI_24-1 to the
+%           end of the orbit filename for version URI_24-1. Removed some
+%           commented out lines of code as well. Added build_and_fix_orbits
+%           version number as a global attribute to the output file written
+%           by Write_SST_File - PCC 
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.1.0';
+version_struct.build_and_fix_orbits = '1.1.1';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -487,7 +492,7 @@ while granule_start_time_guess <= Matlab_end_time
         oinfo(iOrbit).orbit_number = oinfo(iOrbit-1).orbit_number + 1;
 
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
-            '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+            '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST-URI_24-1'];
 
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
@@ -717,10 +722,6 @@ while granule_start_time_guess <= Matlab_end_time
 
                 if print_times
                     fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
-
-                    % if ~isempty(output_file_directory_remote)
-                    %     fprintf('   Time to copy %s to %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_copy_orbit, output_file_directory_remote, datestr(now))
-                    % end
 
                     fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
                 end

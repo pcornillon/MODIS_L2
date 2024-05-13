@@ -22,6 +22,17 @@ function [status, indices] = get_osscan_etc_with_sli(indices)
 %   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
 %
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/13/2024 - Initial version - PCC
+%   1.0.1 - 5/13/2024 - Added versioning. Modified number of characters to
+%           skip backward when printing the name to accommodate the
+%           addition of -URI_24-1 to the filename.
+
+global version_struct
+version_struct.get_osscan_etc_with_sli = '1.0.1';
+
 
 % globals for the run as a whole.
 
@@ -61,7 +72,7 @@ if indices.current.oescan ~= orbit_length
 
         if print_diagnostics
             kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
-            fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-11), indices.current.oescan, orbit_length);
+            fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-20), indices.current.oescan, orbit_length);
         end
     end
 

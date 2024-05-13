@@ -39,7 +39,6 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 global version_struct
 version_struct.regrid_MODIS_orbits = '1.0.1';
 
-
 global pixStartm pixEndm pixStartp pixEndp
 global iOrbit oinfo nlat_orbit nlat_avg
 global npixels

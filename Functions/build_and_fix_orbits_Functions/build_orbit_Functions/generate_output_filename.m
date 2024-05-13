@@ -29,9 +29,11 @@ function status = generate_output_filename(build_type)
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 5/7/2024 - Initial version - PCC
+%   1.0.1 - 5/13/2024 - Added -URI_24-1 to the end of the orbit filename
+%           for version URI_24-1. 
 
 global version_struct
-version_struct.generate_output_filename = '1.0.0';
+version_struct.generate_output_filename = '1.0.1';
 
 % globals for the run as a whole.
 
@@ -95,7 +97,7 @@ switch build_type
         end
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
-            '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+            '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
@@ -112,7 +114,7 @@ switch build_type
         oinfo(iOrbit+1).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number + 1;
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit+1).orbit_number) ...
-            '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddThhmmss) '_L2_SST'];
+            '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddThhmmss) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit+1).name = [output_file_directory_local datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit+1).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];

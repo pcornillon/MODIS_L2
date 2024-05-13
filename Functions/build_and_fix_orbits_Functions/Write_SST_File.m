@@ -36,9 +36,12 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 6/6/2021 - Initial version - PCC
+%   1.0.1 - 6/13/2021 - Added a global attribute for the version number of
+%           build_and_fix_orbits - PCC
+
 
 global version_struct
-version_struct.Write_SST_File = '1.0.0';
+version_struct.Write_SST_File = '1.0.1';
 
 % globals for the run as a whole.
 
@@ -971,6 +974,12 @@ for iAttribute = 1:length(oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attribut
         otherwise
     end
 end
+
+% Add a global attribute for the version number of build_and_fix_orbits.
+% This version number changes every time that the version of any of the
+% called functions changes
+
+ncwriteatt(output_filename, '/', 'build_and_fix_orbits_version_#', version.build_and_fix_orbits);
 
 % Now remove the metadata for all but the first granule in that they end up
 % using a lot of space.

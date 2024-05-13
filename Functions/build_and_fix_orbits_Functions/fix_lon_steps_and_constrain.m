@@ -308,11 +308,14 @@ switch Case
         
         if cc >= 10
             nn = find(lonArray < edgeToUse);
+
+            nn_nan = find(isnan(lonArray) == 0);
             
             % If the number of elements found is less than 1/2, then shift these
             % up, otherwise find the ones > edgeToUse and shift them down.
             
-            if length(nn) < nscans * mpixels / 2
+            % % % if length(nn) < nscans * mpixels / 2
+            if length(nn) < nn_nan / 2
                 lonArray(nn) = lonArray(nn) + 360;
             else
                 nn = find(lonArray > edgeToUse);

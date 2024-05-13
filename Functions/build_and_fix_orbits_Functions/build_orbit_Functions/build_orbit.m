@@ -141,7 +141,7 @@ if ~isempty(output_file_directory_remote)
     test_name{3} = strrep(oinfo(iOrbit).name, output_file_directory_local, output_file_directory_remote);
     test_name{4} = strrep(test_name{3}, '.nc4', '.dummy');
 
-    name_test = name_test | (exist(test_name{3}) == 2) | (exist(test_name{4} ) == 2)
+    name_test = name_test | (exist(test_name{3}) == 2) | (exist(test_name{4} ) == 2);
 end
 
 if name_test

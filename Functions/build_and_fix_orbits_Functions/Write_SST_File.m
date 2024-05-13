@@ -979,7 +979,7 @@ end
 % This version number changes every time that the version of any of the
 % called functions changes
 
-ncwriteatt(output_filename, '/', 'build_and_fix_orbits_version_#', version.build_and_fix_orbits);
+ncwriteatt(output_filename, '/', 'build_and_fix_orbits_version', version_struct.build_and_fix_orbits);
 
 % Now remove the metadata for all but the first granule in that they end up
 % using a lot of space.

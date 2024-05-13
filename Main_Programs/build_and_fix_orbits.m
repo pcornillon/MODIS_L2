@@ -98,7 +98,9 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           by Write_SST_File - PCC 
 %   1.1.2 - 5/13/2024 - Fixed test for orbit already processed if
 %           output_file_directory_remote exist in build_orbit. Was not
-%           being done when a new orbit name was first found - PCC
+%           being done when a new orbit name was first found. Also changed
+%           the valid range of longitudes in Write_SST_File from -360 to
+%           360 to -720 to 720 - PCC
 
 global version_struct
 version_struct.build_and_fix_orbits = '1.1.2';

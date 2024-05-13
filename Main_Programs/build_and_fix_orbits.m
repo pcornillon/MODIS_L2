@@ -89,6 +89,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           end the run if this is the case with status=921. Also test
 %           status for 921 for functions that may have called
 %           loadAWSCredentials and end run. 
+%   1.1.1 - 5/13/2024 - Modified code in regrid_MODIS_orbits to address
+%           longitudes >360 or <-360 before call to ll2ps
 
 global version_struct
 version_struct.build_and_fix_orbits = '1.1.0';

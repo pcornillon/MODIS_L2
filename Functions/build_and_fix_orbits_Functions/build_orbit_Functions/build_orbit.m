@@ -151,12 +151,18 @@ if (exist(oinfo(iOrbit).name) == 2) | (exist(strrep(oinfo(iOrbit).name, '.nc4', 
 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
             'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
-        
+
+        fprintf('/n/n*****************************/nAfter test on %s :**: %s/n*****************************/n/n/', output_file_directory_local, [exist_list(1).folder '/' exist_list(1).name])
+        fprintf('/n/n*****************************/n%s/n*****************************/n/n/',[output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
+            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*'])
+
         if ~isempty(output_file_directory_remote) & isempty(exist_list)
             exist_list = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
-            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
+                'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
         end
         
+        fprintf('/n/n*****************************/nAfter test on %s :**: %s/n*****************************/n/n/', output_file_directory_remote, [exist_list(1).folder '/' exist_list(1).name])
+
         if ~isempty(exist_list)
 
             % If this orbit is present, reset all of the oinfo values that

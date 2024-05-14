@@ -27,6 +27,17 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %  ........
 %   fi_in = '~/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Original/2010/AQUA_MODIS.20100619T000124.L2.SST.mat';
 %   regrid_MODIS_orbits( fi_in, [])
+%
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/13/2024 - Initial version - PCC
+%   1.0.1 - 5/13/2024 - Replaced code to constrain longitude to be between
+%           -360 and 360 with call to fix_lon_steps_and_constrain to
+%           accomplish same. Also added versioning - PCC
+
+global version_struct
+version_struct.regrid_MODIS_orbits = '1.0.1';
 
 global pixStartm pixEndm pixStartp pixEndp
 global iOrbit oinfo nlat_orbit nlat_avg
@@ -335,37 +346,46 @@ if ~isempty(find(isnan(longitude(:,scans_this_section)) == 0))
     
     [lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
     
-    % Convert longitude, latitude to a polar stereographic coordinate
-    % system. First make sure that lonArray values are neither greater than
-    % 360 nor less than -360. If they are, shift by + or -360 and check
-    % again. If there are still some values that are, shift just those.
-    % This will result in a jump in longitude and a bogus gradient value
-    % but it is very unlikely to happen; only happened once in the first
-    % 9000+ orbits processed.
+    % % % % Convert longitude, latitude to a polar stereographic coordinate
+    % % % % system. First make sure that lonArray values are neither greater than
+    % % % % 360 nor less than -360. If they are, shift by + or -360 and check
+    % % % % again. If there are still some values that are, shift just those.
+    % % % % This will result in a jump in longitude and a bogus gradient value
+    % % % % but it is very unlikely to happen; only happened once in the first
+    % % % % 9000+ orbits processed.
+    % % % 
+    % % % if max(lonArray,[],'all','omitnan') > 360
+    % % %     fprintf('Shifting longitude by -360. This is very rare at this point.\n')
+    % % %     lonArray = lonArray - 360;
+    % % % end
+    % % % 
+    % % % if min(lonArray,[],'all','omitnan') < -360
+    % % %     fprintf('Shifting longitude by 360. This is very rare at this point.\n')
+    % % %     lonArray = lonArray + 360;
+    % % % end
+    % % % 
+    % % % if max(lonArray,[],'all','omitnan') > 360
+    % % %     fprintf('*** The maximum longitude is %f>360. This should not happen but will shift selected longitudes by -360 anyway. This is very, very rare at this point.\n', max(lonArray,[],'all','omitnan'))
+    % % %     lonArray(lonArray>360) = lonArray(lonArray>360) - 360;
+    % % % 
+    % % %     status = populate_problem_list( 1011, ['Maximum longitude ' num2str(max(lonArray,[],'all','omitnan')) ' >360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by -360 which will result in bogus gradient values.'], '');
+    % % % end
+    % % % 
+    % % % if min(lonArray,[],'all','omitnan') < -360
+    % % %     fprintf('*** The minimum longitude is %f<-360. This should not happen but will shift selected longitudes by 360 anyway. This is very, very rare at this point.\n', min(lonArray,[],'all','omitnan'))
+    % % %     lonArray(lonArray<-360) = lonArray(lonArray<-360) + 360;
+    % % % 
+    % % %     status = populate_problem_list( 1012, ['Minimum longitude ' num2str(min(lonArray,[],'all','omitnan')) ' <-360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by 360 which will result in bogus gradient values.'], '');
+    % % % end
+
+    % longstude values can't be less than -360 or probably larger than 360
+    % for the ll2pS functions so will shift all values < -360 up by 360 and
+    % those > 360 down by 360; i.e., will make sure that there are no
+    % longituds <-360 or >360.
+
+    [lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
     
-    if max(lonArray,[],'all','omitnan') > 360
-        fprintf('Shifting longitude by -360. This is very rare at this point.\n')
-        lonArray = lonArray - 360;
-    end
-
-    if min(lonArray,[],'all','omitnan') < -360
-        fprintf('Shifting longitude by 360. This is very rare at this point.\n')
-        lonArray = lonArray + 360;
-    end
-
-    if max(lonArray,[],'all','omitnan') > 360
-        fprintf('*** The maximum longitude is %f>360. This should not happen but will shift selected longitudes by -360 anyway. This is very, very rare at this point.\n', max(lonArray,[],'all','omitnan'))
-        lonArray(lonArray>360) = lonArray(lonArray>360) - 360;
-
-        status = populate_problem_list( 1011, ['Maximum longitude ' num2str(max(lonArray,[],'all','omitnan')) ' >360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by -360 which will result in bogus gradient values.'], '');
-    end
-
-    if min(lonArray,[],'all','omitnan') < -360
-        fprintf('*** The minimum longitude is %f<-360. This should not happen but will shift selected longitudes by 360 anyway. This is very, very rare at this point.\n', min(lonArray,[],'all','omitnan'))
-        lonArray(lonArray<-360) = lonArray(lonArray<-360) + 360;
-
-        status = populate_problem_list( 1012, ['Minimum longitude ' num2str(min(lonArray,[],'all','omitnan')) ' <-360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by 360 which will result in bogus gradient values.'], '');
-    end
+    % Convert longitude, latitude to a polar stereographic coordinate system.
 
     [easting(:,scans_this_section), northing(:,scans_this_section)] = ll2psn(latitude(:,scans_this_section), lonArray);
     

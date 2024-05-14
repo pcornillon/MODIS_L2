@@ -36,9 +36,13 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 6/6/2021 - Initial version - PCC
+%   1.0.1 - 6/13/2021 - Added a global attribute for the version number of
+%           build_and_fix_orbits - PCC
+%   1.0.2 - 6/13/2021 - Changed the valid range for longitude from -360 to
+%           360 to -720 to 720 - PCC
 
 global version_struct
-version_struct.Write_SST_File = '1.0.0';
+version_struct.Write_SST_File = '1.0.2';
 
 % globals for the run as a whole.
 
@@ -137,8 +141,8 @@ if save_just_the_facts == 0
     ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
     ncwriteatt( output_filename, 'longitude', 'add_offset', 0)
     ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, 'longitude', 'valid_min', -360000)
-    ncwriteatt( output_filename, 'longitude', 'valid_max',  360000)
+    ncwriteatt( output_filename, 'longitude', 'valid_min', -720000)
+    ncwriteatt( output_filename, 'longitude', 'valid_max',  720000)
     
     ncwrite(  output_filename, 'longitude', longitude)
     
@@ -248,8 +252,8 @@ if fix_bowtie
     ncwriteatt( output_filename, 'regridded_longitude', 'units', 'degrees_east')
     ncwriteatt( output_filename, 'regridded_longitude', 'add_offset', 0)
     ncwriteatt( output_filename, 'regridded_longitude', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, 'regridded_longitude', 'valid_min', -360000)
-    ncwriteatt( output_filename, 'regridded_longitude', 'valid_max',  360000)
+    ncwriteatt( output_filename, 'regridded_longitude', 'valid_min', -720000)
+    ncwriteatt( output_filename, 'regridded_longitude', 'valid_max',  720000)
     
     ncwrite(  output_filename, 'regridded_longitude', regridded_longitude)
     
@@ -611,8 +615,8 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'units', 'degrees_east')
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'add_offset', 0)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_min', -360000)
-    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_max',  360000)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_min', -720000)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLon', 'valid_max',  720000)
     
     ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLon', L2eqaLon)
     
@@ -628,8 +632,8 @@ if   ~isempty(L2eqaLon)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'units', 'degrees_north')
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'add_offset', 0)
     ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'scale_factor', LatLonScaleFactor)
-    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_min', -360000)
-    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_max',  360000)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_min', -720000)
+    ncwriteatt( output_filename, '/Regrid_to_L2eqa/L2eqaLat', 'valid_max',  720000)
     
     ncwrite(  output_filename, '/Regrid_to_L2eqa/L2eqaLat', L2eqaLat)
     
@@ -702,8 +706,8 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'units', 'degrees_east')
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'add_offset', 0)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'scale_factor', LatLonScaleFactor)
-        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_min', -360000)
-        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_max',  360000)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_min', -720000)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', 'valid_max',  720000)
         
         ncwrite(  output_filename, '/Regrid_to_L2eqa/AMSR_E_lon', AMSR_E_lon)
         
@@ -719,8 +723,8 @@ if   ~isempty(L2eqaLon)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'units', 'degrees_north')
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'add_offset', 0)
         ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'scale_factor', LatLonScaleFactor)
-        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_min', -360000)
-        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_max',  360000)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_min', -720000)
+        ncwriteatt( output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', 'valid_max',  720000)
         
         ncwrite(  output_filename, '/Regrid_to_L2eqa/AMSR_E_lat', AMSR_E_lat)
         
@@ -971,6 +975,12 @@ for iAttribute = 1:length(oinfo(iOrbit).ginfo(1).metadata_global_attrib.Attribut
         otherwise
     end
 end
+
+% Add a global attribute for the version number of build_and_fix_orbits.
+% This version number changes every time that the version of any of the
+% called functions changes
+
+ncwriteatt(output_filename, '/', 'build_and_fix_orbits_version', version_struct.build_and_fix_orbits);
 
 % Now remove the metadata for all but the first granule in that they end up
 % using a lot of space.

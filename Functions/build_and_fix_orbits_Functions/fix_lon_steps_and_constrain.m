@@ -28,6 +28,20 @@ function [lonArray, nn, mm, shiftBy] = fix_lon_steps_and_constrain(Case, lonArra
 %   nn: the elements of lonArray that were shifted up 360 degrees.
 %   mm: the elements of lonArray that were shifted down 360 degrees.
 %   shiftBy: same as the input value except output for unconstrainLongotude. 
+%
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/13/2024 - Initial version - PCC
+%   1.0.1 - 5/13/2024 - Added versioning. Also fixed portion of the
+%           function that shifts longitudes around. The problem was that it
+%           was shifting the bulk of the good values if they were less than
+%           the total longitudes, which occurred wehn there were missing
+%           longitudes. This shouldn't happen but does when there are bad
+%           granules - PCC
+
+global version_struct
+version_struct.fix_lon_steps_and_constrain = '1.0.1';
 
 % binCountThreshold is the number of consecutive 0s in the histogram ouput
 % of lonArray that define an acceptable gap, one for which all values either
@@ -308,11 +322,13 @@ switch Case
         
         if cc >= 10
             nn = find(lonArray < edgeToUse);
+
+            nn_nan = find(isnan(lonArray) == 0);
             
             % If the number of elements found is less than 1/2, then shift these
             % up, otherwise find the ones > edgeToUse and shift them down.
             
-            if length(nn) < nscans * mpixels / 2
+            if length(nn) < nn_nan / 2
                 lonArray(nn) = lonArray(nn) + 360;
             else
                 nn = find(lonArray > edgeToUse);

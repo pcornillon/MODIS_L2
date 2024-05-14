@@ -1,6 +1,7 @@
 import json
 import subprocess
 from prettytable import PrettyTable
+import time
 
 # Static on-demand pricing (example prices, update as needed)
 on_demand_pricing = {
@@ -18,7 +19,7 @@ on_demand_pricing = {
 def run_aws_cli_command(command):
     result = subprocess.run(command, capture_output=True, text=True, shell=True)
     if result.returncode != 0:
-        print(f"Command failed with error: {result.stderr}")
+        print("Command failed with error: {}".format(result.stderr))
     return result.stdout.strip()
 
 # Get instance details
@@ -44,11 +45,17 @@ table.field_names = ["Instance ID", "Name", "Instance Type", "Image ID", "State"
 # Function to get the most recent spot price for an instance type in a specific availability zone
 def get_spot_price(instance_type, availability_zone):
     spot_price_command = (
-        f"aws --profile iam_pcornillon ec2 describe-spot-price-history --instance-types {instance_type} "
-        f"--availability-zone {availability_zone} --query 'SpotPriceHistory[0].SpotPrice' --output text"
+        "aws --profile iam_pcornillon ec2 describe-spot-price-history --instance-types {} "
+        "--availability-zone {} --max-items 1 --query 'SpotPriceHistory[0].SpotPrice' --output text"
+        .format(instance_type, availability_zone)
     )
-    spot_price = run_aws_cli_command(spot_price_command)
-    return spot_price if spot_price else 'N/A'
+    attempts = 3
+    for _ in range(attempts):
+        spot_price = run_aws_cli_command(spot_price_command)
+        if spot_price and spot_price != 'N/A':
+            return spot_price
+        time.sleep(1)  # Adding a small delay before retrying
+    return 'N/A'
 
 # Extract relevant information and fetch prices
 for reservation in instance_data:
@@ -64,11 +71,11 @@ for reservation in instance_data:
         
         # Get on-demand price
         on_demand_price = on_demand_pricing.get(instance_type, 'N/A')
-        formatted_on_demand_price = f"${on_demand_price}" if on_demand_price != 'N/A' else 'N/A'
+        formatted_on_demand_price = "${}".format(on_demand_price) if on_demand_price != 'N/A' else 'N/A'
 
         # Get spot price if applicable
         spot_price = get_spot_price(instance_type, availability_zone) if spot_instance_request_id not in ['N/A', None] else 'N/A'
-        formatted_spot_price = f"${spot_price}" if spot_price != 'N/A' else 'N/A'
+        formatted_spot_price = "${}".format(spot_price) if spot_price != 'N/A' else 'N/A'
         
         # Add a row to the table
         table.add_row([instance_id, name, instance_type, image_id, state, public_ip, spot_instance_request_id, formatted_on_demand_price, formatted_spot_price])

@@ -39,9 +39,13 @@ function [lonArray, nn, mm, shiftBy] = fix_lon_steps_and_constrain(Case, lonArra
 %           the total longitudes, which occurred wehn there were missing
 %           longitudes. This shouldn't happen but does when there are bad
 %           granules - PCC
+%   1.0.2 - 5/14/2024 - Added or subtracted 360 from longitude values,
+%           which do not fall between -360 and 360 until they all do plus I
+%           didn't address the case where the original values were more
+%           than n*360, like 730. Now they do - PCC  
 
 global version_struct
-version_struct.fix_lon_steps_and_constrain = '1.0.1';
+version_struct.fix_lon_steps_and_constrain = '1.0.2';
 
 % binCountThreshold is the number of consecutive 0s in the histogram ouput
 % of lonArray that define an acceptable gap, one for which all values either
@@ -282,19 +286,6 @@ switch Case
                 lonArray = lonArray + shiftBy;
             end
         end
-
-        % Here to shift values up or down by 360 degrees.
-        
-        nn = find(lonArray < -360);
-        mm = find(lonArray > 360);
-        
-        if ~isempty(nn)
-            lonArray(nn) = lonArray(nn) + 360;
-        end
-        
-        if ~isempty(mm)
-            lonArray(mm) = lonArray(mm) - 360;
-        end
         
         % Now move outliers, which seem to have escaped the above.
         
@@ -334,6 +325,19 @@ switch Case
                 nn = find(lonArray > edgeToUse);
                 lonArray(nn) = lonArray(nn) - 360;
             end
+        end
+
+        % Here to shift values up or down by 360 degrees.
+
+        nn = find(lonArray < -360);
+        mm = find(lonArray > 360);
+
+        if ~isempty(nn)
+            lonArray(nn) = lonArray(nn) - (floor(lonArray(nn)/360) + 1) * 360;
+        end
+
+        if ~isempty(mm)
+            lonArray(mm) = lonArray(mm) - floor(lonArray(mm)/360) * 360;
         end
 
 %% Unconstrain longitudes for ll2psx

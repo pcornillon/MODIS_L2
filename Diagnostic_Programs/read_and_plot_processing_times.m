@@ -116,8 +116,12 @@ for iTime=startTime:1/24:endTime
     
     newTime(jTime) = iTime;
     numJobs(jTime) = length(nn);
+    
+%     meanProcessingTime(jTime) = mean( processingTime(nn), [], 'all', 'debug')
 end
 newTimep = datetime(datevec(newTime));
+
+% Plot num batch jobs running versus time.
 
 figure(1)
 hold on

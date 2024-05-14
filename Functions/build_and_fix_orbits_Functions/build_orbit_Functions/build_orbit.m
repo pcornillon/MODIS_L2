@@ -45,9 +45,11 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.1.1 - 5/12/2024 - Return if status=921 after call to pirate_data
 %   1.2.0 - 5/13/2024 - Test if remote directory for output is present was
 %           not being done where it should have been. Test modified - PCC
+%   1.2.1 - 5/14/2024 - added ; to name_test line to prevent it from
+%           printing out - PCC
 
 global version_struct
-version_struct.build_orbit = '1.1.0';
+version_struct.build_orbit = '1.2.1';
 
 % globals for the run as a whole.
 
@@ -135,7 +137,7 @@ already_processed = 0;
 test_name{1} = oinfo(iOrbit).name;
 test_name{2} = strrep(oinfo(iOrbit).name, '.nc4', '.dummy');
 
-name_test = (exist(test_name{1}) == 2) | (exist(test_name{2} ) == 2)
+name_test = (exist(test_name{1}) == 2) | (exist(test_name{2} ) == 2);
 
 if ~isempty(output_file_directory_remote)
     test_name{3} = strrep(oinfo(iOrbit).name, output_file_directory_local, output_file_directory_remote);

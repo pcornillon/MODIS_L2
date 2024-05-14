@@ -7,7 +7,7 @@
 % processing of the orbit was completed. Then plot the times to process
 % versus the time processing was completed.
 %
-% The script to generate the table at AWS is MODIS_L2/Shell_scripts/generate processing_times_table.py 
+% The script to generate the table at AWS is MODIS_L2/Shell_scripts/generate processing_times_table.py
 % To copy from AWS: scp ubuntu@ec2-52-11-152-158.us-west-2.compute.amazonaws.com:/mnt/uri-nfs-cornillon/Logs/processing_times.txt /Users/petercornillon/Dropbox/Data/From_AWS/
 %
 
@@ -43,7 +43,7 @@ matTime = datetime( double(LinuxTime), 'ConvertFrom', 'posixtime') - 4 / 24;
 % Now plot the data
 
 figure(1)
-plot( matTime, processingTime, '.')
+plt = plot( matTime, processingTime, '.');
 set(gca, fontsize=20)
 grid on
 
@@ -57,3 +57,71 @@ ax.XAxis.TickLabelFormat = 'yyyy-MM-dd HH:mm:ss';
 
 % Improve the layout
 datetick('x', 'yyyy-mm-dd HH:MM:SS', 'keepticks');
+
+%% Now plot the a line from the first to the last time of each batch job
+
+% BatchStart = nan(90,1);
+% BatchEnd = BatchStart;
+
+for jOrbit=1:length(iOrbit)
+    for iBatch=1:90
+        if iBatch == iBatchJob(jOrbit)
+            if iOrbit(jOrbit) == 1
+                BatchStart(iBatch) = datenum(matTime(jOrbit));
+            else
+                BatchEnd(iBatch) = datenum(matTime(jOrbit));
+            end
+        end
+    end
+end
+
+% And plot
+
+figure(2)
+clf
+
+for iBatch=1:90
+    plot( [BatchStart(iBatch) BatchEnd(iBatch)], [1 1]*iBatch, 'k', linewidth=2)
+end
+figure(2);clf
+for iBatch=1:90
+    plot( [BatchStart(iBatch) BatchEnd(iBatch)], [1 1]*iBatch, 'k', linewidth=2)
+    hold on
+end
+
+grid on
+set(gca, fontsize=20)
+
+xlabel('Time');
+ylabel('Batch Job #');
+title('Period of Processing');
+
+% % Optionally, customize the date format on the x-axis
+% ax = gca;
+% ax.XAxis.TickLabelFormat = 'yyyy-MM-dd HH:mm:ss';
+% % Improve the layout
+% datetick('x', 'yyyy-mm-dd HH:MM:SS', 'keepticks');
+
+%% Now calculate how many batch jobs are running at any given time.
+
+startTime = floor(datenum(min(matTime)) * 24) / 24;
+endTime = ceil(datenum(max(matTime)) * 24) / 24;
+
+jTime = 0;
+
+for iTime=startTime:1/24:endTime
+    jTime = jTime + 1;
+    
+    nn = find( (iTime>datenum(BatchStart)) & (iTime<=datenum(BatchEnd)));
+    
+    newTime(jTime) = iTime;
+    numJobs(jTime) = length(nn);
+end
+newTimep = datetime(datevec(newTime));
+
+figure(1)
+hold on
+
+yyaxis right
+
+plot( newTimep, numJobs, 'r')

@@ -40,11 +40,11 @@ def extract_processing_times(directory, data_output_filename='processing_times.t
                     dt_utc = dt_local.astimezone(pytz.utc)
                     unix_timestamp = calendar.timegm(dt_utc.timetuple())
 
-                    print("Original time: {}, Local time: {}, UTC time: {}, Unix timestamp: {}".format(date_time_str, dt_local, dt_utc, unix_timestamp))
+                    # print("Original time: {}, Local time: {}, UTC time: {}, Unix timestamp: {}".format(date_time_str, dt_local, dt_utc, unix_timestamp))
 
                     processing_data.append((file_number, orbit_number, unix_timestamp, processing_time))
 
-            print("Processed {} lines in file {}: {}".format(line_count, file_number, log_file))
+            # print("Processed {} lines in file {}: {}".format(line_count, file_number, log_file))
 
     with open(data_output_filename, 'w') as data_output_file:
         for data in processing_data:
@@ -63,5 +63,8 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--data_output', default='processing_times.txt', help='Output file name to save processing times (default: processing_times.txt)')
     parser.add_argument('-i', '--index_output', default='file_index.txt', help='Output file name to save file indices (default: file_index.txt)')
     args = parser.parse_args()
-
+    
     extract_processing_times(args.directory, args.data_output, args.index_output)
+
+    # Example: python generate_processing_times_table.py -d /mnt/uri-nfs-cornillon/Logs/ -i /mnt/uri-nfs-cornillon/Logs/Batch-5_file_index.txt -o /mnt/uri-nfs-cornillon/Logs/Batch-5_processing_times.txt
+

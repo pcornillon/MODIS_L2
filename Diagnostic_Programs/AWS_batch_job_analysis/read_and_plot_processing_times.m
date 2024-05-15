@@ -1,4 +1,5 @@
-% read_and_plot_processing_times - PCC
+function read_and_plot_processing_times(BatchNo)
+% function read_and_plot_processing_times(BatchNo) - to determine orbit processing times - PCC
 %
 % Open and read the processing table file written at AWS by reading the
 % build_and_fix_orbit log files. This file contains a number for the batch
@@ -12,7 +13,7 @@
 %
 
 % Specify the file name
-filename = '/Users/petercornillon/Dropbox/Data/From_AWS/processing_times.txt';
+filename = ['/Users/petercornillon/Dropbox/Data/From_AWS/Batch-' num2str(BatchNo) '_processing_times.txt'];
 
 % Open the file for reading
 fileID = fopen(filename, 'r');

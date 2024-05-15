@@ -20,7 +20,7 @@ processing_times_output_path = os.path.join(input_directory, 'Batch-{}_processin
 
 # Function to process log files and generate processing times
 def process_log_files(directory):
-    log_files = glob.glob(os.path.join(directory, '*.log'))
+    log_files = glob.glob(os.path.join(directory, '*.txt'))
     file_index = []
     processing_times = []
 

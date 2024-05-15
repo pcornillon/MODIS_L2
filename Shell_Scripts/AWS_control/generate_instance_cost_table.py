@@ -46,21 +46,28 @@ table.field_names = ["Instance ID", "Name", "Instance Type", "Image ID", "State"
 def get_spot_price(instance_type, availability_zone):
     spot_price_command = (
         "aws --profile iam_pcornillon ec2 describe-spot-price-history --instance-types {} "
-        "--availability-zone {} --max-items 1 --query 'SpotPriceHistory[0].SpotPrice' --output text"
+        "--availability-zone {} --product-descriptions 'Linux/UNIX' --max-items 1 --query 'SpotPriceHistory[0].SpotPrice' --output text"
         .format(instance_type, availability_zone)
     )
     attempts = 3
-    for _ in range(attempts):
+    for attempt in range(attempts):
         spot_price = run_aws_cli_command(spot_price_command)
         if spot_price and spot_price != 'N/A':
+            #print("Retrieved spot price: ${} for instance type: {} in availability zone: {} on attempt: {}".format(
+            #    spot_price, instance_type, availability_zone, attempt + 1))
             return spot_price
         time.sleep(1)  # Adding a small delay before retrying
+    print("Failed to retrieve spot price for instance type: {} in availability zone: {} after {} attempts".format(
+        instance_type, availability_zone, attempts))
     return 'N/A'
 
 # Extract relevant information and fetch prices
 for reservation in instance_data:
     for instance in reservation:
         instance_id = instance.get('InstanceID', 'N/A')
+        if instance_id == 'N/A':
+            continue  # Skip rows with invalid instance ID
+
         name = instance.get('Name', 'N/A')
         instance_type = instance.get('InstanceType', 'N/A')
         image_id = instance.get('ImageID', 'N/A')
@@ -68,16 +75,24 @@ for reservation in instance_data:
         public_ip = instance.get('PublicIP', 'N/A')
         spot_instance_request_id = instance.get('SpotInstanceRequestID', 'N/A')
         availability_zone = instance.get('AvailabilityZone', 'N/A')
-        
+
         # Get on-demand price
         on_demand_price = on_demand_pricing.get(instance_type, 'N/A')
         formatted_on_demand_price = "${}".format(on_demand_price) if on_demand_price != 'N/A' else 'N/A'
 
         # Get spot price if applicable
-        spot_price = get_spot_price(instance_type, availability_zone) if spot_instance_request_id not in ['N/A', None] else 'N/A'
+        if spot_instance_request_id not in ['N/A', None]:
+            # print("Querying spot price for instance type: {} in availability zone: {}".format(instance_type, availability_zone))
+            spot_price = get_spot_price(instance_type, availability_zone)
+        else:
+            spot_price = 'N/A'
         formatted_spot_price = "${}".format(spot_price) if spot_price != 'N/A' else 'N/A'
-        
+
         # Add a row to the table
+        print("Adding row: Instance ID: {}, Name: {}, Instance Type: {}, Image ID: {}, State: {}, Public IP: {}, Spot Instance Request ID: {}, On-Demand Price: {}, Spot Price: {}".format(
+            instance_id, name, instance_type, image_id, state, public_ip, spot_instance_request_id, formatted_on_demand_price, formatted_spot_price))
+        print("Peters debug: spot_price: {}",  formatted_spot_price)
+
         table.add_row([instance_id, name, instance_type, image_id, state, public_ip, spot_instance_request_id, formatted_on_demand_price, formatted_spot_price])
 
 # Print the table

@@ -15,8 +15,8 @@ input_directory = args.directory
 batch_number = args.number
 
 # Output file paths
-file_index_output_path = os.path.join(input_directory, f'Batch-{batch_number}_file_index.txt')
-processing_times_output_path = os.path.join(input_directory, f'Batch-{batch_number}_processing_times.txt')
+file_index_output_path = os.path.join(input_directory, 'Batch-{}_file_index.txt'.format(batch_number))
+processing_times_output_path = os.path.join(input_directory, 'Batch-{}_processing_times.txt'.format(batch_number))
 
 # Function to process log files and generate processing times
 def process_log_files(directory):
@@ -43,14 +43,14 @@ file_index, processing_times = process_log_files(input_directory)
 # Write file index to output file
 with open(file_index_output_path, 'w') as f:
     for file in file_index:
-        f.write(f"{file}\n")
+        f.write("{}\n".format(file))
 
 # Write processing times to output file
 with open(processing_times_output_path, 'w') as f:
     for file, processing_time in processing_times:
-        f.write(f"{file}: {processing_time} seconds\n")
+        f.write("{}: {} seconds\n".format(file, processing_time))
 
-print(f"File index written to: {file_index_output_path}")
-print(f"Processing times written to: {processing_times_output_path}")
+print("File index written to: {}".format(file_index_output_path))
+print("Processing times written to: {}".format(processing_times_output_path))
 
 # Example call for Batch-5 processing: python generate_processing_times_table.py -d /mnt/uri-nfs-cornillon/Logs/ -n 5

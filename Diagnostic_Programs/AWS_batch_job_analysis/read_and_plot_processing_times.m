@@ -1,4 +1,4 @@
-function read_and_plot_processing_times(BatchNo)
+function [batch_job_no, orbit_index, matTime, processingTime] = read_and_plot_processing_times(BatchNo)
 % function read_and_plot_processing_times(BatchNo) - to determine orbit processing times - PCC
 %
 % Open and read the processing table file written at AWS by reading the
@@ -28,49 +28,67 @@ data = textscan(fileID, formatSpec);
 fclose(fileID);
 
 % Extract columns into separate variables (if needed)
-iBatchJob = data{1}; % batch job index
-iOrbit = data{2}; % orbit processed in this batch job
+batch_job_no = data{1}; % batch job index
+orbit_index = data{2}; % orbit processed in this batch job
 LinuxTime = data{3}; % time of processing in seconds since 1/1/1970
-processingTime = data{4}; % time to process
+processingTime = data{4} / 60; % time to process
 
 % Alternatively, you can store the data in a matrix form like this:
-resultMatrix = [iBatchJob, iOrbit, LinuxTime, processingTime];
+resultMatrix = [batch_job_no, orbit_index, LinuxTime, processingTime];
 
 % Convert seconds since 1/1/1970 to Matlab time. Subtract 4 hours for time
 % zone difference (I think)
 
 matTime = datetime( double(LinuxTime), 'ConvertFrom', 'posixtime') - 4 / 24;
 
+% Get start and end time for the data processed thus far in this batch.
+
+startTime = floor(datenum(min(matTime)) * 24) / 24;
+endTime = ceil(datenum(max(matTime)) * 24) / 24;
+
+% Write out some stats
+
+hourThreshold = 6;
+
+mm = find(datenum(matTime) < startTime+hourThreshold/24);
+nn = find(datenum(matTime) > startTime+hourThreshold/24);
+
+fprintf('\nFor the first      %i hours, the processing times average to: %5.1f +/- %3.1f minutes / orbit.\n', hourThreshold, mean(processingTime(mm))/60, std(processingTime(mm))/60)
+fprintf('For the remaining %i hours, the processing times average to: %5.1f +/- %3.1f minutes / orbits.\n\n', floor(24*(endTime-startTime)-hourThreshold), mean(processingTime(nn))/60, std(processingTime(nn))/60)
+
 % Now plot the data
 
 figure(1)
+clf
+
+subplot(211)
+
 plt = plot( matTime, processingTime, '.');
 set(gca, fontsize=20)
 grid on
 
-xlabel('Time');
-ylabel('Values');
+xlabel('Date/Time');
+ylabel('Processing Time (minutes)');
 title('Processing Time vs Time Processed');
 
-% Optionally, customize the date format on the x-axis
-ax = gca;
-ax.XAxis.TickLabelFormat = 'yyyy-MM-dd HH:mm:ss';
-
-% Improve the layout
-datetick('x', 'yyyy-mm-dd HH:MM:SS', 'keepticks');
+% % % Optionally, customize the date format on the x-axis
+% % ax = gca;
+% % ax.XAxis.TickLabelFormat = 'yyyy-MM-dd HH:mm:ss';
+% % 
+% % % Improve the layout
+% % datetick('x', 'yyyy-mm-dd HH:MM:SS', 'keepticks');
 
 %% Now plot the a line from the first to the last time of each batch job
 
-% BatchStart = nan(90,1);
-% BatchEnd = BatchStart;
-
-for jOrbit=1:length(iOrbit)
-    for iBatch=1:90
-        if iBatch == iBatchJob(jOrbit)
-            if iOrbit(jOrbit) == 1
-                BatchStart(iBatch) = datenum(matTime(jOrbit));
+for jOrbit=1:length(orbit_index)
+    for iBatch=1:max(batch_job_no)
+        if iBatch == batch_job_no(jOrbit)
+            if orbit_index(jOrbit) == 1
+                % BatchStart(iBatch) = datenum(matTime(jOrbit));
+                BatchStart(iBatch) = matTime(jOrbit);
             else
-                BatchEnd(iBatch) = datenum(matTime(jOrbit));
+                % BatchEnd(iBatch) = datenum(matTime(jOrbit));
+                BatchEnd(iBatch) = matTime(jOrbit);
             end
         end
     end
@@ -78,22 +96,19 @@ end
 
 % And plot
 
-figure(2)
-clf
+subplot(212)
 
-for iBatch=1:90
-    plot( [BatchStart(iBatch) BatchEnd(iBatch)], [1 1]*iBatch, 'k', linewidth=2)
-end
-figure(2);clf
-for iBatch=1:90
-    plot( [BatchStart(iBatch) BatchEnd(iBatch)], [1 1]*iBatch, 'k', linewidth=2)
-    hold on
+for iBatch=1:max(batch_job_no)
+    if datenum(BatchStart(iBatch)) ~= 0
+        plot( [BatchStart(iBatch) BatchEnd(iBatch)], [iBatch iBatch], 'k', linewidth=2)
+        hold on
+    end
 end
 
 grid on
 set(gca, fontsize=20)
 
-xlabel('Time');
+xlabel('Date/Time');
 ylabel('Batch Job #');
 title('Period of Processing');
 
@@ -105,12 +120,9 @@ title('Period of Processing');
 
 %% Now calculate how many batch jobs are running at any given time.
 
-startTime = floor(datenum(min(matTime)) * 24) / 24;
-endTime = ceil(datenum(max(matTime)) * 24) / 24;
-
 jTime = 0;
 
-for iTime=startTime:1/24:endTime
+for iTime=startTime:1/(24*60):endTime
     jTime = jTime + 1;
     
     nn = find( (iTime>datenum(BatchStart)) & (iTime<=datenum(BatchEnd)));
@@ -124,9 +136,32 @@ newTimep = datetime(datevec(newTime));
 
 % Plot num batch jobs running versus time.
 
-figure(1)
+subplot(211)
 hold on
 
 yyaxis right
+ylabel('Jobs Running')
 
 plot( newTimep, numJobs, 'r')
+
+% Find trend if any in processing time after the run settles down a bit.
+
+nn = find(datenum(matTime) > startTime+hourThreshold/24);
+
+pp = polyfit( datenum(matTime(nn)), processingTime(nn), 1);
+yFit = polyval(pp, datenum(matTime(nn)));
+
+min_per_day = (yFit(end) - yFit(1)) / ( datenum(matTime(nn(end))) - datenum(matTime(nn(1)))) * 60;
+fprintf('Processing time changes by %7.4f minutes per day between %s and %s\n\n', min_per_day, matTime(nn(1)), matTime(nn(end)))
+
+% And plot this line.
+
+subplot(211)
+hold on
+
+yyaxis left
+
+hh = plot( matTime(nn), yFit, 'm', linewidth=2);
+
+legend(hh, 'Best fit line to processing times')
+

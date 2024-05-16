@@ -11,7 +11,7 @@
 which_dataset = 1;
 datasets = {'combined' 'recover'};
 
-temp = 1; % For temporary, i.e., partial directories.
+temp = 0; % For temporary, i.e., partial directories.
 
 % Set up for either satdat1 or macstudio
 
@@ -27,6 +27,15 @@ if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')
     
 %     base_dir_out = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Data_from_OBPG_for_PO-DAAC/';
     base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+elseif strcmp( deblank(computer_name), 'satdat1.gso.uri.edu')
+    %     diary_dir = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/Logs/';
+%     diary_dir = '/Users/petercornillon/MATLAB/Projects/Temp_for_MODIS_L2/Logs/';
+    diary_dir = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
+    % base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
+    base_dir_in = '/Volumes/MODIS_L2_Original/OBPG/';
+
+    % base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+    base_dir_out = '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 else
     %     diary_dir = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/Logs/';
 %     diary_dir = '/Users/petercornillon/MATLAB/Projects/Temp_for_MODIS_L2/Logs/';
@@ -61,13 +70,28 @@ if strfind(year_list{1}, '-')
     day_start = input(['Enter the day to start with ', num2str(month_start) '/' year_list{1} ' (1 for first day or cr): ']);
     if isempty(day_start); day_start = 1; end
 else
-    if which_dataset == 1
-        file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
+    % if which_dataset == 1
+    %     file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
+    %     month_start = 1;
+    %     day_start = 1;
+    % else
         month_start = 1;
         day_start = 1;
-    else
-        month_start = 1;
-        day_start = 1;
+    % end
+end
+
+% Specify the cutoff date (e.g., files modified after 1st January 2023 would be entered as [2023 1 1 0 0 0]
+
+fprintf('\n\nYou can select a cutouff date in the following. Only input files created on or after this date will be processed\nunless the cutoff date is preceeded by a minus sign. If nothing specified, all files found will be processed.\n\n')
+
+cutoffDate = input('Specify the cutoff date as [yyyy mm dd hh mm ss]. Default, no cutoff. Preceeded by - cutoff before otherwise after: '); 
+
+relationalOperator = '>=';
+
+if ~isempty(cutoffDate)
+    if cutoffDate(1) < 0
+        cutoffDate = -cutoffDate;
+        relationalOperator = '<';
     end
 end
 
@@ -85,9 +109,36 @@ for iYear=1:length(year_list) % Loop over years to process .....................
     
     YearS = year_list{iYear};
     if temp
-        file_list = dir([ base_dir_in, datasets{which_dataset} '/temp_' YearS '/AQUA*.nc']);
+        temp_file_list = dir([ base_dir_in, datasets{which_dataset} '/temp_' YearS '/AQUA*.nc']);
     else
-        file_list = dir([ base_dir_in, datasets{which_dataset} '/' YearS '/AQUA*.nc']);
+        temp_file_list = dir([ base_dir_in, datasets{which_dataset} '/' YearS '/AQUA*.nc']);
+    end
+
+    % If a cutoff date has been specified filter the file list.
+    % Initialize an array to store the filtered files
+    
+    if ~isempty(cutoffDate)
+        file_list = [];
+
+        % Loop through the list of files and filter by date
+
+        for i = 1:length(temp_file_list)
+
+            % Get the modification date of the current file
+
+            fileDate = datetime(temp_file_list(i).date);
+
+            % Check if the file date is after the cutoff date
+
+            eval(['cutoffDateTest = ' num2str(datenum(fileDate)) relationalOperator num2str(datenum(cutoffDate)) ';'])
+            if cutoffDateTest
+                % Add the file to the filtered list
+
+                file_list = [file_list; temp_file_list(i)];
+            end
+        end
+    else
+        file_list = temp_file_list;
     end
 
     tic

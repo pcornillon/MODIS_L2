@@ -104,9 +104,11 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   1.1.3 - 5/14/2024 - Very minor mods to build_orbit  - PCC
 %   1.1.4 - 5/14/2024 - Problem with the check for longitude values outside
 %           of -360 to 360 in fix_lon_steps... Hopefully fixed now - PCC
+%   1.1.5 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS in
+%           add_granule_data...
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.1.4';
+version_struct.build_and_fix_orbits = '1.1.5';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the

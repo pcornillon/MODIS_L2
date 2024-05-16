@@ -47,9 +47,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Added status
 %           to the returned variable for calls to read_variable_HDF.
+%   1.0.3 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS - PCC
 
 global version_struct
-version_struct.add_granule_data_to_orbit = '1.0.2';
+version_struct.add_granule_data_to_orbit = '1.0.3';
 
 global s3_expiration_time
 
@@ -137,6 +138,7 @@ if amazon_s3_run
     if status == 921
         return
     end
+    SST_In(:,osscan:oescan) - SST_In(:,osscan:oescan) - 273.15;
 
     H5F.close(file_id)
 

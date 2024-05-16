@@ -138,7 +138,7 @@ if amazon_s3_run
     if status == 921
         return
     end
-    SST_In(:,osscan:oescan) - SST_In(:,osscan:oescan) - 273.15;
+    SST_In(:,osscan:oescan) = SST_In(:,osscan:oescan) - 273.15;
 
     H5F.close(file_id)
 

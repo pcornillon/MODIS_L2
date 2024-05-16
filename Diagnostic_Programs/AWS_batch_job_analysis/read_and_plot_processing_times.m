@@ -1,4 +1,4 @@
-function [batch_job_no, orbit_index, matTime, processingTime] = read_and_plot_processing_times(BatchNo)
+function [batch_job_no, orbit_index, matTime, processingTime, yFit] = read_and_plot_processing_times(AWS, BatchNo)
 % function read_and_plot_processing_times(BatchNo) - to determine orbit processing times - PCC
 %
 % Open and read the processing table file written at AWS by reading the
@@ -11,9 +11,24 @@ function [batch_job_no, orbit_index, matTime, processingTime] = read_and_plot_pr
 % The script to generate the table at AWS is MODIS_L2/Shell_scripts/generate processing_times_table.py
 % To copy from AWS: scp ubuntu@ec2-52-11-152-158.us-west-2.compute.amazonaws.com:/mnt/uri-nfs-cornillon/Logs/processing_times.txt /Users/petercornillon/Dropbox/Data/From_AWS/
 %
+% INPUT
+%   AWS: 1 if access to /Users/petercornillon/mnt/uri-nfs-cornillon/Logs, 0
+%        for local access.
+%   BatchNo: the number of the batch group to read.
 
 % Specify the file name
-filename = ['/Users/petercornillon/Dropbox/Data/From_AWS/Batch-' num2str(BatchNo) '_processing_times.txt'];
+
+if AWS
+    filename = ['/Users/petercornillon/mnt/uri-nfs-cornillon/Logs/Batch-' num2str(BatchNo) '_processing_times.txt'];
+    if exist(filename) ~= 2
+        filename = ['/Users/petercornillon/mnt/uri-nfs-cornillon/Logs/Batch-' num2str(BatchNo) '/Batch-' num2str(BatchNo) '_processing_times.txt'];
+    end
+else
+    filename = ['/Users/petercornillon/Dropbox/Data/From_AWS/Batch-' num2str(BatchNo) '_processing_times.txt'];
+    if exist(filename) ~= 2
+        filename = ['/Users/petercornillon/Dropbox/Data/From_AWS/Batch-' num2str(BatchNo) '/Batch-' num2str(BatchNo) '_processing_times.txt'];
+    end
+end
 
 % Open the file for reading
 fileID = fopen(filename, 'r');
@@ -53,8 +68,8 @@ hourThreshold = 6;
 mm = find(datenum(matTime) < startTime+hourThreshold/24);
 nn = find(datenum(matTime) > startTime+hourThreshold/24);
 
-fprintf('\nFor the first      %i hours, the processing times average to: %5.1f +/- %3.1f minutes / orbit.\n', hourThreshold, mean(processingTime(mm))/60, std(processingTime(mm))/60)
-fprintf('For the remaining %i hours, the processing times average to: %5.1f +/- %3.1f minutes / orbits.\n\n', floor(24*(endTime-startTime)-hourThreshold), mean(processingTime(nn))/60, std(processingTime(nn))/60)
+fprintf('\nFor the first      %i hours, the processing times average to: %5.1f +/- %3.1f minutes / orbit.\n', hourThreshold, mean(processingTime(mm)), std(processingTime(mm)))
+fprintf('For the remaining %i hours, the processing times average to: %5.1f +/- %3.1f minutes / orbits.\n\n', floor(24*(endTime-startTime)-hourThreshold), mean(processingTime(nn)), std(processingTime(nn)))
 
 % Now plot the data
 
@@ -151,7 +166,7 @@ nn = find(datenum(matTime) > startTime+hourThreshold/24);
 pp = polyfit( datenum(matTime(nn)), processingTime(nn), 1);
 yFit = polyval(pp, datenum(matTime(nn)));
 
-min_per_day = (yFit(end) - yFit(1)) / ( datenum(matTime(nn(end))) - datenum(matTime(nn(1)))) * 60;
+min_per_day = (yFit(end) - yFit(1)) / ( datenum(matTime(nn(end))) - datenum(matTime(nn(1))));
 fprintf('Processing time changes by %7.4f minutes per day between %s and %s\n\n', min_per_day, matTime(nn(1)), matTime(nn(end)))
 
 % And plot this line.

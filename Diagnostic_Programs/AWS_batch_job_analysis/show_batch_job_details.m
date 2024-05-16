@@ -1,4 +1,4 @@
-function show_batch_job_details( show_running, show_details, show_errors)
+function [jobs] = show_batch_job_details( show_running, show_details, show_errors)
 % show_batch_job_details - gets list of batch jobs and writes errors for those with problems - PCC
 %
 % This function will show characteristics of batch jobs.

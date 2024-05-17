@@ -9,7 +9,7 @@ Test = 0;
 for iYear=1:length(Years)
     
     Year = Years(iYear);
-    YearString = str2num(Year);
+    YearString = num2str(Year);
     
     fprintf('Working on %i.\n', Year)
     tic;

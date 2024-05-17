@@ -11,6 +11,9 @@ for iYear=1:length(Years)
     
     Year = Years{iYear};
     
+    fprintf('Working on %i.\n', Year)
+    tic;
+    
     % Get the file list for this year.
     
     if Test
@@ -28,4 +31,8 @@ for iYear=1:length(Years)
     end
     
     eval(['save(''~/Dropbox/Data/MODIS_L2/granuleList_' Years{iYear} '.mat'', ''granuleList'');']);
+    
+    time_to_process = toc;
+    
+    fprintf('%7.1f seconds or %4.1f minutes to process %s.\n', time_to_process, time_to_process/60, Year)
 end

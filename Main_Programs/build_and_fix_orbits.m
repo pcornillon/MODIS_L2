@@ -407,10 +407,31 @@ end
 % after the start and end times passed in. This overlap will avoid missing
 % an orbit that starts end of a year.
 
-yearStart = year(Matlab_start_time - 1/24);
-yearEnd = year(Matlab_start_time + 1/24);
+matStart = Matlab_start_time - 2/24;
+matEnd = Matlab_end_time + 2/24;
 
-list_of_granules = load([metadata_directory 'granuleList_' num2str(yearStart) '.mat']);
+yearStart = year(matStart);
+yearEnd = year(matEnd);
+
+% Loop over all years in the range of data and build a new list of granules
+% to consider for this run.
+
+jGranule = 0;
+for iYear=yearStart:yearEnd
+    load([metadata_directory 'granuleList_' num2str(iYear) '.mat']);
+    
+    for iGranule=1:length(granuleList)
+        granuleTime = granuleList(iGranule).matTime;
+
+        if (granuleTime >= matStart) & (granuleTime < matEnd)
+            jGranule = jGranule + 1;
+            newGranuleList(jGranule).filename = granuleList(iGranule).filename(12:26);
+            newGranuleList(jGranule).matTime = granuleList(iGranule).matTime;
+        end
+    end
+
+    clear granuleList
+end
 
 %% Initialize parameters
 

@@ -20,7 +20,7 @@ for iYear=1:length(Years)
         % load ~/Dropbox/TempForTransfer/filelist.mat
         load ~/Desktop/filelist.mat
     else
-        eval(['fileList = dir(''/Volumes/MODIS_L2_Original/OBPG/combined/' YearString '/AQUA*'');'])
+        eval(['fileList = dir(''/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/' YearString '/AQUA*'');'])
     end
     
     for iFile=1:length(fileList)

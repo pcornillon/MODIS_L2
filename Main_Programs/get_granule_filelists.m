@@ -20,7 +20,7 @@ for iYear=1:length(Years)
         % load ~/Dropbox/TempForTransfer/filelist.mat
         load ~/Desktop/filelist.mat
     else
-        eval(['fileList = dir(''/Volumes/MODIS_L2_Original/OBPG/combined/' Year '/AQUA*'');'])
+        eval(['fileList = dir(''/Volumes/MODIS_L2_Original/OBPG/combined/' YearString '/AQUA*'');'])
     end
     
     for iFile=1:length(fileList)
@@ -30,7 +30,7 @@ for iYear=1:length(Years)
         granuleList(iFile).matTime = parse_filename(filename);
     end
     
-    eval(['save(''~/Dropbox/Data/MODIS_L2/granuleList_' Years{iYear} '.mat'', ''granuleList'');']);
+    eval(['save(''~/Dropbox/Data/MODIS_L2/granuleList_' YearString '.mat'', ''granuleList'');']);
     
     time_to_process = toc;
     

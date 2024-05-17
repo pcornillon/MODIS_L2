@@ -31,9 +31,10 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %           separately from the search for URI. Hopeully, there is no
 %           difference between the two. - PCC  
 %   1.1.1 - 5/12/2024 - Return if status=921 after call to find_next_full...
+%   1.1.2 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
 
 global version_struct
-version_struct.get_start_of_first_full_orbit = '1.1.1';
+version_struct.get_start_of_first_full_orbit = '1.1.2';
 
 local_debug = 0;
 
@@ -51,114 +52,33 @@ global oinfo iOrbit iGranule
 global start_line_index
 global Matlab_end_time
 
+global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+
 % globals used in the other major functions of build_and_fix_orbits.
 
 global iProblem problem_list 
 
 if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
-% granule_start_time_guess is the time, a dummy variable, for the approximate
-% start time of a granule. It will be incremented by 5 minutes/granule as
-% this script loops through granules. Need to find the first granule in the
-% range. Since there has to be a metadata granule corresponding to the
-% first data granule, search for the first metadata granule. Note that
-% build_metadata_filename will upgrade granule_start_time_guess to the
-% actual time of the 1st scan when called with 1 for the 1st argument. This
-% effectively syncs the start times to avoid any drifts.
 
-% Because the time input to build_and_fix_orbits may not be at a minute
-% when the first metadata file exists start with a broader search; search
-% for a granule in the given hour. Remove minutes and seconds from the
-% specified start time. In the while loop increment by one hour.
-
-file_list = [];
-
-granule_start_time_guess = floor(search_start_time * 24) / 24 - 1 / 24;
-
-% % if amazon_s3_run
-% % 
-% %     % Will look for the first good granule stepping through the granule
-% %     % times one second at a time until it finds one.
-% % 
-% %     granule_start_time_guess = granule_start_time_guess - 1 / 86400;
-% %     while 1==1
-% %         granule_start_time_guess = granule_start_time_guess + 1 / 86400;
-% % 
-% %         if granule_start_time_guess > Matlab_end_time
-% %             fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
-% % 
-% %             status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(search_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
-% %             return
-% %         end
-% % 
-% %         filename = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-% % 
-% %         % If a filename is found, get a list of files here since the
-% %         % function was set up to deal with this list previously, before I
-% %         % sorted out the above so this is really for legacy reasons.
-% % 
-% %         if exist(filename)
-% % 
-% %             file_list = dir(filename);
-% %             break
-% %         end
-% %     end
-% % 
-% % else
-    while isempty(file_list)
-
-%         granule_start_time_guess = granule_start_time_guess + 1/24;
-
-        if local_debug; fprintf('In while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
-
-        if granule_start_time_guess > Matlab_end_time
-            fprintf('*** Didn''t find a metadata granule between %s and %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
-
-            status = populate_problem_list( 911, ['No metadata granule in time range: ' datestr(search_start_time) ' to'  datestr(Matlab_end_time)], granule_start_time_guess);
-            return
-        end
-
-        if local_debug; fprintf('dir operation to do: %s\n', [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']); end
-
-        baseName = [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmdd) 'T'];
-        [file_list, granule_start_time_guess] = search_for_file( baseName, granule_start_time_guess, '_L2_SST_OBPG_extras.nc4');
-
-        % file_list = dir( [metadata_directory datestr(granule_start_time_guess, formatOut.yyyy) '/AQUA_MODIS_' datestr(granule_start_time_guess, formatOut.yyyymmddThh) '*']);
-
-        if local_debug; fprintf('%s\n', [file_list(1).folder '/' file_list(1).name]); end
-    end
-% % end
+iGranuleList = 1;
+file_list(iGranuleList).name  = newGranuleList(1).name;
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
-% corresponding to this file (yyyy mm dd T hh mm ss is good enough) and
-% starting with the time of this file, search for a granule with the start
-% of an orbit, defined as the point at which the descending satellite crosses 
-% latlim, nominally 78 S.
+% corresponding to this file. Search for the next granule with the start of
+% an orbit, defined as the point at which the descending satellite crosses
+% latlim, nominally 78 S. 
 
-% fi_metadata: AQUA_MODIS_20030101T002505_L2_SST_OBPG_extras.nc4
-
-metadata_granule_file_name = file_list(1).name;
-
-nn = strfind( metadata_granule_file_name, 'AQUA_MODIS_');
-
-yyyy = str2num(metadata_granule_file_name(nn+11:nn+14));
-mm = str2num(metadata_granule_file_name(nn+15:nn+16));
-dd = str2num(metadata_granule_file_name(nn+17:nn+18));
-HH = str2num(metadata_granule_file_name(nn+20:nn+21));
-MM = str2num(metadata_granule_file_name(nn+22:nn+23));
-SS = str2num(metadata_granule_file_name(nn+24:nn+25));
-
-granule_start_time_guess = datenum(yyyy,mm,dd,HH,MM,SS);
+granule_start_time_guess = newGranuleList(iGranuleList).matTime;
 
 if local_debug; fprintf('Following while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
-
-% Next, find the ganule at the beginning of the first complete orbit
-% starting with the first granule found in the time range.
 
 start_line_index = [];
 
 while granule_start_time_guess <= Matlab_end_time
     
+    % % % iGranuleList = iGranuleList + 1;
+
     % Zero out iGranule since this is the start of the job and this script
     % is looking for the first granule with a descending 78 S crossing.
     
@@ -166,7 +86,6 @@ while granule_start_time_guess <= Matlab_end_time
 
     if local_debug; fprintf('In 2nd while loop.\n'); end
 
-    % % % [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
     [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
 
     if status == 921

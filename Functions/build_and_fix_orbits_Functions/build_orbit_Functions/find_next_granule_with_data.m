@@ -77,6 +77,8 @@ global secs_per_day secs_per_scan_line
 global possible_num_scan_lines_skip
 global latlim
 
+global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+
 global oinfo iOrbit iGranule
 global scan_line_times start_line_index num_scan_lines_in_granule
 global Matlab_end_time
@@ -135,10 +137,9 @@ while 1==1
         end
     end
 
-    % Search the minute (all second values) for a metadata file
-    % corresponding to the guess for the granule start time. This search
-    % will be done by backing 5 seconds and then searching forward for 65
-    % until a granule is found, or not.
+    % Get the next metadata granule.
+
+    iGranuleList = iGranuleList + 1;
 
     [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_filename( 'metadata', granule_start_time_guess);
 

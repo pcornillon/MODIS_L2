@@ -32,9 +32,10 @@ function [status, found_one, folder_name, file_name, test_time] = get_filename( 
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Addes status
 %           to return.
+%   1.0.3 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
 
 global version_struct
-version_struct.get_filename = '1.0.2';
+version_struct.get_filename = '1.0.3';
 
 % globals for the run as a whole.
 
@@ -45,6 +46,8 @@ global granules_directory metadata_directory
 global formatOut
 global s3_expiration_time amazon_s3_run
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
+
+global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 status = 0;
 found_one = 0;
@@ -59,28 +62,16 @@ switch file_type
     case 'metadata'
         metadata_granule = [];
 
-        test_time = arg_2 - 5 / secs_per_day;
+        if iGranuleList < numGranules
+            found_one = 1;
 
-        for iSecond=1:65
-            test_time = test_time + 1 / secs_per_day;
+            folder_name = [metadata_directory datestr(newGranuleList(iGranuleList).matTime, formatOut.yyyy) '/'];
+            file_name = [filenamePrefix newGranuleList(iGranuleList).filename filenameEnding];
 
-            data_filename = [metadata_directory datestr(test_time, formatOut.yyyy) '/AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-
-            if exist(data_filename)
-                found_one = 1;
-
-                folder_name = [metadata_directory datestr(test_time, formatOut.yyyy) '/'];
-                file_name = ['AQUA_MODIS_' datestr(test_time, formatOut.yyyymmddThhmmss) '_L2_SST_OBPG_extras.nc4'];
-
-                break
-            end
+            test_time = newGranuleList(iGranuleList).matTime;
+        else
+            found_one = 1;
         end
-
-        % Reset test_time to the time passed in. If it is not reset, it
-        % will creep up by about a minute on each call potentially putting
-        % it out of range for if a number of granules are missing.
-
-        test_time = arg_2;
         
     case 'sst_data'
 
@@ -89,8 +80,8 @@ switch file_type
         % Get the time of the metadata file. Start by finding where in the
         % string the data and time info is. 
 
-        md_date = metadata_name(12:19);
-        md_time = metadata_name(21:26);
+        md_date = datestr(newGranuleList(iGranuleList).matTime, formatOut.yyyymmdd);
+        md_time = datestr(newGranuleList(iGranuleList).matTime, formatOut.HHMMSS);
 
         % Will first get components of the filename, which differ from data
         % at URI, as copied from OBPG, and at AWS.

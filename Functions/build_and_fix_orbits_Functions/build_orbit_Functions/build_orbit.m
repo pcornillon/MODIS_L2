@@ -47,9 +47,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           not being done where it should have been. Test modified - PCC
 %   1.2.1 - 5/14/2024 - added ; to name_test line to prevent it from
 %           printing out - PCC
+%   1.3.1 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
 
 global version_struct
-version_struct.build_orbit = '1.2.1';
+version_struct.build_orbit = '1.3.1';
 
 % globals for the run as a whole.
 
@@ -209,10 +210,6 @@ if name_test
 
             fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
-            % % % % Step back 5 minutes from the end of the last run and search for next crossing.
-            % % % 
-            % % % granule_start_time_guess = oinfo(iOrbit).end_time - 5 * 60 / secs_per_day;
-            
             % Set granule_start_time_guess to the nearest multiple of 5
             % minutes preceeding oinfo(iOrbit).end_time. Remember that the
             % end of the previous orbit is 100 scan lines past the nadir
@@ -229,6 +226,10 @@ if name_test
         end
     end        
     
+    %**********************************************************************
+    % Need to update iGranuleList based on granule_start_time_guess here
+    % *********************************************************************
+
     start_line_index = [];
 
     while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)

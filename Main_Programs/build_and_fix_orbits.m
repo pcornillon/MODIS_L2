@@ -107,6 +107,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %   1.1.5 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS in
 %           add_granule_data...
 %   1.2.0 - 5/17/2024 - Change from search for files to use list of files.
+%           Also modified: get_start_of_first_full_orbit,
+%           find_next_granule_with_data, get_filename, pirate_data.
 
 global version_struct
 version_struct.build_and_fix_orbits = '1.2.0';
@@ -126,7 +128,7 @@ clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_
     oinfo iOrbit iGranule iProblem problem_list scan_line_times ...
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
     Matlab_end_time s3_expiration_time med_op secs_per_granule ...
-    orbit_duration
+    orbit_duration newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 
 % Control for memory stats
@@ -158,6 +160,8 @@ global index_of_NASA_orbit_change possible_num_scan_lines_skip
 global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
+
+global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
@@ -416,6 +420,9 @@ yearEnd = year(matEnd);
 % Loop over all years in the range of data and build a new list of granules
 % to consider for this run.
 
+filenamePrefix = 'AQUA_MODIS_';
+filenameEnding = '_L2_SST_OBPG_extras.nc4';
+
 jGranule = 0;
 for iYear=yearStart:yearEnd
     load([metadata_directory 'granuleList_' num2str(iYear) '.mat']);
@@ -432,6 +439,8 @@ for iYear=yearStart:yearEnd
 
     clear granuleList
 end
+
+numGranules = length(newGranuleList);
 
 %% Initialize parameters
 

@@ -5,7 +5,7 @@ function get_granule_filelists(Years)
 %   Years: cell array with years to processs {'2002' '2005'}
 %
 
-Test = 1;
+Test = 0;
 
 for iYear=1:length(Years)
     
@@ -23,8 +23,8 @@ for iYear=1:length(Years)
     for iFile=1:length(fileList)
         filename = fileList(iFile).name;
         
-        granuleList.filename = filename;
-        granuleList.matTime = parse_filename(filename);
+        granuleList(iFile).filename = filename;
+        granuleList(iFile).matTime = parse_filename(filename);
     end
     
     eval(['save(''~/Dropbox/Data/MODIS_L2/granuleList_' Years{iYear} '.mat'', ''granuleList'');']);

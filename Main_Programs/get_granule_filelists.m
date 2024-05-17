@@ -2,14 +2,14 @@ function get_granule_filelists(Years)
 % get_granule_filelists - generates list of filenames and Matlab time extracted from the names - PCC
 %
 % INPUT
-%   Years: cell array with years to processs {'2002' '2005'}
-%
+%   Years: vector of years to process [2002:2005]
 
 Test = 0;
 
 for iYear=1:length(Years)
     
-    Year = Years{iYear};
+    Year = Years(iYear);
+    YearString = str2num(Year);
     
     fprintf('Working on %i.\n', Year)
     tic;

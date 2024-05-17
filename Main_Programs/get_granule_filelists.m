@@ -34,5 +34,5 @@ for iYear=1:length(Years)
     
     time_to_process = toc;
     
-    fprintf('%7.1f seconds or %4.1f minutes to process %s.\n', time_to_process, time_to_process/60, Year)
+    fprintf('%7.1f seconds or %4.1f minutes to process %s. Current date/time is: %s\n', time_to_process, time_to_process/60, YearString, datetime)
 end

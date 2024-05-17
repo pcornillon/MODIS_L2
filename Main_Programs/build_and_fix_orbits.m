@@ -106,9 +106,10 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           of -360 to 360 in fix_lon_steps... Hopefully fixed now - PCC
 %   1.1.5 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS in
 %           add_granule_data...
+%   1.2.0 - 5/17/2024 - Change from search for files to use list of files.
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.1.5';
+version_struct.build_and_fix_orbits = '1.2.0';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -400,6 +401,16 @@ if ~isempty(output_file_directory_remote)
         return
     end
 end
+
+% Load lists of filenames and extract the list for this run. Start by
+% setting the year of the start and end times to be 1 hours before and
+% after the start and end times passed in. This overlap will avoid missing
+% an orbit that starts end of a year.
+
+yearStart = year(Matlab_start_time - 1/24);
+yearEnd = year(Matlab_start_time + 1/24);
+
+list_of_granules = load([metadata_directory 'granuleList_' num2str(yearStart) '.mat']);
 
 %% Initialize parameters
 

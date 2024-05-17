@@ -8,7 +8,7 @@ function matTime = parse_filename( filename)
 %   matTime - days since 1/1/1 extracted from the filename
 %
 
-nn = strfind(filename, 'MODIS.') + 6;
+nn = strfind(filename, 'MODIS_') + 6;
 mm = nn + 3;
 
 Year = str2num(filename(nn:mm));

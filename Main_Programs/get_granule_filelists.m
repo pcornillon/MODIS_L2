@@ -11,7 +11,7 @@ for iYear=1:length(Years)
     Year = Years(iYear);
     YearString = num2str(Year);
     
-    fprintf('Working on %i.\n', Year)
+    fprintf('Starting to process %i at %s \n', Year, datetime)
     tic;
     
     % Get the file list for this year.
@@ -23,6 +23,9 @@ for iYear=1:length(Years)
         eval(['fileList = dir(''/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/' YearString '/AQUA*'');'])
     end
     
+    granuleList(length(fileList)).filename = fileList(end).name;
+    granuleList(length(fileList)).matTime = parse_filename(fileList(end).name);
+    
     for iFile=1:length(fileList)
         filename = fileList(iFile).name;
         
@@ -31,6 +34,8 @@ for iYear=1:length(Years)
     end
     
     eval(['save(''~/Dropbox/Data/MODIS_L2/granuleList_' YearString '.mat'', ''granuleList'');']);
+    
+    clear granuleList fileList
     
     time_to_process = toc;
     

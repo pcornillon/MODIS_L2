@@ -1,4 +1,4 @@
-function [status, found_one, folder_name, file_name, test_time] = get_filename( file_type, arg_2)
+function [status, found_one, folder_name, file_name, granule_start_time] = get_filename(file_type)
 % get_filename - get the name of the NASA data file from the AWS S3 NASA bucket - PCC
 %
 % This function will get the approximate time of the granule to search for
@@ -8,12 +8,6 @@ function [status, found_one, folder_name, file_name, test_time] = get_filename( 
 % INPUT
 %   file_type - 'sst_data' for NASA granule data or 'metadata' for OBPG
 %    metadata file in S3 bucket.
-%   arg_2 = time to start looking for a metadata granule, will be set to
-%    test_time if 'metadata.
-%    OR
-%    The metadata filename corresponding to the data file we are searching
-%    for if file_type is 'S3', otherwise can be blank or have a value,
-%    which will be ignored. Will be set to metadata_name if 'data'.
 %
 % OUTPUT
 %   status - 921 if timed out on credentials request, 0 otherwise.
@@ -21,7 +15,7 @@ function [status, found_one, folder_name, file_name, test_time] = get_filename( 
 %    file and 0 if none was found within one minute.
 %   folder_name - the folder in which the file was found.
 %   file_name - the name of the data file found.
-%   test_time - the start time, which was altered in the call for 'metadata'.
+%   granule_start_time - the start time, which was altered in the call for 'metadata'.
 %
 %  CHANGE LOG
 %   v. #  -  data    - description     - who
@@ -32,10 +26,11 @@ function [status, found_one, folder_name, file_name, test_time] = get_filename( 
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Addes status
 %           to return.
-%   1.0.3 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
+%   1.2.1 - 5/17/2024 - Modified code for switch to list of granules/times.
+%           Also, significant changes to arguments passed in and out - PCC
 
 global version_struct
-version_struct.get_filename = '1.0.3';
+version_struct.get_filename = '1.2.1';
 
 % globals for the run as a whole.
 
@@ -55,27 +50,27 @@ found_one = 0;
 folder_name = '';
 file_name = '';
 
-test_time = nan;
+granule_start_time = nan;
 
 switch file_type
 
     case 'metadata'
-        metadata_granule = [];
+        found_one = 0;
 
         if iGranuleList < numGranules
-            found_one = 1;
-
             folder_name = [metadata_directory datestr(newGranuleList(iGranuleList).matTime, formatOut.yyyy) '/'];
             file_name = [filenamePrefix newGranuleList(iGranuleList).filename filenameEnding];
 
-            test_time = newGranuleList(iGranuleList).matTime;
-        else
-            found_one = 1;
-        end
-        
-    case 'sst_data'
+            granule_start_time = newGranuleList(iGranuleList).matTime;
 
-        metadata_name = arg_2;
+            % Check to make sure that this metadata file really exists, AS IT SHOULD.
+
+            if exist(newGranuleList(iGranuleList).filename)
+                found_one = 1;
+            end
+        end
+
+    case 'sst_data'
 
         % Get the time of the metadata file. Start by finding where in the
         % string the data and time info is. 

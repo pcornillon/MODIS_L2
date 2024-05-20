@@ -1,5 +1,5 @@
-function [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess)
-% % % function [status, metadata_file_list, data_file_list, indices, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess)
+function [status, granule_start_time] = find_next_granule_with_data( granule_start_time)
+% % % function [status, metadata_file_list, data_file_list, indices, granule_start_time] = find_next_granule_with_data( granule_start_time)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -16,7 +16,7 @@ function [status, granule_start_time_guess] = find_next_granule_with_data( granu
 % range for this run, it will increment the granule time and...
 %
 % INPUT
-%   granule_start_time_guess - the matlab_time of the granule to start with.
+%   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
 %   status  : 0 - OK
@@ -40,8 +40,8 @@ function [status, granule_start_time_guess] = find_next_granule_with_data( granu
 %   metadata_file_list - list of granule metadata files found at time passed in.
 %   data_file_list - list of granule data files found at time passed in.
 %   indices - a structure with the discovered indices.
-%   granule_start_time_guess - the matlab_time of the granule to start with. If scan
-%    times are obtained for this granule, granule_start_time_guess will be set to the
+%   granule_start_time - the matlab_time of the granule to start with. If scan
+%    times are obtained for this granule, granule_start_time will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 
@@ -60,9 +60,12 @@ function [status, granule_start_time_guess] = find_next_granule_with_data( granu
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Added status
 %           return to get_filename. - PCC 
+%   1.2.0 - 5/20/2024 - Replaced granule_start_time_guess with
+%           granule_start_time. Also modified the logic in a number of
+%           places as well as replaced error statements - PCC
 
 global version_struct
-version_struct.find_next_granule_with_data = '1.0.2';
+version_struct.find_next_granule_with_data = '1.2.0';
 
 global s3_expiration_time
 
@@ -87,6 +90,10 @@ global Matlab_end_time
 
 global iProblem problem_list 
 
+astericks = '*************************************************************************************************';
+
+fiveMinutesMatTime = 5 / (24 * 60);
+
 % Initialize return variables.
 
 status = 0;
@@ -96,20 +103,37 @@ data_file_list = [];
 
 % Start of loop searching for next granule.
 
-start_time = granule_start_time_guess;
+% % % % % start_time = granule_start_time;
 
 while 1==1
 
     start_line_index = [];
 
-    % Is this time passed the end of the run.
+    % Increment the granule number on the list of granules to use for this
+    % run and check to make sure it isn't beyond the end of the list or
+    % that the corresponding time is passed the end of the run.
 
-    if granule_start_time_guess > Matlab_end_time
+    iGranuleList = iGranuleList + 1;
+
+    if iGranuleList > numGranules
         if print_diagnostics
-            fprintf('*** Did not cross %6.2f between end of previous orbit (%s) and end of run (%s).\n', latlim, datestr(start_time), datestr(Matlab_end_time))
+            fprintf('*** Ran out of granules, only %i on the list and the granule count has reached %i.\n', numGranules, iGranuleList)
         end
 
-        status = populate_problem_list( 901, ['*** Did not cross ' num2str(latlim, 6.2) ' between end of previous orbit (' datestr(start_time) ') and (' datestr(Matlab_end_time) ')'], granule_start_time_guess);
+        status = populate_problem_list( 903, ['*** Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).matTime+fiveMinutesMatTime);
+
+        return
+    else
+        granule_start_time = newGranuleList(iGranuleList).matTime;
+    end
+
+
+    if granule_start_time > Matlab_end_time
+        if print_diagnostics
+            fprintf('*** Current time, %s, beyond end of run time %s.\n', datestr(granule_start_time), datestr(Matlab_end_time))
+        end
+
+        status = populate_problem_list( 901, ['*** Current time, ' datestr(granule_start_time) ', beyond end of run time ' datestr(Matlab_end_time) '.'], granule_start_time);
 
         return
     end
@@ -125,12 +149,12 @@ while 1==1
 
     if length(oinfo) == iOrbit
         if ~isempty(oinfo(iOrbit).end_time)
-            if granule_start_time_guess > (oinfo(iOrbit).end_time - 2 * secs_per_scan_line / secs_per_day)
+            if granule_start_time > (oinfo(iOrbit).end_time - 2 * secs_per_scan_line / secs_per_day)
                 if print_diagnostics
-                    fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time_guess))
+                    fprintf('*** Granule past predicted end of orbit time: %s. Current value of the granule time is: %s.\n', datestr(oinfo(iOrbit).end_time), datestr(granule_start_time))
                 end
 
-                status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time_guess);
+                status = populate_problem_list( 201, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time);
 
                 return
             end
@@ -139,9 +163,7 @@ while 1==1
 
     % Get the next metadata granule.
 
-    iGranuleList = iGranuleList + 1;
-
-    [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess] = get_filename( 'metadata', granule_start_time_guess);
+    [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time] = get_filename('metadata');
 
     if status == 921
         return
@@ -153,10 +175,11 @@ while 1==1
 
     if found_one == 0
         if print_diagnostics
-            fprintf('No metadata granule found between %s and %s.\n', datestr(granule_start_time_guess - 5 / secs_per_day), datestr(granule_start_time_guess + 60 / secs_per_day))
+            fprintf('%s\nMetadata granule %s not found.\n', astericks, newGranuleList(iGranuleList).filename)
+            fprintf('This should NOT happen. It means that the file existed at some point, it''s on the list but it is not at this location now.\n%s\n',astericks)
         end
 
-        status = populate_problem_list( 101, ['No metadata granule found between ' datestr(granule_start_time_guess - 5 / secs_per_day) ' and ' datestr(granule_start_time_guess + 60 / secs_per_day) '.'], granule_start_time_guess);
+        status = populate_problem_list( 101, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time);
     else
 
         % Get the metadata filename.
@@ -185,7 +208,6 @@ while 1==1
 
             status = populate_problem_list( 111, ['Bad granule (' num2str(iGranule) ') ' metadata_temp_filename '. Number of scan lines, ' num2str(granule_info.Dimensions(iDim).Length) ', is neither 2030 nor 2040. Skipping granule.']);
         else
-
             % Is the data granule for this time present? If so, get the range
             % of locations of scanlines in the orbit and the granule to use.
             % Otherwise, add to problem list and continue search for a data
@@ -193,8 +215,7 @@ while 1==1
             % not occur. BUT FIRST, search for a granule within a minute of
             % the time passed in.
 
-
-            [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
+            [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename('sst_data');
 
             if status == 921
                 return
@@ -205,14 +226,14 @@ while 1==1
                     fprintf('No data granule found corresponding to metadata granule %s/%s.\n', metadata_granule_folder_name, metadata_granule_file_name )
                 end
 
-                status = populate_problem_list( 102, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time_guess);
+                status = populate_problem_list( 102, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time);
 
             else
                 data_temp_filename = [data_granule_folder_name data_granule_file_name];
 
                 % Get the metadata for this granule.
 
-                [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess);
+                [status, granule_start_time] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time);
 
                 % If status not equal to zero, either problems with start times
                 % or 1st detector, not 1st detector in group of 10. Neither of
@@ -226,15 +247,18 @@ while 1==1
                         % Still looking for the first granule with a ascending
                         % crossing of 79 S.
 
-                        fprintf('\nGranule at %s does not ascend across 79 S. Will continue searching.\n\n', datestr(granule_start_time_guess))
+                        fprintf('\nGranule at %s does not ascend across 79 S. Will continue searching.\n\n', datestr(granule_start_time))
 
-                        % Need to decrement granule_start... because it is
-                        % incremented in check_for_latlim... assuming that
-                        % a good granule has been found. If no metadata
-                        % granule is found, granule_start... will be
-                        % incremented hence the need to decrement here.
-
-                        granule_start_time_guess = granule_start_time_guess - 5 / (24 * 60);
+                        % ****************************************************************************************
+                        % This may come back to bite me.
+                        % ****************************************************************************************
+                        % % % % % % Need to decrement granule_start... because it is
+                        % % % % % % incremented in check_for_latlim... assuming that
+                        % % % % % % a good granule has been found. If no metadata
+                        % % % % % % granule is found, granule_start... will be
+                        % % % % % % incremented hence the need to decrement here.
+                        % % % % % 
+                        % % % % % granule_start_time = granule_start_time - fiveMinutesMatTime;
                     else
 
                         iGranule = iGranule + 1;
@@ -298,7 +322,7 @@ while 1==1
                                             mside_current(1), iGranule, iOrbit)
                                     end
 
-                                    status = populate_problem_list( 151, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule.'], granule_start_time_guess);
+                                    status = populate_problem_list( 151, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule.'], granule_start_time);
                                 end
                             elseif iOrbit > 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
@@ -310,7 +334,7 @@ while 1==1
                                             mside_current(1), iGranule, iOrbit)
                                     end
 
-                                    status = populate_problem_list( 152, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time_guess);
+                                    status = populate_problem_list( 152, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time);
                                 end
                             end
                         end
@@ -389,13 +413,13 @@ while 1==1
                                             oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), iGranule, lines_to_skip, clon_2(1), clat_2(1))
 
                                         status = populate_problem_list( 116, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
-                                            ' for granule #' num2str(iGranule) '. Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time_guess);
+                                            ' for granule #' num2str(iGranule) '. Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time);
                                     else
                                         fprintf('.....Says to skip 10 lines for %s, but the distance, %f km, isn''t right. Will not skip any lines.\n', ...
                                             oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), dd_1_2)
 
                                         status = populate_problem_list( 117, ['Says to skip 10 lines for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
-                                            ', but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time_guess);
+                                            ', but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time);
 
                                         lines_to_skip = 0;
                                     end
@@ -405,7 +429,7 @@ while 1==1
                                         oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23), lines_to_skip,  possible_num_scan_lines_skip(3,nn))
 
                                     status = populate_problem_list( 115, ['Number of lines to skip for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
-                                        ', ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time_guess);
+                                        ', ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time);
 
                                     lines_to_skip = possible_num_scan_lines_skip(3,nn);
                                 end
@@ -481,10 +505,10 @@ while 1==1
                             return
                         else
                             if print_diagnostics
-                                fprintf('*** Problem determining if ascending track crosses %6.2f in %s for [iOrbit, iGranule]=[%i, %i]. Time: %s.\n', latlim, oinfo(iOrbit).name, iOrbit, iGranule, datestr(granule_start_time_guess))
+                                fprintf('*** Problem determining if ascending track crosses %6.2f in %s for [iOrbit, iGranule]=[%i, %i]. Time: %s.\n', latlim, oinfo(iOrbit).name, iOrbit, iGranule, datestr(granule_start_time))
                             end
 
-                            status = populate_problem_list( 263, ['*** Problem determining if ascending track crosses ' num2str(latlim) ' in ' oinfo(iOrbit).name ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time_guess);
+                            status = populate_problem_list( 263, ['*** Problem determining if ascending track crosses ' num2str(latlim) ' in ' oinfo(iOrbit).name ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time);
 
                             iGranule = iGranule - 1;
                         end
@@ -494,8 +518,8 @@ while 1==1
         end
     end
 
-    % Here if no granule for this time; need to increment time step.
-
-    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+    % % % % % % Here if no granule for this time; need to increment time step.
+    % % % % % 
+    % % % % % granule_start_time = granule_start_time + fiveMinutesMatTime;
 end
 

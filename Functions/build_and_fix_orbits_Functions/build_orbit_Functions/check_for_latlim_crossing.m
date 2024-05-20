@@ -1,5 +1,4 @@
-function [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time_guess)
-% % % function [status, granule_start_time_guess] = check_for_latlim_crossing( metadata_file_list, update_oinfo, granule_start_time_guess) 
+function [status, granule_start_time] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time)
 % check_for_latlim_crossing - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
 
 
@@ -16,24 +15,27 @@ function [status, granule_start_time_guess] = check_for_latlim_crossing( metadat
 % it is defined. 
 %
 % INPUT
-% % % %   metadata_file_list - list of granule metadata found files for this time.
 %   metadata_granule_folder_name - the metadata folder in which the file was found.
 %   metadata_granule_file_name - the name of the metadata file found.
-%   granule_start_time_guess - the matlab_time of the granule to start with.
+%   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
 %   status : 201 - No scanline start times for scanlines in this granule
 %          : 202 - 1st detector in data granule not 1st detector in group of 10.
-%   granule_start_time_guess - the matlab_time of the granule to start with. If scan
-%    times are obtained for this granule, granule_start_time_guess will be set to the
+%   granule_start_time - the matlab_time of the granule to start with. If scan
+%    times are obtained for this granule, granule_start_time will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
 %
 %  CHANGE LOG
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 5/9/2024 - Initial version - PCC
-%   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
-%
+%   1.0.1 - 5/9/2024 - Added versioning. Removed unused code - PCC
+%   1.2.0 - 5/20/2024 - Replaced granule_start_time_guess with
+%           granule_start_time. Previously, this function incremented the
+%           start time under certain conditions. These statements have been
+%           removed - PCC
+
 
 global version_struct
 version_struct.check_for_latlim_crossing = '1.0.1';
@@ -54,6 +56,10 @@ global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global iProblem problem_list 
 
 % Initialize some variables.
+
+astericks = '*************************************************************************************************';
+
+fiveMinutesMatTime = 5 / (24 * 60);
 
 status = 0;
 start_line_index = [];
@@ -95,6 +101,17 @@ end
 
 num_scan_lines_in_granule = length(scan_line_times);
 
+% Check that the time of the first scan corresponds to the time in the
+% filename.
+
+if abs(scan_line_times(1) - granule_start_time) > (1/secs_per_day)
+    if print_diagnostics
+        fprintf('\n%s\nTime of first scan in this granule, %s, does not agree with the time in the filename, %s.\n%s\n', astericks, datestr(scan_line_times(1)), datestr(granule_start_time), astericks);
+    end
+
+    status = populate_problem_list( 143, ['Time of first scan in this granule, ' datestr(scan_line_times(1)) ', does not agree with the time in the filename, ' datestr(granule_start_time) '.']);
+end
+
 % Make sure that there is time data for this granule and that the 1st line
 % in the granule is the 1st detector in a group of 10. If either of these
 % fails, return, skipping the granule; this should NEVER happen. The
@@ -103,19 +120,18 @@ num_scan_lines_in_granule = length(scan_line_times);
 % detector group to minimize the spreading effect from the bowtie issue.
 
 if isempty(scan_line_times)
-    % % % fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_file_list(1).name)
-    fprintf('*** No scanline start times for scanlines in this granule. SHOULD NEVER GET HERE.\n', metadata_granule_file_name)
-    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+    fprintf('\n%s\n*** No scanline start times for scanlines in granule %s.\n*** THIS SHOULD NEVER HAPPEN!\n%s\n',  astericks, temp_filename,  astericks)
+    granule_start_time = granule_start_time + fiveMinutesMatTime;
 
-    status = populate_problem_list( 201, temp_filename, granule_start_time_guess);
+    status = populate_problem_list( 201, ['No scanline start times for scanlines in granule ' temp_filename '. THIS SHOULD NEVER HAPPEN!'], granule_start_time);
     return
 end
 
 if abs(mSec(10)-mSec(1)) > 0.01
-    fprintf('*** The 1st scan line for %s is not the 1st detector in a group of 10. Should not get here.\n', metadata_granule_file_name)
-    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+    fprintf('\n%s\n*** The 1st scan line for %s is not the 1st detector in a group of 10.\n*** Should not get here.\n%s\n',  astericks,  temp_filename, astericks)
+    granule_start_time = granule_start_time + fiveMinutesMatTime;
 
-    status = populate_problem_list( 202, temp_filename, granule_start_time_guess);
+    status = populate_problem_list( 202, ['The 1st scan line for ' temp_filename ' is not the 1st detector in a group of 10.  Should not get here.'], granule_start_time);
     return
 end
 
@@ -134,10 +150,10 @@ end
 dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
 if abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line)) > 0.01
     if print_diagnostics
-        fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time_guess));
+        fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time));
     end
 
-    status = populate_problem_list( 142, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time_guess) '. Continuing but be careful.']);
+    status = populate_problem_list( 142, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time) '. Continuing but be careful.']);
 end
 
 % Determine the time for this granule. Note that it is scaled at the end to
@@ -237,10 +253,11 @@ if ~isempty(aa)
                 end
 
                 if bad_grouping == 1
-                    fprintf('*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i. SHOULD NEVER GET HERE.\n', iStart_of_group)
-                    granule_start_time_guess = granule_start_time_guess + 5 / (24 * 60);
+                    fprintf('\n%s\n*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i.\n*** SHOULD NEVER GET HERE.\n%s\n',  astericks,  iStart_of_group, astericks)
 
-                    status = populate_problem_list( 153, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time_guess);
+                    granule_start_time = granule_start_time + fiveMinutesMatTime;
+
+                    status = populate_problem_list( 153, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time);
                 end
 
                 % Now find the group of 10 with the point in the middle closest
@@ -292,7 +309,7 @@ if ~isempty(aa)
     end
 end
 
-% Reset granule_start_time_guess to the start time of this granule and add
+% Reset granule_start_time to the start time of this granule and add
 % 5 minutes.
 
-granule_start_time_guess = scan_line_times(1) + 5 / (24 * 60);
+granule_start_time = scan_line_times(1) + fiveMinutesMatTime;

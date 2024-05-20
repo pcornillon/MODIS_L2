@@ -1,4 +1,4 @@
-function [status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time)
+function [status, granule_start_time] = get_start_of_first_full_orbit(search_start_time)
 % get_start_of_first_full_orbit - search from the start time for build_and_fix_orbits for the start of the first full orbit - PCC
 %   
 % This function starts by searching for the first metadata granule at or
@@ -20,7 +20,7 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %   indices - a structure with osscan, oescan, gsscan and gescan for the
 %    current orbit, data to be pirated from the next orbit if relevant and,
 %    also if relevant, values for the next orbit. 
-%   granule_start_time_guess - the matlab_time of the granule to start with.
+%   granule_start_time - the matlab_time of the granule to start with.
 %
 %  CHANGE LOG 
 %   v. #  -  data    - description     - who
@@ -31,7 +31,9 @@ function [status, granule_start_time_guess] = get_start_of_first_full_orbit(sear
 %           separately from the search for URI. Hopeully, there is no
 %           difference between the two. - PCC  
 %   1.1.1 - 5/12/2024 - Return if status=921 after call to find_next_full...
-%   1.1.2 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
+%   1.1.2 - 5/17/2024 - Modified code for switch to list of granules/times.
+%           As part of that replaces granule_start_time_guess with
+%           granule_start_time
 
 global version_struct
 version_struct.get_start_of_first_full_orbit = '1.1.2';
@@ -61,21 +63,21 @@ global iProblem problem_list
 if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
 
-iGranuleList = 1;
-file_list(iGranuleList).name  = newGranuleList(1).name;
+% % % iGranuleList = 1;
+file_list(1).name  = newGranuleList(1).name;
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
 % corresponding to this file. Search for the next granule with the start of
 % an orbit, defined as the point at which the descending satellite crosses
 % latlim, nominally 78 S. 
 
-granule_start_time_guess = newGranuleList(iGranuleList).matTime;
+granule_start_time = newGranuleList(1).matTime;
 
-if local_debug; fprintf('Following while loop. granule_start_time_guess: %s\n', datestr(granule_start_time_guess)); end
+if local_debug; fprintf('Following while loop. granule_start_time: %s\n', datestr(granule_start_time)); end
 
 start_line_index = [];
 
-while granule_start_time_guess <= Matlab_end_time
+while granule_start_time <= Matlab_end_time
     
     % % % iGranuleList = iGranuleList + 1;
 
@@ -86,7 +88,7 @@ while granule_start_time_guess <= Matlab_end_time
 
     if local_debug; fprintf('In 2nd while loop.\n'); end
 
-    [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
 
     if status == 921
         return
@@ -98,7 +100,7 @@ while granule_start_time_guess <= Matlab_end_time
     % which this occurs and returns the location of this pixel in the granule
     % in start_line_index.
 
-    if local_debug; fprintf('After call to find_nex_granule_with_data. granule_start_time_guess: %s, start_line_index: %i\n', datestr(granule_start_time_guess), start_line_index); end
+    if local_debug; fprintf('After call to find_nex_granule_with_data. granule_start_time: %s, start_line_index: %i\n', datestr(granule_start_time), start_line_index); end
     
     % Return if end of run.
     

@@ -43,6 +43,10 @@
 % % % %       abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line))
 % % % %       continues; on return, continues if status = 142 -- WARNING
 %
+% % % % 143 - check_for_latlim_crossing - Time discrepancy between filename and first scan line in the file.
+% % % %       status = populate_problem_list( 143, ['Time of first scan in this granule, ' datestr(scan_line_times(1)) ', does not agree with the time in the filename, ' datestr(granule_start_time) '.']);
+% % % %       continue -- WARNING
+%
 % % % % 151 - find_next_granule_with_data - mirror side for the first scan line on granule same as that of the last scan of the prevous granule.
 % % % %       continue -- WARNING.
 % % % %
@@ -131,6 +135,9 @@
 % % % %       return -- ERROR
 % % % % 902 - build_orbit - End of run. 
 % % % %       status = populate_problem_list( 902, ['*** Have reached the end of the run: ' datestr(Matlab_end_time)], granule_start_time_guess);
+% % % %       return -- ERROR
+% % % % 903 - build_orbit - End of run. 
+% % % %       status = populate_problem_list( 903, ['*** Ran out of granules, only ' num2str(length(numGranules)) '.'], granule_start_time_guess);
 % % % %       return -- ERROR
 % % % % 921 - loadAWSCredentials - End of run. 
 % % % %       status = populate_problem_list(921, ['*** Failed ' num2str(numTries) ' times to get the NASA S3 credentials exiting this run.']);

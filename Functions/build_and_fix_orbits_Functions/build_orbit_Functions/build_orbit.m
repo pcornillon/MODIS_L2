@@ -47,10 +47,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           not being done where it should have been. Test modified - PCC
 %   1.2.1 - 5/14/2024 - added ; to name_test line to prevent it from
 %           printing out - PCC
-%   1.3.1 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
+%   1.3.0 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
 
 global version_struct
-version_struct.build_orbit = '1.3.1';
+version_struct.build_orbit = '1.3.0';
 
 % globals for the run as a whole.
 
@@ -74,6 +74,8 @@ if determine_fn_size; get_job_and_var_mem; end
 
 status = 0;
 
+astericks = '*************************************************************************************************';
+
 % Initialize return variables to simple nans; will return to calling
 % program when the start of the next orbit is found.
 
@@ -84,7 +86,7 @@ qual_sst = int8(nan);
 flags_sst = int16(nan);
 sstref = single(nan);
 
-scan_seconds_from_start = 0;% Initialize parameters
+scan_seconds_from_start = 0; % Initialize parameters
 
 iGranule = 1;
 

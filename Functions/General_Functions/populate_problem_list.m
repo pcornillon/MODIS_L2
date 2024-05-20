@@ -1,4 +1,4 @@
-function status = populate_problem_list( status, problem_description, granule_start_time_guess)
+function status = populate_problem_list( status, problem_description, granule_start_time)
 % populate_problem_list - updates problem_list for this error/warning code - PCC
 %
 % This function get the index to use for this error/warning from
@@ -10,7 +10,7 @@ function status = populate_problem_list( status, problem_description, granule_st
 % INPUT
 %   status - the error/warning code to use. 
 %   problem_description - Description of the problem.
-%   granule_start_time_guess - time of start of granule. Optional.
+%   granule_start_time - time of start of granule. Optional.
 %
 % OUTPUT
 %   status - the status code passed in.
@@ -46,8 +46,8 @@ if iOrbit > 0
     end
 end
 
-if exist('granule_start_time_guess')
-    problem_list(iProblem).granule_start_time = granule_start_time_guess;
+if exist('granule_start_time')
+    problem_list(iProblem).granule_start_time = granule_start_time;
 end
 
 end

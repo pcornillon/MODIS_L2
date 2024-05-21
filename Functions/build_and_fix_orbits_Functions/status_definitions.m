@@ -89,6 +89,12 @@
 %       status = populate_problem_list( 261, ['*** don''t think that we should ever get here: [iOrbit, iGranule]=[' num2str(iOrbit)] ', ' num2str(iGranule) ']. Orbit name: ' oinfo(iOrbit).name '.');
 %       contnues from here; no return at this point -- WARNING
 
+% % % % 270 - build_orbit - Warning that attempt to get NASA s3 credentials failed. 
+% % % %       status = populate_problem_list( 270, ['Failed to get the NASA S3 credentials at ' datetime '. This is try ' num2str(numTries) '. Will pause for 30 s and try again.']);
+% % % %       Try again -- WARNING
+% % % %
+            status = populate_problem_list( 270, ['Failed to get the NASA S3 credentials at ' datetime '. This is try ' num2str(numTries) '. Will pause for 30 s and try again.']);
+
 % 415 - get_osscan_etc_NO_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 % 416 - get_osscan_etc_with_sli - Calculated end of orbit scanline does not agree with the mandated orbit length, nominally 40,271. Forcing it to agree.
 %

@@ -22,6 +22,14 @@ function [status, indices] = get_osscan_etc_NO_sli(indices)
 %   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
 %
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/21/2024 - Initial version - PCC
+%   1.2.0 - 5/21/2024 - Updated error handling - PCC
+
+global version_struct
+version_struct.get_osscan_etc_NO_sli = '1.2.0';
 
 % globals for the run as a whole.
 
@@ -63,9 +71,9 @@ if indices.current.oescan > orbit_length
     % that there was a serious problem. I don't think that it should
     % happen. 
 
-    if print_diagnostics
-        fprintf('***** Calcualted length of orbit for %s is %i, which is greater than %i. This should not happen.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.oescan, orbit_length);
-    end
+    % % % % % if print_diagnostics
+    % % % % %     fprintf('***** Calcualted length of orbit for %s is %i, which is greater than %i. This should not happen.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, indices.current.oescan, orbit_length);
+    % % % % % end
     
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;

@@ -27,7 +27,9 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %           end the run if this is the case with status=921. Addes status
 %           to return.
 %   1.2.1 - 5/17/2024 - Modified code for switch to list of granules/times.
-%           Also, significant changes to arguments passed in and out - PCC
+%           Also, significant changes to arguments passed in and out.
+%           Updated error handling as we move from granule_start_time to
+%           metadata granule list - PCC 
 
 global version_struct
 version_struct.get_filename = '1.2.1';
@@ -67,7 +69,11 @@ switch file_type
 
             if exist(newGranuleList(iGranuleList).filename)
                 found_one = 1;
+            else
+                status = populate_problem_list( 101, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time);
             end
+        else
+            status = populate_problem_list( 953, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).matTime+fiveMinutesMatTime);
         end
 
     case 'sst_data'

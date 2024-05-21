@@ -15,11 +15,23 @@ function status = populate_problem_list( status, problem_description, granule_st
 % OUTPUT
 %   status - the status code passed in.
 %
+%  CHANGE LOG
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 5/21/2024 - Initial version - PCC
+%   1.0.1 - 5/12/2024 - Modified to print out error messages that were,
+%           previoulsy printed in the calling functions. This way the
+%           printing code could be regularized. This assumes that there are
+%           4 groups of errors, those with codes between 100 and 700,
+%           between 700 and 800, 800 and 900 and > 900 - PCC
+
+global version_struct
+version_struct.find_next_granule_with_data = '1.2.0';
 
 global oinfo iOrbit iGranule iProblem problem_list
+global print_E100 print_E600 print_E700 print_E800 print_E900 
 
 iProblem = iProblem + 1;
-
 
 problem_list(iProblem).code = status;
 problem_list(iProblem).problem_description = problem_description;
@@ -48,6 +60,28 @@ end
 
 if exist('granule_start_time')
     problem_list(iProblem).granule_start_time = granule_start_time;
+end
+
+%% Now print out to the terminal if print_E for this status is set.
+
+if print_E100 & (status < 700)
+    disp(['***11111*** status: ' num2str(status) ': ' problem_description])
+end
+
+if print_E600 & (600 <= status) & (status < 700)
+    disp(['*** Skip granule *** status: ' num2str(status) ': ' problem_description])
+end
+
+if print_E700 & (700 <= status) & (status < 800)
+    disp(['*** End orbit *** status: ' num2str(status) ': ' problem_description])
+end
+
+if print_E800 & (800 <= status) & (status < 900)
+    disp(['*** Skip orbit *** status: ' num2str(status) ': ' problem_description])
+end
+
+if print_E900 & (900 <= status)
+    disp(['*** End Run*** status: ' num2str(status) ': ' problem_description])
 end
 
 end

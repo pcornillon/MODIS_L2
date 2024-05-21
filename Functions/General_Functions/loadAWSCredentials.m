@@ -20,9 +20,11 @@ function [status, s3Credentials] = loadAWSCredentials(daacCredentialsEndpoint, l
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added line to update the time at which the
 %           credentials were set - PCC
+%   1.2.0 - 5/21/2024 - Updated error handling as we move from
+%           granule_start_time to metadata granule list - PCC
 
 global version_struct
-version_struct.loadAWSCredentials = '1.0.1';
+version_struct.loadAWSCredentials = '1.2.0';
 
 global s3_expiration_time
 
@@ -71,18 +73,19 @@ while true
         % Check if the number of tries has reached the threshold
         
         if numTries >= numTriesThreshold
-            if print_diagnostics
-                fprintf('*** Failed %i times to get the NASA S3 credentials on this request. Will terminate this job.\n', numTries);
-            end
+            % % % if print_diagnostics
+            % % %     fprintf('*** Failed %i times to get the NASA S3 credentials on this request. Will terminate this job.\n', numTries);
+            % % % end
             
             % Log the failure and exit the function
             
-            status = populate_problem_list(921, ['*** Failed ' num2str(numTries) ' times to get the NASA S3 credentials exiting this run.']);
+            status = populate_problem_list( 921, ['Failed ' num2str(numTries) ' times to get the NASA S3 credentials exiting this run.']);
             return;
         else
             % Log the retry attempt and pause before the next attempt
             
-            fprintf('Failed to get the NASA S3 credentials at %s. This is try #%i. Will pause for 30 s and try again.\n', datetime, numTries);
+            % % % fprintf('Failed to get the NASA S3 credentials at %s. This is try #%i. Will pause for 30 s and try again.\n', datetime, numTries);
+            status = populate_problem_list( 270, ['Failed to get the NASA S3 credentials at ' datetime '. This is try ' num2str(numTries) '. Will pause for 30 s and try again.']);
             pause(30);
         end
     end

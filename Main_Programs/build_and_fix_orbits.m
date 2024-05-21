@@ -108,7 +108,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           add_granule_data...
 %   1.2.0 - 5/17/2024 - Change from search for files to use list of files.
 %           Also modified: get_start_of_first_full_orbit,
-%           find_next_granule_with_data, get_filename, pirate_data.
+%           find_next_granule_with_data, get_filename, pirate_data. 
+%           Modified error handling.
 
 global version_struct
 version_struct.build_and_fix_orbits = '1.2.0';
@@ -149,6 +150,7 @@ if determine_fn_size; get_job_and_var_mem; end
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
 global print_diagnostics print_times debug regridded_debug
+global print_E100 print_E600 print_E700 print_E800 print_E900 
 global npixels
 
 % globals for build_orbit part.
@@ -175,6 +177,12 @@ global med_op
 global pixStartm pixEndm pixStartp pixEndp
 
 lofs_of_astericks = '****************************************************************';
+
+print_E100 = 1;  % 1 to print warning messages sent to populate_problem_list with for 100 <= status < 700
+print_E600 = 1;  % 1 to print skip granule messages sent to populate_problem_list with for 600 <= status < 700
+print_E700 = 1;  % 1 to print end orbit messages sent to populate_problem_list with for 700 <= status < 800
+print_E800 = 1;  % 1 to print skip orbit messages sent to populate_problem_list with for 800 <= status < 900
+print_E900 = 1;  % 1 to print end run messages sent to populate_problem_list with for status > 900
 
 % Open diary for this run.
 

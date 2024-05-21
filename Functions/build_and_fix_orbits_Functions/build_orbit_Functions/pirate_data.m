@@ -37,11 +37,11 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
 %   1.0.2 - 5/12/2024 - Added status return to get_filename. - PCC
-%   1.0.3 - 5/17/2024 - Added code for switch to list of granules/times. - PCC
+%   1.2.0 - 5/17/2024 - Added code for switch to list of granules/times.
+%           Updated error handling for new approach - PCC
 
 global version_struct
-version_struct.pirate_data = '1.0.3';
-
+version_struct.pirate_data = '1.2.0';
 
 % globals for the run as a whole.
 
@@ -55,7 +55,7 @@ global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule orbit_dur
 
 % globals used in the other major functions of build_and_fix_orbits.
 
-global iProblem problem_list 
+global iProblem problem_list
 
 status = 0;
 
@@ -74,64 +74,68 @@ if (granuleList(iGranuleList).mtTime - oinfo(iOrbit).ginfo(end).end_time) < (10 
 
     iGranuleList = iGranuleList - 1;
 else
-    found_one = 0;
+    % % % % %     found_one = 0;
+    % % % % % end
+    % % % % %
+    % % % % % if status == 921
+    % % % % %     return
+    % % % % % end
+    % % % % %
+    % % % % % if found_one == 0
+    % % % % % fprintf('*** No metadata granule found for %s. This means there is no file from which to pirate data. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
+
+    status = populate_problem_list( 122, ['No metadata granule found for ' oinfo(iOrbit).ginfo(1).metadata_name ' No file from which to pirate data.']);
+    % % % % % else
+
+    return
 end
 
-% % % % % if status == 921
-% % % % %     return
-% % % % % end
+metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
+
+[status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
+
+if status == 921 %%%*** if status > 900
+    return
+end
 
 if found_one == 0
-    fprintf('*** No data metadata granule found for %s. This means there is no file from which to pirate data. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
+    % % % % % if print_diagnostics
+    % % % % %     fprintf('*** Could not find a NASA S3 granule corresponding to %s.\n', metadata_granule)
+    % % % % % end
 
-    status = populate_problem_list( 122, oinfo(iOrbit).ginfo(1).metadata_name);
-else    
-    metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
-    
-    [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
-    
-    if status == 921
-        return
-    end
-    
-    if found_one == 0
-        if print_diagnostics
-            fprintf('*** Could not find a NASA S3 granule corresponding to %s.\n', metadata_granule)
-        end
+    status = populate_problem_list( 902, ['Could not find a NASA S3 granule corresponding to ' metadata_granule]);
 
-        status = populate_problem_list( 902, ['*** Could not find a NASA S3 granule corresponding to ' metadata_granule]);
-
-        return
-    end
-
-    data_granule = [data_granule_folder_name data_granule_file_name];
-
-    % Need to get scan_line_times for the pirated granule but this will
-    % overwrite the values for the previous granule, which are needed for
-    % the next orbit. Sooo.... copy the current values to a temporary place
-    % and reinstate them after the call to add_granule_data_to_orbit, which
-    % needs them. A bit clunky but doing it this way means that I don't
-    % have to change other stuff. 
-    
-    temp_scan_line_times = scan_line_times;
-
-    % Need to read the scan times from the pirated metadata file.
-
-    Year = ncread( metadata_granule, '/scan_line_attributes/year');
-    YrDay = ncread( metadata_granule, '/scan_line_attributes/day');
-    mSec = ncread( metadata_granule, '/scan_line_attributes/msec');
-
-    % Now determine the start times for each scanline and the number of
-    % scanlines in this granule. Be careful because the start times for scanlines
-    % occur are the same for all detectors in a group.
-
-    scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
-
-    [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
-        = add_granule_data_to_orbit( 'pirate', data_granule, metadata_granule, ...
-        latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
-
-    % Now reinstate scan_line_times for the start of the next orbit.
-
-    scan_line_times = temp_scan_line_times;
+    return
 end
+
+data_granule = [data_granule_folder_name data_granule_file_name];
+
+% Need to get scan_line_times for the pirated granule but this will
+% overwrite the values for the previous granule, which are needed for
+% the next orbit. Sooo.... copy the current values to a temporary place
+% and reinstate them after the call to add_granule_data_to_orbit, which
+% needs them. A bit clunky but doing it this way means that I don't
+% have to change other stuff.
+
+temp_scan_line_times = scan_line_times;
+
+% Need to read the scan times from the pirated metadata file.
+
+Year = ncread( metadata_granule, '/scan_line_attributes/year');
+YrDay = ncread( metadata_granule, '/scan_line_attributes/day');
+mSec = ncread( metadata_granule, '/scan_line_attributes/msec');
+
+% Now determine the start times for each scanline and the number of
+% scanlines in this granule. Be careful because the start times for scanlines
+% occur are the same for all detectors in a group.
+
+scan_line_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / 86400;
+
+[ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
+    = add_granule_data_to_orbit( 'pirate', data_granule, metadata_granule, ...
+    latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
+
+% Now reinstate scan_line_times for the start of the next orbit.
+
+scan_line_times = temp_scan_line_times;
+% % % % % end

@@ -31,12 +31,12 @@ function [status, granule_start_time] = get_start_of_first_full_orbit(search_sta
 %           separately from the search for URI. Hopeully, there is no
 %           difference between the two. - PCC  
 %   1.1.1 - 5/12/2024 - Return if status=921 after call to find_next_full...
-%   1.1.2 - 5/17/2024 - Modified code for switch to list of granules/times.
+%   1.2.0 - 5/17/2024 - Modified code for switch to list of granules/times.
 %           As part of that replaces granule_start_time_guess with
-%           granule_start_time
+%           granule_start_time. Updated for new way of handling errors - PCC
 
 global version_struct
-version_struct.get_start_of_first_full_orbit = '1.1.2';
+version_struct.get_start_of_first_full_orbit = '1.2.0';
 
 local_debug = 0;
 
@@ -90,7 +90,7 @@ while granule_start_time <= Matlab_end_time
 
     [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
 
-    if status == 921
+    if status == 921 %%%*** if stats > 900
         return
     end
     
@@ -104,12 +104,12 @@ while granule_start_time <= Matlab_end_time
     
     % Return if end of run.
     
-    if status == 201
+    if status == 201 %%%*** This may require special attention.
         fprintf('*** This should really never happen, but if it does, end the run.\n')
         status = 901;
     end
 
-    if status > 900
+    if status > 900 %%%*** I think that this is redunant; same check on line 93.
         fprintf('End of run.\n')
         return
     end
@@ -135,7 +135,7 @@ iOrbit = 1;
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.
 
-if (status == 201) | (status == 231) | (status > 900)
+if (status == 201) | (status == 231) | (status > 900) %%%*** Do we need this? I'm guessing that it has already been said.
     if print_diagnostics
         fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
     end

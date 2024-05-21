@@ -34,8 +34,8 @@ function [status, granule_start_time] = check_for_latlim_crossing( metadata_gran
 %   1.2.0 - 5/20/2024 - Replaced granule_start_time_guess with
 %           granule_start_time. Previously, this function incremented the
 %           start time under certain conditions. These statements have been
-%           removed - PCC
-
+%           removed. Updated error handling as we move from
+%           granule_start_time to metadata granule list - PCC
 
 global version_struct
 version_struct.check_for_latlim_crossing = '1.0.1';
@@ -105,9 +105,9 @@ num_scan_lines_in_granule = length(scan_line_times);
 % filename.
 
 if abs(scan_line_times(1) - granule_start_time) > (1/secs_per_day)
-    if print_diagnostics
-        fprintf('\n%s\nTime of first scan in this granule, %s, does not agree with the time in the filename, %s.\n%s\n', astericks, datestr(scan_line_times(1)), datestr(granule_start_time), astericks);
-    end
+    % % % % % if print_diagnostics
+    % % % % %     fprintf('\n%s\nTime of first scan in this granule, %s, does not agree with the time in the filename, %s.\n%s\n', astericks, datestr(scan_line_times(1)), datestr(granule_start_time), astericks);
+    % % % % % end
 
     status = populate_problem_list( 143, ['Time of first scan in this granule, ' datestr(scan_line_times(1)) ', does not agree with the time in the filename, ' datestr(granule_start_time) '.']);
 end
@@ -120,7 +120,8 @@ end
 % detector group to minimize the spreading effect from the bowtie issue.
 
 if isempty(scan_line_times)
-    fprintf('\n%s\n*** No scanline start times for scanlines in granule %s.\n*** THIS SHOULD NEVER HAPPEN!\n%s\n',  astericks, temp_filename,  astericks)
+    % % % % % fprintf('\n%s\n*** No scanline start times for scanlines in granule %s.\n*** THIS SHOULD NEVER HAPPEN!\n%s\n',  astericks, temp_filename,  astericks)
+    
     granule_start_time = granule_start_time + fiveMinutesMatTime;
 
     status = populate_problem_list( 201, ['No scanline start times for scanlines in granule ' temp_filename '. THIS SHOULD NEVER HAPPEN!'], granule_start_time);
@@ -128,7 +129,8 @@ if isempty(scan_line_times)
 end
 
 if abs(mSec(10)-mSec(1)) > 0.01
-    fprintf('\n%s\n*** The 1st scan line for %s is not the 1st detector in a group of 10.\n*** Should not get here.\n%s\n',  astericks,  temp_filename, astericks)
+    % % % % % fprintf('\n%s\n*** The 1st scan line for %s is not the 1st detector in a group of 10.\n*** Should not get here.\n%s\n',  astericks,  temp_filename, astericks)
+    
     granule_start_time = granule_start_time + fiveMinutesMatTime;
 
     status = populate_problem_list( 202, ['The 1st scan line for ' temp_filename ' is not the 1st detector in a group of 10.  Should not get here.'], granule_start_time);
@@ -138,9 +140,9 @@ end
 % Write warning message if the number of scan lines in the granule is not 2030 or 204
 
 if (length(scan_line_times) ~= 2030) & (length(scan_line_times) ~= 2040)
-    if print_diagnostics
-        fprintf('...Number of scan lines in this granules is %i, neither 2030 nor 2040. Continuing but be careful.\n', length(scan_line_times));
-    end
+    % % % % % if print_diagnostics
+    % % % % %     fprintf('...Number of scan lines in this granules is %i, neither 2030 nor 2040. Continuing but be careful.\n', length(scan_line_times));
+    % % % % % end
 
     status = populate_problem_list( 141, ['Number of scan lines in this granules is ' num2str(length(scan_line_times)) ', neither 2030 nor 2040. Continuing but be careful.']);
 end
@@ -149,9 +151,9 @@ end
 
 dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
 if abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line)) > 0.01
-    if print_diagnostics
-        fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time));
-    end
+    % % % % % if print_diagnostics
+    % % % % %     fprintf('...Mirror rotation rate seems to have changed for granule starting at %s.\n   Continuing but be careful.\n', datestr(granule_start_time));
+    % % % % % end
 
     status = populate_problem_list( 142, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time) '. Continuing but be careful.']);
 end
@@ -253,7 +255,7 @@ if ~isempty(aa)
                 end
 
                 if bad_grouping == 1
-                    fprintf('\n%s\n*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i.\n*** SHOULD NEVER GET HERE.\n%s\n',  astericks,  iStart_of_group, astericks)
+                    % % % % % fprintf('\n%s\n*** Can''t find the start of a group of 10 scan lines. Thought that it would be %i.\n*** SHOULD NEVER GET HERE.\n%s\n',  astericks,  iStart_of_group, astericks)
 
                     granule_start_time = granule_start_time + fiveMinutesMatTime;
 

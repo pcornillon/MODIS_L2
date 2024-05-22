@@ -31,9 +31,8 @@ function [ AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, L2eqa_AMSR_E_SST, MODIS_SST_on_AM
 %   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
 %   2.0.0 - 5/21/2024 - Reworked error reporting - PCC
 
-
 global version_struct
-version_struct.regrid_AMSRE = '1.0.0';
+version_struct.regrid_AMSRE = '2.0.0';
 
 global s3_expiration_time
 
@@ -209,9 +208,7 @@ if exist(AMSR_E_fi) == 2
     pp = find(isnan(xx) == 0);
 
     if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-% % % % %         fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
-
-        status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
+        status = populate_problem_list( 140, ['All MODIS SST values corresponding to AMSR-E are nans.' oinfo(iOrbit).name], ''); % old status 1002
     else
         MODIS_SST_on_AMSR_E_grid = griddata( xx(pp), yy(pp), ss(pp), AMSR_E_lon, AMSR_E_lat,'natural');
     end
@@ -219,9 +216,7 @@ if exist(AMSR_E_fi) == 2
 else
     % Here if no AMSR-E orbit
 
-% % % % %     fprintf('***** Could not find AMSR-E orbit %s corresponding to MODIS orbit %s\n', AMSR_E_fi, MODIS_fi)
-
-    status = populate_problem_list( 305, ['Could not find AMSR-E orbit ' AMSR_E_fi ' corresponding to MODIS orbit ' MODIS_fi]);
+    status = populate_problem_list( 145, ['Could not find AMSR-E orbit ' AMSR_E_fi ' corresponding to MODIS orbit ' MODIS_fi]); % old status 305
 
     AMSR_E_SST = [];
     AMSR_E_lat = [];

@@ -106,13 +106,13 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           of -360 to 360 in fix_lon_steps... Hopefully fixed now - PCC
 %   1.1.5 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS in
 %           add_granule_data...
-%   1.2.0 - 5/17/2024 - Change from search for files to use list of files.
+%   2.0.0 - 5/17/2024 - Change from search for files to use list of files.
 %           Also modified: get_start_of_first_full_orbit,
 %           find_next_granule_with_data, get_filename, pirate_data. 
 %           Modified error handling.
 
 global version_struct
-version_struct.build_and_fix_orbits = '1.2.0';
+version_struct.build_and_fix_orbits = '2.0.0';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -150,7 +150,7 @@ if determine_fn_size; get_job_and_var_mem; end
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
 global print_diagnostics print_times debug regridded_debug
-global print_E100 print_E600 print_E700 print_E800 print_E900 
+global print_E100 print_E300 print_E600 print_E700 print_E800 print_E900 
 global npixels
 
 % globals for build_orbit part.
@@ -178,11 +178,12 @@ global pixStartm pixEndm pixStartp pixEndp
 
 lofs_of_astericks = '****************************************************************';
 
-print_E100 = 1;  % 1 to print warning messages sent to populate_problem_list with for 100 <= status < 700
+print_E100 = 1;  % 1 to print warning messages sent to populate_problem_list with for 100 <= status < 300
+print_E600 = 1;  % 1 to print serious warning messages sent to populate_problem_list with for 300 <= status < 600
 print_E600 = 1;  % 1 to print skip granule messages sent to populate_problem_list with for 600 <= status < 700
 print_E700 = 1;  % 1 to print end orbit messages sent to populate_problem_list with for 700 <= status < 800
 print_E800 = 1;  % 1 to print skip orbit messages sent to populate_problem_list with for 800 <= status < 900
-print_E900 = 1;  % 1 to print end run messages sent to populate_problem_list with for status > 900
+print_E900 = 1;  % 1 to print end run messages sent to populate_problem_list with for status >= 900
 
 % Open diary for this run.
 
@@ -302,7 +303,8 @@ if strcmp( granules_directory(1:2), 's3') == 1
     
     [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
     
-    if status == 921
+    % if status == 921
+    if status >= 900
         return
     end
 else
@@ -518,7 +520,8 @@ search_start_time = Matlab_start_time;
 
 % Either no granules with a 79 crossing or coding problem.
 
-if (status == 201) | (status == 231) | (status > 900)
+% if (status == 201) | (status == 231) | (status > 900)
+if status >= 900
     fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
     fprintf('*    Problem building this orbit or end of run.\n*\n')
     fprintf('*    Processed %i orbits\n*\n', iOrbit)
@@ -560,7 +563,8 @@ while granule_start_time_guess <= Matlab_end_time
 
         % Return if end of run.
 
-        if (status == 201) | (status == 231) | (status > 900)
+        % if (status == 201) | (status == 231) | (status > 900)
+        if status >= 900
             fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
             fprintf('*    Problem building this orbit or end of run.\n*\n')
             fprintf('*    Processed %i orbits\n*\n', iOrbit)
@@ -584,7 +588,7 @@ while granule_start_time_guess <= Matlab_end_time
 
     % No remaining granules with a 79 crossing.
 
-    if status > 900
+    if status >= 900
         fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
         fprintf('*    Have reached the end of this run.  \n*\n')
         fprintf('*    Processed %i orbits\n*\n', iOrbit)
@@ -597,8 +601,9 @@ while granule_start_time_guess <= Matlab_end_time
         return
     end
 
-    if status == 231
-        fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
+    % if status == 231
+    if status >= 900
+        % % % % % fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
 
         % Find the next granule with a ascending 79 S crossing.
 

@@ -47,11 +47,11 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           not being done where it should have been. Test modified - PCC
 %   1.2.1 - 5/14/2024 - added ; to name_test line to prevent it from
 %           printing out - PCC
-%   1.3.0 - 5/17/2024 - Modified code for switch to list of granules/times.
+%   2.0.0 - 5/17/2024 - Modified code for switch to list of granules/times.
 %           Changed granule_start_time_guess to granule_start_time - PCC 
 
 global version_struct
-version_struct.build_orbit = '1.3.0';
+version_struct.build_orbit = '2.0.0';
 
 % globals for the run as a whole.
 
@@ -75,8 +75,6 @@ if determine_fn_size; get_job_and_var_mem; end
 
 status = 0;
 
-astericks = '*************************************************************************************************';
-
 % Initialize return variables to simple nans; will return to calling
 % program when the start of the next orbit is found.
 
@@ -99,24 +97,20 @@ iGranule = 1;
 
 if length(oinfo) < iOrbit
 
-% % % % %     if print_diagnostics
-% % % % %         fprintf('*** Don''t think that we should ever get here: [iOrbit, iGranule]=[%i, %i]. Granule: %s. Time: %s.\n', iOrbit, iGranule, oinfo(iOrbit).name, datestr(granule_start_time))
-% % % % %     end
+    status = populate_problem_list( 930, ['iOrbit not consistent with the number of elements in oinfo: length(oinfo) < iOrbit; (' num2str(length(oinfo)) ' < ' num2str(iOrbit) ') iGranule] = 1.'], granule_start_time); % old status 261
 
-    status = populate_problem_list( 261, ['Don''t think that we should ever get here: [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) ']. Orbit name: ' oinfo(iOrbit).name '.'], granule_start_time);
-
-    if status > 900
+    if status >= 900
         return
     end
     
+    %% Will never get here???
+
     iGranule = 0;
     
     [status, ~, granule_start_time] = find_next_granule_with_data( granule_start_time);
-    
-    % Return if end of run.
-    
-    if (status == 201) | (status == 231) | (status > 900) %%%*** if status > 900
-% % % % %         fprintf('End of run.\n')
+        
+    % if (status == 201) | (status == 231) | (status > 900)
+    if status >= 900
         return
     end
 end
@@ -124,11 +118,9 @@ end
 % Is there an orbit name for this orbit. If not, very bad, quit.
 
 if isempty(oinfo(iOrbit).name)
-% % %     if print_diagnostics
-% % %         fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
-% % %     end
-    
-    status = populate_problem_list( 241, ['No orbit name for orbit ' num2str(iOrbit)], granule_start_time);
+
+    status = populate_problem_list( 805, ['No orbit name for orbit ' num2str(iOrbit)], granule_start_time); % old status 241
+
     return
 end
 
@@ -206,11 +198,8 @@ if name_test
             granule_start_time = granule_start_time + orbit_duration / secs_per_day;
 
             if granule_start_time > Matlab_end_time
-% % % % %                 if print_diagnostics
-% % % % %                     fprintf('*** Have reached the end of run (%s).\n', datestr(Matlab_end_time))
-% % % % %                 end
 
-                status = populate_problem_list( 902, ['granule_start_time ' datestr(granule_start_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)], granule_start_time);
+                status = populate_problem_list( 935, ['granule_start_time ' datestr(granule_start_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)], granule_start_time); % old status 902
 
                 return
             end
@@ -245,8 +234,9 @@ if name_test
         
         % Return if end of run.
         
-        if (status == 201) | (status == 231) | (status > 900) %%%*** if status > 900
-            fprintf('Problem building this orbit. End of run.\n')
+        % if (status == 201) | (status == 231) | (status > 900)
+        if status >= 900
+            % % % % % fprintf('Problem building this orbit. End of run.\n')
             return
         end
         
@@ -301,7 +291,8 @@ metadata_granule = oinfo(iOrbit).ginfo(iGranule).metadata_name;
     = add_granule_data_to_orbit( 'current', data_granule, metadata_granule, latitude, longitude, ...
     SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
 
-if status ~= 0 %%%*** if status > 900
+% if status ~= 0
+if status >= 900
     return
 end
 
@@ -318,7 +309,8 @@ if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
         = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
         scan_seconds_from_start, granule_start_time);
     
-    if status == 921 %%%*** if status > 900
+    % if status == 921
+    if status >= 900
         return
     end
 end
@@ -340,7 +332,8 @@ while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % finding a granule with a start time in it or 901 end of run. If
     % status = 201 or 901 break out of this loop.
 
-    if (status == 201) | (status == 231) | (status > 900) %%%*** if status > 900
+    % if (status == 201) | (status == 231) | (status > 900)
+    if status >= 900
         oinfo(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
 
         if print_times

@@ -135,10 +135,10 @@ function [Final_Mask] = fix_MODIS_full_orbit( file_in, longitude, latitude, SST_
 %
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
-%
+%   2.0.0 - 5/21/2024 - Modified error handling based on new approach - PCC 
 
 global version_struct
-version_struct.fix_MODIS_full_orbit = '1.0.1';
+version_struct.fix_MODIS_full_orbit = '2.0.0';
 
 tic
 Start_Time = tic;
@@ -251,9 +251,8 @@ oinfo(iOrbit).fix_mask_stats.num_qual_2_or_worse = length(nn);
 
 nn = find(SST_In > -2);
 if isempty(nn)
-% % % % %     fprintf('...No good data in SST_In. Set Final_Mask field to 1, bad data, and returned.\n')
 
-    status = populate_problem_list( 701, 'No good data in SST_In. Set Final_Mask field to 1 and returned.');
+    status = populate_problem_list( 130, 'No good data in SST_In. Set Final_Mask field to 1 and returned.'); % old status 701
 
     Final_Mask = ones(size(SST_In));
 
@@ -664,9 +663,8 @@ nnReduced = find(FracArea<Thresholds.FracArea | (Eccentricity>=Thresholds.Eccent
 length_nnReduced = length(nnReduced);
 
 if isempty(nnReduced)
-% % % % %     fprintf('...No candidate objects found. Set Final_Mask field to 1, bad data, and returned.\n')
 
-    status = populate_problem_list( 702, 'No candidate objects found. Set Final_Mask field to 1 and returned.');
+    status = populate_problem_list( 135, 'No candidate objects found. Set Final_Mask field to 1 and returned.'); % old status 702
 
     Final_Mask = ones(size(SST_In));
     

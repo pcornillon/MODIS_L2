@@ -26,10 +26,10 @@ function [status, indices] = get_osscan_etc_NO_sli(indices)
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 5/21/2024 - Initial version - PCC
-%   1.2.0 - 5/21/2024 - Updated error handling - PCC
+%   2.0.0 - 5/21/2024 - Updated error handling - PCC
 
 global version_struct
-version_struct.get_osscan_etc_NO_sli = '1.2.0';
+version_struct.get_osscan_etc_NO_sli = '2.0.0';
 
 % globals for the run as a whole.
 
@@ -78,5 +78,5 @@ if indices.current.oescan > orbit_length
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 415, ['***** Calcualted length of orbit for ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' is ' num2str(indices.current.oescan) ', which is greater than ' num2str(orbit_length) '. This should NEVER happen.']);
+    status = populate_problem_list( 340, ['***** Calcualted length of orbit for ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' is ' num2str(indices.current.oescan) ', which is greater than ' num2str(orbit_length) '. This should NEVER happen.']); % old status 415
 end

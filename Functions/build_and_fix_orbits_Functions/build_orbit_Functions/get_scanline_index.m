@@ -20,10 +20,10 @@ function nnToUse = get_scanline_index
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 5/21/2024 - Initial version - PCC
-%   1.2.0 - 5/21/2024 - Updated error handling for new approach - PCC 
+%   2.0.0 - 5/21/2024 - Updated error handling for new approach - PCC 
 
 global version_struct
-version_struct.get_scanline_index = '1.2.0';
+version_struct.get_scanline_index = '2.0.0';
 
 % globals for build_orbit part.
 
@@ -35,24 +35,26 @@ global oinfo iOrbit iGranule
 
 global iProblem problem_list 
 
+status = 0;
+
 nnToUse = [];
 
 canonical_nlat = nlat_avg;
 target_lat_1 = nlat_t(5);
 
 if isnan(target_lat_1)
-% % % % %     fprintf('*** Latitude for nlat_t(5) is nan for %s. This should not happen. Skipping this granule.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name);
     
-    status = populate_problem_list( 801, ['Latitude for nlat_t(5) is nan for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. This should not happen. Skipping this granule.']);
+    status = populate_problem_list( 635, ['Latitude for nlat_t(5) is nan for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. This should not happen. Skipping this granule.']); % old status 801
+
     return
 end
     
 nn = closest_point( canonical_nlat, target_lat_1, 0.02);
 
 if isempty(nn)
-% % % % %     fprintf('*** Latitudes don''t appear to be right for %s. First latitude is %f\n', oinfo(iOrbit).ginfo(iGranule).metadata_name, nlat_t(1));
     
-    status = populate_problem_list( 802, ['Latitudes don''t appear to be right for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. First latitude is ' num2str(nlat_t(1))]);
+    status = populate_problem_list( 640, ['Latitudes don''t appear to be right for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. First latitude is ' num2str(nlat_t(1))]); % old status 802
+
     return
 end
 
@@ -68,9 +70,7 @@ end
 % granule: AQUA_MODIS_20020814T161005_L2_SST_OBPG_extras.nc4
 
 if length(nn) == 1
-% % % % %     fprintf('Only one intersection of nlat_t(5) found with nlat_avg for %s. Continuing.\n', oinfo(iOrbit).ginfo(iGranule).metadata_name )
-
-    status = populate_problem_list( 803, ['Only one intersection of nlat_t(5) found with nlat_avg for ' oinfo(iOrbit).ginfo(iGranule).metadata_name]);
+    status = populate_problem_list( 125, ['Only one intersection of nlat_t(5) found with nlat_avg for ' oinfo(iOrbit).ginfo(iGranule).metadata_name '. Unusual but not impossible.']); % old status 803
 end
 
 for i=1:min(length(nn), 2)
@@ -103,9 +103,8 @@ end
 nnToUse = bb(cc);
 
 if nnToUse < 10
-% % % % %     fprintf('...Be careful get_scanline_index found a starting index of %i. Is setting nnToUse to 1.\n', nnToUse)
      
-    status = populate_problem_list( 804, ['Be careful, for granule ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' get_scanline_index found a starting index of num2str(nnToUse). Is setting nnToUse to 1.']);   
+    status = populate_problem_list( 355, ['Be careful, for granule ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' get_scanline_index found a starting index of num2str(nnToUse). Is setting nnToUse to 1.']); % old status 804 
     
     nnToUse = 1;
 end

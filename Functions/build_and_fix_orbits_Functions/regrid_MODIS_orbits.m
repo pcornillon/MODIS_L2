@@ -35,9 +35,10 @@ function [ status, new_lon, new_lat, new_sst, region_start, region_end,  easting
 %   1.0.1 - 5/13/2024 - Replaced code to constrain longitude to be between
 %           -360 and 360 with call to fix_lon_steps_and_constrain to
 %           accomplish same. Also added versioning - PCC
+%   2.0.0 - 5/21/2024 - Reworked error reporting - PCC
 
 global version_struct
-version_struct.regrid_MODIS_orbits = '1.0.1';
+version_struct.regrid_MODIS_orbits = '2.0.0';
 
 global pixStartm pixEndm pixStartp pixEndp
 global iOrbit oinfo nlat_orbit nlat_avg
@@ -73,9 +74,9 @@ end
 [mpixels, nscans] = size(longitude);
 
 if mpixels ~= npixels
-    fprintf('***** There are %i pixels/scan line in this granule but there should be %i. Skipping this granule. Error code 3.\n', mpixels, npixels)
     
-    status = populate_problem_list( 3, fi_granule);
+    status = populate_problem_list( 645, ['There are ' num2str(mpixels) ' pixels/scan line in this granule but there should be ' num2str(npixels). Skipping this granule.'], fi_granule); % old status 3
+
     return
 end
 
@@ -232,7 +233,7 @@ for iSection=[1,5]
         pp = find(isnan(xx) == 0);
         
         if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-            status = populate_problem_list( 1001, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], '');
+            status = populate_problem_list( 150, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], ''); % old status 1001
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
         end
@@ -313,10 +314,8 @@ for iSection=[2,4]
         
         pp = find(isnan(xx) == 0);
         
-        if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-            fprintf('...All SST_In values in Section 2 or 4 are nan for orbit %s.\n', oinfo(iOrbit).name)
-            
-            status = populate_problem_list( 1002, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], '');
+        if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))            
+            status = populate_problem_list( 155, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], ''); % old status 1002
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
         end
@@ -346,38 +345,6 @@ if ~isempty(find(isnan(longitude(:,scans_this_section)) == 0))
     
     [lonArray, nnSave, mmSave, shiftBySave] = fix_lon_steps_and_constrain( 'constrainLongitude', longitude(:,scans_this_section));
     
-    % % % % Convert longitude, latitude to a polar stereographic coordinate
-    % % % % system. First make sure that lonArray values are neither greater than
-    % % % % 360 nor less than -360. If they are, shift by + or -360 and check
-    % % % % again. If there are still some values that are, shift just those.
-    % % % % This will result in a jump in longitude and a bogus gradient value
-    % % % % but it is very unlikely to happen; only happened once in the first
-    % % % % 9000+ orbits processed.
-    % % % 
-    % % % if max(lonArray,[],'all','omitnan') > 360
-    % % %     fprintf('Shifting longitude by -360. This is very rare at this point.\n')
-    % % %     lonArray = lonArray - 360;
-    % % % end
-    % % % 
-    % % % if min(lonArray,[],'all','omitnan') < -360
-    % % %     fprintf('Shifting longitude by 360. This is very rare at this point.\n')
-    % % %     lonArray = lonArray + 360;
-    % % % end
-    % % % 
-    % % % if max(lonArray,[],'all','omitnan') > 360
-    % % %     fprintf('*** The maximum longitude is %f>360. This should not happen but will shift selected longitudes by -360 anyway. This is very, very rare at this point.\n', max(lonArray,[],'all','omitnan'))
-    % % %     lonArray(lonArray>360) = lonArray(lonArray>360) - 360;
-    % % % 
-    % % %     status = populate_problem_list( 1011, ['Maximum longitude ' num2str(max(lonArray,[],'all','omitnan')) ' >360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by -360 which will result in bogus gradient values.'], '');
-    % % % end
-    % % % 
-    % % % if min(lonArray,[],'all','omitnan') < -360
-    % % %     fprintf('*** The minimum longitude is %f<-360. This should not happen but will shift selected longitudes by 360 anyway. This is very, very rare at this point.\n', min(lonArray,[],'all','omitnan'))
-    % % %     lonArray(lonArray<-360) = lonArray(lonArray<-360) + 360;
-    % % % 
-    % % %     status = populate_problem_list( 1012, ['Minimum longitude ' num2str(min(lonArray,[],'all','omitnan')) ' <-360 in Section 3 for orbit: ' oinfo(iOrbit).name '. Selected longitudes shifted by 360 which will result in bogus gradient values.'], '');
-    % % % end
-
     % longstude values can't be less than -360 or probably larger than 360
     % for the ll2pS functions so will shift all values < -360 up by 360 and
     % those > 360 down by 360; i.e., will make sure that there are no
@@ -419,7 +386,7 @@ if ~isempty(find(isnan(longitude(:,scans_this_section)) == 0))
     pp = find(isnan(xx) == 0);
     
     if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-        status = populate_problem_list( 1001, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], '');
+        status = populate_problem_list( 160, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], ''); % old status 1001
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end

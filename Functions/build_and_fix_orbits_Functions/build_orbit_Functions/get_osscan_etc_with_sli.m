@@ -29,10 +29,10 @@ function [status, indices] = get_osscan_etc_with_sli(indices)
 %   1.0.1 - 5/13/2024 - Added versioning. Modified number of characters to
 %           skip backward when printing the name to accommodate the
 %           addition of -URI_24-1 to the filename.
-%   1.2.0 - 5/21/2024 - Updated error handling - PCC
+%   2.0.0 - 5/21/2024 - Updated error handling - PCC
 
 global version_struct
-version_struct.get_osscan_etc_with_sli = '1.2.0';
+version_struct.get_osscan_etc_with_sli = '2.0.0';
 
 
 % globals for the run as a whole.
@@ -80,7 +80,7 @@ if indices.current.oescan ~= orbit_length
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
 
-    status = populate_problem_list( 416, ['Calculated length of ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']);
+    status = populate_problem_list( 345, ['Calculated length of ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
 
     if iOrbit == 1
         fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful.\n')

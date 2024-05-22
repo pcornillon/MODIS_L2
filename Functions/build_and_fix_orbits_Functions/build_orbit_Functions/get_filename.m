@@ -26,13 +26,13 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Addes status
 %           to return.
-%   1.2.0 - 5/17/2024 - Modified code for switch to list of granules/times.
+%   2.0.0 - 5/17/2024 - Modified code for switch to list of granules/times.
 %           Also, significant changes to arguments passed in and out.
 %           Updated error handling as we move from granule_start_time to
 %           metadata granule list - PCC 
 
 global version_struct
-version_struct.get_filename = '1.2.0';
+version_struct.get_filename = '2.0.0';
 
 % globals for the run as a whole.
 
@@ -70,10 +70,10 @@ switch file_type
             if exist(newGranuleList(iGranuleList).filename)
                 found_one = 1;
             else
-                status = populate_problem_list( 101, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time);
+                status = populate_problem_list( 605, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101
             end
         else
-            status = populate_problem_list( 953, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).matTime+fiveMinutesMatTime);
+            status = populate_problem_list( 905, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).matTime+fiveMinutesMatTime); % old status 101
         end
 
     case 'sst_data'
@@ -97,7 +97,8 @@ switch file_type
             if (now - s3_expiration_time) > 30 / (60 * 24)
                 [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
                 
-                if status == 921
+                % if status == 921
+                if status >= 900
                     return
                 end
             end

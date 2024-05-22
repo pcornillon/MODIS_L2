@@ -37,11 +37,11 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   1.0.0 - 5/9/2024 - Initial version - PCC
 %   1.0.1 - 5/9/2024 - Added versioning. Removed unused code. - PCC
 %   1.0.2 - 5/12/2024 - Added status return to get_filename. - PCC
-%   1.2.0 - 5/17/2024 - Added code for switch to list of granules/times.
+%   2.0.0 - 5/17/2024 - Added code for switch to list of granules/times.
 %           Updated error handling for new approach - PCC
 
 global version_struct
-version_struct.pirate_data = '1.2.0';
+version_struct.pirate_data = '2.0.0';
 
 % globals for the run as a whole.
 
@@ -82,9 +82,8 @@ else
     % % % % % end
     % % % % %
     % % % % % if found_one == 0
-    % % % % % fprintf('*** No metadata granule found for %s. This means there is no file from which to pirate data. Should never get here. No scan lines added to the orbit.\n', datestr(granule_start_time_guess))
 
-    status = populate_problem_list( 122, ['No metadata granule found for ' oinfo(iOrbit).ginfo(1).metadata_name ' No file from which to pirate data.']);
+    status = populate_problem_list( 120, ['No metadata granule found for ' oinfo(iOrbit).ginfo(1).metadata_name ' No file from which to pirate data.']); % old status 122
     % % % % % else
 
     return
@@ -94,16 +93,14 @@ metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
 
 [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
 
-if status == 921 %%%*** if status > 900
+% if status == 921
+if status >= 900
     return
 end
 
 if found_one == 0
-    % % % % % if print_diagnostics
-    % % % % %     fprintf('*** Could not find a NASA S3 granule corresponding to %s.\n', metadata_granule)
-    % % % % % end
 
-    status = populate_problem_list( 902, ['Could not find a NASA S3 granule corresponding to ' metadata_granule]);
+    status = populate_problem_list( 350, ['Could not find a NASA S3 granule corresponding to ' metadata_granule]); % old status 902
 
     return
 end

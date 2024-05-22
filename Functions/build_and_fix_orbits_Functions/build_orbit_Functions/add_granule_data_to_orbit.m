@@ -48,10 +48,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           end the run if this is the case with status=921. Added status
 %           to the returned variable for calls to read_variable_HDF.
 %   1.0.3 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS - PCC
-%   1.2.0 - 5/21/2024 - Updated error handling for new approach - PCC 
+%   2.0.0 - 5/21/2024 - Updated error handling for new approach - PCC 
 
 global version_struct
-version_struct.add_granule_data_to_orbit = '1.2.0';
+version_struct.add_granule_data_to_orbit = '2.0.0';
 
 global s3_expiration_time
 
@@ -118,7 +118,8 @@ if amazon_s3_run
     if (now - s3_expiration_time) > 30 / (60 * 24)
         [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
         
-        if status == 921 %%%*** if status > 900
+        % if status == 921
+        if status >= 900
             return
         end
     end
@@ -126,17 +127,20 @@ if amazon_s3_run
     file_id = H5F.open( data_granule, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 
     [status, latitude(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'lat', npixels, gsscan, scan_lines_to_read);
-    if status == 921 %%%*** if status > 900
+    % if status == 921
+    if status >= 900
         return
     end
     
     [status, longitude(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'lon', npixels, gsscan, scan_lines_to_read);
-    if status == 921 %%%*** if status > 900
+    % if status == 921
+    if status >= 900
         return
     end
 
     [status, SST_In(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'sea_surface_temperature', npixels, gsscan, scan_lines_to_read);
-    if status == 921
+    % if status == 921
+    if status >= 900
         return
     end
     SST_In(:,osscan:oescan) = SST_In(:,osscan:oescan) - 273.15;

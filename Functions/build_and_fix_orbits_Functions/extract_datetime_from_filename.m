@@ -37,8 +37,9 @@ version_struct.extract_datetime_from_filename = '2.0.0';
 status = 0;
 
 if length(filename) < 29
-% % % % %     fprintf('\n\n******************** Something wrong with filename passed into extract_datetime_from_filename, %s, \n********************\n', filename)
-    status = populate_problem_list( 161, ['Something wrong with filename passed into extract_datetime_from_filename,' filename '. SHOULD NEVER GET HERE.']);
+
+    status = populate_problem_list( 940, ['Something wrong with filename passed into extract_datetime_from_filename,' filename '. SHOULD NEVER GET HERE.']); % old status 161
+    
     return
 end
 
@@ -58,8 +59,8 @@ if  (Year < 2000) | (Year > 2030) | ...
     (Minute < 0) | (Minute > 60) | ...
     (Second < 0) | (Second > 60)
 
-% % % % %     fprintf('\n\n******************** Something wrong with filename passed into extract_datetime_from_filename, %s, \n********************\n', filename)
-    status = populate_problem_list( 162, ['Unacceptable year ' num2str(Year) '.']);
+    status = populate_problem_list( 945, ['Unacceptable year ' num2str(Year) '.']); % old status 162
+
     return
 end
 

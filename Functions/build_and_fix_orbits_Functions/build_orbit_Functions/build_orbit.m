@@ -1,4 +1,4 @@
-function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] = build_orbit( granule_start_time_guess)
+function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] = build_orbit( granule_start_time)
 % build_orbit - build the next unprocessed orbit from data granules - PCC
 %
 % Starting with OBPG metadata file for a granule that includes the start of
@@ -12,7 +12,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 % orbit is missing.
 %
 % INPUT
-%   granule_start_time_guess - estimated start time for the next granule.
+%   granule_start_time - estimated start time for the next granule.
 %
 % OUTPUT
 %   status  : 0 - OK
@@ -33,7 +33,7 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %   sstref - the array for the reference SST field in this orbit.
 %   start_time - matlab time of first scan line of the next orbit.
 %   scan_seconds_from_start - seconds since start of orbit to this granule.
-%   granule_start_time_guess - estimated start time for the next granule.
+%   granule_start_time - estimated start time for the next granule.
 %
 %  CHANGE LOG 
 %   v. #  -  data    - description     - who
@@ -47,7 +47,8 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           not being done where it should have been. Test modified - PCC
 %   1.2.1 - 5/14/2024 - added ; to name_test line to prevent it from
 %           printing out - PCC
-%   1.3.0 - 5/17/2024 - Modified code for switch to list of granules/times. - PCC
+%   1.3.0 - 5/17/2024 - Modified code for switch to list of granules/times.
+%           Changed granule_start_time_guess to granule_start_time - PCC 
 
 global version_struct
 version_struct.build_orbit = '1.3.0';
@@ -98,20 +99,24 @@ iGranule = 1;
 
 if length(oinfo) < iOrbit
 
-    if print_diagnostics
-        fprintf('*** Don''t think that we should ever get here: [iOrbit, iGranule]=[%i, %i]. Granule: %s. Time: %s.\n', iOrbit, iGranule, oinfo(iOrbit).name, datestr(granule_start_time_guess))
+% % % % %     if print_diagnostics
+% % % % %         fprintf('*** Don''t think that we should ever get here: [iOrbit, iGranule]=[%i, %i]. Granule: %s. Time: %s.\n', iOrbit, iGranule, oinfo(iOrbit).name, datestr(granule_start_time))
+% % % % %     end
+
+    status = populate_problem_list( 261, ['Don''t think that we should ever get here: [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) ']. Orbit name: ' oinfo(iOrbit).name '.'], granule_start_time);
+
+    if status > 900
+        return
     end
-
-    status = populate_problem_list( 261, ['*** Don''t think that we should ever get here: [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) ']. Orbit name: ' oinfo(iOrbit).name '.'], granule_start_time_guess);
-
+    
     iGranule = 0;
     
-    [status, ~, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, ~, granule_start_time] = find_next_granule_with_data( granule_start_time);
     
     % Return if end of run.
     
-    if (status == 201) | (status == 231) | (status > 900)
-        fprintf('End of run.\n')
+    if (status == 201) | (status == 231) | (status > 900) %%%*** if status > 900
+% % % % %         fprintf('End of run.\n')
         return
     end
 end
@@ -119,11 +124,11 @@ end
 % Is there an orbit name for this orbit. If not, very bad, quit.
 
 if isempty(oinfo(iOrbit).name)
-    if print_diagnostics
-        fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
-    end
+% % %     if print_diagnostics
+% % %         fprintf('No orbit name for iOrbit = %i.\n', iOrbit)
+% % %     end
     
-    status = populate_problem_list( 241, ['No orbit name for orbit ' num2str(iOrbit)], granule_start_time_guess);
+    status = populate_problem_list( 241, ['No orbit name for orbit ' num2str(iOrbit)], granule_start_time);
     return
 end
 
@@ -157,7 +162,7 @@ if name_test
 
     % Skip the next 85 minutes of granules to save time; don't have to read them.
     
-    granule_start_time_guess = granule_start_time_guess + 85 / (60 * 24);
+    granule_start_time = granule_start_time + 85 / (60 * 24);
 
     % Keep skipping orbits until a missing one is found. 
     
@@ -198,21 +203,21 @@ if name_test
             oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
             oinfo(iOrbit).orbit_number = oinfo(iOrbit).orbit_number + 1;
 
-            granule_start_time_guess = granule_start_time_guess + orbit_duration / secs_per_day;
+            granule_start_time = granule_start_time + orbit_duration / secs_per_day;
 
-            if granule_start_time_guess > Matlab_end_time
-                if print_diagnostics
-                    fprintf('*** Have reached the end of run (%s).\n', datestr(Matlab_end_time))
-                end
+            if granule_start_time > Matlab_end_time
+% % % % %                 if print_diagnostics
+% % % % %                     fprintf('*** Have reached the end of run (%s).\n', datestr(Matlab_end_time))
+% % % % %                 end
 
-                status = populate_problem_list( 902, ['*** Have reached the end of the run: ' datestr(Matlab_end_time)], granule_start_time_guess);
+                status = populate_problem_list( 902, ['granule_start_time ' datestr(granule_start_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)], granule_start_time);
 
                 return
             end
 
             fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
-            % Set granule_start_time_guess to the nearest multiple of 5
+            % Set granule_start_time to the nearest multiple of 5
             % minutes preceeding oinfo(iOrbit).end_time. Remember that the
             % end of the previous orbit is 100 scan lines past the nadir
             % ascending crossing of the satellie.  
@@ -220,7 +225,7 @@ if name_test
             date_vec = datevec(oinfo(iOrbit).end_time - 100 * secs_per_scan_line / secs_per_day);
             date_vec(5) = date_vec(5) - rem(date_vec(5),5);
             date_vec(6) = 0;
-            granule_start_time_guess = datenum(date_vec);
+            granule_start_time = datenum(date_vec);
 
             iGranule = 0;
             
@@ -229,18 +234,18 @@ if name_test
     end        
     
     %**********************************************************************
-    % Need to update iGranuleList based on granule_start_time_guess here
+    % Need to update iGranuleList based on granule_start_time here
     % *********************************************************************
 
     start_line_index = [];
 
-    while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
+    while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
         
         % Return if end of run.
         
-        if (status == 201) | (status == 231) | (status > 900)
+        if (status == 201) | (status == 231) | (status > 900) %%%*** if status > 900
             fprintf('Problem building this orbit. End of run.\n')
             return
         end
@@ -285,7 +290,7 @@ sstref = single(nan(1354,orbit_length));
 
 scan_seconds_from_start = single(nan(1,orbit_length));
 
-granule_start_time_guess_save = granule_start_time_guess;
+granule_start_time_save = granule_start_time;
 
 data_granule = oinfo(iOrbit).ginfo(iGranule).data_name;
 metadata_granule = oinfo(iOrbit).ginfo(iGranule).metadata_name;
@@ -296,7 +301,7 @@ metadata_granule = oinfo(iOrbit).ginfo(iGranule).metadata_name;
     = add_granule_data_to_orbit( 'current', data_granule, metadata_granule, latitude, longitude, ...
     SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start);
 
-if status ~= 0
+if status ~= 0 %%%*** if status > 900
     return
 end
 
@@ -311,9 +316,9 @@ if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
     
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
         = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
-        scan_seconds_from_start, granule_start_time_guess);
+        scan_seconds_from_start, granule_start_time);
     
-    if status == 921
+    if status == 921 %%%*** if status > 900
         return
     end
 end
@@ -324,18 +329,18 @@ end
 % granule instead of 2040. (I'm not sure if the last thing is really a
 % problem.)
 
-while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
+while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     
-    [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+    [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
     
     % Status returned from find_next_granule_with_data is either 0 - all OK,
     % 201 - granule start time exceeded the end of orbit time without
     % finding a granule with a start time in it or 901 end of run. If
     % status = 201 or 901 break out of this loop.
 
-    if (status == 201) | (status == 231) | (status > 900)
+    if (status == 201) | (status == 231) | (status > 900) %%%*** if status > 900
         oinfo(iOrbit).time_to_build_orbit = toc(start_time_to_build_this_orbit);
 
         if print_times
@@ -360,7 +365,7 @@ while granule_start_time_guess <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         if isfield(oinfo(iOrbit).ginfo(iGranule), 'pirate_osscan')
             [ status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start] ...
                 = pirate_data( latitude, longitude, SST_In, qual_sst, flags_sst, sstref, ...
-                scan_seconds_from_start, granule_start_time_guess);
+                scan_seconds_from_start, granule_start_time);
         end
     end
 

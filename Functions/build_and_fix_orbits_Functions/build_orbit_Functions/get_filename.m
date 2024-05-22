@@ -26,13 +26,13 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Addes status
 %           to return.
-%   1.2.1 - 5/17/2024 - Modified code for switch to list of granules/times.
+%   1.2.0 - 5/17/2024 - Modified code for switch to list of granules/times.
 %           Also, significant changes to arguments passed in and out.
 %           Updated error handling as we move from granule_start_time to
 %           metadata granule list - PCC 
 
 global version_struct
-version_struct.get_filename = '1.2.1';
+version_struct.get_filename = '1.2.0';
 
 % globals for the run as a whole.
 

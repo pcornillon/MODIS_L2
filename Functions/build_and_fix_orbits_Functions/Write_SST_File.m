@@ -40,9 +40,13 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %           build_and_fix_orbits - PCC
 %   1.0.2 - 6/13/2021 - Changed the valid range for longitude from -360 to
 %           360 to -720 to 720 - PCC
+%   2.0.0 - 5/20/2024 - Replaced granule_start_time_guess with
+%           granule_start_time. Also modified the logic in a number of
+%           places as well as replaced error statements and error handling
+%           - PCC 
 
 global version_struct
-version_struct.Write_SST_File = '1.0.2';
+version_struct.Write_SST_File = '2.0.0';
 
 % globals for the run as a whole.
 

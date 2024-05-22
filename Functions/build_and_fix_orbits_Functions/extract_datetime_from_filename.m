@@ -18,11 +18,26 @@ function [status, Matlab_time] = extract_datetime_from_filename(filename)
 % EXAMPLE
 %   [status, mat_start_time] = extract_datetime_from_filename('AQUA_MODIS_orbit_003521_20030101T005135_L2_SST.nc4')
 %
+%  CHANGE LOG 
+%   v. #  -  data    - description     - who
+%
+%   1.0.0 - 6/6/2021 - Initial version - PCC
+%   1.0.1 - 6/13/2021 - Added a global attribute for the version number of
+%           build_and_fix_orbits - PCC
+%   1.0.2 - 6/13/2021 - Changed the valid range for longitude from -360 to
+%           360 to -720 to 720 - PCC
+%   2.0.0 - 5/21/2024 - Replaced granule_start_time_guess with
+%           granule_start_time. Also modified the logic in a number of
+%           places as well as replaced error statements and error handling
+%           - PCC 
+
+global version_struct
+version_struct.extract_datetime_from_filename = '2.0.0';
 
 status = 0;
 
 if length(filename) < 29
-    fprintf('\n\n******************** Something wrong with filename passed into extract_datetime_from_filename, %s, \n********************\n', filename)
+% % % % %     fprintf('\n\n******************** Something wrong with filename passed into extract_datetime_from_filename, %s, \n********************\n', filename)
     status = populate_problem_list( 161, ['Something wrong with filename passed into extract_datetime_from_filename,' filename '. SHOULD NEVER GET HERE.']);
     return
 end
@@ -43,8 +58,8 @@ if  (Year < 2000) | (Year > 2030) | ...
     (Minute < 0) | (Minute > 60) | ...
     (Second < 0) | (Second > 60)
 
-    fprintf('\n\n******************** Something wrong with filename passed into extract_datetime_from_filename, %s, \n********************\n', filename)
-    status = populate_problem_list( 161, ['Something wrong with filename passed into extract_datetime_from_filename,' filename '. SHOULD NEVER GET HERE.']);
+% % % % %     fprintf('\n\n******************** Something wrong with filename passed into extract_datetime_from_filename, %s, \n********************\n', filename)
+    status = populate_problem_list( 162, ['Unacceptable year ' num2str(Year) '.']);
     return
 end
 

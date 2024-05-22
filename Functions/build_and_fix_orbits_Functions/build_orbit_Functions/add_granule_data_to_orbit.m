@@ -48,9 +48,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           end the run if this is the case with status=921. Added status
 %           to the returned variable for calls to read_variable_HDF.
 %   1.0.3 - 5/16/2024 - Removed 273.15 from NASA SST read in from AWS - PCC
+%   1.2.0 - 5/21/2024 - Updated error handling for new approach - PCC 
 
 global version_struct
-version_struct.add_granule_data_to_orbit = '1.0.3';
+version_struct.add_granule_data_to_orbit = '1.2.0';
 
 global s3_expiration_time
 
@@ -75,9 +76,9 @@ status = 0;
 switch add_type
     case 'current'
         if isempty(oinfo(iOrbit).ginfo(iGranule).osscan)
-            fprintf('No osscan data in oinfo(%i).ginfo(%i).oscan for granule %s. This should never happen.\n', iOrbit, iGranule, oinfo(iOrbit).ginfo(iGranule).metadata_name)
+% % % % %             fprintf('No osscan data in oinfo(%i).ginfo(%i).oscan for granule %s. This should never happen.\n', iOrbit, iGranule, oinfo(iOrbit).ginfo(iGranule).metadata_name)
 
-            status = populate_problem_list( 203, oinfo(iOrbit).ginfo(iGranule).osscan);
+            status = populate_problem_list( 203, ['No osscan data for iOrbit ' num2str(iOrbit) ', iGranule ' num2str(iGranule) '.  oinfo(' num2str(iOrbit) ').ginfo(' num2str(iGranule) ').osscan: ' num2str(oinfo(iOrbit).ginfo(iGranule).osscan)]);
             return
         end
 
@@ -89,9 +90,9 @@ switch add_type
         
     case 'pirate'
         if isempty(oinfo(iOrbit).ginfo(iGranule).pirate_osscan)
-            fprintf('No osscan data in oinfo(%i).ginfo(%i).pirate_osscan for granule %s. This should never happen.\n', iOrbit, iGranule, oinfo(iOrbit).ginfo(iGranule).metadata_name)
+% % % % %             fprintf('No osscan data in oinfo(%i).ginfo(%i).pirate_osscan for granule %s. This should never happen.\n', iOrbit, iGranule, oinfo(iOrbit).ginfo(iGranule).metadata_name)
 
-            status = populate_problem_list( 204, oinfo(iOrbit).ginfo(iGranule).osscan);
+            status = populate_problem_list( 204, ['No pirated osscan data for iOrbit ' num2str(iOrbit) ', iGranule ' num2str(iGranule) '.  oinfo(' num2str(iOrbit) ').ginfo(' num2str(iGranule) ').osscan: ' num2str(oinfo(iOrbit).ginfo(iGranule).osscan)]);
             return
         end
 
@@ -117,7 +118,7 @@ if amazon_s3_run
     if (now - s3_expiration_time) > 30 / (60 * 24)
         [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
         
-        if status == 921
+        if status == 921 %%%*** if status > 900
             return
         end
     end
@@ -125,12 +126,12 @@ if amazon_s3_run
     file_id = H5F.open( data_granule, 'H5F_ACC_RDONLY', 'H5P_DEFAULT');
 
     [status, latitude(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'lat', npixels, gsscan, scan_lines_to_read);
-    if status == 921
+    if status == 921 %%%*** if status > 900
         return
     end
     
     [status, longitude(:,osscan:oescan)] = read_variable_HDF( file_id, data_granule, 'lon', npixels, gsscan, scan_lines_to_read);
-    if status == 921
+    if status == 921 %%%*** if status > 900
         return
     end
 

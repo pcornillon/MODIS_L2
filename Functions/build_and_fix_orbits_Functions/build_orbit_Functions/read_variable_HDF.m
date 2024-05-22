@@ -27,9 +27,10 @@ function [status, VarOut] = read_variable_HDF( FileID, FileName, VarName, nPixel
 %   1.0.2 - 5/12/2024 - Test to see if failure to get NASA se credentials
 %           end the run if this is the case with status=921. Also added
 %           status to the returned variables.
+%   1.2.0 - 5/17/2024 - Updated error handling to handle new approach - PCC 
 
 global version_struct
-version_struct.read_variable_HDF = '1.0.2';
+version_struct.read_variable_HDF = '1.2.0';
 
 global iProblem problem_list 
 
@@ -42,7 +43,7 @@ status = 0;
 if (now - s3_expiration_time) > 30 / (60 * 24)
     [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
     
-    if status == 921
+    if status == 921  %%%*** if status > 900
         return
     end
 end

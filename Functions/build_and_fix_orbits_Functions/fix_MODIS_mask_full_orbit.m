@@ -251,7 +251,7 @@ oinfo(iOrbit).fix_mask_stats.num_qual_2_or_worse = length(nn);
 
 nn = find(SST_In > -2);
 if isempty(nn)
-    fprintf('...No good data in SST_In. Set Final_Mask field to 1, bad data, and returned.\n')
+% % % % %     fprintf('...No good data in SST_In. Set Final_Mask field to 1, bad data, and returned.\n')
 
     status = populate_problem_list( 701, 'No good data in SST_In. Set Final_Mask field to 1 and returned.');
 
@@ -664,7 +664,7 @@ nnReduced = find(FracArea<Thresholds.FracArea | (Eccentricity>=Thresholds.Eccent
 length_nnReduced = length(nnReduced);
 
 if isempty(nnReduced)
-    fprintf('...No candidate objects found. Set Final_Mask field to 1, bad data, and returned.\n')
+% % % % %     fprintf('...No candidate objects found. Set Final_Mask field to 1, bad data, and returned.\n')
 
     status = populate_problem_list( 702, 'No candidate objects found. Set Final_Mask field to 1 and returned.');
 

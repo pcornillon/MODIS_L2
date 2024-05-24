@@ -118,11 +118,11 @@ while 1==1
 
     if iGranuleList > numGranules
         
-        status = populate_problem_list( 910, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).matTime+fiveMinutesMatTime); % old status 903
+        status = populate_problem_list( 910, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
 
         return
     else
-        granule_start_time = newGranuleList(iGranuleList).matTime;
+        granule_start_time = newGranuleList(iGranuleList).granule_start_time;
     end
 
 

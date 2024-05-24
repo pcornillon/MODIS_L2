@@ -443,10 +443,10 @@ for iYear=yearStart:yearEnd
         if (granuleTime >= matStart) & (granuleTime < matEnd)
             jGranule = jGranule + 1;
             newGranuleList(jGranule).filename = granuleList(iGranule).filename(12:26);
-
-            % newGranuleList(jGranule).matTime = granuleList(iGranule).matTime;
+            newGranuleList(jGranule).matTime = granuleList(iGranule).matTime;
+            
             tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-            newGranuleList(jGranule).matTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
+            newGranuleList(jGranule).granule_start_time = datenum(tempTime);
         end
     end
 

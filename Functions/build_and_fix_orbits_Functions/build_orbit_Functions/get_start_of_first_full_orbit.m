@@ -71,7 +71,7 @@ file_list(1).name  = newGranuleList(1).filename;
 % an orbit, defined as the point at which the descending satellite crosses
 % latlim, nominally 78 S. 
 
-granule_start_time = newGranuleList(1).matTime;
+granule_start_time = newGranuleList(1).granule_start_time;
 
 if local_debug; fprintf('Following while loop. granule_start_time: %s\n', datestr(granule_start_time)); end
 

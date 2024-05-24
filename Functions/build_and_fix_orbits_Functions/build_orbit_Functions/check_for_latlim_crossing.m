@@ -1,7 +1,6 @@
 function [status, granule_start_time] = check_for_latlim_crossing( metadata_granule_folder_name, metadata_granule_file_name, granule_start_time)
 % check_for_latlim_crossing - checks if metadata file exists and if it does whether or not it crosses latlim in descent - PCC
-
-
+%
 % Read the latitude of the nadir track for this granule and determine
 % whether or not it crosses latlim, nominally 79 S. It also checks to make
 % sure that the granule starts with the first detector in a group of 10
@@ -57,8 +56,6 @@ global iProblem problem_list
 
 % Initialize some variables.
 
-astericks = '*************************************************************************************************';
-
 fiveMinutesMatTime = 5 / (24 * 60);
 
 status = 0;
@@ -102,10 +99,12 @@ end
 num_scan_lines_in_granule = length(scan_line_times);
 
 % Check that the time of the first scan corresponds to the time in the
-% filename.
+% filename. Note that a 10 second difference is allowed here. That's
+% because the granule names appear to have the time off by as much as 10
+% seconds.
 
-if abs(scan_line_times(1) - granule_start_time) > (1/secs_per_day)
-    status = populate_problem_list( 105, ['Time of first scan in this granule, ' datestr(scan_line_times(1)) ', does not agree with the time in the filename, ' datestr(granule_start_time) '.']); % old status 143
+if abs(scan_line_times(1) - granule_start_time) > (10/secs_per_day)
+    status = populate_problem_list( 105, ['Time of first scan in this granule, ' datestr(scan_line_times(1)) ', does not agree with the time in the filename to within 10 seconds, '   '.']); % old status 143
 end
 
 % Make sure that there is time data for this granule and that the 1st line
@@ -140,6 +139,7 @@ end
 % Make sure that the scan_line_times are good.
 
 dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
+if abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line)) > 0.01
     status = populate_problem_list( 110, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time) '. Continuing but be careful.']); % old status 142
 end
 

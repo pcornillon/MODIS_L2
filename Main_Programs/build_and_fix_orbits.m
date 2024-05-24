@@ -179,7 +179,7 @@ global pixStartm pixEndm pixStartp pixEndp
 lofs_of_astericks = '****************************************************************';
 
 print_E100 = 1;  % 1 to print warning messages sent to populate_problem_list with for 100 <= status < 300
-print_E600 = 1;  % 1 to print serious warning messages sent to populate_problem_list with for 300 <= status < 600
+print_E300 = 1;  % 1 to print serious warning messages sent to populate_problem_list with for 300 <= status < 600
 print_E600 = 1;  % 1 to print skip granule messages sent to populate_problem_list with for 600 <= status < 700
 print_E700 = 1;  % 1 to print end orbit messages sent to populate_problem_list with for 700 <= status < 800
 print_E800 = 1;  % 1 to print skip orbit messages sent to populate_problem_list with for 800 <= status < 900
@@ -435,7 +435,7 @@ filenameEnding = '_L2_SST_OBPG_extras.nc4';
 
 jGranule = 0;
 for iYear=yearStart:yearEnd
-    load([metadata_directory 'granuleList_' num2str(iYear) '.mat']);
+    load([metadata_directory 'metadata_granule_lists/granuleList_' num2str(iYear) '.mat']);
     
     for iGranule=1:length(granuleList)
         granuleTime = granuleList(iGranule).matTime;
@@ -443,11 +443,16 @@ for iYear=yearStart:yearEnd
         if (granuleTime >= matStart) & (granuleTime < matEnd)
             jGranule = jGranule + 1;
             newGranuleList(jGranule).filename = granuleList(iGranule).filename(12:26);
-            newGranuleList(jGranule).matTime = granuleList(iGranule).matTime;
+
+            % newGranuleList(jGranule).matTime = granuleList(iGranule).matTime;
+            tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
+            newGranuleList(jGranule).matTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
         end
     end
 
     clear granuleList
+
+    iGranuleList = 0;
 end
 
 numGranules = length(newGranuleList);

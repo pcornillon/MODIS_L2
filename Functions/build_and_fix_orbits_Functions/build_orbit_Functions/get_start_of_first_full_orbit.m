@@ -64,7 +64,7 @@ if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
 
 % % % iGranuleList = 1;
-file_list(1).name  = newGranuleList(1).name;
+file_list(1).name  = newGranuleList(1).filename;
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
 % corresponding to this file. Search for the next granule with the start of
@@ -91,7 +91,7 @@ while granule_start_time <= Matlab_end_time
     [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
 
     % if status == 921
-    if stats >= 900
+    if status >= 900
         return
     end
     

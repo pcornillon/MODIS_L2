@@ -67,7 +67,7 @@ switch file_type
 
             % Check to make sure that this metadata file really exists, AS IT SHOULD.
 
-            if exist(newGranuleList(iGranuleList).filename)
+            if exist([folder_name file_name])
                 found_one = 1;
             else
                 status = populate_problem_list( 605, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101

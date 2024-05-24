@@ -60,10 +60,10 @@ switch file_type
         found_one = 0;
 
         if iGranuleList < numGranules
-            folder_name = [metadata_directory datestr(newGranuleList(iGranuleList).matTime, formatOut.yyyy) '/'];
+            folder_name = [metadata_directory num2str(year(newGranuleList(iGranuleList).matTime)) '/'];
             file_name = [filenamePrefix newGranuleList(iGranuleList).filename filenameEnding];
 
-            granule_start_time = newGranuleList(iGranuleList).matTime;
+            granule_start_time = newGranuleList(iGranuleList).granule_start_time;
 
             % Check to make sure that this metadata file really exists, AS IT SHOULD.
 
@@ -73,7 +73,7 @@ switch file_type
                 status = populate_problem_list( 605, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101
             end
         else
-            status = populate_problem_list( 905, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).matTime+fiveMinutesMatTime); % old status 101
+            status = populate_problem_list( 905, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 101
         end
 
     case 'sst_data'

@@ -60,7 +60,7 @@ switch file_type
         found_one = 0;
 
         if iGranuleList < numGranules
-            folder_name = [metadata_directory datestr(newGranuleList(iGranuleList).matTime, formatOut.yyyy) '/'];
+            folder_name = [metadata_directory newGranuleList(iGranuleList).matTime(1:4) '/'];
             file_name = [filenamePrefix newGranuleList(iGranuleList).filename filenameEnding];
 
             granule_start_time = newGranuleList(iGranuleList).matTime;

@@ -60,7 +60,7 @@ switch file_type
         found_one = 0;
 
         if iGranuleList < numGranules
-            folder_name = [metadata_directory newGranuleList(iGranuleList).matTime(1:4) '/'];
+            folder_name = [metadata_directory num2str(year(newGranuleList(iGranuleList).filename_time)) '/'];
             file_name = [filenamePrefix newGranuleList(iGranuleList).filename filenameEnding];
 
             granule_start_time = newGranuleList(iGranuleList).granule_start_time;
@@ -81,13 +81,15 @@ switch file_type
         % Get the time of the metadata file. Start by finding where in the
         % string the data and time info is. 
 
-        md_date = datestr(newGranuleList(iGranuleList).matTime, formatOut.yyyymmdd);
-        md_time = datestr(newGranuleList(iGranuleList).matTime, formatOut.HHMMSS);
+        % % % % % md_date = datestr(newGranuleList(iGranuleList).filename_time, formatOut.yyyymmdd);
+        % % % % % md_time = datestr(newGranuleList(iGranuleList).filename_time, formatOut.HHMMSS);
 
         % Will first get components of the filename, which differ from data
         % at URI, as copied from OBPG, and at AWS.
 
         if amazon_s3_run
+
+            md_datetime = datestr(newGranuleList(iGranuleList).filename_time, formatOut.yyyymmddHHMMSS);
 
             % make sure that access credentials for NASA S3 files are still
             % active. Note that the s3 access is further down (lines 133,
@@ -112,6 +114,8 @@ switch file_type
             dir_year = '';
             date_time_separator = '';
         else
+            md_datetime = datestr(newGranuleList(iGranuleList).filename_time, formatOut.yyyymmddTHHMMSS);
+
             % modis metadata file: AQUA_MODIS.20030103T120006.L2.SST.nc
             %   granules_directory = '/Volumes/MODIS_L2_original/OBPG/combined/';  OR
             %   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
@@ -121,13 +125,15 @@ switch file_type
             filename_end_day = '.L2.SST.nc';
             filename_end_night = filename_end_day;
 
-            dir_year = [md_date(1:4) '/'];
+            % % % % % dir_year = [md_date(1:4) '/'];
+            dir_year = [md_datetime(1:4) '/'];
             date_time_separator = 'T';
         end
 
         % Build the filename.
 
-        data_filename = [granules_directory dir_year filename_start md_date date_time_separator md_time filename_end_day];
+        % % % % % data_filename = [granules_directory dir_year filename_start md_date date_time_separator md_time filename_end_day];
+        data_filename = [granules_directory dir_year filename_start md_datetime filename_end_day];
 
         % Well, does this sucker exist? If not, continue searching for a file.
 
@@ -143,28 +149,44 @@ switch file_type
             % purposes and the extra time to do this is not that big of a deal.
             % It would be a much bigger deal for NASA S3.
 
-            data_filename = [granules_directory dir_year filename_start md_date md_time filename_end_night];
+            % % % % % data_filename = [granules_directory dir_year filename_start md_date date_time_separator md_time filename_end_night];
+            data_filename = [granules_directory dir_year filename_start md_datetime filename_end_night];
 
             if ~exist(data_filename)
 
                 % If the file does not exist search all seconds for this metadata minute.
 
-                granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
+                % % % % % granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
+                granule_guess_time = floor(newGranuleList(iGranuleList).filename_time * 24 * 60) / 24 / 60;
 
-                yymmddhhmm = datestr(granule_guess_time, formatOut.yyyymmddhhmm);
-
+                status = populate_problem_list( 102, ['Data granule corresponding to metadata granuel' newGranuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
+                
                 for iSec=0:59
-                    iSecC = num2str(iSec);
-                    if iSec < 10
-                        iSecC = ['0' iSecC];
-                    elseif iSec == 0
-                        iSecC = '00';
+                    granule_guess_time = granule_guess_time + 1 / secs_per_day;
+
+                    if amazon_s3_run
+                        yyyymmddHHMMSS = datestr(granule_guess_time, formatOut.yyyymmddHHMMSS);
+                    else
+                        yyyymmddHHMMSS = datestr(granule_guess_time, formatOut.yyyymmddTHHMMSS);
                     end
 
-                    data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_day];
+                % % % % % yymmddhhmm = datestr(granule_guess_time, formatOut.yyyymmddHHMM);
+                % % % % % 
+                % % % % % for iSec=0:59
+                % % % % %     iSecC = num2str(iSec);
+                % % % % %     if iSec < 10
+                % % % % %         iSecC = ['0' iSecC];
+                % % % % %     elseif iSec == 0
+                % % % % %         iSecC = '00';
+                % % % % %     end
+                % % % % % 
+                % % % % % data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_day];
+                    
+                    data_filename = [granules_directory dir_year filename_start yyyymmddHHMMSS filename_end_day];
 
                     if ~exist(data_filename) & amazon_s3_run  % No need to search for a URI nighttime version of the file. 
-                        data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_night];
+                        % % % % % data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_night];
+                        data_filename = [granules_directory dir_year filename_start yyyymmddHHMMSS filename_end_night];
                     end
 
                     if exist(data_filename)

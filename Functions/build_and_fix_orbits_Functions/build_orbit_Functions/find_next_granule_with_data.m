@@ -459,7 +459,8 @@ while 1==1
 
                             return
                         else
-                            status = populate_problem_list( 335, ['Problem determining if ascending track crosses ' num2str(latlim) ' in ' oinfo(iOrbit).name ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time); % old status 263
+                            [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+                            status = populate_problem_list( 335, ['Problem determining if ascending track crosses ' num2str(latlim) ' in ' orbitName ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time); % old status 263
 
                             iGranule = iGranule - 1;
                         end

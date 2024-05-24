@@ -53,6 +53,8 @@ global oinfo iOrbit
 global scan_line_times
 global secs_per_day secs_per_orbit secs_per_scan_line secs_per_granule orbit_duration
 
+global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+
 % globals used in the other major functions of build_and_fix_orbits.
 
 global iProblem problem_list
@@ -67,7 +69,7 @@ status = 0;
 % decrement after the call since we will go after this file when we build
 % the next orbit.
 
-if (granuleList(iGranuleList).mtTime - oinfo(iOrbit).ginfo(end).end_time) < (10 / secs_per_day)
+if (newGranuleList(iGranuleList).granule_start_time - oinfo(iOrbit).ginfo(end).end_time) < (10 / secs_per_day)
     iGranuleList = iGranuleList + 1;
 
     [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);

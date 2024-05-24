@@ -233,7 +233,8 @@ for iSection=[1,5]
         pp = find(isnan(xx) == 0);
         
         if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-            status = populate_problem_list( 150, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' oinfo(iOrbit).name], ''); % old status 1001
+            [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+            status = populate_problem_list( 150, ['All SST_In values in Section ' num2str(iSection) ' are nan for orbit ' orbitName], ''); % old status 1001
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
         end
@@ -315,7 +316,8 @@ for iSection=[2,4]
         pp = find(isnan(xx) == 0);
         
         if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))            
-            status = populate_problem_list( 155, ['All SST_In values in Section 2 or 4 are nan for orbit ' oinfo(iOrbit).name], ''); % old status 1002
+            [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+            status = populate_problem_list( 155, ['All SST_In values in Section 2 or 4 are nan for orbit ' orbitName], ''); % old status 1002
         else
             new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_lon(:,scans_this_section)), double(new_lat(:,scans_this_section)), 'natural');
         end
@@ -386,7 +388,8 @@ if ~isempty(find(isnan(longitude(:,scans_this_section)) == 0))
     pp = find(isnan(xx) == 0);
     
     if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-        status = populate_problem_list( 160, ['All SST_In values in Section 3 are nan for orbit ' oinfo(iOrbit).name], ''); % old status 1001
+        [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+        status = populate_problem_list( 160, ['All SST_In values in Section 3 are nan for orbit ' orbitName], ''); % old status 1001
     else
         new_sst(:,scans_this_section) = griddata( xx(pp), yy(pp), ss(pp), double(new_easting(:,scans_this_section)), double(new_northing(:,scans_this_section)), 'natural');
     end

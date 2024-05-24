@@ -99,7 +99,7 @@ switch build_type
         end
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
-            '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST-URI_24-1'];
+            '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
@@ -116,7 +116,7 @@ switch build_type
         oinfo(iOrbit+1).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number + 1;
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit+1).orbit_number) ...
-            '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddThhmmss) '_L2_SST-URI_24-1'];
+            '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit+1).name = [output_file_directory_local datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit+1).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
@@ -131,7 +131,8 @@ switch build_type
         oinfo(iOrbit+1).ginfo(1).start_time = oinfo(iOrbit).ginfo(end).start_time;
         oinfo(iOrbit+1).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
         
-    otherwise        
-        status = populate_problem_list( 925, ['build_type passed in as ' build_type '. Must be either ''sli'', or ''no_sli'' for ' oinfo(iOrbit).name '. This should never happen; coding error.']); % old status 231
+    otherwise
+        [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+        status = populate_problem_list( 925, ['build_type passed in as ' build_type '. Must be either ''sli'', or ''no_sli'' for ' orbitName '. This should never happen; coding error.']); % old status 231
 end
 

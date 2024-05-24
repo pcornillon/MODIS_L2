@@ -350,13 +350,13 @@ formatOut.SS = 'SS';
 formatOut.yyyymmdd = 'yyyymmdd';
 formatOut.HHMMSS = 'HHMMSS';
 
-formatOut.yyyymmddThhmmss = 'yyyymmddTHHMMSS';
-formatOut.yyyymmddThhmm = 'yyyymmddTHHMM';
-formatOut.yyyymmddThh = 'yyyymmddTHH';
+formatOut.yyyymmddTHHMMSS = 'yyyymmddTHHMMSS';
+formatOut.yyyymmddTHHMM = 'yyyymmddTHHMM';
+formatOut.yyyymmddTHH = 'yyyymmddTHH';
 
-formatOut.yyyymmddhhmmss = 'yyyymmddHHMMSS';
-formatOut.yyyymmddhhmm = 'yyyymmddHHMM';
-formatOut.yyyymmddhh = 'yyyymmddHH';
+formatOut.yyyymmddHHMMSS = 'yyyymmddHHMMSS';
+formatOut.yyyymmddHHMM = 'yyyymmddHHMM';
+formatOut.yyyymmddHH = 'yyyymmddHH';
 
 % Get the possible number of scan lines to skip. Must be either 0, or some
 % combination of an integer multiple of 2030 and of 2040.
@@ -443,10 +443,10 @@ for iYear=yearStart:yearEnd
         if (granuleTime >= matStart) & (granuleTime < matEnd)
             jGranule = jGranule + 1;
             newGranuleList(jGranule).filename = granuleList(iGranule).filename(12:26);
-            newGranuleList(jGranule).matTime = granuleList(iGranule).matTime;
+            newGranuleList(jGranule).filename_time = granuleList(iGranule).matTime;
             
             tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-            newGranuleList(jGranule).granule_start_time = datenum(tempTime);
+            newGranuleList(jGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
         end
     end
 
@@ -559,7 +559,7 @@ while granule_start_time_guess <= Matlab_end_time
         oinfo(iOrbit).orbit_number = oinfo(iOrbit-1).orbit_number + 1;
 
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
-            '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddThhmmss) '_L2_SST-URI_24-1'];
+            '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
 
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
@@ -697,7 +697,8 @@ while granule_start_time_guess <= Matlab_end_time
                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
 
                 if (status ~= 0) & (status ~= 1001)
-                    fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', oinfo(iOrbit).name, status)
+                    [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+                    fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', orbitName, status)
                 end
 
                 oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
@@ -790,16 +791,18 @@ while granule_start_time_guess <= Matlab_end_time
                 oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
                 if print_times
-                    fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_save_orbit, datestr(now))
+                    [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
 
-                    fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                    fprintf('   Time to save %s: %6.1f seconds. Current date/time: %s\n', orbitName, oinfo(iOrbit).time_to_save_orbit, datestr(now))
+                    fprintf('   Time to process and save %s: %6.1f seconds. Current date/time: %s\n', orbitName, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
                 end
 
             else
                 oinfo(iOrbit).time_to_process_this_orbit = toc(time_to_process_this_orbit);
 
                 if print_times
-                    fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', oinfo(iOrbit).name, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
+                    [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+                    fprintf('   Time to process %s (results not saved to netCDF): %6.1f seconds. Current date/time: %s\n', orbitName, oinfo(iOrbit).time_to_process_this_orbit, datestr(now))
                 end
             end
         end

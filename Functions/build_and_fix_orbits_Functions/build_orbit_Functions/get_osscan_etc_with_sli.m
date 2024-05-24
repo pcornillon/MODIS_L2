@@ -70,21 +70,14 @@ indices.current.gescan = start_line_index + 101 - 1;
 if indices.current.oescan ~= orbit_length
 
     if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
-
-        if print_diagnostics
-            kk = strfind(oinfo(iOrbit).name, 'AQUA_MODIS_');
-            fprintf('...Calculated length of %s is %i scans, forcing to %i scans.\n', oinfo(iOrbit).name(kk+11:end-20), indices.current.oescan, orbit_length);
+        if iOrbit > 1
+            [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+            status = populate_problem_list( 345, ['Calculated length of ' orbitName ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
         end
     end
 
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
-
-    status = populate_problem_list( 345, ['Calculated length of ' oinfo(iOrbit).name ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
-
-    if iOrbit == 1
-        fprintf('In general you can ignore this ''error'' since this is the first orbit but be careful.\n')
-    end
 end
 
 % Determine how many scan lines are needed to bring the length of this

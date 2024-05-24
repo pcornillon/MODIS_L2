@@ -208,7 +208,8 @@ if exist(AMSR_E_fi) == 2
     pp = find(isnan(xx) == 0);
 
     if (length(pp) == 0) | (isempty(find(isnan(ss) == 0)))
-        status = populate_problem_list( 140, ['All MODIS SST values corresponding to AMSR-E are nans.' oinfo(iOrbit).name], ''); % old status 1002
+        [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+        status = populate_problem_list( 140, ['All MODIS SST values corresponding to AMSR-E are nans.' orbitName], ''); % old status 1002
     else
         MODIS_SST_on_AMSR_E_grid = griddata( xx(pp), yy(pp), ss(pp), AMSR_E_lon, AMSR_E_lat,'natural');
     end

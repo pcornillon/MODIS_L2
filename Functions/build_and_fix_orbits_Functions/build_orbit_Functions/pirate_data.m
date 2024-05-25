@@ -72,7 +72,7 @@ status = 0;
 if (newGranuleList(iGranuleList).granule_start_time - oinfo(iOrbit).ginfo(end).end_time) < (10 / secs_per_day)
     iGranuleList = iGranuleList + 1;
 
-    [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata', oinfo(iOrbit).ginfo(end).end_time);
+    [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata');
 
     iGranuleList = iGranuleList - 1;
 else
@@ -93,7 +93,7 @@ end
 
 metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
 
-[status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data', metadata_granule_file_name);
+[status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data');
 
 % if status == 921
 if status >= 900

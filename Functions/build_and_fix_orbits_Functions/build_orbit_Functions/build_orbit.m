@@ -168,11 +168,11 @@ if name_test
         [YR, MN, DY, ~, ~, ~] = datevec(temp_time + orbit_duration / secs_per_day);
 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
-            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
+            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
 
         if ~isempty(output_file_directory_remote) & isempty(exist_list)
             exist_list = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
-                'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*']);
+                'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
         end
 
         if ~isempty(exist_list)

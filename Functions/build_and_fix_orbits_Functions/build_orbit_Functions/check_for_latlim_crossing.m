@@ -47,6 +47,7 @@ global print_diagnostics
 
 global secs_per_day secs_per_scan_line secs_per_granule
 global latlim
+global oinfo iOrbit iGranule iProblem problem_list
 
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 

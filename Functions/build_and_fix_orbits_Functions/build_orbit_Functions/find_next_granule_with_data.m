@@ -296,7 +296,11 @@ while 1==1
                                 mside_previous = single(ncread( oinfo(iOrbit).ginfo(iGranule-1).data_name, '/scan_line_attributes/mside'));
 
                                 if mside_previous(end) == mside_current(1)
-                                    status = populate_problem_list( 310, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule.'], granule_start_time); % old status 151
+                                    [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
+                                    status = populate_problem_list( 310, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' (' granuleName ') of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule. Will add 10 nan scan lines'], granule_start_time); % old status 151
+                                    already_flagged_310 = 1;
+                                else
+                                    already_flagged_310 = 0;
                                 end
                             elseif iOrbit > 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
@@ -376,9 +380,12 @@ while 1==1
 
                                     dd_1_2 = sqrt( ((clon_2(1)-clon_1(end)) * cosd(clat_1(end))).^2 + (clat_2(1)-clat_1(end)).^2) * 111;
 
-                                    if dd_1_2 > 9 & dd_1_2 < 11.5
-                                        status = populate_problem_list( 320, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
-                                            ' for granule #' num2str(iGranule) '. Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time); % old status 116
+                                    if dd_1_2 > 9 & dd_1_2 < 11.5 
+                                        if already_flagged_310 == 0
+                                            [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
+                                            status = populate_problem_list( 320, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                                ' for granule #' num2str(iGranule) ' (' granuleName '). Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time); % old status 116
+                                        end
                                     else
                                         status = populate_problem_list( 325, ['Says to skip 10 lines for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
                                             ', but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time); % old status 117

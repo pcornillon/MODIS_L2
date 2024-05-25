@@ -104,7 +104,8 @@ num_scan_lines_in_granule = length(scan_line_times);
 % seconds.
 
 if abs(scan_line_times(1) - granule_start_time) > (10/secs_per_day)
-    status = populate_problem_list( 105, ['Time of first scan in this granule, ' datestr(scan_line_times(1)) ', does not agree with the time in the filename to within 10 seconds, '   '.']); % old status 143
+    [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
+    status = populate_problem_list( 105, ['Time of first scan in this granule (' granuleName '), ' datestr(scan_line_times(1)) ', does not agree with the time in the filename to within 10 seconds, '   '.']); % old status 143
 end
 
 % Make sure that there is time data for this granule and that the 1st line

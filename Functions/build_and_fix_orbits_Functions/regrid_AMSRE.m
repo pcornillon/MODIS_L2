@@ -191,11 +191,11 @@ if exist(AMSR_E_fi) == 2
         end
     end
     
-    if bestLonShift ~= 0
-        fprintf('Shifting longitudes by %f degrees.\n', bestLonShift)
-
-        AMSR_E_lon = AMSR_E_lon + bestLonShift;
-    end
+% % % % %     if bestLonShift ~= 0
+% % % % %         fprintf('Shifting longitudes by %f degrees.\n', bestLonShift)
+% % % % % 
+% % % % %         AMSR_E_lon = AMSR_E_lon + bestLonShift;
+% % % % %     end
 
     %% Finally regrid AMSR-E to the L2eqa grid and L2eqa_MODIS_SST to the AMSR-E grid
 

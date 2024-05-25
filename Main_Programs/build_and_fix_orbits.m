@@ -696,10 +696,10 @@ while granule_start_time_guess <= Matlab_end_time
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
 
-                if (status ~= 0) & (status ~= 1001)
-                    [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
-                    fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', orbitName, status)
-                end
+% % % % %                 if (status ~= 0) & (status ~= 1001)
+% % % % %                     [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+% % % % %                     fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', orbitName, status)
+% % % % %                 end
 
                 oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
 

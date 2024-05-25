@@ -69,7 +69,7 @@ end
 %% Now print out to the terminal if print_E for this status is set.
 
 if print_E100 & (status < 300)
-    disp(['*** Warning *** status=' num2str(status) ': ' problem_description])
+    disp(['*** Warning *********** status=' num2str(status) ': ' problem_description])
 end
 
 if print_E300 (300 <= status) & (status < 600)
@@ -77,19 +77,19 @@ if print_E300 (300 <= status) & (status < 600)
 end
 
 if print_E600 & (600 <= status) & (status < 700)
-    disp(['*** Skip granule *** status=' num2str(status) ': ' problem_description])
+    disp(['*** Skip granule ****** status=' num2str(status) ': ' problem_description])
 end
 
 if print_E700 & (700 <= status) & (status < 800)
-    disp(['*** End orbit *** status=' num2str(status) ': ' problem_description])
+    disp(['*** End orbit ********* status=' num2str(status) ': ' problem_description])
 end
 
 if print_E800 & (800 <= status) & (status < 900)
-    disp(['*** Skip orbit *** status=' num2str(status) ': ' problem_description])
+    disp(['*** Skip orbit ******** status=' num2str(status) ': ' problem_description])
 end
 
 if print_E900 & (900 <= status)
-    disp(['*** End Run *** status=' num2str(status) ': ' problem_description])
+    disp(['*** End Run *********** status=' num2str(status) ': ' problem_description])
 end
 
 end

@@ -413,11 +413,20 @@ while 1==1
 
                             if isempty(oinfo(iOrbit).name)
    
-                                % If this is the first orbit, then it must have found an intersection
-                                % so call generate_orbit with sli. Otherwise, call it with no_sli -- rare.
-                                
+                                % If this is the first orbit, then it must
+                                % have found an intersection so call
+                                % generate_orbit with sli. Note that oInfo
+                                % is decremented before the call and then
+                                % incremented after the call. This is
+                                % because when called with sli,
+                                % generate_output... populates the next
+                                % orbit. Otherwise, call it with no_sli --
+                                % rare. 
+
                                 if iOrbit==1 & iGranule==1
+                                    oinfo = 0;
                                     status = generate_output_filename('sli');
+                                    oinfo = 1;
                                 else
                                     status = generate_output_filename('no_sli');
                                 end

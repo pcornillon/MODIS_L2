@@ -277,19 +277,20 @@ while 1==1
                         % This is a diagnostic test, skip for AWS until I
                         % determine whether or not mside is in the AWS NASA
                         % granules
-
+                        
+                        already_flagged_310 = 0;
                         if amazon_s3_run == 0
 
-                            % Make sure S3 credentials are up-to-date
-                            
-                            if (now - s3_expiration_time) > 30 / (60 * 24)
-                                [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
-                                
-                                % if status == 921  
-                                if status >= 900
-                                    return
-                                end
-                            end
+                            % % % % % % Make sure S3 credentials are up-to-date
+                            % % % % % 
+                            % % % % % if (now - s3_expiration_time) > 30 / (60 * 24)
+                            % % % % %     [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+                            % % % % % 
+                            % % % % %     % if status == 921  
+                            % % % % %     if status >= 900
+                            % % % % %         return
+                            % % % % %     end
+                            % % % % % end
                             
                             if iGranule ~= 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
@@ -299,8 +300,8 @@ while 1==1
                                     [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
                                     status = populate_problem_list( 310, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' (' granuleName ') of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule. Will add 10 nan scan lines'], granule_start_time); % old status 151
                                     already_flagged_310 = 1;
-                                else
-                                    already_flagged_310 = 0;
+                                % % % % % else
+                                % % % % %     already_flagged_310 = 0;
                                 end
                             elseif iOrbit > 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
@@ -308,6 +309,7 @@ while 1==1
 
                                 if mside_previous(end) == mside_current(1)
                                     status = populate_problem_list( 315, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time); % old status 152
+                                    already_flagged_310 = 1;
                                 end
                             end
                         end

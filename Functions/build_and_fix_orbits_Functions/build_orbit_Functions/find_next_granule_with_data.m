@@ -415,7 +415,7 @@ while 1==1
    
                                 % If this is the first orbit, then it must
                                 % have found an intersection so call
-                                % generate_orbit with sli. Note that oInfo
+                                % generate_orbit with sli. Note that iOrbit
                                 % is decremented before the call and then
                                 % incremented after the call. This is
                                 % because when called with sli,
@@ -424,9 +424,9 @@ while 1==1
                                 % rare. 
 
                                 if iOrbit==1 & iGranule==1
-                                    oinfo = 0;
+                                    iOrbit = 0;
                                     status = generate_output_filename('sli');
-                                    oinfo = 1;
+                                    iOrbit = 1;
                                 else
                                     status = generate_output_filename('no_sli');
                                 end

@@ -91,8 +91,6 @@ global Matlab_end_time
 
 global iProblem problem_list 
 
-astericks = '*************************************************************************************************';
-
 fiveMinutesMatTime = 5 / (24 * 60);
 
 % Initialize return variables.
@@ -414,12 +412,20 @@ while 1==1
                             % Generate the orbit name if it has not already been generated.
 
                             if isempty(oinfo(iOrbit).name)
-                                status = generate_output_filename('no_sli');
+   
+                                % If this is the first orbit, then it must have found an intersection
+                                % so call generate_orbit with sli. Otherwise, call it with no_sli -- rare.
+                                
+                                if iOrbit==1 & iGranule==1
+                                    status = generate_output_filename('sli');
+                                else
+                                    status = generate_output_filename('no_sli');
+                                end
 
-                                % if status == 231
                                 if status >= 900
                                     return
                                 end
+
                             end
 
                             % Get the location of this granule in the orbit and

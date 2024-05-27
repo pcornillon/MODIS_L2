@@ -62,8 +62,6 @@ global iProblem problem_list
 
 if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
-
-% % % iGranuleList = 1;
 file_list(1).name  = newGranuleList(1).filename;
 
 % Found an hour with at least one metadata file in it. Get the Matlab time

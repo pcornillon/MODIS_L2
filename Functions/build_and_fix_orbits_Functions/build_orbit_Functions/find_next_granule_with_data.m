@@ -434,7 +434,7 @@ while 1==1
                                 [indices] = get_osscan_etc_NO_sli(indices);
 
                             else
-                                [indices] = get_osscan_etc_with_sli(indices);
+                                [indices] = get_osscan_etc_with_sli(skip_to_start_of_orbit, indices);
 
                                 status = generate_output_filename('sli');
 

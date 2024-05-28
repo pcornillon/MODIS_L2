@@ -1,4 +1,4 @@
-function [indices] = get_osscan_etc_with_sli(indices)
+function [indices] = get_osscan_etc_with_sli( skip_to_start_of_orbit, indices)
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -17,6 +17,10 @@ function [indices] = get_osscan_etc_with_sli(indices)
 % locations from which to copy the data in the current granule.
 %
 % INPUT
+%   skip_to_start_of_orbit: 1 to skip to start of next orbit. Will look for
+%    upward crossing of 79S and configure oinfo to start with scan line at
+%    crossing. 0 to get the next data granule.
+%   indicies: first crack at indices to use in building orbits.
 %
 % OUTPUT
 %   indices - a structure with the discovered indices.
@@ -66,7 +70,7 @@ indices.current.gescan = start_line_index + 101 - 1;
 
 % Is the length of the orbit correct? If not force it to be so.
 
-if indices.current.oescan ~= orbit_length
+if (indices.current.oescan ~= orbit_length) & (skip_to_start_of_orbit == 0)
 
     if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
         if iOrbit > 1

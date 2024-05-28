@@ -80,7 +80,7 @@ while true
         else
             % Log the retry attempt and pause before the next attempt
 
-            status = populate_problem_list( 115, ['Failed to get the NASA S3 credentials at ' datetime '. This is try ' num2str(numTries) '. Will pause for 30 s and try again.']); % old status 270
+            dont_use_status = populate_problem_list( 115, ['Failed to get the NASA S3 credentials at ' datetime '. This is try ' num2str(numTries) '. Will pause for 30 s and try again.']); % old status 270
             pause(30);
         end
     end

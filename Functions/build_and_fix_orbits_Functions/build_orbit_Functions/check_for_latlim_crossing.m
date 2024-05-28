@@ -19,8 +19,10 @@ function [status, granule_start_time] = check_for_latlim_crossing( metadata_gran
 %   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
-%   status : 201 - No scanline start times for scanlines in this granule
-%          : 202 - 1st detector in data granule not 1st detector in group of 10.
+%   status  610: No scanline start times.                                               RETURN
+%           615: 1st scan not the 1st detector in group of 10.                          RETURN
+%           305: Number of scans ~= 2030 or 2040.                                       CONTINUE
+%           620: Can''t find the start of a group of 10 scan lines.                     RETURN
 %   granule_start_time - the matlab_time of the granule to start with. If scan
 %    times are obtained for this granule, granule_start_time will be set to the
 %    first scan of the granule; otherwise the value passed in will be returned.
@@ -106,7 +108,7 @@ num_scan_lines_in_granule = length(scan_line_times);
 
 if abs(scan_line_times(1) - granule_start_time) > (10/secs_per_day)
     [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
-    status = populate_problem_list( 105, ['Time of first scan in this granule (' granuleName '), ' datestr(scan_line_times(1)) ', does not agree with the time in the filename to within 10 seconds, '   '.']); % old status 143
+    dont_use_status = populate_problem_list( 105, ['Time of first scan in this granule (' granuleName '), ' datestr(scan_line_times(1)) ', does not agree with the time in the filename to within 10 seconds, '   '.']); % old status 143
 end
 
 % Make sure that there is time data for this granule and that the 1st line
@@ -135,14 +137,14 @@ end
 % Write warning message if the number of scan lines in the granule is not 2030 or 204
 
 if (length(scan_line_times) ~= 2030) & (length(scan_line_times) ~= 2040)
-    status = populate_problem_list( 305, ['Number of scan lines in this granules is ' num2str(length(scan_line_times)) ', neither 2030 nor 2040. Continuing but be careful.']); % old status 141
+    dont_us_status = populate_problem_list( 305, ['Number of scan lines in this granules is ' num2str(length(scan_line_times)) ', neither 2030 nor 2040. Continuing but be careful.']); % old status 141
 end
 
 % Make sure that the scan_line_times are good.
 
 dt = (scan_line_times(end-5) - scan_line_times(5)) * secs_per_day;
 if abs(dt - (secs_per_granule * length(scan_line_times) / 2030 - 10 * secs_per_scan_line)) > 0.01
-    status = populate_problem_list( 110, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time) '. Continuing but be careful.']); % old status 142
+    dont_use_status = populate_problem_list( 110, ['Mirror rotation rate seems to have changed for granule starting at ' datestr(granule_start_time) '. Continuing but be careful.']); % old status 142
 end
 
 % Determine the time for this granule. Note that it is scaled at the end to
@@ -244,6 +246,7 @@ if ~isempty(aa)
                     granule_start_time = granule_start_time + fiveMinutesMatTime;
 
                     status = populate_problem_list( 620, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time); % old status 153
+                    return
                 end
 
                 % Now find the group of 10 with the point in the middle closest

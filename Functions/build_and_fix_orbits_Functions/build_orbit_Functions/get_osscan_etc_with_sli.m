@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_with_sli(indices)
+function [indices] = get_osscan_etc_with_sli(indices)
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -19,7 +19,6 @@ function [status, indices] = get_osscan_etc_with_sli(indices)
 % INPUT
 %
 % OUTPUT
-%   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
 %
 %  CHANGE LOG
@@ -72,7 +71,7 @@ if indices.current.oescan ~= orbit_length
     if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
         if iOrbit > 1
             [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
-            status = populate_problem_list( 345, ['Calculated length of ' orbitName ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
+            dont_use_status = populate_problem_list( 345, ['Calculated length of ' orbitName ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
         end
     end
 

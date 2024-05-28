@@ -1,4 +1,4 @@
-function [status, indices] = get_osscan_etc_NO_sli(indices)
+function [indices] = get_osscan_etc_NO_sli(indices)
 % get_osscan_etc_NO_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -19,7 +19,6 @@ function [status, indices] = get_osscan_etc_NO_sli(indices)
 % INPUT
 %
 % OUTPUT
-%   status - if 65 do not populate orbit for this granule.
 %   indices - a structure with the discovered indices.
 %
 %  CHANGE LOG
@@ -78,5 +77,5 @@ if indices.current.oescan > orbit_length
     indices.current.oescan = orbit_length;
     indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     
-    status = populate_problem_list( 340, ['***** Calcualted length of orbit for ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' is ' num2str(indices.current.oescan) ', which is greater than ' num2str(orbit_length) '. This should NEVER happen.']); % old status 415
+    dont_use_status = populate_problem_list( 340, ['***** Calcualted length of orbit for ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' is ' num2str(indices.current.oescan) ', which is greater than ' num2str(orbit_length) '. This should NEVER happen.']); % old status 415
 end

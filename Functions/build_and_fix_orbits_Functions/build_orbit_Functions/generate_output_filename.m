@@ -21,9 +21,8 @@ function status = generate_output_filename(build_type)
 %    next orbit.
 %
 % OUTPUT
-%   status - if two ways of calculating the end of orbit time for a granule
-%    that is at the end of an orbit but the first granule on the current
-%    orbit.
+%   status  925: Coding error. RETURN.
+%
 %
 %  CHANGE LOG 
 %   v. #  -  data    - description     - who

@@ -10,7 +10,10 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %    metadata file in S3 bucket.
 %
 % OUTPUT
-%   status - 921 if timed out on credentials request, 0 otherwise.
+%   status -    605: 'metadata' call -- metadata granule not found. This should never happen.
+%               905: 'metadata' call -- ran out of granules -- end run.
+%               920: 'sst_data' call -- failed 10 times to get the NASA S3 credentials -- end run. 
+
 %   found_one - 1 if a data file was found corresponding to the metadata
 %    file and 0 if none was found within one minute.
 %   folder_name - the folder in which the file was found.
@@ -155,7 +158,7 @@ switch file_type
                 % % % % % granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
                 granule_guess_time = floor(newGranuleList(iGranuleList).filename_time * 24 * 60) / 24 / 60;
 
-                status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' newGranuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
+                dont_use_status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' newGranuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
                 
                 for iSec=0:59
                     granule_guess_time = granule_guess_time + 1 / secs_per_day;

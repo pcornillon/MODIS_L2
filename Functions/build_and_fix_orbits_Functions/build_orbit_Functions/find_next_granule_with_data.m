@@ -19,11 +19,19 @@ function [status, granule_start_time] = find_next_granule_with_data( granule_sta
 %   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
-%   status  : 0 - OK
-%           : 101 - No data granule corresponding the metadata granule - go
-%             to next granule.
-%           : 201 - estimated time past the end of the orbit - return.
-%           : 901 - estimated time past the end of the run - return.
+%   status  910: ran out of granules.                                               RETURN.
+%           915: time beyond end of run time.                                       RETURN.
+%     ***   705: granule past predicted end of orbit time.                          RETURN.
+%           605: get_filename 'metadata' --metadata granule not found.              GO TO NEXT FILE ON LIST of metadata files. 
+%           905: get_filename 'metadata' --ran out of granules.                     RETURN. 
+%           625: bad granule, # of scan lines ~= 2030 or 2040.                      GO TO NEXT FILE ON LIST of metadata files. 
+%           920: get_filename 'sst_data' -- failed to get the NASA S3 credentials.  RETURN.  
+%           610: check_for_latlim... -- No scanline start times.                    GO TO NEXT FILE ON LIST of metadata files.
+%           615: check_for_latlim... -- 1st scan not the 1st detector in group.     GO TO NEXT FILE ON LIST of metadata files.
+%           620: check_for_latlim... -- Can''t find the start of scan lines group.  GO TO NEXT FILE ON LIST of metadata files.
+%           925: generate_output_filename -- Coding error.                          RETURN.
+
+
 %      The following returned from calls to get_osscan_etc...
 %           : 111 - Adjacent orbits but osscan calculations disagree. Will
 %             use value based on end of previous granule and continue.
@@ -215,8 +223,7 @@ while 1==1
                 % these should happen so we will assume that this granule is
                 % bad and go to the next one.
 
-                % if status == 0 
-                if status < 700
+                if status < 600
 
                     if (iGranule == 0) & (iOrbit == 1) & isempty(start_line_index)
 
@@ -296,7 +303,7 @@ while 1==1
 
                                 if mside_previous(end) == mside_current(1)
                                     [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
-                                    status = populate_problem_list( 310, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' (' granuleName ') of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule. Will add 10 nan scan lines'], granule_start_time); % old status 151
+                                    dont_use_status = populate_problem_list( 310, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' (' granuleName ') of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule. Will add 10 nan scan lines'], granule_start_time); % old status 151
                                     already_flagged_310 = 1;
                                 % % % % % else
                                 % % % % %     already_flagged_310 = 0;
@@ -306,7 +313,7 @@ while 1==1
                                 mside_previous = single(ncread( oinfo(iOrbit-1).ginfo(end).data_name, '/scan_line_attributes/mside'));
 
                                 if mside_previous(end) == mside_current(1)
-                                    status = populate_problem_list( 315, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time); % old status 152
+                                    dont_use_status = populate_problem_list( 315, ['Mirror side ' num2str(mside_current(1)) ' for the 1st scan line of the 1st granule ' num2str(iGranule) ' of orbit ' num2str(iOrbit) ' is the same as that of the last scan line of the last granule in the previous orbit.'], granule_start_time); % old status 152
                                     already_flagged_310 = 1;
                                 end
                             end
@@ -383,17 +390,17 @@ while 1==1
                                     if dd_1_2 > 9 & dd_1_2 < 11.5 
                                         if already_flagged_310 == 0
                                             [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
-                                            status = populate_problem_list( 320, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                            dont_use_status = populate_problem_list( 320, ['1st 1/2 mirror rotation missing for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
                                                 ' for granule #' num2str(iGranule) ' (' granuleName '). Skipping ' num2str(lines_to_skip) ' scan lines at lon ' num2str(clon_2(1)) ', lat ' num2str(clat_2(1))], granule_start_time); % old status 116
                                         end
                                     else
-                                        status = populate_problem_list( 325, ['Says to skip 10 lines for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                        dont_use_status = populate_problem_list( 325, ['Says to skip 10 lines for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
                                             ', but the distance, ' num2str(lines_to_skip) ' km, isn''t right. Will not skip any lines.'], granule_start_time); % old status 117
 
                                         lines_to_skip = 0;
                                     end
                                 else
-                                    status = populate_problem_list( 330, ['Number of lines to skip for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
+                                    dont_use_status = populate_problem_list( 330, ['Number of lines to skip for ' oinfo(iOrbit).ginfo(iGranule).metadata_name(kk+11:end-23) ...
                                         ', ' num2str(lines_to_skip) ', is not an acceptable value. Forcing to ' num2str(possible_num_scan_lines_skip(3,nn)) '.'], granule_start_time); % old status 115
 
                                     lines_to_skip = possible_num_scan_lines_skip(3,nn);
@@ -422,7 +429,7 @@ while 1==1
                                     % call in that the sli populate oinfo for
                                     % iOrbit+1, this call, being the first in
                                     % the run populated iOrbit.
-                                    
+
                                     status = generate_output_filename('sliFirst');
                                 else
                                     status = generate_output_filename('no_sli');
@@ -438,14 +445,13 @@ while 1==1
                             % the start and end of orbit if not already known.
 
                             if isempty(start_line_index)
-                                [~, indices] = get_osscan_etc_NO_sli(indices);
+                                [indices] = get_osscan_etc_NO_sli(indices);
 
                             else
-                                [~, indices] = get_osscan_etc_with_sli(indices);
+                                [indices] = get_osscan_etc_with_sli(indices);
 
                                 status = generate_output_filename('sli');
 
-                                % if (status == 201) | (status == 231) | (status > 900)
                                 if status >= 900
                                     return
                                 end
@@ -481,7 +487,7 @@ while 1==1
                             return
                         else
                             [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
-                            status = populate_problem_list( 335, ['Problem determining if ascending track crosses ' num2str(latlim) ' in ' orbitName ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time); % old status 263
+                            dont_use_status = populate_problem_list( 335, ['Problem determining if ascending track crosses ' num2str(latlim) ' in ' orbitName ' for [iOrbit, iGranule]=[' num2str(iOrbit) ', ' num2str(iGranule) '].'], granule_start_time); % old status 263
 
                             iGranule = iGranule - 1;
                         end

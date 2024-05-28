@@ -1,4 +1,4 @@
-function [status, granule_start_time] = find_next_granule_with_data( granule_start_time)
+function [status, granule_start_time] = find_next_granule_with_data( skip_to_start_of_orbit, granule_start_time)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -15,6 +15,9 @@ function [status, granule_start_time] = find_next_granule_with_data( granule_sta
 % range for this run, it will increment the granule time and...
 %
 % INPUT
+%   skip_to_start_of_orbit: 1 to skip to start of next orbit. Will look for
+%    upward crossing of 79S and configure oinfo to start with scan line at
+%    crossing. 0 to get the next data granule.
 %   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
@@ -140,7 +143,7 @@ while 1==1
     % need to check how often it happens and fix manually if it happens on
     % occasion, otherwise will have to code a fix.
 
-    if length(oinfo) == iOrbit
+    if (length(oinfo) == iOrbit) & (skip_to_start_of_orbit == 0)
         if ~isempty(oinfo(iOrbit).end_time)
             if granule_start_time > (oinfo(iOrbit).end_time - 2 * secs_per_scan_line / secs_per_day)
 
@@ -217,7 +220,8 @@ while 1==1
 
                 if status < 600
 
-                    if (iGranule == 0) & (iOrbit == 1) & isempty(start_line_index)
+                    % % % % % if (iGranule == 0) & (iOrbit == 1) & isempty(start_line_index)
+                    if (skip_to_start_of_orbit == 1) & isempty(start_line_index)
 
                         % Still looking for the first granule with a ascending
                         % crossing of 79 S.
@@ -257,9 +261,7 @@ while 1==1
                         % first granule when we write the metadata to the
                         % output file.
 
-                        % if iGranule == 1
                         oinfo(iOrbit).ginfo(iGranule).metadata_global_attrib = ncinfo(oinfo(iOrbit).ginfo(iGranule).metadata_name);
-                        % end
 
                         oinfo(iOrbit).ginfo(iGranule).scans_in_this_granule = num_scan_lines_in_granule;
 
@@ -277,17 +279,6 @@ while 1==1
                         
                         already_flagged_310 = 0;
                         if amazon_s3_run == 0
-
-                            % % % % % % Make sure S3 credentials are up-to-date
-                            % % % % % 
-                            % % % % % if (now - s3_expiration_time) > 30 / (60 * 24)
-                            % % % % %     [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
-                            % % % % % 
-                            % % % % %     % if status == 921  
-                            % % % % %     if status >= 900
-                            % % % % %         return
-                            % % % % %     end
-                            % % % % % end
                             
                             if iGranule ~= 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(iGranule).data_name, '/scan_line_attributes/mside'));
@@ -312,7 +303,9 @@ while 1==1
                         end
 
                         if iGranule == 1
-                            if iOrbit > 1
+                            % % % % % if iOrbit > 1
+                            if skip_to_start_of_orbit == 0
+                                
                                 % The flow gets here if this is the first granule in an orbit and the
                                 % ascending nadir track crosses -79 S. This can happen if all of the
                                 % other granules in the orbit are missing.
@@ -412,7 +405,8 @@ while 1==1
 
                             if isempty(oinfo(iOrbit).name)
 
-                                if iOrbit==1 & iGranule==1
+                                % % % % % if iOrbit==1 & iGranule==1
+                                if skip_to_start_of_orbit == 0
 
                                     % If this is the first orbit, then it must
                                     % have found an intersection so call

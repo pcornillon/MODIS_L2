@@ -64,7 +64,9 @@ global secs_per_day secs_per_scan_line orbit_length orbit_duration
 
 global oinfo iOrbit iGranule
 global start_line_index
-global Matlab_end_time 
+global Matlab_end_time
+
+global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 % globals used in the other major functions of build_and_fix_orbits.
 
@@ -74,6 +76,8 @@ global determine_fn_size
 if determine_fn_size; get_job_and_var_mem; end
 
 status = 0;
+
+skip_to_start_of_orbit = 0;
 
 % Initialize return variables to simple nans; will return to calling
 % program when the start of the next orbit is found.
@@ -134,31 +138,50 @@ already_processed = 0;
 
 % Build the test for whether or not this file has already been processed.
 
+% % % % % test_name{1} = oinfo(iOrbit).name;
+% % % % % test_name{2} = strrep(oinfo(iOrbit).name, '.nc4', '.dummy');
+% % % % % 
+% % % % % name_test = (exist(test_name{1}) == 2) | (exist(test_name{2} ) == 2);
+% % % % % 
+% % % % % if ~isempty(output_file_directory_remote)
+% % % % %     test_name{3} = strrep(oinfo(iOrbit).name, output_file_directory_local, output_file_directory_remote);
+% % % % %     test_name{4} = strrep(test_name{3}, '.nc4', '.dummy');
+% % % % % 
+% % % % %     name_test = name_test | (exist(test_name{3}) == 2) | (exist(test_name{4} ) == 2);
+% % % % % end
+% % % % % 
+
 test_name{1} = oinfo(iOrbit).name;
 test_name{2} = strrep(oinfo(iOrbit).name, '.nc4', '.dummy');
+test_name{3} = strrep(oinfo(iOrbit).name, output_file_directory_local, output_file_directory_remote);
+test_name{4} = strrep(test_name{3}, '.nc4', '.dummy');
 
-name_test = (exist(test_name{1}) == 2) | (exist(test_name{2} ) == 2);
-
-if ~isempty(output_file_directory_remote)
-    test_name{3} = strrep(oinfo(iOrbit).name, output_file_directory_local, output_file_directory_remote);
-    test_name{4} = strrep(test_name{3}, '.nc4', '.dummy');
-
-    name_test = name_test | (exist(test_name{3}) == 2) | (exist(test_name{4} ) == 2);
+name_test = false;
+if exist(test_name{1}) == 2
+    name_test = true;
+elseif exist(test_name{2} ) == 2
+    name_test = true;
+elseif exist(test_name{3}) == 2
+    name_test = true;
+elseif exist(test_name{4} ) == 2
+    name_test = true;
 end
 
 if name_test
-    
+
     already_processed = 1;
-    
+
     fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
 
-    % Skip the next 85 minutes of granules to save time; don't have to read them.
-    
-    granule_start_time = granule_start_time + 85 / (60 * 24);
+    granule_end_time = oinfo(iOrbit).end_time;
+
+    % % % % % % Skip the next 85 minutes of granules to save time; don't have to read them.
+    % % % % %
+    % % % % % granule_start_time = granule_start_time + 85 / (60 * 24);
 
     % Keep skipping orbits until a missing one is found. 
     
-    found_one = 1;
+    found_one = true;
     while found_one
 
         % When probing for the next orbit, need to be careful that the
@@ -192,35 +215,56 @@ if name_test
             oinfo(iOrbit).name = strrep( [exist_list(1).folder '/' exist_list(1).name], '.dummy', '.nc4');
             [status, oinfo(iOrbit).start_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
 
-            oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
+            % % % % % oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
             oinfo(iOrbit).orbit_number = oinfo(iOrbit).orbit_number + 1;
 
-            granule_start_time = granule_start_time + orbit_duration / secs_per_day;
+            % % % % % granule_start_time = granule_start_time + orbit_duration / secs_per_day;
+            granule_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
 
-            if granule_start_time > Matlab_end_time
+            % % % % % if granule_start_time > Matlab_end_time
+            if granule_end_time > Matlab_end_time
 
-                status = populate_problem_list( 935, ['granule_start_time ' datestr(granule_start_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)], granule_start_time); % old status 902
-
+                status = populate_problem_list( 935, ['Time to start the next orbit ' datestr(granule_end_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)]); % old status 902
                 return
             end
 
             fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
-            % Set granule_start_time to the nearest multiple of 5
-            % minutes preceeding oinfo(iOrbit).end_time. Remember that the
-            % end of the previous orbit is 100 scan lines past the nadir
-            % ascending crossing of the satellie.  
-
-            date_vec = datevec(oinfo(iOrbit).end_time - 100 * secs_per_scan_line / secs_per_day);
-            date_vec(5) = date_vec(5) - rem(date_vec(5),5);
-            date_vec(6) = 0;
-            granule_start_time = datenum(date_vec);
+            % % % % % % Set granule_start_time to the nearest multiple of 5
+            % % % % % % minutes preceeding oinfo(iOrbit).end_time. Remember that the
+            % % % % % % end of the previous orbit is 100 scan lines past the nadir
+            % % % % % % ascending crossing of the satellie.  
+            % % % % % 
+            % % % % % date_vec = datevec(oinfo(iOrbit).end_time - 100 * secs_per_scan_line / secs_per_day);
+            % % % % % date_vec(5) = date_vec(5) - rem(date_vec(5),5);
+            % % % % % date_vec(6) = 0;
+            % % % % % granule_start_time = datenum(date_vec);
 
             iGranule = 0;
             
-            found_one = 0;
+            found_one = false;
+
+            % Get the first granule on the list starting after ~6 minutes
+            % before the end of the previously found orbit.
+
+            for iList=1:length(newGranuleList)
+                if newGranuleList(iList).granule_start_time > (granule_end_time - 11 / (24 * 60))
+
+                    iGranuleList = iList;
+                    granule_start_time = newGranuleList(iGranuleList).granule_start_time;
+                    skip_to_start_of_orbit = 1;
+
+                    break
+                end
+            end
+            
+            if iList == numGranules
+                status = populate_problem_list( 950, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
+                return
+            end
         end
-    end        
+
+    end
     
     %**********************************************************************
     % Need to update iGranuleList based on granule_start_time here
@@ -230,7 +274,7 @@ if name_test
 
     while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
+        [status, granule_start_time] = find_next_granule_with_data( skip_to_start_of_orbit, granule_start_time);
         
         % Return if end of run.
         
@@ -325,7 +369,7 @@ while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     
-    [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
+    [status, granule_start_time] = find_next_granule_with_data( 0, granule_start_time);
     
     % Status returned from find_next_granule_with_data is either 0 - all OK,
     % 201 - granule start time exceeded the end of orbit time without

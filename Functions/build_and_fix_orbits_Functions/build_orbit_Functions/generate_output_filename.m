@@ -135,8 +135,8 @@ switch build_type
     
         oinfo(iOrbit).start_time = scan_line_times(start_line_index);
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
-        
-        oinfo(iOrbit).orbit_number = 1920 + (oinfo(iOrbit).start_time - datenum([2002 9 13 0 44 32])) * 86400 / secs_per_orbit;
+
+        oinfo(iOrbit).orbit_number = round(1920 + (oinfo(iOrbit).start_time - datenum([2002 9 13 0 44 32])) * 86400 / secs_per_orbit);
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
             '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];

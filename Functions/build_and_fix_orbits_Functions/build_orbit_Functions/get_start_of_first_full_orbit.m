@@ -62,14 +62,14 @@ global iProblem problem_list
 
 if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
-file_list(1).name  = newGranuleList(1).filename;
+file_list(1).name  = newGranuleList(iGranuleList).filename;
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
 % corresponding to this file. Search for the next granule with the start of
 % an orbit, defined as the point at which the descending satellite crosses
 % latlim, nominally 78 S. 
 
-granule_start_time = newGranuleList(1).granule_start_time;
+granule_start_time = newGranuleList(iGranuleList).granule_start_time;
 
 if local_debug; fprintf('Following while loop. granule_start_time: %s\n', datestr(granule_start_time)); end
 
@@ -86,7 +86,7 @@ while granule_start_time <= Matlab_end_time
 
     if local_debug; fprintf('In 2nd while loop.\n'); end
 
-    [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
+    [status, granule_start_time] = find_next_granule_with_data( 1, granule_start_time);
 
     % if status == 921
     if status >= 900

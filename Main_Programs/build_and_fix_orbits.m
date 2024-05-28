@@ -522,6 +522,8 @@ tic_build_start = tic;
 
 iOrbit = 1;
 
+iGranuleList = 1;
+
 search_start_time = Matlab_start_time;
 [status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time);
 

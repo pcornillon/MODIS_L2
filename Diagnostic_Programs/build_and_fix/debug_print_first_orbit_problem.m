@@ -1,5 +1,5 @@
 function debug_print_fist_orbit_problem( granule_start_time, indices, nnToUse)
-% 
+%
 % This script prints out variables used to diagnose problem finding the
 % first good orbit.
 
@@ -27,6 +27,36 @@ fprintf('oinfo(iOrbit).name: %s\n', oinfo(iOrbit).name)
 fprintf('oinfo(iOrbit).start_time: %s\n', datestr(oinfo(iOrbit).start_time))
 fprintf('oinfo(iOrbit).end_time: %s\n', datestr(oinfo(iOrbit).end_time))
 
+if ~isempty(oinfo(iOrbit))
+    if iGranule > 0
+        oinfoFieldnames = fieldnames(oinfo(iOrbit).ginfo(iGranule));
+
+        for iField=1:length(oinfoFieldnames)
+            switch oinfoFieldnames{iField}
+
+                case 'osscan'
+                    fprintf('oinfo(iOrbit).ginfo(iGranule).osscan: %i\n', oinfo(iOrbit).ginfo(iGranule).osscan)
+
+                case 'oescan'
+                    fprintf('oinfo(iOrbit).ginfo(iGranule).osecan: %i\n', oinfo(iOrbit).ginfo(iGranule).oescan)
+
+                case 'gsscan'
+                    fprintf('oinfo(iOrbit).ginfo(iGranule).gsscan: %i\n', oinfo(iOrbit).ginfo(iGranule).gsscan)
+
+                case 'gescan'
+                    fprintf('oinfo(iOrbit).ginfo(iGranule).gescan: %i\n', oinfo(iOrbit).ginfo(iGranule).gescan)
+                    fprintf('\n')
+
+                otherwise
+
+            end
+        end
+    end
+end
+
+% Now for additional variables.
+
+
 if exist('nnToUse')
     fprintf('# elements in nnToUse: %i\n', length(nnToUse))
 else
@@ -39,72 +69,74 @@ else
     fprintf('start_line_index not yet defined.\n')
 end
 
-if ~isempty(indices)
-    indicesFieldnames = fieldnames(indices);
+if exist('indices')
+    if ~isempty(indices)
+        indicesFieldnames = fieldnames(indices);
 
-    for iField=1:length(indicesFieldnames)
-        switch indicesFieldnames{iField}
+        for iField=1:length(indicesFieldnames)
+            switch indicesFieldnames{iField}
 
-            case 'current'
-                indicesCurrent = fieldnames(indices.current);
-                for jField=1:length(indicesCurrent)
-                    switch indicesCurrent{jField}
-                        case 'osscan'
-                            fprintf('indices.current.osscan: %i\n', indices.current.osscan)
+                case 'current'
+                    indicesCurrent = fieldnames(indices.current);
+                    for jField=1:length(indicesCurrent)
+                        switch indicesCurrent{jField}
+                            case 'osscan'
+                                fprintf('indices.current.osscan: %i\n', indices.current.osscan)
 
-                        case 'oescan'
-                            fprintf('indices.current.osecan: %i\n', indices.current.oescan)
+                            case 'oescan'
+                                fprintf('indices.current.osecan: %i\n', indices.current.oescan)
 
-                        case 'gsscan'
-                            fprintf('indices.current.gsscan: %i\n', indices.current.gsscan)
+                            case 'gsscan'
+                                fprintf('indices.current.gsscan: %i\n', indices.current.gsscan)
 
-                        case 'gescan'
-                            fprintf('indices.current.gescan: %i\n', indices.current.gescan)
+                            case 'gescan'
+                                fprintf('indices.current.gescan: %i\n', indices.current.gescan)
+                        end
                     end
-                end
-                fprintf('\n')
-                
-            case 'next'
-                indicesNext = fieldnames(indices.next);
-                for jField=1:length(indicesNext)
-                    switch indicesNext{jField}
-                        case 'osscan'
-                            fprintf('indices.next.osscan: %i\n', indices.next.osscan)
+                    fprintf('\n')
 
-                        case 'oescan'
-                            fprintf('indices.next.osecan: %i\n', indices.next.oescan)
+                case 'next'
+                    indicesNext = fieldnames(indices.next);
+                    for jField=1:length(indicesNext)
+                        switch indicesNext{jField}
+                            case 'osscan'
+                                fprintf('indices.next.osscan: %i\n', indices.next.osscan)
 
-                        case 'gsscan'
-                            fprintf('indices.next.gsscan: %i\n', indices.next.gsscan)
+                            case 'oescan'
+                                fprintf('indices.next.osecan: %i\n', indices.next.oescan)
 
-                        case 'gescan'
-                            fprintf('indices.next.gescan: %i\n', indices.next.gescan)
+                            case 'gsscan'
+                                fprintf('indices.next.gsscan: %i\n', indices.next.gsscan)
+
+                            case 'gescan'
+                                fprintf('indices.next.gescan: %i\n', indices.next.gescan)
+                        end
                     end
-                end
-                fprintf('\n')
+                    fprintf('\n')
 
-            case 'pirate'
-                indicesPirate = fieldnames(indices.pirate);
-                for jField=1:length(indicesPirate)
-                    switch indicesPirate{jField}
-                        case 'osscan'
-                            fprintf('indices.pirate.osscan: %i\n', indices.pirate.osscan)
+                case 'pirate'
+                    indicesPirate = fieldnames(indices.pirate);
+                    for jField=1:length(indicesPirate)
+                        switch indicesPirate{jField}
+                            case 'osscan'
+                                fprintf('indices.pirate.osscan: %i\n', indices.pirate.osscan)
 
-                        case 'oescan'
-                            fprintf('indices.pirate.osecan: %i\n', indices.pirate.oescan)
+                            case 'oescan'
+                                fprintf('indices.pirate.osecan: %i\n', indices.pirate.oescan)
 
-                        case 'gsscan'
-                            fprintf('indices.pirate.gsscan: %i\n', indices.pirate.gsscan)
+                            case 'gsscan'
+                                fprintf('indices.pirate.gsscan: %i\n', indices.pirate.gsscan)
 
-                        case 'gescan'
-                            fprintf('indices.pirate.gescan: %i\n', indices.pirate.gescan)
+                            case 'gescan'
+                                fprintf('indices.pirate.gescan: %i\n', indices.pirate.gescan)
+                        end
                     end
-                end
-                fprintf('\n')
+                    fprintf('\n')
 
-            otherwise
-                fprintf('\n')
+                otherwise
+                    fprintf('\n')
 
+            end
         end
     end
 end

@@ -18,7 +18,22 @@ function [status, granule_start_time] = find_next_granule_with_data( granule_sta
 %   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
-%   status  910: ran out of granules.                                               RETURN.
+%   status  610: check_for_latlim... -- No scanline start times.                    GO TO NEXT FILE ON LIST of metadata files.
+%           605: get_filename 'metadata' --metadata granule not found.              GO TO NEXT FILE ON LIST of metadata files. 
+%           615: check_for_latlim... -- 1st scan not the 1st detector in group.     GO TO NEXT FILE ON LIST of metadata files.
+%           620: check_for_latlim... -- Can''t find the start of scan lines group.  GO TO NEXT FILE ON LIST of metadata files.
+%           625: bad granule, # of scan lines ~= 2030 or 2040.                      GO TO NEXT FILE ON LIST of metadata files. 
+%     ***   705: granule past predicted end of orbit time.                          RETURN.      
+%           905: get_filename 'metadata' --ran out of granules.                     RETURN. 
+%           910: ran out of granules.                                               RETURN.
+%           915: time beyond end of run time.                                       RETURN.
+%           920: get_filename 'sst_data' -- failed to get the NASA S3 credentials.  RETURN.  
+%           925: generate_output_filename -- Coding error.                          RETURN.
+%   granule_start_time - the matlab_time of the granule to start with.
+%    These times are determined from the first scan of the granule.
+%
+% This is the order in which the status checks are determined:
+%           910: ran out of granules.                                               RETURN.
 %           915: time beyond end of run time.                                       RETURN.
 %     ***   705: granule past predicted end of orbit time.                          RETURN.
 %           605: get_filename 'metadata' --metadata granule not found.              GO TO NEXT FILE ON LIST of metadata files. 
@@ -29,8 +44,6 @@ function [status, granule_start_time] = find_next_granule_with_data( granule_sta
 %           615: check_for_latlim... -- 1st scan not the 1st detector in group.     GO TO NEXT FILE ON LIST of metadata files.
 %           620: check_for_latlim... -- Can''t find the start of scan lines group.  GO TO NEXT FILE ON LIST of metadata files.
 %           925: generate_output_filename -- Coding error.                          RETURN.
-%   granule_start_time - the matlab_time of the granule to start with.
-%    These times are determined from the first scan of the granule.
 %
 % Granule file names:
 %

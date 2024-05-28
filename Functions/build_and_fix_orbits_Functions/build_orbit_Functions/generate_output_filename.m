@@ -135,7 +135,7 @@ switch build_type
     
         oinfo(iOrbit).start_time = scan_line_times(start_line_index);
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
-        % % % oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number + 1;
+        
         oinfo(iOrbit).orbit_number = 1920 + (oinfo(iOrbit).start_time - datenum([2002 9 13 0 44 32])) * 86400 / secs_per_orbit;
         
         orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
@@ -143,17 +143,7 @@ switch build_type
         
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
-        
-        % And the metadata for this granule at the start of the next orbit.
-        % % % 
-        % % % oinfo(iOrbit).ginfo(1).data_name = oinfo(iOrbit).ginfo(end).data_name;
-        % % % oinfo(iOrbit).ginfo(1).metadata_name = oinfo(iOrbit).ginfo(end).metadata_name;
-        % % % oinfo(iOrbit).ginfo(1).metadata_global_attrib = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
-        % % % oinfo(iOrbit).ginfo(1).NASA_orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number;
-        % % % 
-        % % % oinfo(iOrbit).ginfo(1).start_time = oinfo(iOrbit).ginfo(end).start_time;
-        % % % oinfo(iOrbit).ginfo(1).end_time = oinfo(iOrbit).ginfo(end).end_time;
-        
+                                
     otherwise
         [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
         status = populate_problem_list( 925, ['build_type passed in as ' build_type '. Must be either ''sli'', or ''no_sli'' for ' orbitName '. This should never happen; coding error.']); % old status 231

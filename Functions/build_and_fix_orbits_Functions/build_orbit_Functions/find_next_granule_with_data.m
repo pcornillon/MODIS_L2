@@ -1,5 +1,4 @@
 function [status, granule_start_time] = find_next_granule_with_data( granule_start_time)
-% % % function [status, metadata_file_list, data_file_list, indices, granule_start_time] = find_next_granule_with_data( granule_start_time)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -30,32 +29,12 @@ function [status, granule_start_time] = find_next_granule_with_data( granule_sta
 %           615: check_for_latlim... -- 1st scan not the 1st detector in group.     GO TO NEXT FILE ON LIST of metadata files.
 %           620: check_for_latlim... -- Can''t find the start of scan lines group.  GO TO NEXT FILE ON LIST of metadata files.
 %           925: generate_output_filename -- Coding error.                          RETURN.
-
-
-%      The following returned from calls to get_osscan_etc...
-%           : 111 - Adjacent orbits but osscan calculations disagree. Will
-%             use value based on end of previous granule and continue.
-%           : 112 - Didn't skip either 1020, 1030, 1040 or 1050 scan lines.
-%             Set the # of lines to skip to 0 and continued.
-%           : 113 Calculated osscans do not agree. Will use the calculation
-%             based on the canonical orbit and continue.
-%           : 114 - (from ...with_sli) Length of orbit calculation does not
-%               agree with mandated length, nominally 40,271. oescan and
-%               gescan forced for an orbit of 40,271 and continued.
-%           : 125 - (from ...NO_sli) Length of orbit calculation does not
-%               agree with mandated length, nominally 40,271. oescan and
-%               gescan forced for an orbit of 40,271 and continued.
-%   metadata_file_list - list of granule metadata files found at time passed in.
-%   data_file_list - list of granule data files found at time passed in.
-%   indices - a structure with the discovered indices.
-%   granule_start_time - the matlab_time of the granule to start with. If scan
-%    times are obtained for this granule, granule_start_time will be set to the
-%    first scan of the granule; otherwise the value passed in will be returned.
+%   granule_start_time - the matlab_time of the granule to start with.
+%    These times are determined from the first scan of the granule.
 %
-
 % Granule file names:
 %
-% Local data granule: ~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/2010/AQUA_MODIS.20100619T052000.L2.SST.nc'
+% Local     data granule: ~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/combined/2010/AQUA_MODIS.20100619T052000.L2.SST.nc'
 % Local metadata granule: ~/Dropbox/Data/Support_data_for_MODIS_L2_Corrections/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/2010/AQUA_MODIS_20100619T052000_L2_SST_OBPG_extras.nc4
 %
 % s3 data granule: s3://podaac-ops-cumulus-protected/MODIS_A-JPL-L2P-v2019.0/20100619052000-JPL-L2P_GHRSST-SSTskin-MODIS_A-D-v02.0-fv01.0.nc

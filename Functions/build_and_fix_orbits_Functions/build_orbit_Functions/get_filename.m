@@ -81,9 +81,6 @@ switch file_type
         % Get the time of the metadata file. Start by finding where in the
         % string the data and time info is. 
 
-        % % % % % md_date = datestr(newGranuleList(iGranuleList).filename_time, formatOut.yyyymmdd);
-        % % % % % md_time = datestr(newGranuleList(iGranuleList).filename_time, formatOut.HHMMSS);
-
         % Will first get components of the filename, which differ from data
         % at URI, as copied from OBPG, and at AWS.
 
@@ -99,7 +96,6 @@ switch file_type
             if (now - s3_expiration_time) > 30 / (60 * 24)
                 [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
                 
-                % if status == 921
                 if status >= 900
                     return
                 end
@@ -159,7 +155,7 @@ switch file_type
                 % % % % % granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
                 granule_guess_time = floor(newGranuleList(iGranuleList).filename_time * 24 * 60) / 24 / 60;
 
-                status = populate_problem_list( 102, ['Data granule corresponding to metadata granuel' newGranuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
+                status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' newGranuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
                 
                 for iSec=0:59
                     granule_guess_time = granule_guess_time + 1 / secs_per_day;

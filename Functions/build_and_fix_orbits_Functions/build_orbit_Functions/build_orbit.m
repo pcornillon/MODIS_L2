@@ -103,16 +103,16 @@ if length(oinfo) < iOrbit
         return
     end
     
-    %% Will never get here???
-
-    iGranule = 0;
-    
-    [status, ~, granule_start_time] = find_next_granule_with_data( granule_start_time);
-        
-    % if (status == 201) | (status == 231) | (status > 900)
-    if status >= 900
-        return
-    end
+    % % % % % %% Will never get here???
+    % % % % % 
+    % % % % % iGranule = 0;
+    % % % % % 
+    % % % % % [status, ~, granule_start_time] = find_next_granule_with_data( granule_start_time);
+    % % % % % 
+    % % % % % % if (status == 201) | (status == 231) | (status > 900)
+    % % % % % if status >= 900
+    % % % % %     return
+    % % % % % end
 end
 
 % Is there an orbit name for this orbit. If not, very bad, quit.

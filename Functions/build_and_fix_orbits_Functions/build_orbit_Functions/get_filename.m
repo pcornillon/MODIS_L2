@@ -184,14 +184,31 @@ switch file_type
                     
                     data_filename = [granules_directory dir_year filename_start yyyymmddHHMMSS filename_end_day];
 
-                    if ~exist(data_filename) & amazon_s3_run  % No need to search for a URI nighttime version of the file. 
-                        % % % % % data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_night];
-                        data_filename = [granules_directory dir_year filename_start yyyymmddHHMMSS filename_end_night];
-                    end
+                    % % % % % if ~exist(data_filename) & amazon_s3_run  % No need to search for a URI nighttime version of the file. 
+                    % % % % %     % % % % % data_filename = [granules_directory dir_year filename_start yymmddhhmm iSecC filename_end_night];
+                    % % % % %     data_filename = [granules_directory dir_year filename_start yyyymmddHHMMSS filename_end_night];
+                    % % % % % end
+                    % % % % % 
+                    % % % % % if exist(data_filename)
+                    % % % % %     found_one = 1;
+                    % % % % %     break
+                    % % % % % end
 
                     if exist(data_filename)
                         found_one = 1;
                         break
+                    else
+                        % No daytime data file. Test for nighttime file if
+                        % AWS--day and night filenames differ. Not true for
+                        % OBPG data files. 
+
+                        if amazon_s3_run 
+                            data_filename = [granules_directory dir_year filename_start yyyymmddHHMMSS filename_end_night];
+                            if exist(data_filename)
+                                found_one = 1;
+                                break
+                            end
+                        end
                     end
                 end
             else

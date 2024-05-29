@@ -28,14 +28,18 @@ for iYear=1:length(Years)
     granuleList(length(fileList)).filename = fileList(end).name;
     granuleList(length(fileList)).filename_time = parse_filename(fileList(end).name);
     
-    for iFile=1:length(fileList)
-        filename = fileList(iFile).name;
+    for iGranule=1:length(fileList)
+        filename = fileList(iGranule).name;
 
-        granuleList(iFile).filename = filename;
-        granuleList(iFile).filename_time = parse_filename(filename);
+        if rem(iGranule,10000) == 0
+            fprintf('Working on granule %i: %s\n', iGranule, filename)
+        end
+
+        granuleList(iGranule).filename = filename;
+        granuleList(iGranule).filename_time = parse_filename(filename);
 
         tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-        granuleList(iFile).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
+        granuleList(iGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
     end
     
     eval(['save(''~/Dropbox/Data/MODIS_L2/NewGranuleList_' YearString '.mat'', ''granuleList'');']);

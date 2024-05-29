@@ -39,6 +39,18 @@ global granules_directory metadata_directory fixit_directory logs_directory outp
 
 fprintf('Entering build_wrapper at %s\n', datetime)
 
+% Initialize arguments for build_and_fix
+
+fix_mask = 1;
+fix_bowtie = 1;
+regrid_sst = 1;
+regrid_to_AMSRE = 1;
+get_gradients = 1;
+save_core = 1;
+print_diag = 1;
+save_orbits = 1;
+debug = 0;
+
 % Set directories.
 
 switch Option
@@ -64,27 +76,27 @@ switch Option
 
         logs_directory = [BaseDir 'Logs/'];
     
-    case 2 % MacStudio or Satdat1 
-        % reading 
-        %   fixit metadata from Dropbox, 
-        %   OBPG metadata from Aqua-1, 
-        %   granules from Cornillon_NAS 
-        % and writing 
-        %   local output to the Desktop
-        %   remote outut to the Cornillon_NAS
-        %   logs output to Dropbobx
+    case 2 % MacStudio or Satdat1 - same as 3 except no mask, bowtie,...
 
-        BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+        BaseDir                         = '/Volumes/MODIS_L2_modified/OBPG/';
+        
+        fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
+        metadata_directory              = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
-        fixit_directory = [BaseDir 'metadata/'];
-        metadata_directory = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+        granules_directory              = '/Volumes/MODIS_L2_Original/OBPG/combined/';
+        
+        AMSR_E_baseDir                  = '/Volumes/AMSR-E_L2-v7/';
+        
+        output_file_directory_local     = [BaseDir 'SST/'];
+        output_file_directory_remote    = '';
 
-        granules_directory    = '/Volumes/MODIS_L2_Original/OBPG/combined/';
+        logs_directory                  = [BaseDir 'Logs/'];
 
-        output_file_directory_local = '/users/petercornillon/Desktop/SST/';
-        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
-
-        logs_directory = [BaseDir 'Logs/'];
+        fix_mask = 0;
+        fix_bowtie = 0;
+        regrid_sst = 0;
+        regrid_to_AMSRE = 0;
+        get_gradients = 0;
 
     case 3 % MacStudio or Satdat1 reading from NAS -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 
@@ -225,18 +237,6 @@ switch Option
         logs_directory                  = '/mnt/uri-nfs-cornillon/Logs/';
 
 end
-
-% Initialize arguments for build_and_fix
-
-fix_mask = 1;
-fix_bowtie = 1;
-regrid_sst = 1;
-regrid_to_AMSRE = 1;
-get_gradients = 1;
-save_core = 1;
-print_diag = 1;
-save_orbits = 1;
-debug = 0;
 
 fprintf('Entering build_and_fix_orbits.\n')
 

@@ -22,7 +22,7 @@ for iYear=1:length(Years)
         % load ~/Dropbox/TempForTransfer/filelist.mat
         load ~/Desktop/filelist.mat
     else
-        eval(['fileList = dir([metadata_directory ''' YearString '/AQUA*'');'])
+        eval(['fileList = dir([metadata_directory ''' YearString '/AQUA*'']);'])
     end
     
     granuleList(length(fileList)).filename = fileList(end).name;

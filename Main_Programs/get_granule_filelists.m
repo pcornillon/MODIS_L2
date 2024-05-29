@@ -32,7 +32,7 @@ for iYear=1:length(Years)
         filename = fileList(iGranule).name;
 
         if rem(iGranule,10000) == 0
-            fprintf('Working on granule %i: %s\n', iGranule, filename)
+            fprintf('Working on granule %i: %s. Current date/time %s\n', iGranule, filename, datestr(now))
         end
 
         granuleList(iGranule).filename = filename;

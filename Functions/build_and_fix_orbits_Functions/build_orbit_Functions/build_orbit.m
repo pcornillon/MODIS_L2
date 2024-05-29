@@ -173,7 +173,7 @@ if name_test
 
     fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
 
-    granule_end_time = oinfo(iOrbit).end_time;
+    % % % % % granule_end_time = oinfo(iOrbit).end_time;
 
     % % % % % % Skip the next 85 minutes of granules to save time; don't have to read them.
     % % % % %
@@ -187,8 +187,8 @@ if name_test
         % When probing for the next orbit, need to be careful that the
         % year and/or the month has not changed since the previous orbit.
 
-        [status, temp_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
-        [YR, MN, DY, ~, ~, ~] = datevec(temp_time + orbit_duration / secs_per_day);
+        [status, oinfo(iOrbit).start_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
+        [YR, MN, DY, ~, ~, ~] = datevec(oinfo(iOrbit).start_time + orbit_duration / secs_per_day);
 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
             'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
@@ -213,18 +213,18 @@ if name_test
             % Replace this with .nc4 just in case.
             
             oinfo(iOrbit).name = strrep( [exist_list(1).folder '/' exist_list(1).name], '.dummy', '.nc4');
+            
             [status, oinfo(iOrbit).start_time] = extract_datetime_from_filename(oinfo(iOrbit).name);
-
-            % % % % % oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
+            oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
+            
             oinfo(iOrbit).orbit_number = oinfo(iOrbit).orbit_number + 1;
 
             % % % % % granule_start_time = granule_start_time + orbit_duration / secs_per_day;
-            granule_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
-
+            % % % % % granule_end_time = oinfo(iOrbit).start_time + orbit_duration / secs_per_day;
             % % % % % if granule_start_time > Matlab_end_time
-            if granule_end_time > Matlab_end_time
-
-                status = populate_problem_list( 935, ['Time to start the next orbit ' datestr(granule_end_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)]); % old status 902
+            
+            if oinfo(iOrbit).end_time > Matlab_end_time
+                status = populate_problem_list( 935, ['Time to start the next orbit ' datestr(oinfo(iOrbit).end_time) ' >  Matlab_end_time ' datestr(Matlab_end_time)]); % old status 902
                 return
             end
 
@@ -248,13 +248,23 @@ if name_test
             % before the end of the previously found orbit.
 
             for iList=max(1,iGranuleList):length(newGranuleList)
-                if newGranuleList(iList).granule_start_time > (granule_end_time - 11 / (24 * 60))
+                if newGranuleList(iList).granule_start_time > (oinfo(iOrbit).end_time - 11 / (24 * 60))
 
-                    iGranuleList = iList;
-                    granule_start_time = newGranuleList(iGranuleList).granule_start_time;
-                    skip_to_start_of_orbit = 1;
+                    % Check to see if there are more missing granules and
+                    % the loop has stepped past the end of the orbit. If
+                    % so, find the new end of orbit and continue searching.
 
-                    break
+                    newNumOrbits = ceil((newGranuleList(iList).granule_start_time - oinfo.end_time) * 86400 / secs_per_orbit);
+                    if newNumOrbits >= 1
+                        oinfo(iOrbit).end_time = oinfo(iOrbit).end_time + newNumOrbits * secs_per_orbit / secs_per_day;
+                    else
+
+                        iGranuleList = iList;
+                        granule_start_time = newGranuleList(iGranuleList).granule_start_time;
+                        skip_to_start_of_orbit = 1;
+
+                        break
+                    end
                 end
             end
             
@@ -263,29 +273,29 @@ if name_test
                 return
             end
 
-            % Now find the end of the orbit in which this granule occurs.
-
-            newNumOrbits = ceil((newGranuleList(iGranuleList).granule_start_time - oinfo.end_time) * 86400 / secs_per_orbit);
-            oinfo(iOrbit).end_time = oinfo(iOrbit).end_time + 8 * secs_per_orbit / secs_per_day;
-
-            % Next, skip to the granule starting about 10 minutes before
-            % the end of this orbit.
-
-            for iList=max(1,iGranuleList):length(newGranuleList)
-                if newGranuleList(iList).granule_start_time > (granule_end_time - 11 / (24 * 60))
-
-                    iGranuleList = iList;
-                    granule_start_time = newGranuleList(iGranuleList).granule_start_time;
-                    skip_to_start_of_orbit = 1;
-
-                    break
-                end
-            end
-
-            if iList == numGranules
-                status = populate_problem_list( 945, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
-                return
-            end
+            % % % % % % Now find the end of the orbit in which this granule occurs.
+            % % % % % 
+            % % % % % newNumOrbits = ceil((newGranuleList(iGranuleList).granule_start_time - oinfo.end_time) * 86400 / secs_per_orbit);
+            % % % % % oinfo(iOrbit).end_time = oinfo(iOrbit).end_time + newNumOrbits * secs_per_orbit / secs_per_day;
+            % % % % % 
+            % % % % % % Next, skip to the granule starting about 10 minutes before
+            % % % % % % the end of this orbit.
+            % % % % % 
+            % % % % % for iList=max(1,iGranuleList):length(newGranuleList)
+            % % % % %     if newGranuleList(iList).granule_start_time > (oinfo(iOrbit).end_time - 11 / (24 * 60))
+            % % % % % 
+            % % % % %         iGranuleList = iList;
+            % % % % %         granule_start_time = newGranuleList(iGranuleList).granule_start_time;
+            % % % % %         skip_to_start_of_orbit = 1;
+            % % % % % 
+            % % % % %         break
+            % % % % %     end
+            % % % % % end
+            % % % % % 
+            % % % % % if iList == numGranules
+            % % % % %     status = populate_problem_list( 945, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
+            % % % % %     return
+            % % % % % end
 
         end
 

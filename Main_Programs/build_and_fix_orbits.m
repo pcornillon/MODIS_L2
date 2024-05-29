@@ -525,7 +525,7 @@ iOrbit = 1;
 iGranuleList = 1;
 
 search_start_time = Matlab_start_time;
-[status, granule_start_time_guess] = get_start_of_first_full_orbit(search_start_time);
+[status, granule_start_time] = get_start_of_first_full_orbit(search_start_time);
 
 % Either no granules with a 79 crossing or coding problem.
 
@@ -545,7 +545,9 @@ end
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
-while granule_start_time_guess <= Matlab_end_time
+search_for_start_of_next_orbit = 0;
+
+while granule_start_time <= Matlab_end_time
 
     mem_count = mem_count + 1;
 
@@ -555,7 +557,31 @@ while granule_start_time_guess <= Matlab_end_time
     % granule of the previous orbit was missing, there would be no start
     % for this orbit so we need to search for the start of the next orbit.
 
-    if length(oinfo) ~= iOrbit
+    if search_for_start_of_next_orbit
+        % Here if last orbit read was beyond the end of an orbit.
+        
+        search_start_time = newGranuleList(iGranuleList).granule_start_time;
+
+        [status, granule_start_time] = get_start_of_first_full_orbit(search_start_time);
+
+        search_for_start_of_next_orbit = 0;
+
+        % Either no granules with a 79 crossing or coding problem.
+
+        % if (status == 201) | (status == 231) | (status > 900)
+        if status >= 900
+            fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+            fprintf('*    Problem building this orbit or end of run.\n*\n')
+            fprintf('*    Processed %i orbits\n*\n', iOrbit)
+            fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
+            fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+            fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
+
+            save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
+
+            return
+        end
+    elseif length(oinfo) ~= iOrbit
         iGranule = 0;
 
         oinfo(iOrbit).start_time = oinfo(iOrbit-1).end_time + 1 * secs_per_scan_line / secs_per_day;
@@ -568,7 +594,7 @@ while granule_start_time_guess <= Matlab_end_time
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
 
-        [status, granule_start_time_guess] = find_next_granule_with_data( granule_start_time_guess);
+        [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
 
         % Return if end of run.
 
@@ -585,6 +611,18 @@ while granule_start_time_guess <= Matlab_end_time
 
             return
         end
+    % % % % % else
+    % % % % %     status = populate_problem_list( 955, ['length(oinfo) ' num2str(length(oinfo)) ' not equal to iOrbit ' num2str(iOrbit)], granule_start_time);
+    % % % % % 
+    % % % % %     fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
+    % % % % %     fprintf('*    Processed %i orbits\n*\n', iOrbit)
+    % % % % %     fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
+    % % % % %     fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
+    % % % % %     fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
+    % % % % % 
+    % % % % %     save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
+    % % % % % 
+    % % % % %     return
     end
 
 
@@ -592,8 +630,18 @@ while granule_start_time_guess <= Matlab_end_time
 
     time_to_process_this_orbit = tic;
 
-    [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
-        = build_orbit( granule_start_time_guess);
+    [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] ...
+        = build_orbit( granule_start_time);
+
+    % If orbit ended because start of granule was beyond the end of the
+    % orbit, finish processing this one and then search for the start of
+    % the next orbit starting with the errant granule.
+
+    if (status >= 700) & (status < 800)
+        search_for_start_of_next_orbit = 1;
+    else
+        search_for_start_of_next_orbit = 0;
+    end
 
     % No remaining granules with a 79 crossing.
 
@@ -617,17 +665,17 @@ while granule_start_time_guess <= Matlab_end_time
         % Find the next granule with a ascending 79 S crossing.
 
         iGranule = 0;
-        [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time_guess] ...
-            = build_orbit( granule_start_time_guess);
+        [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] ...
+            = build_orbit( granule_start_time);
 
     else
 
         if length(latitude)==1
 
-            status = populate_problem_list( 178, ['*** Bad latitude. Exiting this run.'], granule_start_time_guess);
+            status = populate_problem_list( 955, ['*** Bad latitude. Exiting this run.'], granule_start_time);
 
             fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
-            fprintf('*    Bad latitude somewhere before %s\n*\n',  datestr(granule_start_time_guess))
+            fprintf('*    Bad latitude somewhere before %s\n*\n',  datestr(granule_start_time))
             fprintf('*    Processed %i orbits\n*\n', iOrbit)
             fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
             fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
@@ -725,6 +773,17 @@ while granule_start_time_guess <= Matlab_end_time
                 new_easting = nan;
                 new_northing = nan;
 
+                L2eqaLon = nan;
+                L2eqaLat = nan;
+                L2eqa_MODIS_SST = nan;
+                L2eqa_MODIS_std_SST = nan;
+                L2eqa_MODIS_num_SST = nan;
+                L2eqa_AMSR_E_SST = nan;
+                AMSR_E_lon = nan;
+                AMSR_E_lat = nan;
+                AMSR_E_sst = nan;
+                MODIS_SST_on_AMSR_E_grid = nan;
+                
                 oinfo(iOrbit).time_to_address_bowtie = 0;
             end
 

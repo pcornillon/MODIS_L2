@@ -1,10 +1,10 @@
-function debug_print_fist_orbit_problem( granule_start_time, indices, nnToUse)
+function debug_print_fist_orbit_problem( granule_start_time, scan_seconds_from_start, latitude, indices, nnToUse)
 %
 % This script prints out variables used to diagnose problem finding the
 % first good orbit.
 
 global oinfo iOrbit iGranule
-global scan_line_times start_line_index num_scan_lines_in_granule
+global scan_line_times start_line_index num_scan_lines_in_granule nlat_t 
 global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 if ~isempty(granule_start_time)
@@ -30,6 +30,23 @@ fprintf('oinfo(iOrbit).end_time: %s\n', datestr(oinfo(iOrbit).end_time))
 if ~isempty(oinfo(iOrbit))
     if iGranule > 0
         oinfoFieldnames = fieldnames(oinfo(iOrbit).ginfo(iGranule));
+
+        osscan_1_Index = oinfo(iOrbit).ginfo(iGranule).osscan;
+        osscan_m1_Index = max(1,oinfo(iOrbit).ginfo(iGranule).osscan-1);
+
+        delta_lat = (latitude(677,osscan_1_Index) - latitude(677,osscan_m1_Index)) * 111; 
+        fprintf('\niGranule %i, newGranuleList(%i).granule_start_time: %s, granule_start_time(osscan) %s and delta_lat=%5.2f km \n\n', iGranule, iGranuleList, datestr(newGranuleList(iGranuleList).granule_start_time), datestr(double(scan_seconds_from_start(osscan_1_Index)/86400) + oinfo(iOrbit).start_time), delta_lat)
+
+        % And plot the latitude with starting and ending scanlines for this
+        % granule.
+
+        hold off
+        imagesc(latitude')
+        hold on
+        plot([1 1354], [1 1]*oinfo(iOrbit).ginfo(iGranule).osscan, 'g', linewidth=2)
+        plot([1 1354], [1 1]*oinfo(iOrbit).ginfo(iGranule).oescan, 'r', linewidth=1)
+
+        % Now print out osscan, oescan, gsscan and gescan if available.
 
         for iField=1:length(oinfoFieldnames)
             switch oinfoFieldnames{iField}

@@ -42,11 +42,20 @@ for iYear=1:length(Years)
         % % % granuleList(iGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
 
         temp_filename = [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename];
-        tYear = ncread( temp_filename, '/scan_line_attributes/year');
-        tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
-        tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
 
-        granuleList(iGranule).first_scan_line_time = datenum( tYear(1), ones(size(tYear(1))), tYrDay(1)) + tmSec(1) / 1000 / 86400;
+        tYear = ncread( temp_filename, '/scan_line_attributes/year');
+
+        tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
+        [tMonth, tDay] = doy2mmdd(tYear(1), tYrDay(1));
+
+        tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
+        tSec = tmSec(1) / 1000;
+
+        tHour = floor( tSec / 3600);
+        tMinute = floor( (tSec - tHour  * 3600) / 60);
+        tSecond = round( tSec - tHour * 3600 - tMinute * 60);
+
+        granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
 
     end
     

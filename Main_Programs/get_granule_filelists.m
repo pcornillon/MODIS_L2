@@ -46,7 +46,7 @@ for iYear=1:length(Years)
         tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
         tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
 
-        granuleList(iGranule).granule_start_time = datenum( tYear(1), ones(size(tYear(1))), tYrDay(1)) + tmSec(1) / 1000 / 86400;
+        granuleList(iGranule).first_scan_line_time = datenum( tYear(1), ones(size(tYear(1))), tYrDay(1)) + tmSec(1) / 1000 / 86400;
 
     end
     

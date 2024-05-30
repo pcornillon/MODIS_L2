@@ -446,9 +446,28 @@ for iYear=yearStart:yearEnd
             jGranule = jGranule + 1;
             newGranuleList(jGranule).filename = granuleList(iGranule).filename(12:26);
             newGranuleList(jGranule).filename_time = granuleList(iGranule).matTime;
-            
-            tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-            newGranuleList(jGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
+
+            % % % tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
+            % % % newGranuleList(jGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
+
+
+            % temp_filename = [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename];
+            temp_filename = [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename];
+
+            tYear = ncread( temp_filename, '/scan_line_attributes/year');
+
+            tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
+            [tMonth, tDay] = doy2mmdd(tYear(1), tYrDay(1));
+
+            tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
+            tSec = tmSec(1) / 1000;
+
+            tHour = floor( tSec / 3600);
+            tMinute = floor( (tSec - tHour  * 3600) / 60);
+            tSecond = round( tSec - tHour * 3600 - tMinute * 60);
+
+            % granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
+            granuleList(iGranule).granule_start_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
         end
     end
 

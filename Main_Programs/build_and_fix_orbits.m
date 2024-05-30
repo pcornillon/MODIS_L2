@@ -467,7 +467,7 @@ for iYear=yearStart:yearEnd
             tSecond = round( tSec - tHour * 3600 - tMinute * 60);
 
             % granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
-            granuleList(iGranule).granule_start_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
+            newGranuleList(iGranule).granule_start_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
         end
     end
 

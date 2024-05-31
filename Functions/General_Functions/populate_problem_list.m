@@ -30,6 +30,7 @@ version_struct.find_next_granule_with_data = '2.0.0';
 
 global oinfo iOrbit iGranule iProblem problem_list
 global print_E100 print_E300 print_E600 print_E700 print_E800 print_E900 
+global go_to_keyboard
 
 iProblem = iProblem + 1;
 
@@ -90,6 +91,10 @@ end
 
 if print_E900 & (900 <= status)
     disp(['*** End Run *********** status=' num2str(status) ': ' problem_description])
+end
+
+if go_to_keyboard
+    keyboard
 end
 
 end

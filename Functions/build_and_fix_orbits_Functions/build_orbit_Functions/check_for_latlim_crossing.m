@@ -11,7 +11,7 @@ function [status, granule_start_time] = check_for_latlim_crossing( metadata_gran
 % the nadir value is the CLOSEST to 79 S on the ascending portion of the
 % orbit. Note that another definition would have been the first scan line
 % with a nadir value south of 79 S on a ascending orbit. This is NOT how
-% it is defined. 
+% it is defined.
 %
 % INPUT
 %   metadata_granule_folder_name - the metadata folder in which the file was found.
@@ -55,7 +55,7 @@ global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 
 % globals used in the other major functions of build_and_fix_orbits.
 
-global iProblem problem_list 
+global iProblem problem_list
 
 % Initialize some variables.
 
@@ -78,7 +78,7 @@ mSec = ncread( temp_filename, '/scan_line_attributes/msec');
 % Now determine the start times for each scanline and the number of
 % scanlines in this granule. Be careful because the start times for scanlines
 % occur are the same for all detectors in a group.
-% Actual time is in groups of 10. scan_line_times, below, is the time of 
+% Actual time is in groups of 10. scan_line_times, below, is the time of
 % scans had each scan line been done separately.
 
 temp_times = datenum( Year, ones(size(Year)), YrDay) + mSec / 1000 / secs_per_day;
@@ -118,7 +118,7 @@ end
 % group is that we want to start our new orbit on the 5th scanline in the
 % detector group to minimize the spreading effect from the bowtie issue.
 
-if isempty(scan_line_times)    
+if isempty(scan_line_times)
     granule_start_time = granule_start_time + fiveMinutesMatTime;
 
     status = populate_problem_list( 610, ['No scanline start times for scanlines in granule ' temp_filename '. THIS SHOULD NEVER HAPPEN!'], granule_start_time); % old status 201
@@ -126,7 +126,7 @@ if isempty(scan_line_times)
     return
 end
 
-if abs(mSec(10)-mSec(1)) > 0.01    
+if abs(mSec(10)-mSec(1)) > 0.01
     granule_start_time = granule_start_time + fiveMinutesMatTime;
 
     status = populate_problem_list( 615, ['The 1st scan line for ' temp_filename ' is not the 1st detector in a group of 10.  Should not get here.'], granule_start_time); % old status 202
@@ -177,122 +177,128 @@ if ~isempty(aa)
     % break them up and analyze separately for direction.
 
     diffaa = diff(aa);
-    bb = find(diffaa >10);
 
-    % Changed < to > in the next set of if statements to find ascending crossings.
-
-    mm = [];
-    if isempty(bb)
-        % Only one group
-
-        if nlat_t(aa(end)) > nlat_t(aa(1))
-            mm = aa;
-        end
+    if (aa(1) == 1) & (iGranule == 1) & (nlat_t(1) > latlim)
+        dont_use_status = populate_problem_list( 112, [num2str(latlim) ' between two orbits. This orbit started with the last few scan lines of the previous orbit.'], granule_start_time); 
     else
-        % Two groups
-        if nlat_t(aa(bb)) > nlat_t(aa(1))
-            mm = aa(1:bb);
-        end
 
-        if nlat_t(aa(end)) > nlat_t(aa(bb+1))
-            mm = aa(bb+1:end);
-        end
-    end
+        bb = find(diffaa >10);
 
-    if ~isempty(mm)
+        % Changed < to > in the next set of if statements to find ascending crossings.
 
-        % Make sure that the nadir track actually crossed latlim. This addresses
-        % the problem of a nadir track that ends before or starts just after
-        % crossing latlim. On the canonical orbit there are 3473 scan lines
-        % separationg the descending node crossing of 79 S from the ascending
-        % crossing so, in the following, testing on the first scan line and the
-        % last scan line in the granule is safe--and easy.
+        mm = [];
+        if isempty(bb)
+            % Only one group
 
-        if sign(nlat_t(mm(1))-latlim) ~= sign(nlat_t(mm(end))-latlim)
-
-            nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
-
-            % Find the ascending scan line for which the nadir value is
-            % CLOSEST to 79 S and is the 5th scan line in a 10 scan line
-            % group. But,first make sure that iStart_of_group is at the
-            % beginning of a 10 scan line group. Need to check that test
-            % values of nlat_t do not extend past either end of nlat_t.
-            
-            iStart_of_group = floor(nn(1) / 10) * 10 + 1;
-
-            if iStart_of_group > length(nlat_t)
-
-                % If the nearest point to latlim is the LAST scan line then
-                % it is the closest group so no need to check the groups on
-                % each side. 
-                
-                start_line_index = iStart_of_group - 6;
-            else
-
-                bad_grouping = 0;
-                if iStart_of_group <= 1
-                    if nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10)
-                        bad_grouping = 1;
-                    end
-                elseif iStart_of_group+10 >= length(nlat_t)
-                    if nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)
-                        bad_grouping = 1;
-                    end
-                elseif (nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)) | (nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10))
-                    bad_grouping = 1;
-                end
-
-                if bad_grouping == 1
-                    granule_start_time = granule_start_time + fiveMinutesMatTime;
-
-                    status = populate_problem_list( 620, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time); % old status 153
-                    return
-                end
-
-                % Now find the group of 10 with the point in the middle closest
-                % to 79 S looking at the group of 10 before the one in which
-                % the crossing was found, the group of 10 in which the crossing
-                % was found and the next group of 10.
-
-                iPossible = [iStart_of_group-6 iStart_of_group+5 iStart_of_group+15];
-                start_line_index = iPossible(2);
-
-                central_group = abs(nlat_t(iPossible(2)) - latlim);
-
-                if iPossible(1) > 0
-                    if abs(nlat_t(iPossible(1)) - latlim) < central_group
-                        start_line_index = iPossible(1);
-                    end
-                end
-
-                if iPossible(3) < length(nlat_t)
-                    if abs(nlat_t(iPossible(3)) - latlim) < central_group
-                        start_line_index = iPossible(3);
-                    end
-                end
+            if nlat_t(aa(end)) > nlat_t(aa(1))
+                mm = aa;
             end
         else
-            
-            % Here to check if this 79 S is between the last pixel in
-            % the previous orbit and the first pixel in this orbit. It
-            % determines this if the nadir track does not cross 79 S and if
-            % 1.3 times 1/2 of the separation of the first two pixes in the
-            % current orbit is greater than the separation between the
-            % first pixel in the current orbit and 79 S. The reason for
-            % taking 1/2 of the separation is that the separation of along
-            % track pixels in a group of 10 on the nadir line is about
-            % twice that between the last pixel in one group of 10 and the
-            % first pixel in the next group of ten. The reason for the
-            % extra 30% is that it is not exactly 1/2. This could result in
-            % a problem if the distance between 79 S and the first pixel in
-            % this granule is less than 1.3 *... The probability of this is
-            % quite slim.
-            %
-            % In any case, if the above happens, then select start_line_index
-            % as 6, since we start our orbit in the middle of a group of 10.
+            % Two groups
+            if nlat_t(aa(bb)) > nlat_t(aa(1))
+                mm = aa(1:bb);
+            end
 
-            if (mm(1) == 1) & ( (1.3 * abs(nlat_t(2) - nlat_t(1)) / 2) > (abs(nlat_t(1) - latlim)))
-                start_line_index = 6;
+            if nlat_t(aa(end)) > nlat_t(aa(bb+1))
+                mm = aa(bb+1:end);
+            end
+        end
+
+        if ~isempty(mm)
+
+            % Make sure that the nadir track actually crossed latlim. This addresses
+            % the problem of a nadir track that ends before or starts just after
+            % crossing latlim. On the canonical orbit there are 3473 scan lines
+            % separationg the descending node crossing of 79 S from the ascending
+            % crossing so, in the following, testing on the first scan line and the
+            % last scan line in the granule is safe--and easy.
+
+            if sign(nlat_t(mm(1))-latlim) ~= sign(nlat_t(mm(end))-latlim)
+
+                nn = mm(1) - 1 + find(min(abs(nlat_t(mm)-latlim)) == abs(nlat_t(mm)-latlim));
+
+                % Find the ascending scan line for which the nadir value is
+                % CLOSEST to 79 S and is the 5th scan line in a 10 scan line
+                % group. But,first make sure that iStart_of_group is at the
+                % beginning of a 10 scan line group. Need to check that test
+                % values of nlat_t do not extend past either end of nlat_t.
+
+                iStart_of_group = floor(nn(1) / 10) * 10 + 1;
+
+                if iStart_of_group > length(nlat_t)
+
+                    % If the nearest point to latlim is the LAST scan line then
+                    % it is the closest group so no need to check the groups on
+                    % each side.
+
+                    start_line_index = iStart_of_group - 6;
+                else
+
+                    bad_grouping = 0;
+                    if iStart_of_group <= 1
+                        if nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10)
+                            bad_grouping = 1;
+                        end
+                    elseif iStart_of_group+10 >= length(nlat_t)
+                        if nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)
+                            bad_grouping = 1;
+                        end
+                    elseif (nlat_t(iStart_of_group-1) == nlat_t(iStart_of_group)) | (nlat_t(iStart_of_group+10-1) == nlat_t(iStart_of_group+10))
+                        bad_grouping = 1;
+                    end
+
+                    if bad_grouping == 1
+                        granule_start_time = granule_start_time + fiveMinutesMatTime;
+
+                        status = populate_problem_list( 620, ['Can''t find the start of a group of 10 scan lines. Thought that it would be ' num2str(iStart_of_group) '. SHOULD NEVER GET HERE.'], granule_start_time); % old status 153
+                        return
+                    end
+
+                    % Now find the group of 10 with the point in the middle closest
+                    % to 79 S looking at the group of 10 before the one in which
+                    % the crossing was found, the group of 10 in which the crossing
+                    % was found and the next group of 10.
+
+                    iPossible = [iStart_of_group-6 iStart_of_group+5 iStart_of_group+15];
+                    start_line_index = iPossible(2);
+
+                    central_group = abs(nlat_t(iPossible(2)) - latlim);
+
+                    if iPossible(1) > 0
+                        if abs(nlat_t(iPossible(1)) - latlim) < central_group
+                            start_line_index = iPossible(1);
+                        end
+                    end
+
+                    if iPossible(3) < length(nlat_t)
+                        if abs(nlat_t(iPossible(3)) - latlim) < central_group
+                            start_line_index = iPossible(3);
+                        end
+                    end
+                end
+            else
+
+                % Here to check if this 79 S is between the last pixel in
+                % the previous orbit and the first pixel in this orbit. It
+                % determines this if the nadir track does not cross 79 S and if
+                % 1.3 times 1/2 of the separation of the first two pixes in the
+                % current orbit is greater than the separation between the
+                % first pixel in the current orbit and 79 S. The reason for
+                % taking 1/2 of the separation is that the separation of along
+                % track pixels in a group of 10 on the nadir line is about
+                % twice that between the last pixel in one group of 10 and the
+                % first pixel in the next group of ten. The reason for the
+                % extra 30% is that it is not exactly 1/2. This could result in
+                % a problem if the distance between 79 S and the first pixel in
+                % this granule is less than 1.3 *... The probability of this is
+                % quite slim.
+                %
+                % In any case, if the above happens, then select start_line_index
+                % as 6, since we start our orbit in the middle of a group of 10.
+
+                if (mm(1) == 1) & ( (1.3 * abs(nlat_t(2) - nlat_t(1)) / 2) > (abs(nlat_t(1) - latlim)))
+                    start_line_index = 6;
+                end
             end
         end
     end

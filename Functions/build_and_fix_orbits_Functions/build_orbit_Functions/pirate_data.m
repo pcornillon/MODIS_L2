@@ -83,9 +83,8 @@ if (granuleList(iGranuleList).first_scan_line_time - oinfo(iOrbit).ginfo(end).en
 
     iGranuleList = iGranuleList - 1;
 
-    status = populate_problem_list( 122, ['Problem finding a metadata granule for ' oinfo(iOrbit).ginfo(1).metadata_name '. No file from which to pirate data.']); 
-
     if status ~= 0
+        status = populate_problem_list( 122, ['Problem finding a metadata granule for ' oinfo(iOrbit).ginfo(1).metadata_name '. No file from which to pirate data.']); 
         return
     end
 else
@@ -101,7 +100,7 @@ iGranuleList = iGranuleList + 1;
 
 iGranuleList = iGranuleList - 1;
 
-if status ~= 900
+if status ~= 0
     return
 end
 

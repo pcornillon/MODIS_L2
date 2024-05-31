@@ -28,6 +28,7 @@ version_struct.build_wrapper = '1.0.1';
 % Set up directories for this job.
 
 global granules_directory metadata_directory fixit_directory logs_directory output_file_directory_local output_file_directory_remote AMSR_E_baseDir
+global go_to_keyboard
 
 % if ~isempty(strfind(pwd, 'petercornillon'))
 %     tempDiary = ['/Users/petercornillon/Logs/' strrep(strrep( datestr(now), ':', 'h'), ' ', '_') '_debug.log'];
@@ -75,7 +76,9 @@ switch Option
         output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
 
         logs_directory = [BaseDir 'Logs/'];
-    
+
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
+
     case 2 % MacStudio or Satdat1 - same as 3 except no mask, bowtie,...
 
         BaseDir                         = '/Volumes/MODIS_L2_modified/OBPG/';
@@ -97,6 +100,8 @@ switch Option
         regrid_sst = 0;
         regrid_to_AMSRE = 0;
         get_gradients = 0;
+
+        go_to_keyboard = 1;  % Will go to keyboard in populate_problem_list if set.
 
     case 3 % MacStudio or Satdat1 reading from NAS -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 
@@ -124,6 +129,8 @@ switch Option
         logs_directory                  = [BaseDir 'Logs/'];
         % logs_directory                  = '/Users/petercornillon/Logs/';
 
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
+        
     case 4 % MacStudio or Satdat1 reading from Aqua-1 -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 
         %   OBPG metadata from Aqua-1, 
@@ -145,9 +152,11 @@ switch Option
 
         logs_directory                  = [BaseDir 'Logs/'];
 
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
+
     case 5 % AWS for debug, not from S3
-        %   fixit metadata from Dropbox, 
-        %   OBPG metadata from Dropbox, 
+        %   fixit metadata from Dropbox,
+        %   OBPG metadata from Dropbox,
         %   granules from Dropbox 
         % and writing 
         %   local output to Dropbox
@@ -165,6 +174,8 @@ switch Option
         output_file_directory_remote = '';
 
         logs_directory = [BaseDir 'Logs/'];
+
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 
     case 6 % AWS from S3
         %   fixit metadata from s3-uri-gso-pcornillon
@@ -190,6 +201,8 @@ switch Option
         % % % 
         % % % output_file_directory_local = '/mnt/s3-uri-gso-pcornillon/output/';
 
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
+
     case 7 % Laptop
         %   fixit metadata from s3-uri-gso-pcornillon
         %   OBPG metadata  from Data_1
@@ -210,6 +223,8 @@ switch Option
         output_file_directory_remote = '';
 
         logs_directory               = '/Volumes/Data_1/MODIS_L2/Logs/';
+
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 
     case 8 % AWS sister to case 4 MacStudio or Satdat1
         %   fixit metadata from Dropbox, 
@@ -236,6 +251,7 @@ switch Option
 
         logs_directory                  = '/mnt/uri-nfs-cornillon/Logs/';
 
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 end
 
 fprintf('Entering build_and_fix_orbits.\n')

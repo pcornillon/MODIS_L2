@@ -39,7 +39,7 @@ for iYear=1:length(Years)
         granuleList(iGranule).filename_time = parse_filename(filename);
 
         % % % tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-        % % % granuleList(iGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
+        % % % granuleList(iGranule).first_scan_line_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
 
         temp_filename = [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename];
 

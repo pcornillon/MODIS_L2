@@ -5,7 +5,7 @@ function debug_print_fist_orbit_problem( granule_start_time, scan_seconds_from_s
 
 global oinfo iOrbit iGranule
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t 
-global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+global granuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 if ~isempty(granule_start_time)
     if ~isempty(iGranuleList)
@@ -35,7 +35,7 @@ if ~isempty(oinfo(iOrbit))
         osscan_m1_Index = max(1,oinfo(iOrbit).ginfo(iGranule).osscan-1);
 
         delta_lat = (latitude(677,osscan_1_Index) - latitude(677,osscan_m1_Index)) * 111; 
-        fprintf('\niGranule %i, newGranuleList(%i).granule_start_time: %s, granule_start_time(osscan) %s and delta_lat=%5.2f km \n\n', iGranule, iGranuleList, datestr(newGranuleList(iGranuleList).granule_start_time), datestr(double(scan_seconds_from_start(osscan_1_Index)/86400) + oinfo(iOrbit).start_time), delta_lat)
+        fprintf('\niGranule %i, granuleList(%i).first_scan_line_time: %s, granule_start_time(osscan) %s and delta_lat=%5.2f km \n\n', iGranule, iGranuleList, datestr(granuleList(iGranuleList).first_scan_line_time), datestr(double(scan_seconds_from_start(osscan_1_Index)/86400) + oinfo(iOrbit).start_time), delta_lat)
 
         % And plot the latitude with starting and ending scanlines for this
         % granule.

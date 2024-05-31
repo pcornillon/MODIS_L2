@@ -47,7 +47,7 @@ global formatOut
 global s3_expiration_time amazon_s3_run
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
 
-global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+global granuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 status = 0;
 found_one = 0;
@@ -63,20 +63,20 @@ switch file_type
         found_one = 0;
 
         if iGranuleList < numGranules
-            folder_name = [metadata_directory num2str(year(newGranuleList(iGranuleList).filename_time)) '/'];
-            file_name = [filenamePrefix newGranuleList(iGranuleList).filename filenameEnding];
+            folder_name = [metadata_directory num2str(year(granuleList(iGranuleList).filename_time)) '/'];
+            file_name = [filenamePrefix granuleList(iGranuleList).filename filenameEnding];
 
-            granule_start_time = newGranuleList(iGranuleList).granule_start_time;
+            granule_start_time = granuleList(iGranuleList).first_scan_line_time;
 
             % Check to make sure that this metadata file really exists, AS IT SHOULD.
 
             if exist([folder_name file_name])
                 found_one = 1;
             else
-                status = populate_problem_list( 605, ['Metadata granule ' newGranuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101
+                status = populate_problem_list( 605, ['Metadata granule ' granuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101
             end
         else
-            status = populate_problem_list( 905, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 101
+            status = populate_problem_list( 905, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).first_scan_line_time+fiveMinutesMatTime); % old status 101
         end
 
     case 'sst_data'
@@ -89,7 +89,7 @@ switch file_type
 
         if amazon_s3_run
 
-            md_datetime = datestr(newGranuleList(iGranuleList).filename_time, formatOut.yyyymmddHHMMSS);
+            md_datetime = datestr(granuleList(iGranuleList).filename_time, formatOut.yyyymmddHHMMSS);
 
             % make sure that access credentials for NASA S3 files are still
             % active. Note that the s3 access is further down (lines 133,
@@ -113,7 +113,7 @@ switch file_type
             dir_year = '';
             date_time_separator = '';
         else
-            md_datetime = datestr(newGranuleList(iGranuleList).filename_time, formatOut.yyyymmddTHHMMSS);
+            md_datetime = datestr(granuleList(iGranuleList).filename_time, formatOut.yyyymmddTHHMMSS);
 
             % modis metadata file: AQUA_MODIS.20030103T120006.L2.SST.nc
             %   granules_directory = '/Volumes/MODIS_L2_original/OBPG/combined/';  OR
@@ -156,9 +156,9 @@ switch file_type
                 % If the file does not exist search all seconds for this metadata minute.
 
                 % % % % % granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
-                granule_guess_time = floor(newGranuleList(iGranuleList).filename_time * 24 * 60) / 24 / 60;
+                granule_guess_time = floor(granuleList(iGranuleList).filename_time * 24 * 60) / 24 / 60;
 
-                dont_use_status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' newGranuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
+                dont_use_status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' granuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
                 
                 for iSec=0:59
                     granule_guess_time = granule_guess_time + 1 / secs_per_day;

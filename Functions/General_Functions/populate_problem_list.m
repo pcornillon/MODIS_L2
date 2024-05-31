@@ -63,7 +63,7 @@ if iOrbit > 0
 end
 
 if exist('granule_start_time')
-    problem_list(iProblem).granule_start_time = granule_start_time;
+    problem_list(iProblem).first_scan_line_time = granule_start_time;
 end
 
 %% Now print out to the terminal if print_E for this status is set.

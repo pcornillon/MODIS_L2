@@ -54,7 +54,7 @@ global oinfo iOrbit iGranule
 global start_line_index
 global Matlab_end_time
 
-global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+global granuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 % globals used in the other major functions of build_and_fix_orbits.
 
@@ -62,14 +62,14 @@ global iProblem problem_list
 
 if local_debug; fprintf('In get_start_of_first_full_orbit.\n'); end
 
-file_list(1).name  = newGranuleList(iGranuleList).filename;
+file_list(1).name  = granuleList(iGranuleList).filename;
 
 % Found an hour with at least one metadata file in it. Get the Matlab time
 % corresponding to this file. Search for the next granule with the start of
 % an orbit, defined as the point at which the descending satellite crosses
 % latlim, nominally 78 S. 
 
-granule_start_time = newGranuleList(iGranuleList).granule_start_time;
+granule_start_time = granuleList(iGranuleList).first_scan_line_time;
 
 if local_debug; fprintf('Following while loop. granule_start_time: %s\n', datestr(granule_start_time)); end
 

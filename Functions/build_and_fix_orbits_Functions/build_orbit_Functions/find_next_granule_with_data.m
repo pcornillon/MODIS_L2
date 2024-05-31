@@ -84,7 +84,7 @@ global secs_per_day secs_per_scan_line
 global possible_num_scan_lines_skip
 global latlim
 
-global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+global granuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 global oinfo iOrbit iGranule
 global scan_line_times start_line_index num_scan_lines_in_granule
@@ -119,11 +119,11 @@ while 1==1
 
     if iGranuleList > numGranules
         
-        status = populate_problem_list( 910, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], newGranuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
+        status = populate_problem_list( 910, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).first_scan_line_time+fiveMinutesMatTime); % old status 903
 
         return
     else
-        granule_start_time = newGranuleList(iGranuleList).granule_start_time;
+        granule_start_time = granuleList(iGranuleList).first_scan_line_time;
     end
 
 

@@ -129,7 +129,7 @@ clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_
     oinfo iOrbit iGranule iProblem problem_list scan_line_times ...
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
     Matlab_end_time s3_expiration_time med_op secs_per_granule ...
-    orbit_duration newGranuleList iGranuleList filenamePrefix filenameEnding ...
+    orbit_duration granuleList iGranuleList filenamePrefix filenameEnding ...
     numGranules
 
 % Control for memory stats
@@ -163,7 +163,7 @@ global sltimes_avg nlat_orbit nlat_avg orbit_length
 global latlim
 global sst_range sst_range_grid_size
 
-global newGranuleList iGranuleList filenamePrefix filenameEnding numGranules
+global granuleList iGranuleList filenamePrefix filenameEnding numGranules
 
 global oinfo iOrbit iGranule iProblem problem_list
 global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
@@ -437,46 +437,51 @@ filenameEnding = '_L2_SST_OBPG_extras.nc4';
 
 jGranule = 0;
 for iYear=yearStart:yearEnd
-    load([metadata_directory 'metadata_granule_lists/granuleList_' num2str(iYear) '.mat']);
+    GranuleListIn = load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
     
-    for iGranule=1:length(granuleList)
-        granuleTime = granuleList(iGranule).matTime;
+    for iGranule=1:length(GranuleListIn.granuleList)
+        granuleTime = GranuleListIn.granuleList(iGranule).first_scan_line_time;
 
         if (granuleTime >= matStart) & (granuleTime < matEnd)
+            
             jGranule = jGranule + 1;
-            newGranuleList(jGranule).filename = granuleList(iGranule).filename(12:26);
-            newGranuleList(jGranule).filename_time = granuleList(iGranule).matTime;
+            
+            granuleList(jGranule).filename = GranuleListIn.granuleList(iGranule).filename(12:26);
+            granuleList(jGranule).filename_time = GranuleListIn.granuleList(iGranule).filename_time;
+            granuleList(jGranule).first_scan_line_time = GranuleListIn.granuleList(iGranule).first_scan_line_time;
 
-            % % % tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-            % % % newGranuleList(jGranule).granule_start_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
-
-
-            % temp_filename = [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename];
-            temp_filename = [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename];
-
-            tYear = ncread( temp_filename, '/scan_line_attributes/year');
-
-            tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
-            [tMonth, tDay] = doy2mmdd(tYear(1), tYrDay(1));
-
-            tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
-            tSec = tmSec(1) / 1000;
-
-            tHour = floor( tSec / 3600);
-            tMinute = floor( (tSec - tHour  * 3600) / 60);
-            tSecond = round( tSec - tHour * 3600 - tMinute * 60);
-
-            % granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
-            newGranuleList(iGranule).granule_start_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
+% % % % %             granuleList(jGranule).filename_time = granuleList(iGranule).matTime;
+% % % % % 
+% % % % %             % % % tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
+% % % % %             % % % granuleList(jGranule).first_scan_line_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
+% % % % % 
+% % % % % 
+% % % % %             % temp_filename = [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename];
+% % % % %             temp_filename = [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename];
+% % % % % 
+% % % % %             tYear = ncread( temp_filename, '/scan_line_attributes/year');
+% % % % % 
+% % % % %             tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
+% % % % %             [tMonth, tDay] = doy2mmdd(tYear(1), tYrDay(1));
+% % % % % 
+% % % % %             tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
+% % % % %             tSec = tmSec(1) / 1000;
+% % % % % 
+% % % % %             tHour = floor( tSec / 3600);
+% % % % %             tMinute = floor( (tSec - tHour  * 3600) / 60);
+% % % % %             tSecond = round( tSec - tHour * 3600 - tMinute * 60);
+% % % % % 
+% % % % %             % granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
+% % % % %             granuleList(jGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
         end
     end
 
-    clear granuleList
+    clear GranuleListIn
 
     iGranuleList = 0;
 end
 
-numGranules = length(newGranuleList);
+numGranules = length(granuleList);
 
 %% Initialize parameters
 
@@ -579,7 +584,7 @@ while granule_start_time <= Matlab_end_time
     if search_for_start_of_next_orbit
         % Here if last orbit read was beyond the end of an orbit.
         
-        search_start_time = newGranuleList(iGranuleList).granule_start_time;
+        search_start_time = granuleList(iGranuleList).first_scan_line_time;
 
         [status, granule_start_time] = get_start_of_first_full_orbit(search_start_time);
 

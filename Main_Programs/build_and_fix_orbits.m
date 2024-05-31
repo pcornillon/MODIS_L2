@@ -582,8 +582,12 @@ while granule_start_time <= Matlab_end_time
     % for this orbit so we need to search for the start of the next orbit.
 
     if search_for_start_of_next_orbit
-        % Here if last orbit read was beyond the end of an orbit.
+        % Here if last orbit read was beyond the end of an orbit. Need to
+        % decrement iGranuleList here because the last granule that it
+        % found was beyond the end of the orbit it was working on. 
         
+        iGranuleList = iGranuleList - 1;
+
         search_start_time = granuleList(iGranuleList).first_scan_line_time;
 
         [status, granule_start_time] = get_start_of_first_full_orbit(search_start_time);

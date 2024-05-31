@@ -421,8 +421,10 @@ while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
 
         return
         
+    elseif status >= 700
+        break
     else
-        
+
         % Populate the orbit with data from this granule.
         
         data_granule = oinfo(iOrbit).ginfo(iGranule).data_name;

@@ -70,39 +70,45 @@ status = 0;
 % the next orbit.
 
 if (granuleList(iGranuleList).first_scan_line_time - oinfo(iOrbit).ginfo(end).end_time) < (10 / secs_per_day)
+
+    % Need to increment and then decrement iGranuleList after obtaining the
+    % filename, incrementing since we are jumping forward to pirate data
+    % and then decrementing because we want to have the correct index to
+    % the list when the next orbit starts. Need to do this before any
+    % error return. Will repeat this when the data granule name is sought.
+
     iGranuleList = iGranuleList + 1;
 
     [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, ~] = get_filename( 'metadata');
 
     iGranuleList = iGranuleList - 1;
+
+    status = populate_problem_list( 122, ['Problem finding a metadata granule for ' oinfo(iOrbit).ginfo(1).metadata_name '. No file from which to pirate data.']); 
+
+    if status ~= 0
+        return
+    end
 else
-    % % % % %     found_one = 0;
-    % % % % % end
-    % % % % %
-    % % % % % if status == 921
-    % % % % %     return
-    % % % % % end
-    % % % % %
-    % % % % % if found_one == 0
-
     status = populate_problem_list( 120, ['No metadata granule found for ' oinfo(iOrbit).ginfo(1).metadata_name ' No file from which to pirate data.']); % old status 122
-    % % % % % else
-
     return
 end
 
 metadata_granule = [metadata_granule_folder_name metadata_granule_file_name];
 
+iGranuleList = iGranuleList + 1;
+
 [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename( 'sst_data');
 
-% if status == 921
-if status >= 900
+iGranuleList = iGranuleList - 1;
+
+if status ~= 900
     return
 end
 
 if found_one == 0
+    % Should never get here but, just in case...
 
-    status = populate_problem_list( 350, ['Could not find a NASA S3 granule corresponding to ' metadata_granule]); % old status 902
+    status = populate_problem_list( 350, ['Could not find a granule corresponding to ' metadata_granule]); % old status 902
 
     return
 end

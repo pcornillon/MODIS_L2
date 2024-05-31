@@ -248,19 +248,19 @@ if name_test
             % before the end of the previously found orbit.
 
             for iList=max(1,iGranuleList):length(granuleList)
-                if granuleList(iList).granule_start_time > (oinfo(iOrbit).end_time - 11 / (24 * 60))
+                if granuleList(iList).first_scan_line_time > (oinfo(iOrbit).end_time - 11 / (24 * 60))
 
                     % Check to see if there are more missing granules and
                     % the loop has stepped past the end of the orbit. If
                     % so, find the new end of orbit and continue searching.
 
-                    newNumOrbits = ceil((granuleList(iList).granule_start_time - oinfo.end_time) * 86400 / secs_per_orbit);
+                    newNumOrbits = ceil((granuleList(iList).first_scan_line_time - oinfo.end_time) * 86400 / secs_per_orbit);
                     if newNumOrbits >= 1
                         oinfo(iOrbit).end_time = oinfo(iOrbit).end_time + newNumOrbits * secs_per_orbit / secs_per_day;
                     else
 
                         iGranuleList = iList;
-                        granule_start_time = granuleList(iGranuleList).granule_start_time;
+                        granule_start_time = granuleList(iGranuleList).first_scan_line_time;
                         skip_to_start_of_orbit = 1;
 
                         break
@@ -269,23 +269,23 @@ if name_test
             end
             
             if iList == numGranules
-                status = populate_problem_list( 940, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
+                status = populate_problem_list( 940, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).first_scan_line_time+fiveMinutesMatTime); % old status 903
                 return
             end
 
             % % % % % % Now find the end of the orbit in which this granule occurs.
             % % % % % 
-            % % % % % newNumOrbits = ceil((granuleList(iGranuleList).granule_start_time - oinfo.end_time) * 86400 / secs_per_orbit);
+            % % % % % newNumOrbits = ceil((granuleList(iGranuleList).first_scan_line_time - oinfo.end_time) * 86400 / secs_per_orbit);
             % % % % % oinfo(iOrbit).end_time = oinfo(iOrbit).end_time + newNumOrbits * secs_per_orbit / secs_per_day;
             % % % % % 
             % % % % % % Next, skip to the granule starting about 10 minutes before
             % % % % % % the end of this orbit.
             % % % % % 
             % % % % % for iList=max(1,iGranuleList):length(granuleList)
-            % % % % %     if granuleList(iList).granule_start_time > (oinfo(iOrbit).end_time - 11 / (24 * 60))
+            % % % % %     if granuleList(iList).first_scan_line_time > (oinfo(iOrbit).end_time - 11 / (24 * 60))
             % % % % % 
             % % % % %         iGranuleList = iList;
-            % % % % %         granule_start_time = granuleList(iGranuleList).granule_start_time;
+            % % % % %         granule_start_time = granuleList(iGranuleList).first_scan_line_time;
             % % % % %         skip_to_start_of_orbit = 1;
             % % % % % 
             % % % % %         break
@@ -293,7 +293,7 @@ if name_test
             % % % % % end
             % % % % % 
             % % % % % if iList == numGranules
-            % % % % %     status = populate_problem_list( 945, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).granule_start_time+fiveMinutesMatTime); % old status 903
+            % % % % %     status = populate_problem_list( 945, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).first_scan_line_time+fiveMinutesMatTime); % old status 903
             % % % % %     return
             % % % % % end
 

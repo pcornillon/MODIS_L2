@@ -126,12 +126,12 @@ end
 % be iOrbit, so oinfo will be rewritten at this point to address this.
 
 clear temp_oinfo
-for iOrb=1:iOrbit-2
+for iOrb=1:iOrbit-1
     temp_oinfo(iOrb) = oinfo(iOrb);
 end
-temp_oinfo(iOrbit-1) = oinfo(iOrbit);
+temp_oinfo(iOrbit) = oinfo(iOrbit+1);
 oinfo = temp_oinfo;
-iOrbit = iOrbit - 1;
+% % % iOrbit = iOrbit - 1;
 
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.

@@ -105,8 +105,6 @@ data_file_list = [];
 
 % Start of loop searching for next granule.
 
-% % % % % start_time = granule_start_time;
-
 while 1==1
 
     start_line_index = [];
@@ -118,9 +116,7 @@ while 1==1
     iGranuleList = iGranuleList + 1;
 
     if iGranuleList > numGranules
-        
         status = populate_problem_list( 910, ['Ran out of granules. Only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).first_scan_line_time+fiveMinutesMatTime); % old status 903
-
         return
     else
         granule_start_time = granuleList(iGranuleList).first_scan_line_time;
@@ -128,9 +124,7 @@ while 1==1
 
 
     if granule_start_time > Matlab_end_time
-
         status = populate_problem_list( 915, ['Current time, ' datestr(granule_start_time) ', beyond end of run time ' datestr(Matlab_end_time) '.'], granule_start_time); % old status 901
-
         return
     end
 
@@ -146,9 +140,7 @@ while 1==1
     if (length(oinfo) == iOrbit) & (skip_to_start_of_orbit == 0)
         if ~isempty(oinfo(iOrbit).end_time)
             if granule_start_time > (oinfo(iOrbit).end_time - 2 * secs_per_scan_line / secs_per_day)
-
                 status = populate_problem_list( 705, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time); % old status 201
-
                 return
             end
         end
@@ -220,24 +212,12 @@ while 1==1
 
                 if status < 600
 
-                    % % % % % if (iGranule == 0) & (iOrbit == 1) & isempty(start_line_index)
                     if (skip_to_start_of_orbit == 1) & isempty(start_line_index)
 
                         % Still looking for the first granule with a ascending
                         % crossing of 79 S.
 
                         fprintf('\nGranule at %s does not ascend across 79 S. Will continue searching.\n\n', datestr(granule_start_time))
-
-                        % ****************************************************************************************
-                        % This may come back to bite me.
-                        % ****************************************************************************************
-                        % % % % % % Need to decrement granule_start... because it is
-                        % % % % % % incremented in check_for_latlim... assuming that
-                        % % % % % % a good granule has been found. If no metadata
-                        % % % % % % granule is found, granule_start... will be
-                        % % % % % % incremented hence the need to decrement here.
-                        % % % % % 
-                        % % % % % granule_start_time = granule_start_time - fiveMinutesMatTime;
                     else
 
                         iGranule = iGranule + 1;
@@ -288,8 +268,6 @@ while 1==1
                                     [~, granuleName, ~] = fileparts(oinfo(iOrbit).ginfo(iGranule).data_name);
                                     dont_use_status = populate_problem_list( 310, ['Mirror side ' num2str(mside_current(1)) ' for the first scan line on granule ' num2str(iGranule) ' (' granuleName ') of orbit ' num2str(iOrbit) ' is the same as that of the last scan of the prevous granule. Will add 10 nan scan lines'], granule_start_time); % old status 151
                                     already_flagged_310 = 1;
-                                % % % % % else
-                                % % % % %     already_flagged_310 = 0;
                                 end
                             elseif iOrbit > 1
                                 mside_current = single(ncread( oinfo(iOrbit).ginfo(1).data_name, '/scan_line_attributes/mside'));
@@ -303,7 +281,6 @@ while 1==1
                         end
 
                         if iGranule == 1
-                            % % % % % if iOrbit > 1
                             if skip_to_start_of_orbit == 0
                                 
                                 % The flow gets here if this is the first granule in an orbit and the
@@ -405,8 +382,7 @@ while 1==1
 
                             if isempty(oinfo(iOrbit).name)
 
-                                % % % % % if iOrbit==1 & iGranule==1
-                                if skip_to_start_of_orbit == 0
+                                if skip_to_start_of_orbit == 1
 
                                     % If this is the first orbit, then it must
                                     % have found an intersection so call
@@ -418,6 +394,12 @@ while 1==1
 
                                     status = generate_output_filename('sliFirst');
                                 else
+                                    % Gets here if past the end of the
+                                    % previous orbit without finding a
+                                    % crossing of 79 S moving northward. At
+                                    % present shoudn't get here but maybe
+                                    % in the future. 
+
                                     status = generate_output_filename('no_sli');
                                 end
 
@@ -433,7 +415,7 @@ while 1==1
                             if isempty(start_line_index)
                                 [indices] = get_osscan_etc_NO_sli(indices);
 
-                            else
+                            elseif skip_to_start_of_orbit == 0
                                 [indices] = get_osscan_etc_with_sli(skip_to_start_of_orbit, indices);
 
                                 status = generate_output_filename('sli');
@@ -482,9 +464,5 @@ while 1==1
             end
         end
     end
-
-    % % % % % % Here if no granule for this time; need to increment time step.
-    % % % % % 
-    % % % % % granule_start_time = granule_start_time + fiveMinutesMatTime;
 end
 

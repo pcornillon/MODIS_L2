@@ -118,20 +118,20 @@ while granule_start_time <= Matlab_end_time
     end
 end
 
-% So, the nadir track of the last granule read crossed 79 S moving northward.
-% The way find_next_granule_with_data works is that it populates oinfo(iOrbit) 
-% corresponding to the data prior to this crossing and it populates
-% oinfor(iOrbit+1) for the portion of the granule after crossing 79 S. When
-% build_orbit is called it will be working on iOrbit+1 but it should really
-% be iOrbit, so oinfo will be rewritten at this point to address this.
-
-clear temp_oinfo
-for iOrb=1:iOrbit-1
-    temp_oinfo(iOrb) = oinfo(iOrb);
-end
-temp_oinfo(iOrbit) = oinfo(iOrbit+1);
-oinfo = temp_oinfo;
-% % % iOrbit = iOrbit - 1;
+% % % % % % So, the nadir track of the last granule read crossed 79 S moving northward.
+% % % % % % The way find_next_granule_with_data works is that it populates oinfo(iOrbit) 
+% % % % % % corresponding to the data prior to this crossing and it populates
+% % % % % % oinfor(iOrbit+1) for the portion of the granule after crossing 79 S. When
+% % % % % % build_orbit is called it will be working on iOrbit+1 but it should really
+% % % % % % be iOrbit, so oinfo will be rewritten at this point to address this.
+% % % % % 
+% % % % % clear temp_oinfo
+% % % % % for iOrb=1:iOrbit-1
+% % % % %     temp_oinfo(iOrb) = oinfo(iOrb);
+% % % % % end
+% % % % % temp_oinfo(iOrbit) = oinfo(iOrbit+1);
+% % % % % oinfo = temp_oinfo;
+% % % % % % % % iOrbit = iOrbit - 1;
 
 % If the start of an orbit was not found in the time range specified let
 % the person running the program know.

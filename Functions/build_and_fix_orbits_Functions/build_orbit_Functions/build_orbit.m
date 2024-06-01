@@ -320,22 +320,24 @@ if name_test
         end
         
         if ~isempty(start_line_index)
-            % If we get here, the search has found an orbit with a
-            % ascending 79S crossing. But this was an orbit that was
-            % already processed so we need to decrement iOrbit, replacing
-            % the current values of oinfo(iOrbit) with those of
-            % oinfo(iOrbit+1), which was created in the above search. Note
-            % that we also have to save the metadata from the last granule
-            % of the current orbit, which will be the first granule on the
-            % next orbit and put it in that place.
+            if skip_to_start_of_orbit == 0
+                % If we get here, the search has found an orbit with a
+                % ascending 79S crossing. But this was an orbit that was
+                % already processed so we need to decrement iOrbit, replacing
+                % the current values of oinfo(iOrbit) with those of
+                % oinfo(iOrbit+1), which was created in the above search. Note
+                % that we also have to save the metadata from the last granule
+                % of the current orbit, which will be the first granule on the
+                % next orbit and put it in that place.
 
-            metadata = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
+                metadata = oinfo(iOrbit).ginfo(end).metadata_global_attrib;
 
-            oinfo(iOrbit) = oinfo(iOrbit+1);
-            oinfo(iOrbit).ginfo(1).metadata_global_attrib = metadata;
+                oinfo(iOrbit) = oinfo(iOrbit+1);
+                oinfo(iOrbit).ginfo(1).metadata_global_attrib = metadata;
 
-            oinfo(iOrbit+1) = [];
-            iGranule = 1;
+                oinfo(iOrbit+1) = [];
+                iGranule = 1;
+            end
 
             break
         end
@@ -422,6 +424,7 @@ while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         return
         
     elseif status >= 700
+        status = populate_problem_list( 124, 'Missing granules at the end of this orbit. Ending it now.'); 
         break
     else
 

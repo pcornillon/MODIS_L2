@@ -1,4 +1,5 @@
-function [indices] = get_osscan_etc_with_sli( skip_to_start_of_orbit, indices)
+function [indices] = get_osscan_etc_with_sli(indices)
+% % % % % function [indices] = get_osscan_etc_with_sli( skip_to_start_of_orbit, indices)
 % get_osscan_etc_with_sli - determine the starting and ending indices for orbit and granule data - PCC
 %
 % The function will get the starting and ending locations of scanlines in
@@ -17,9 +18,8 @@ function [indices] = get_osscan_etc_with_sli( skip_to_start_of_orbit, indices)
 % locations from which to copy the data in the current granule.
 %
 % INPUT
-%   skip_to_start_of_orbit: 1 to skip to start of next orbit. Will look for
-%    upward crossing of 79S and configure oinfo to start with scan line at
-%    crossing. 0 to get the next data granule.
+% % % % % %   skip_to_start_of_orbit: 0 to force number of scans in the orbit to
+% % % % % %    40,271
 %   indicies: first crack at indices to use in building orbits.
 %
 % OUTPUT
@@ -70,7 +70,8 @@ indices.current.gescan = start_line_index + 101 - 1;
 
 % Is the length of the orbit correct? If not force it to be so.
 
-if (indices.current.oescan ~= orbit_length) & (skip_to_start_of_orbit == 0)
+% % % % % if (indices.current.oescan ~= orbit_length) & (skip_to_start_of_orbit == 0)
+if (indices.current.oescan ~= orbit_length)
 
     if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
         if iOrbit > 1
@@ -93,7 +94,7 @@ end
 % reading the entire granule and set a flag to tell the function to get
 % the remaining lines to complete the orbit from the next granule.
 
-if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule
+if ((indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule)
     
     % This case arises if the additional 101 scan lines needed to complete
     % the current orbit result in more scan lines being required from
@@ -117,6 +118,8 @@ if (indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_gra
     indices.pirate.oescan = orbit_length;
     indices.pirate.gsscan = 1;
     indices.pirate.gescan = orbit_length - indices.pirate.osscan + 1;
+else
+
 end
 
 indices.next.osscan = 1;

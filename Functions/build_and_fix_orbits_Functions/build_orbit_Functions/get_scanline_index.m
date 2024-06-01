@@ -104,7 +104,7 @@ nnToUse = bb(cc);
 
 if nnToUse < 10
      
-    status = populate_problem_list( 355, ['Be careful, for granule ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' get_scanline_index found a starting index of num2str(nnToUse). Is setting nnToUse to 1.']); % old status 804 
+    status = populate_problem_list( 355, ['Be careful, for granule ' oinfo(iOrbit).ginfo(iGranule).metadata_name ' get_scanline_index found a starting index of ' num2str(nnToUse) '. Is setting nnToUse to 1.']); % old status 804 
     
     nnToUse = 1;
 end

@@ -254,10 +254,10 @@ oinfo.ginfo.oescan = [];
 oinfo.ginfo.gsscan = [];
 oinfo.ginfo.gescan = [];
 
-oinfo.ginfo.pirate_osscan = [];
-oinfo.ginfo.pirate_oescan = [];
-oinfo.ginfo.pirate_gsscan = [];
-oinfo.ginfo.pirate_gescan = [];
+% % % % % oinfo.ginfo.pirate_osscan = [];
+% % % % % oinfo.ginfo.pirate_oescan = [];
+% % % % % oinfo.ginfo.pirate_gsscan = [];
+% % % % % oinfo.ginfo.pirate_gescan = [];
 
 % Initialize return variables.
 
@@ -582,9 +582,7 @@ while granule_start_time <= Matlab_end_time
     % for this orbit so we need to search for the start of the next orbit.
 
     if search_for_start_of_next_orbit
-        % Here if last orbit read was beyond the end of an orbit. Need to
-        % decrement iGranuleList here because the last granule that it
-        % found was beyond the end of the orbit it was working on. 
+        % Here if last orbit read was beyond the end of an orbit.
         
         iGranuleList = iGranuleList - 1;
 

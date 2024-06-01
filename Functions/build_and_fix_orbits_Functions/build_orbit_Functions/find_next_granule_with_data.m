@@ -415,13 +415,19 @@ while 1==1
                             if isempty(start_line_index)
                                 [indices] = get_osscan_etc_NO_sli(indices);
 
-                            elseif skip_to_start_of_orbit == 0
+                            else
+                                % Need to call next function to, at a
+                                % minimum set osscan, oescan, gsscan,... in
+                                % oinfo. 
+
                                 [indices] = get_osscan_etc_with_sli(skip_to_start_of_orbit, indices);
 
-                                status = generate_output_filename('sli');
+                                if skip_to_start_of_orbit == 0
+                                    status = generate_output_filename('sli');
 
-                                if status >= 900
-                                    return
+                                    if status >= 900
+                                        return
+                                    end
                                 end
                             end
 

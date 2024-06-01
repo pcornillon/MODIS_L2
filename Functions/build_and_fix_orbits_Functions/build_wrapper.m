@@ -101,7 +101,7 @@ switch Option
         regrid_to_AMSRE = 0;
         get_gradients = 0;
 
-        go_to_keyboard = 1;  % Will go to keyboard in populate_problem_list if set.
+        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 
     case 3 % MacStudio or Satdat1 reading from NAS -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 

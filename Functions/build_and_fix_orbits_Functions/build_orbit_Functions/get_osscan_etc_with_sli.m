@@ -49,9 +49,11 @@ global orbit_length
 global oinfo iOrbit
 global start_line_index num_scan_lines_in_granule
 
+global skip_to_start_of_orbit
+
 % globals used in the other major functions of build_and_fix_orbits.
 
-global iProblem problem_list 
+global iProblem problem_list
 
 status = 0;
 
@@ -63,63 +65,80 @@ status = 0;
 
 % And for the rest of oescan, gsscan and gescan.
 
-indices.current.oescan = indices.current.osscan + start_line_index - 1 + 101 - 1;
+if skip_to_start_of_orbit
 
-indices.current.gsscan = 1;
-indices.current.gescan = start_line_index + 101 - 1;
+    % If the 79 S intersection found is for the case where there were
+    % missing granules at the end of the previous orbit on which the
+    % program was working, i.e., the script skipped a number of orbits,
+    % then how the indices are calculated must be treated a bit
+    % differently. Specifically, the frist scan line to be read from the
+    % granule just found is that corresponding to start_line_index as
+    % opposed to 1. Also, because this case is treated differently than
+    % those for which the 79 S crossing is found at the end of an orbit,
+    % the 'next' indices need to be set as they would have had this not
+    % been a special case, so skip the normal setting for 'current' as well
+    % as the 'pirate' settings but keep the 'next' setting as they were.
 
-% Is the length of the orbit correct? If not force it to be so.
+    indices.next.oescan = num_scan_lines_in_granule - start_line_index + 1;
 
-% % % % % if (indices.current.oescan ~= orbit_length) & (skip_to_start_of_orbit == 0)
-if (indices.current.oescan ~= orbit_length)
+    indices.current.gsscan = start_line_index;
+    indices.current.gescan = num_scan_lines_in_granule;
+else
+    indices.current.oescan = indices.current.osscan + start_line_index - 1 + 101 - 1;
 
-    if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
-        if iOrbit > 1
-            [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
-            dont_use_status = populate_problem_list( 345, ['Calculated length of ' orbitName ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
+    indices.current.gsscan = 1;
+    indices.current.gescan = start_line_index + 101 - 1;
+
+    % Is the length of the orbit correct? If not force it to be so.
+
+    if (indices.current.oescan ~= orbit_length)
+
+        if (indices.current.oescan ~= orbit_length - 10) & (indices.current.oescan ~= orbit_length - 11) & (indices.current.oescan ~= orbit_length - 1)
+            if iOrbit > 1
+                [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
+                dont_use_status = populate_problem_list( 345, ['Calculated length of ' orbitName ' is ' num2str(indices.current.oescan) ' scans. Forcing to ' num2str(orbit_length) '.']); % old status 416
+            end
         end
+
+        indices.current.oescan = orbit_length;
+        indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
     end
 
-    indices.current.oescan = orbit_length;
-    indices.current.gescan = indices.current.oescan - indices.current.osscan + 1;
-end
+    % Determine how many scan lines are needed to bring the length of this
+    % orbit to orbit_length, nominally 40,271 scan lines. This should
+    % result in about 100 lines of overlap with the next orbit--it varies
+    % from orbit to orbit because some orbits are 40,160 and some are
+    % 40,170. Plus we want 1 extra scan line at the end to allow for the
+    % bow-tie correction. If the number of scan lines remaining to be
+    % filled exceed the number of scan lines in this granule, default to
+    % reading the entire granule and set a flag to tell the function to get
+    % the remaining lines to complete the orbit from the next granule.
 
-% Determine how many scan lines are needed to bring the length of this
-% orbit to orbit_length, nominally 40,271 scan lines. This should
-% result in about 100 lines of overlap with the next orbit--it varies
-% from orbit to orbit because some orbits are 40,160 and some are
-% 40,170. Plus we want 1 extra scan line at the end to allow for the
-% bow-tie correction. If the number of scan lines remaining to be
-% filled exceed the number of scan lines in this granule, default to
-% reading the entire granule and set a flag to tell the function to get
-% the remaining lines to complete the orbit from the next granule.
+    if ((indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule)
 
-if ((indices.current.oescan + 1 - indices.current.osscan) > num_scan_lines_in_granule)
-    
-    % This case arises if the additional 101 scan lines needed to complete
-    % the current orbit result in more scan lines being required from
-    % the current granule than are available in it. In this case, scan
-    % lines will need to be pirated from the next granule, if it
-    % exists. This section gets the starting and ending scanlines to be
-    % filled from the next granule as well as the starting and ending
-    % scanlines to use from that granule.
-    
-    indices.case = 2;
-    
-    indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
-    indices.current.gescan = num_scan_lines_in_granule;
-    
-    % The .pirate. group is for the scanlines to be read from the
-    % next orbit to complete this orbit since adding 100 scanlines
-    % resulting in going past the end of this granule (with the
-    % start of an orbit in it).
-    
-    indices.pirate.osscan = indices.current.oescan + 1;
-    indices.pirate.oescan = orbit_length;
-    indices.pirate.gsscan = 1;
-    indices.pirate.gescan = orbit_length - indices.pirate.osscan + 1;
-else
+        % This case arises if the additional 101 scan lines needed to complete
+        % the current orbit result in more scan lines being required from
+        % the current granule than are available in it. In this case, scan
+        % lines will need to be pirated from the next granule, if it
+        % exists. This section gets the starting and ending scanlines to be
+        % filled from the next granule as well as the starting and ending
+        % scanlines to use from that granule.
 
+        indices.case = 2;
+
+        indices.current.oescan = indices.current.osscan + num_scan_lines_in_granule - 1;
+        indices.current.gescan = num_scan_lines_in_granule;
+
+        % The .pirate. group is for the scanlines to be read from the
+        % next orbit to complete this orbit since adding 100 scanlines
+        % resulting in going past the end of this granule (with the
+        % start of an orbit in it).
+
+        indices.pirate.osscan = indices.current.oescan + 1;
+        indices.pirate.oescan = orbit_length;
+        indices.pirate.gsscan = 1;
+        indices.pirate.gescan = orbit_length - indices.pirate.osscan + 1;
+    end
 end
 
 indices.next.osscan = 1;

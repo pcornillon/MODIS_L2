@@ -661,15 +661,15 @@ while granule_start_time <= Matlab_end_time
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] ...
         = build_orbit( granule_start_time);
 
-    % If orbit ended because start of granule was beyond the end of the
-    % orbit, finish processing this one and then search for the start of
-    % the next orbit starting with the errant granule.
-
-    if (status >= 700) & (status < 800)
-        skip_to_start_of_orbit = true;
-    else
-        skip_to_start_of_orbit = false;
-    end
+    % % % % % % If orbit ended because start of granule was beyond the end of the
+    % % % % % % orbit, finish processing this one and then search for the start of
+    % % % % % % the next orbit starting with the errant granule.
+    % % % % % 
+    % % % % % if (status >= 700) & (status < 800)
+    % % % % %     skip_to_start_of_orbit = true;
+    % % % % % else
+    % % % % %     skip_to_start_of_orbit = false;
+    % % % % % end
 
     % No remaining granules with a 79 crossing.
 

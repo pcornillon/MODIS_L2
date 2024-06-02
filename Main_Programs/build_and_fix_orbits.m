@@ -130,7 +130,7 @@ clear global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_
     start_line_index num_scan_lines_in_granule nlat_t Matlab_start_time ...
     Matlab_end_time s3_expiration_time med_op secs_per_granule ...
     orbit_duration granuleList iGranuleList filenamePrefix filenameEnding ...
-    numGranules
+    numGranules skip_to_start_of_orbit
 
 % Control for memory stats
 
@@ -170,6 +170,8 @@ global scan_line_times start_line_index num_scan_lines_in_granule nlat_t
 global Matlab_start_time Matlab_end_time
 
 global s3_expiration_time
+
+global skip_to_start_of_orbit
 
 % globals used in the other major functions of build_and_fix_orbits.
 
@@ -569,7 +571,7 @@ end
 
 %% Loop over the remainder of the time range processing all complete orbits that have not already been processed.
 
-search_for_start_of_next_orbit = 0;
+skip_to_start_of_orbit = false;
 
 while granule_start_time <= Matlab_end_time
 
@@ -581,7 +583,7 @@ while granule_start_time <= Matlab_end_time
     % granule of the previous orbit was missing, there would be no start
     % for this orbit so we need to search for the start of the next orbit.
 
-    if search_for_start_of_next_orbit
+    if skip_to_start_of_orbit
         % Here if last orbit read was beyond the end of an orbit.
         
         iGranuleList = iGranuleList - 1;
@@ -590,7 +592,7 @@ while granule_start_time <= Matlab_end_time
 
         [status, granule_start_time] = get_start_of_first_full_orbit(search_start_time);
 
-        search_for_start_of_next_orbit = 0;
+        skip_to_start_of_orbit = false;
 
         % Either no granules with a 79 crossing or coding problem.
 
@@ -664,9 +666,9 @@ while granule_start_time <= Matlab_end_time
     % the next orbit starting with the errant granule.
 
     if (status >= 700) & (status < 800)
-        search_for_start_of_next_orbit = 1;
+        skip_to_start_of_orbit = true;
     else
-        search_for_start_of_next_orbit = 0;
+        skip_to_start_of_orbit = false;
     end
 
     % No remaining granules with a 79 crossing.

@@ -22,7 +22,7 @@ function [file_list, granule_start_time_guess] = big_step_search(baseName, granu
 %
 
 global version_struct
-version_struct.search_for_file = '1.1.0';
+version_struct.big_step_search = '1.1.0';
 
 global formatOut
 

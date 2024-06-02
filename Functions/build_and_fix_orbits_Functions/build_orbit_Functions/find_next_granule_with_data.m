@@ -1,4 +1,4 @@
-function [status, granule_start_time] = find_next_granule_with_data( skip_to_start_of_orbit, granule_start_time)
+function [status, granule_start_time] = find_next_granule_with_data(granule_start_time)
 % find_next_granule_with_data - step through 5 minute segments looking for next granule with data - PCC
 %
 % This function will build the approximate granule name for corresponding
@@ -15,9 +15,9 @@ function [status, granule_start_time] = find_next_granule_with_data( skip_to_sta
 % range for this run, it will increment the granule time and...
 %
 % INPUT
-%   skip_to_start_of_orbit: 1 to skip to start of next orbit. Will look for
-%    upward crossing of 79S and configure oinfo to start with scan line at
-%    crossing. 0 to get the next data granule.
+% % % % %   skip_to_start_of_orbit: 1 to skip to start of next orbit. Will look for
+% % % % %    upward crossing of 79S and configure oinfo to start with scan line at
+% % % % %    crossing. 0 to get the next data granule.
 %   granule_start_time - the matlab_time of the granule to start with.
 %
 % OUTPUT
@@ -90,6 +90,8 @@ global oinfo iOrbit iGranule
 global scan_line_times start_line_index num_scan_lines_in_granule
 global Matlab_end_time
 
+global skip_to_start_of_orbit
+
 % globals used in the other major functions of build_and_fix_orbits.
 
 global iProblem problem_list 
@@ -137,10 +139,12 @@ while 1==1
     % need to check how often it happens and fix manually if it happens on
     % occasion, otherwise will have to code a fix.
 
-    if (length(oinfo) == iOrbit) & (skip_to_start_of_orbit == 0)
+    if (length(oinfo) == iOrbit) & ~skip_to_start_of_orbit
         if ~isempty(oinfo(iOrbit).end_time)
             if granule_start_time > (oinfo(iOrbit).end_time - 2 * secs_per_scan_line / secs_per_day)
                 status = populate_problem_list( 705, ['Granule past predicted end of orbit time: ' datestr(oinfo(iOrbit).end_time)], granule_start_time); % old status 201
+
+                skip_to_start_of_orbit = true;
                 return
             end
         end
@@ -214,7 +218,7 @@ while 1==1
 
                     %**************************************************************** Straightforward to this point ********************************************************************** 
 
-                    if (skip_to_start_of_orbit == 1) & isempty(start_line_index)
+                    if skip_to_start_of_orbit & isempty(start_line_index)
 
                         % Will looking for the first granule with an ascending crossing of 79 S.
 
@@ -282,7 +286,7 @@ while 1==1
                         end
 
                         if iGranule == 1
-                            if skip_to_start_of_orbit == 0
+                            if ~skip_to_start_of_orbit
                                 
                                 % The flow gets here if this is the first granule in an orbit and the
                                 % ascending nadir track crosses -79 S. This can happen if all of the
@@ -426,10 +430,10 @@ while 1==1
                                 oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
                                 oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
                             else
-                                % % % % % [indices] = get_osscan_etc_with_sli(skip_to_start_of_orbit, indices);
+                                % % % % % [indices] = get_osscan_etc_with_sli(indices);
                                 [indices] = get_osscan_etc_with_sli(indices);
 
-                                if skip_to_start_of_orbit == 0
+                                if ~skip_to_start_of_orbit
                                     status = generate_output_filename('sli');
 
                                     oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;

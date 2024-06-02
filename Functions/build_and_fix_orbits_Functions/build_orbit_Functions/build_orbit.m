@@ -68,6 +68,8 @@ global Matlab_end_time
 
 global granuleList iGranuleList filenamePrefix filenameEnding numGranules
 
+global skip_to_start_of_orbit
+
 % globals used in the other major functions of build_and_fix_orbits.
 
 global iProblem problem_list 
@@ -77,7 +79,7 @@ if determine_fn_size; get_job_and_var_mem; end
 
 status = 0;
 
-skip_to_start_of_orbit = 0;
+skip_to_start_of_orbit = false;
 
 % Initialize return variables to simple nans; will return to calling
 % program when the start of the next orbit is found.
@@ -230,16 +232,9 @@ if name_test
 
             fprintf('--- Have already processed %s. Going to the next orbit. \n', strrep(oinfo(iOrbit).name, '.nc4', ''))
         else
-            % % % % % % Set granule_start_time to the nearest multiple of 5
-            % % % % % % minutes preceeding oinfo(iOrbit).end_time. Remember that the
-            % % % % % % end of the previous orbit is 100 scan lines past the nadir
-            % % % % % % ascending crossing of the satellie.  
-            % % % % % 
-            % % % % % date_vec = datevec(oinfo(iOrbit).end_time - 100 * secs_per_scan_line / secs_per_day);
-            % % % % % date_vec(5) = date_vec(5) - rem(date_vec(5),5);
-            % % % % % date_vec(6) = 0;
-            % % % % % granule_start_time = datenum(date_vec);
-
+            % Has the next orbit been processed? If yes, continue
+            % searching for unprocessed orbits.
+            
             iGranule = 0;
             
             found_one = false;
@@ -261,7 +256,7 @@ if name_test
 
                         iGranuleList = iList;
                         granule_start_time = granuleList(iGranuleList).first_scan_line_time;
-                        skip_to_start_of_orbit = 1;
+                        skip_to_start_of_orbit = true;
 
                         break
                     end
@@ -309,7 +304,7 @@ if name_test
 
     while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
         
-        [status, granule_start_time] = find_next_granule_with_data( skip_to_start_of_orbit, granule_start_time);
+        [status, granule_start_time] = find_next_granule_with_data(granule_start_time);
         
         % Return if end of run.
         
@@ -320,7 +315,7 @@ if name_test
         end
         
         if ~isempty(start_line_index)
-            if skip_to_start_of_orbit == 0
+            if ~skip_to_start_of_orbit
                 % If we get here, the search has found an orbit with a
                 % ascending 79S crossing. But this was an orbit that was
                 % already processed so we need to decrement iOrbit, replacing

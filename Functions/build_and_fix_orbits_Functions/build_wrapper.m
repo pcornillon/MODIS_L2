@@ -65,20 +65,26 @@ switch Option
         %   remote outut to the Cornillon_NAS
         %   logs output to Dropbobx
 
-        BaseDir = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/';
+        BaseDir = '/Volumes/Aqua-1/MODIS_R2019/';
+ 
+        fixit_directory                 = '/Users/petercornillon/Dropbox/Data/Support_data_for_MODIS_L2_Corrections_1/MODIS_R2019/metadata/';
+        metadata_directory              = [BaseDir 'Data_from_OBPG_for_PO-DAAC/'];
 
-        fixit_directory = [BaseDir 'metadata/'];
-        metadata_directory = [BaseDir 'metadata/Data_from_OBPG_for_PO-DAAC/'];
-
-        granules_directory    = '/Volumes/MODIS_L2_original/OBPG/combined/';
+        granules_directory              = [BaseDir 'combined/'];
         
-        output_file_directory_local = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
-        output_file_directory_remote = '/Volumes/MODIS_L2_Modified/OBPG/SST/';
+        output_file_directory_local     = [BaseDir 'TestOutput/'];
+        output_file_directory_remote    = '';
 
-        logs_directory = [BaseDir 'Logs/'];
+        logs_directory                  = [BaseDir 'Logs/'];
+
+        fix_mask = 0;
+        fix_bowtie = 0;
+        regrid_sst = 0;
+        regrid_to_AMSRE = 0;
+        get_gradients = 0;
 
         go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
-
+        
     case 2 % MacStudio or Satdat1 - same as 3 except no mask, bowtie,...
 
         BaseDir                         = '/Volumes/MODIS_L2_modified/OBPG/';

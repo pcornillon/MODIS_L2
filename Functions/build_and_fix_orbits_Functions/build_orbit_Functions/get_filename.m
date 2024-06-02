@@ -158,7 +158,7 @@ switch file_type
                 % % % % % granule_guess_time = datenum([str2num(md_date(1:4)) str2num(md_date(5:6)) str2num(md_date(7:8)) str2num(md_time(1:2)) str2num(md_time(3:4)) str2num(md_time(5:6))]);
                 granule_guess_time = floor(granuleList(iGranuleList).filename_time * 24 * 60) / 24 / 60;
 
-                dont_use_status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' granuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr() '.'], granule_start_time); % no old status
+                dont_use_status = populate_problem_list( 102, ['Data granule corresponding to metadata granule' granuleList(iGranuleList).filename ' not found. Searching by second starting at' datestr(granuleList(iGranuleList).first_scan_line_time) '.']);
                 
                 for iSec=0:59
                     granule_guess_time = granule_guess_time + 1 / secs_per_day;

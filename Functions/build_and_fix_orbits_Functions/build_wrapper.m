@@ -48,9 +48,12 @@ regrid_sst = 1;
 regrid_to_AMSRE = 1;
 get_gradients = 1;
 save_core = 1;
+built_orbit = true;
 print_diag = 1;
 save_orbits = 1;
 debug = 0;
+
+go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 
 % Set directories.
 
@@ -134,8 +137,6 @@ switch Option
 
         logs_directory                  = [BaseDir 'Logs/'];
         % logs_directory                  = '/Users/petercornillon/Logs/';
-
-        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
         
     case 4 % MacStudio or Satdat1 reading from Aqua-1 -- see sister for AWS test case #8.
         %   fixit metadata from Dropbox, 
@@ -158,8 +159,6 @@ switch Option
 
         logs_directory                  = [BaseDir 'Logs/'];
 
-        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
-
     case 5 % AWS for debug, not from S3
         %   fixit metadata from Dropbox,
         %   OBPG metadata from Dropbox,
@@ -180,8 +179,6 @@ switch Option
         output_file_directory_remote = '';
 
         logs_directory = [BaseDir 'Logs/'];
-
-        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 
     case 6 % AWS from S3
         %   fixit metadata from s3-uri-gso-pcornillon
@@ -207,8 +204,6 @@ switch Option
         % % % 
         % % % output_file_directory_local = '/mnt/s3-uri-gso-pcornillon/output/';
 
-        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
-
     case 7 % Laptop
         %   fixit metadata from s3-uri-gso-pcornillon
         %   OBPG metadata  from Data_1
@@ -229,8 +224,6 @@ switch Option
         output_file_directory_remote = '';
 
         logs_directory               = '/Volumes/Data_1/MODIS_L2/Logs/';
-
-        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 
     case 8 % AWS sister to case 4 MacStudio or Satdat1
         %   fixit metadata from Dropbox, 
@@ -256,13 +249,11 @@ switch Option
 %         output_file_directory_remote    = '';
 
         logs_directory                  = '/mnt/uri-nfs-cornillon/Logs/';
-
-        go_to_keyboard = 0;  % Will go to keyboard in populate_problem_list if set.
 end
 
 fprintf('Entering build_and_fix_orbits.\n')
 
-build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
+build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, built_orbit, print_diag, save_orbits, base_diary_filename)
 
 % % % % Save oinfo and memory structure files for this run.
 % % % 

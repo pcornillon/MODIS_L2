@@ -1,7 +1,7 @@
 function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, refined_mask, scan_seconds_from_start, ...
     regridded_longitude, regridded_latitude, regridded_sst, easting, northing, regridded_easting, regridded_northing, ...
     along_scan_gradient, along_track_gradient, grad_lon_per_km, grad_lat_per_km, Fix_MODIS_Mask_number, ...
-    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
+    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, built_orbit, get_gradients, ...
     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
     AMSR_E_lon, AMSR_E_lat, AMSR_E_SST, MODIS_SST_on_AMSR_E_grid)
 % Write_SST_File - will create and write a file for the gradient/fronts workflow SST and mask data - PCC
@@ -92,7 +92,7 @@ eval(['! touch ' strrep( output_filename, '.nc4', '.dummy')])
 
 %% Create the variables to be written out along with their attributes and write them. Start with main variable.
 
-if regrid_sst == 0
+if built_orbit
 
     % SST_In - SST in the original granules.
     
@@ -126,17 +126,14 @@ if regrid_sst == 0
     ncwriteatt( output_filename, 'qual_sst',  'valid_max', 5)
     
     ncwrite( output_filename, 'qual_sst', qual_sst)
-end
-
-if save_just_the_facts == 0
 
     % longitude
-    
+
     nccreate( output_filename, 'longitude', 'Datatype', 'int32', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
         'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
         'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
-    
+
     ncwriteatt( output_filename, 'longitude', 'long_name', 'Longitude')
     ncwriteatt( output_filename, 'longitude',  'standard_name', 'longitude')
     ncwriteatt( output_filename, 'longitude', 'units', 'degrees_east')
@@ -144,16 +141,16 @@ if save_just_the_facts == 0
     ncwriteatt( output_filename, 'longitude', 'scale_factor', LatLonScaleFactor)
     ncwriteatt( output_filename, 'longitude', 'valid_min', -720000)
     ncwriteatt( output_filename, 'longitude', 'valid_max',  720000)
-    
+
     ncwrite(  output_filename, 'longitude', longitude)
-    
+
     % latitude
-    
+
     nccreate( output_filename, 'latitude', 'Datatype', 'int32', ...
         'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
         'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
         'Deflatelevel', 4, 'FillValue', fill_value_int32, 'Format', 'netcdf4')
-    
+
     ncwriteatt( output_filename, 'latitude', 'long_name', 'latitude')
     ncwriteatt( output_filename, 'latitude',  'standard_name', 'latitude')
     ncwriteatt( output_filename, 'latitude', 'units', 'degrees_north')
@@ -161,25 +158,28 @@ if save_just_the_facts == 0
     ncwriteatt( output_filename, 'latitude', 'scale_factor', LatLonScaleFactor)
     ncwriteatt( output_filename, 'latitude', 'valid_min', -90000)
     ncwriteatt( output_filename, 'latitude', 'valid_max', 90000)
-    
+
     ncwrite(  output_filename, 'latitude', latitude)
+
+if ~save_just_the_facts
     
     % SST_In_Masked - SST_In with the refined mask applied. Still with bowtie issues.
-    
-    nccreate( output_filename, 'SST_In_Masked', 'Datatype', 'int16', ...
-        'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
-        'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
-        'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
-    
-    ncwriteatt( output_filename, 'SST_In_Masked', 'long_name', 'sst')
-    ncwriteatt( output_filename, 'SST_In_Masked',  'standard_name', 'sea_surface_temperature')
-    ncwriteatt( output_filename, 'SST_In_Masked', 'units', 'C')
-    ncwriteatt( output_filename, 'SST_In_Masked', 'add_offset', 0)
-    ncwriteatt( output_filename, 'SST_In_Masked', 'scale_factor', sstScaleFactor)
-    ncwriteatt( output_filename, 'SST_In_Masked',  'valid_min', -600)
-    ncwriteatt( output_filename, 'SST_In_Masked',  'valid_max', 9000)
-    
-    ncwrite( output_filename, 'SST_In_Masked', SST_In_Masked)
+
+        nccreate( output_filename, 'SST_In_Masked', 'Datatype', 'int16', ...
+            'Dimensions', {'nx' nxDimension 'ny' nyDimension}, ...
+            'Chunksize', [min(1024,nxDimension) min(1024,nyDimension)], ...
+            'Deflatelevel', 4,'FillValue', sstFillValue, 'Format', 'netcdf4')
+
+        ncwriteatt( output_filename, 'SST_In_Masked', 'long_name', 'sst')
+        ncwriteatt( output_filename, 'SST_In_Masked',  'standard_name', 'sea_surface_temperature')
+        ncwriteatt( output_filename, 'SST_In_Masked', 'units', 'C')
+        ncwriteatt( output_filename, 'SST_In_Masked', 'add_offset', 0)
+        ncwriteatt( output_filename, 'SST_In_Masked', 'scale_factor', sstScaleFactor)
+        ncwriteatt( output_filename, 'SST_In_Masked',  'valid_min', -600)
+        ncwriteatt( output_filename, 'SST_In_Masked',  'valid_max', 9000)
+
+        ncwrite( output_filename, 'SST_In_Masked', SST_In_Masked)
+    end
 end
 
 if fix_mask
@@ -272,34 +272,34 @@ if fix_bowtie
     ncwriteatt( output_filename, 'regridded_latitude', 'scale_factor', LatLonScaleFactor)
     ncwriteatt( output_filename, 'regridded_latitude', 'valid_min', -90000)
     ncwriteatt( output_filename, 'regridded_latitude', 'valid_max', 90000)
-    
+
     ncwrite(  output_filename, 'regridded_latitude', regridded_latitude)
-    
+
+    % region_start
+
+    nccreate( output_filename, 'region_start', 'Datatype', 'int32', ...
+        'Dimensions', {'i' 4}, 'Format', 'netcdf4')
+
+    ncwriteatt( output_filename, 'region_start', 'long_name', 'region_start')
+    ncwriteatt( output_filename, 'region_start', 'standard_name', 'region_start')
+    ncwriteatt( output_filename, 'region_start', 'valid_min', 0)
+    ncwriteatt( output_filename, 'region_start', 'valid_max', 50000)
+
+    ncwrite(  output_filename, 'region_start', int32(region_start))
+
+    % region_end
+
+    nccreate( output_filename, 'region_end', 'Datatype', 'int32', ...
+        'Dimensions', {'i' 4}, 'Format', 'netcdf4')
+
+    ncwriteatt( output_filename, 'region_end', 'long_name', 'region_end')
+    ncwriteatt( output_filename, 'region_end', 'standard_name', 'region_end')
+    ncwriteatt( output_filename, 'region_end', 'valid_min', 0)
+    ncwriteatt( output_filename, 'region_end', 'valid_max', 50000)
+
+    ncwrite(  output_filename, 'region_end', int32(region_end))
+
     if save_just_the_facts == 0
-        % region_start
-        
-        nccreate( output_filename, 'region_start', 'Datatype', 'int32', ...
-            'Dimensions', {'i' 4}, 'Format', 'netcdf4')
-        
-        ncwriteatt( output_filename, 'region_start', 'long_name', 'region_start')
-        ncwriteatt( output_filename, 'region_start', 'standard_name', 'region_start')
-        ncwriteatt( output_filename, 'region_start', 'valid_min', 0)
-        ncwriteatt( output_filename, 'region_start', 'valid_max', 50000)
-        
-        ncwrite(  output_filename, 'region_start', int32(region_start))
-        
-        % region_end
-        
-        nccreate( output_filename, 'region_end', 'Datatype', 'int32', ...
-            'Dimensions', {'i' 4}, 'Format', 'netcdf4')
-        
-        ncwriteatt( output_filename, 'region_end', 'long_name', 'region_end')
-        ncwriteatt( output_filename, 'region_end', 'standard_name', 'region_end')
-        ncwriteatt( output_filename, 'region_end', 'valid_min', 0)
-        ncwriteatt( output_filename, 'region_end', 'valid_max', 50000)
-        
-        ncwrite(  output_filename, 'region_end', int32(region_end))
-        
         % easting
         
         nccreate( output_filename, 'easting', 'Datatype', 'int32', ...
@@ -407,10 +407,6 @@ if get_gradients
         ncwriteatt( output_filename, 'along_track_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
         ncwriteatt( output_filename, 'along_track_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
         
-% % %         nn = find(isnan(along_track_gradient));
-% % %         temp_grad = int32(along_track_gradient / gradientScaleFactor);
-% % %         temp_grad(nn) = fill_value_int32;
-        
         ncwrite(  output_filename, 'along_track_gradient', along_track_gradient)
     end
     
@@ -428,11 +424,7 @@ if get_gradients
     ncwriteatt( output_filename, 'eastward_gradient', 'scale_factor', gradientScaleFactor)
     ncwriteatt( output_filename, 'eastward_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
     ncwriteatt( output_filename, 'eastward_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
-    
-% % %     nn = find(isnan(grad_lon_per_km));
-% % %     temp_grad = int32(grad_lon_per_km / gradientScaleFactor);
-% % %     temp_grad(nn) = -999;
-% % %     
+
     ncwrite(  output_filename, 'eastward_gradient', grad_lon_per_km)
     
     % along_track_gradient
@@ -450,10 +442,6 @@ if get_gradients
     ncwriteatt( output_filename, 'northward_gradient',  'valid_min', -MaxGrad / gradientScaleFactor)
     ncwriteatt( output_filename, 'northward_gradient',  'valid_max', MaxGrad / gradientScaleFactor)
     
-% % %     nn = find(isnan(grad_lat_per_km));
-% % %     temp_grad = int32(grad_lat_per_km / gradientScaleFactor);
-% % %     temp_grad(nn) = -999;
-% % %     
     ncwrite(  output_filename, 'northward_gradient', grad_lat_per_km)
 end
 

@@ -1,4 +1,4 @@
-function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, print_diag, save_orbits, base_diary_filename)
+function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bowtie, regrid_sst, regrid_to_AMSRE, get_gradients, save_core, built_orbit, print_diag, save_orbits, base_diary_filename)
 % build_and_fix_orbits - read in all granules for each orbit in the time range and fix the mask and bowtie - PCC
 %
 % This function will read all of the
@@ -18,6 +18,8 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %    otherwise.
 %   save_core - 1 to save only the core values, regridded lon, lat, SST,
 %    refined mask and nadir info, 0 otherwise.
+%   built_orbit: true to output latitude, longitude, SST_In and qual_sst,
+%    false otherwise.
 %   print_diagnostics - 1 to print timing diagnostics, 0 otherwise.
 %   save_orbits - 1 to write netCDF file for each orbit, 0 to skip saving.
 %   base_diary_filename - the name for the output log files.
@@ -871,7 +873,7 @@ while granule_start_time <= Matlab_end_time
                     regridded_longitude, regridded_latitude, regridded_sst, ...
                     easting, northing, new_easting, new_northing, ...
                     grad_as_per_km, grad_at_per_km, eastward_gradient, northward_gradient, 1, ...
-                    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, get_gradients, ...
+                    region_start, region_end, fix_mask, fix_bowtie, regrid_sst, built_orbit, get_gradients, ...
                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid);
 

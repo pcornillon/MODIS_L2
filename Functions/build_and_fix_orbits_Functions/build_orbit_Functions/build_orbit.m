@@ -249,7 +249,7 @@ if name_test
                     % the loop has stepped past the end of the orbit. If
                     % so, find the new end of orbit and continue searching.
 
-                    newNumOrbits = ceil((granuleList(iList).first_scan_line_time - oinfo.end_time) * 86400 / secs_per_orbit);
+                    newNumOrbits = ceil((granuleList(iList).first_scan_line_time - oinfo(iOrbit).end_time) * 86400 / secs_per_orbit);
                     if newNumOrbits >= 1
                         oinfo(iOrbit).end_time = oinfo(iOrbit).end_time + newNumOrbits * secs_per_orbit / secs_per_day;
                     else

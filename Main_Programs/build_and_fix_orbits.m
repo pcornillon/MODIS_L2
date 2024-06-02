@@ -622,7 +622,7 @@ while granule_start_time <= Matlab_end_time
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
             datestr(oinfo(iOrbit).start_time, formatOut.mm) '/' orbit_file_name '.nc4'];
 
-        [status, granule_start_time] = find_next_granule_with_data( granule_start_time);
+        [status, granule_start_time] = find_next_granule_with_data(granule_start_time);
 
         % Return if end of run.
 

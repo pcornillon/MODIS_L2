@@ -85,8 +85,9 @@ while granule_start_time <= Matlab_end_time
     iGranule = 0;
 
     if local_debug; fprintf('In 2nd while loop.\n'); end
-
-    [status, granule_start_time] = find_next_granule_with_data( 1, granule_start_time);
+    
+    skip_to_start_of_orbit = true;
+    [status, granule_start_time] = find_next_granule_with_data(granule_start_time);
 
     % if status == 921
     if status >= 900

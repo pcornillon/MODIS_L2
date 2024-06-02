@@ -278,7 +278,7 @@ if fix_bowtie
     % region_start
 
     nccreate( output_filename, 'region_start', 'Datatype', 'int32', ...
-        'Dimensions', {'i' 4}, 'Format', 'netcdf4')
+        'Dimensions', {'i' 5}, 'Format', 'netcdf4')
 
     ncwriteatt( output_filename, 'region_start', 'long_name', 'region_start')
     ncwriteatt( output_filename, 'region_start', 'standard_name', 'region_start')
@@ -290,14 +290,14 @@ if fix_bowtie
     % region_end
 
     nccreate( output_filename, 'region_end', 'Datatype', 'int32', ...
-        'Dimensions', {'i' 4}, 'Format', 'netcdf4')
+        'Dimensions', {'i' 5}, 'Format', 'netcdf4')
 
     ncwriteatt( output_filename, 'region_end', 'long_name', 'region_end')
     ncwriteatt( output_filename, 'region_end', 'standard_name', 'region_end')
     ncwriteatt( output_filename, 'region_end', 'valid_min', 0)
     ncwriteatt( output_filename, 'region_end', 'valid_max', 50000)
 
-    ncwrite(  output_filename, 'region_end', int32(region_end))
+    ncwrite(  output_filename, 'region_end', int32(region_end(1:4)))
 
     if save_just_the_facts == 0
         % easting

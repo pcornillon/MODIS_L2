@@ -113,7 +113,7 @@ if length(oinfo) < iOrbit
     % % % % % 
     % % % % % iGranule = 0;
     % % % % % 
-    % % % % % [status, ~, granule_start_time] = find_next_granule_with_data( granule_start_time);
+    % % % % % [status, ~, granule_start_time] = find_next_granule_with_data(granule_start_time);
     % % % % % 
     % % % % % % if (status == 201) | (status == 231) | (status > 900)
     % % % % % if status >= 900
@@ -234,7 +234,7 @@ if name_test
         else
             % Has the next orbit been processed? If yes, continue
             % searching for unprocessed orbits.
-            
+
             iGranule = 0;
             
             found_one = false;
@@ -401,7 +401,8 @@ while granule_start_time <= (oinfo(iOrbit).end_time + 60 / secs_per_day)
     % Get metadata information for the next granule-g... increments
     % granule_start_time... by 5 minutes.
     
-    [status, granule_start_time] = find_next_granule_with_data( 0, granule_start_time);
+    skip_to_start_of_orbit = false;
+    [status, granule_start_time] = find_next_granule_with_data(granule_start_time);
     
     % Status returned from find_next_granule_with_data is either 0 - all OK,
     % 201 - granule start time exceeded the end of orbit time without

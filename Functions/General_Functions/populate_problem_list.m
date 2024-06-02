@@ -26,7 +26,7 @@ function status = populate_problem_list( status, problem_description, granule_st
 %           between 700 and 800, 800 and 900 and > 900 - PCC
 
 global version_struct
-version_struct.find_next_granule_with_data = '2.0.0';
+version_struct.populate_problem_list = '2.0.0';
 
 global oinfo iOrbit iGranule iProblem problem_list
 global print_E100 print_E300 print_E600 print_E700 print_E800 print_E900 

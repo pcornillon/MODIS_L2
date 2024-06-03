@@ -93,7 +93,7 @@ fi
 
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
-# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${LOCAL_MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_44_235)238_218;" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/tester_session_log.txt" &'
+# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${LOCAL_MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_44_235_238_218;" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/tester_session_log.txt" &'
 
 sudo -u ubuntu bash -c '
   export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"

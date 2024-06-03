@@ -111,9 +111,7 @@ for iJob = 1:num_batch
     mat_end(iJob) = datenum(timeSeries_end(iJob));
 end
 
-% Create a cluster object with the custom profile
-
-myCluster = parcluster('singleCoreProfile');
+parpool('local', 96); % This ensures all 96 cores are available
 
 % Two variables that will rarely need to be changed. They will only be
 % changed if you want to submit jobs using a different set of input data
@@ -129,7 +127,7 @@ for iJob=1:num_batch
     if ~test_run
         if submit_as_batch
             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( myCluster, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
+            job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, 'Pool', 0, CaptureDiary=true);
 %             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''tester'', 0, {' num2str(iJob^2) ', ' num2str(Var1) '}, CaptureDiary=true);'])
 %             job_number(iJob) = batch( 'tester', 0, {iJob^2, Var1}, CaptureDiary=true)
         else

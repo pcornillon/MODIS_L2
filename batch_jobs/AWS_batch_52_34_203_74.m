@@ -13,12 +13,12 @@
 %           2015/1/1 00h00. Each job will process one month. - PCC
 %   1.1.3 - 5/13/2024 - Configured for major job. Will start processing at 
 %           2003/1/1 00h00. Each job will process one month. - PCC
-%   2.0.0 - 6/4/2024 - Each core will process 20 days of data starting on
-%           16-Feb-2005 for a total of 960 days, about 2 1/2 years. The
-%           last 20 day interval is from 14-Sep-2007 to 04-Oct-2007 
-%           04:00:00. The reason for the relatively short period is, if all
-%           works well, for this job to finish before I leave for my bike
-%           trip in France. 
+%   2.0.0 - 6/4/2024 - Will run 90 batch jobs. Each job will process 20
+%           days of data starting on 16-Feb-2005 for a total of 1800 days,
+%           about 5 years. The last 20 day interval is from 01-Jan-2010 to
+%           21-Jan-2010 04:00:00. The reason for the relatively short
+%           period is, if all works well, for this job to finish before I
+%           leave for my bike trip in France. 
 
 global version_struct
 
@@ -30,9 +30,9 @@ version_struct.AWS_batch_52_34_203_74 = '2.0.0';
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = false; % Set to tru to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = true; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
@@ -41,7 +41,7 @@ Option = 8; % Reads data from s3 in us-west-2.
 % Open the Matlab Project MODIS_L2.
 
 machine = pwd;
-if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
+if (~isempty(strfind(machine, 'ubuntu'))) & (~test_run)
     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
     fprintf('Opened /home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj \n')
 % else
@@ -57,7 +57,7 @@ end
 start_time = [2005 02 16 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 0 20 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 0 20 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 48; % The number of batch jobs to submit
+num_batch = 90; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -88,6 +88,23 @@ endTime = startTime + calmonths(12) * yearShift_period + calmonths(1) * monthShi
 
 timeSeries_start = NaT(1, num_batch); % 'NaT' creates an array of Not-a-Time for preallocation
 timeSeries_end = NaT(1, num_batch);
+
+% Now configure the clustr to run 96 workers.
+
+% Create a cluster object
+c = parcluster('local');
+
+% Specify the number of workers
+if test_run
+    c.NumWorkers = 12;
+else
+    c.NumWorkers = 96;
+end
+
+% Create a parallel pool using the cluster object
+parpool(c, c.NumWorkers);
+
+%%  OK, start the batch jobs now.
 
 fprintf('The following jobs will be submitted: \n\n')
 

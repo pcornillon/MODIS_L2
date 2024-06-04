@@ -13,13 +13,13 @@
 %           2015/1/1 00h00. Each job will process one month. - PCC
 %   1.1.3 - 5/13/2024 - Configured for major job. Will start processing at 
 %           2003/1/1 00h00. Each job will process one month. - PCC
-%   2.0.0 - 6/3/2024 - Changed the number of threads to use to 96.
-%           Hopefully this will allow 90 batch jobs to run simultaneously.
-%           Each core will process 20 days of data starting on 7 July 2002
-%           for a total of 900 days, about 2 1/2 years. Thes last 20 day
-%           interval is from 16-May-2007 to 05-Jun-2007 04:00:00. The
-%           reason for the relatively short period is, if all works well,
-%           for this job to finish before I leave for my bike trip in France.
+%   2.0.0 - 6/3/2024 -  Hopefully this will allow 45 batch jobs to run
+%           simultaneously. Each core will process 20 days of data starting
+%           on 7 July 2002 for a total of 900 days, about 2 1/2 years. Thes
+%           last 20 day interval is from 26-Jan-2005 to 15-Feb-2005
+%           04:00:00. The reason for the relatively short period is, if all
+%           works well, for this job to finish before I leave for my bike
+%           trip in France. 
 
 global version_struct
 
@@ -31,7 +31,7 @@ version_struct.AWS_batch_44_235_238_218 = '2.0.0';
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = 1; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
 submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
 
@@ -58,7 +58,7 @@ end
 start_time = [2002 07 01 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 0 20 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 0 20 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 90; % The number of batch jobs to submit
+num_batch = 48; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -90,11 +90,11 @@ endTime = startTime + calmonths(12) * yearShift_period + calmonths(1) * monthShi
 timeSeries_start = NaT(1, num_batch); % 'NaT' creates an array of Not-a-Time for preallocation
 timeSeries_end = NaT(1, num_batch);
 
-% Set the number of threads to 96.
-
-LastN = maxNumCompThreads(96);
-
-fprintf('\nChanging the number of computational threads to %i.\n\n', maxNumCompThreads)
+% % Set the number of threads to 96.
+% 
+% LastN = maxNumCompThreads(96);
+% 
+% fprintf('\nChanging the number of computational threads to %i.\n\n', maxNumCompThreads)
 
 % OK, ready to submit jobs.
 

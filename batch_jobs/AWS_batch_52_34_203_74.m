@@ -1,13 +1,10 @@
-% AWS_batch_test - 
+% AWS_batch_52_34_203_74 - Batch job to run build_and_fix_orbits on 52.34.203.74 at AWS - PCC 
 %
 % The four variables intialized below, start_time, period_to_process, batch_step 
-% and num_batch must be changed for each version of this script. For the
-% current values, it will do January and February 2015 and should take
-% about 1 3/4 days, 42 hours to process.
+% and num_batch define the range of the period for which orbits will be
+% processed. The range will be specified in the versioning below.
 % 
-% The values for this version of the script will 3 submit batch jobs to
-% process the first 4 orbits for days 1, 2 and 3 of January 2012
-
+%
 % Versions.
 %   1.0.0 - 5/6/2024 - Initial version for test. - PCC
 %   1.1.0 - 5/6/2024 - First major processing - PCC
@@ -16,11 +13,16 @@
 %           2015/1/1 00h00. Each job will process one month. - PCC
 %   1.1.3 - 5/13/2024 - Configured for major job. Will start processing at 
 %           2003/1/1 00h00. Each job will process one month. - PCC
-%   2.0.0 - 6/2/2024 - Configured to run 84 cores each processing one month
-%           starting on 07/01/2017 and ending with 12/31/2023 - PCC 
+%   2.0.0 - 6/4/2024 - Each core will process 20 days of data starting on
+%           16-Feb-2005 for a total of 960 days, about 2 1/2 years. The
+%           last 20 day interval is from 14-Sep-2007 to 04-Oct-2007 
+%           04:00:00. The reason for the relatively short period is, if all
+%           works well, for this job to finish before I leave for my bike
+%           trip in France. 
 
 global version_struct
-version_struct.AWS_batch_test = '1.1.3';
+
+version_struct.AWS_batch_52_34_203_74 = '2.0.0';
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -47,19 +49,15 @@ if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
 %     fprintf('Opened /Users/petercornillon/Git_repos/MODIS_L2/MODIS_L2.prj \n')
 end
 
-% % % if (~isempty(strfind(machine, '/Users/petercornillon/'))) & (test_run == 0) & (submit_as_batch == 1)
-% % %     prj = openProject('/Users/petercornillon/MATLAB/Projects/MODIS_L2/MODIS_L2.prj');
-% % % end
-
 % Note that for the start time you MUST to specify a month and day other
 % than 0; i.e., [2002 7 1 0 0 0] will start at 00h00 on 1 July 2002. If you
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2017 01 01 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 1 0 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 84; % The number of batch jobs to submit
+start_time = [2005 02 16 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 0 20 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 0 20 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+num_batch = 48; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -111,10 +109,6 @@ for iJob = 1:num_batch
     mat_end(iJob) = datenum(timeSeries_end(iJob));
 end
 
-% Create a cluster object with the custom profile
-
-myCluster = parcluster('singleCoreProfile');
-
 % Two variables that will rarely need to be changed. They will only be
 % changed if you want to submit jobs using a different set of input data
 % and/or if you want to run jobs interactively.
@@ -130,19 +124,20 @@ for iJob=1:num_batch
         if submit_as_batch
             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
             job_number(iJob) = batch( myCluster, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
-%             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''tester'', 0, {' num2str(iJob^2) ', ' num2str(Var1) '}, CaptureDiary=true);'])
-%             job_number(iJob) = batch( 'tester', 0, {iJob^2, Var1}, CaptureDiary=true)
         else
             build_wrapper( 3, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
-%             tester(iJob^2, Var1)
         end
     end
 end
 
 fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
 
-for iJob=1:num_batch
-    job_number(iJob).wait();
-end
+% Wait until all jobs have completed and then exit Matlab
 
-exit
+if ~test_run
+    for iJob=1:num_batch
+        job_number(iJob).wait();
+    end
+
+    exit
+end

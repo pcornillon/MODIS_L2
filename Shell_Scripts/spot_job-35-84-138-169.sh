@@ -74,7 +74,7 @@ fi
 
 # Sanity check to make sure that it pulled properly.
  
-sed -n '51p' "${LOCAL_MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+# sed -n '51p' "${LOCAL_MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 
@@ -93,8 +93,6 @@ fi
 
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
-# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${LOCAL_MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_35_84_138_169;" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/tester_session_log.txt" &'
-
 sudo -u ubuntu bash -c '
   export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
   export REMOTE_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
@@ -105,7 +103,7 @@ sudo -u ubuntu bash -c '
   git pull
   FILENAME="matlab_$(date +'%Y-%m-%d_%H-%M-%S').out"
   echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
-  nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); AWS_batch_35_44_138_169;" > "$REMOTE_OUTPUT_DIRECTORY/$FILENAME" 2>&1 &
+  nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); AWS_batch_35_84_138_169;" > "$REMOTE_OUTPUT_DIRECTORY/$FILENAME" 2>&1 &
   echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt" '
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background. This script is finished." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"

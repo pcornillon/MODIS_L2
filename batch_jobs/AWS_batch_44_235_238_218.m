@@ -13,9 +13,10 @@
 %           2015/1/1 00h00. Each job will process one month. - PCC
 %   1.1.3 - 5/13/2024 - Configured for major job. Will start processing at 
 %           2003/1/1 00h00. Each job will process one month. - PCC
-%   2.0.0 - 6/3/2024 -  Hopefully this will allow 45 batch jobs to run
-%           simultaneously. Each core will process 20 days of data starting
-%           on 7 July 2002 for a total of 900 days, about 2 1/2 years. Thes
+%   2.0.0 - 6/3/2024 - Added code to change the number of workers to 96.
+%           Hopefully this will allow 90 batch jobs to run simultaneously.
+%           Each core will process 10 days of data starting on 7 July 2002
+%           for a total of 900 days, about 2 1/2 years. The 
 %           last 20 day interval is from 26-Jan-2005 to 15-Feb-2005
 %           04:00:00. The reason for the relatively short period is, if all
 %           works well, for this job to finish before I leave for my bike
@@ -31,9 +32,9 @@ version_struct.AWS_batch_44_235_238_218 = '2.0.0';
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = 0; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = false; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
-submit_as_batch = 1; % Set to 0 if job is to be submitted interactively.
+submit_as_batch = true; % Set to 0 if job is to be submitted interactively.
 
 % The next line needs to be replaced with the line after if an AWS spot instance.
 
@@ -42,7 +43,7 @@ Option = 8; % Reads data from s3 in us-west-2.
 % Open the Matlab Project MODIS_L2.
 
 machine = pwd;
-if (~isempty(strfind(machine, 'ubuntu'))) & (test_run == 0)
+if (~isempty(strfind(machine, 'ubuntu'))) & (~test_run)
     prj = openProject('/home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj');
     fprintf('Opened /home/ubuntu/Documents/MODIS_L2/MODIS_L2.prj \n')
 % else
@@ -96,7 +97,22 @@ timeSeries_end = NaT(1, num_batch);
 % 
 % fprintf('\nChanging the number of computational threads to %i.\n\n', maxNumCompThreads)
 
-% OK, ready to submit jobs.
+% Now configure the clustr to run 96 workers.
+
+% Create a cluster object
+c = parcluster('local');
+
+% Specify the number of workers
+if test_run
+    c.NumWorkers = 12;
+else
+    c.NumWorkers = 96;
+end
+
+% Create a parallel pool using the cluster object
+parpool(c, c.NumWorkers);
+
+%%  OK, start the batch jobs now.
 
 fprintf('The following jobs will be submitted: \n\n')
 

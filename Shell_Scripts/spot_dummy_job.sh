@@ -30,28 +30,35 @@ fi
 
 if [ "$(whoami)" = "petercornillon" ]; then
     LOCAL_MATLAB_PROJECT_DIRECTORY="/Users/petercornillon/Git_repos/MODIS_L2/"
+    touch "${LOCAL_OUTPUT_DIRECTORY}/proof_of_life"
 else
     LOCAL_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
+    touch /home/ubuntu/proof_of_life
 fi
+
+# Ensure the output directory exists, if it doesn't, create it.
+
+mkdir -p "$LOCAL_OUTPUT_DIRECTORY"
+echo "Checked for the output directory, created if it did not exist." | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
 # Some output.
 
-echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-date  | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "Starting spot dummy job..." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "" | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "" | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+date  | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "" | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "Starting spot dummy job..." | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
 
 # Change to the git repo directory for this project and pull the latest changes as user ubuntu
 
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
-    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user ubuntu" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user ubuntu" | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
     sudo -u ubuntu bash -c "
         cd "$LOCAL_MATLAB_PROJECT_DIRECTORY" &&
         git pull
     "
 else
-    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | sudo tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
     cd "$LOCAL_MATLAB_PROJECT_DIRECTORY"
     git pull
 fi

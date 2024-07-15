@@ -2,7 +2,7 @@
 
 # The profile and JSON specification file should be configured prior to running this script
 PROFILE="iam_pcornillon"
-SPEC_FILE="specification-44-235-238-218.json"
+SPEC_FILE="../specification-44-235-238-218.json"
 EXPECTED_IP="44.235.238.218"
 
 # Submit the spot instance request

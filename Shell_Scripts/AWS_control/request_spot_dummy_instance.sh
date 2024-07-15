@@ -1,8 +1,14 @@
 #!/bin/bash
 
+#
+# This script will start a spot instance for the large computer and will define a suite of
+# variables but WILL NOT start Matlab. It is to be used to examin characteristics of the
+# large computer.
+#
+
 # The profile and JSON specification file should be configured prior to running this script
 PROFILE="iam_pcornillon"
-SPEC_FILE="specification.json"
+SPEC_FILE="specification_dummy-44-235-238-218.json"
 EXPECTED_IP="44.235.238.218"
 
 # Submit the spot instance request

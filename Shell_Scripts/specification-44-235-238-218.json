@@ -1,5 +1,5 @@
 {
-  "ImageId": "ami-0c1bdd71fe5c1ba3d",
+  "ImageId": "ami-0a63023a8a9ad28f2",
   "SecurityGroupIds": [ "sg-06fcb6a0539014d04" ],
   "InstanceType": "x2iedn.24xlarge",
   "Placement": {

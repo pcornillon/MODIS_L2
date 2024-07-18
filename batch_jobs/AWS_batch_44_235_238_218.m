@@ -59,7 +59,7 @@ end
 start_time = [2002 07 01 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 0 20 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 0 20 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 48; % The number of batch jobs to submit
+num_batch = 85; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -106,11 +106,11 @@ c = parcluster('local');
 if test_run
     c.NumWorkers = 12;
 else
-    c.NumWorkers = 96;
+    c.NumWorkers = 90;
 end
 
-% Create a parallel pool using the cluster object
-parpool(c, c.NumWorkers);
+% % % % Create a parallel pool using the cluster object
+% % % parpool(c, c.NumWorkers);
 
 %%  OK, start the batch jobs now.
 
@@ -147,8 +147,8 @@ for iJob=1:num_batch
 
     if ~test_run
         if submit_as_batch
-            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
+            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( c, ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
+            job_number(iJob) = batch( c, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
         else
             build_wrapper( Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
         end

@@ -90,6 +90,29 @@ endTime = startTime + calmonths(12) * yearShift_period + calmonths(1) * monthShi
 timeSeries_start = NaT(1, num_batch); % 'NaT' creates an array of Not-a-Time for preallocation
 timeSeries_end = NaT(1, num_batch);
 
+% % Set the number of threads to 96.
+% 
+% LastN = maxNumCompThreads(96);
+% 
+% fprintf('\nChanging the number of computational threads to %i.\n\n', maxNumCompThreads)
+
+% % % % Now configure the clustr to run 96 workers.
+% % % 
+% % % % Create a cluster object
+% % % c = parcluster('local');
+% % % 
+% % % % Specify the number of workers
+% % % if test_run
+% % %     c.NumWorkers = 12;
+% % % else
+% % %     c.NumWorkers = 48;
+% % % end
+% % % 
+% % % % Create a parallel pool using the cluster object
+% % % parpool(c, c.NumWorkers);
+
+%%  OK, start the batch jobs now.
+
 fprintf('The following jobs will be submitted: \n\n')
 
 % Generate the time series
@@ -123,15 +146,17 @@ for iJob=1:num_batch
 
     if ~test_run
         if submit_as_batch
+% % %             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( c, ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
+% % %             job_number(iJob) = batch( c, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( myCluster, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
+            job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
         else
-            build_wrapper( 3, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+            build_wrapper( Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
         end
     end
 end
 
-fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
+fprintf('\nTo get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
 
 % Wait until all jobs have completed and then exit Matlab
 

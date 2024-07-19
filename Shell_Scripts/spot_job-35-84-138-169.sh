@@ -72,10 +72,6 @@ else
     git pull
 fi
 
-# Sanity check to make sure that it pulled properly.
- 
-# sed -n '51p' "${LOCAL_MATLAB_PROJECT_DIRECTORY}batch_jobs/AWS_batch_test.m" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 
 if [ "$(whoami)" != "petercornillon" ]; then
@@ -92,8 +88,6 @@ fi
 # Start Matlab and submit the jobs to submit batch jobs for processing. 
 
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-
-# sudo -u ubuntu -i bash -c 'nohup matlab -batch "prj=openProject('${LOCAL_MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj'); AWS_batch_35_84_138_169;" > "${LOCAL_OUTPUT_DIRECTORY}/${FILENAME}" 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/tester_session_log.txt" &'
 
 sudo -u ubuntu bash -c '
   export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"

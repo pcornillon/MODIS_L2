@@ -55,10 +55,10 @@ end
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2007 10 05 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 20 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 0 20 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 48; % The number of batch jobs to submit
+start_time = [2004 12 17 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 0 40 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 0 40 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+num_batch = 60; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -89,6 +89,29 @@ endTime = startTime + calmonths(12) * yearShift_period + calmonths(1) * monthShi
 
 timeSeries_start = NaT(1, num_batch); % 'NaT' creates an array of Not-a-Time for preallocation
 timeSeries_end = NaT(1, num_batch);
+
+% % Set the number of threads to 96.
+% 
+% LastN = maxNumCompThreads(96);
+% 
+% fprintf('\nChanging the number of computational threads to %i.\n\n', maxNumCompThreads)
+
+% % % % Now configure the clustr to run 96 workers.
+% % % 
+% % % % Create a cluster object
+% % % c = parcluster('local');
+% % % 
+% % % % Specify the number of workers
+% % % if test_run
+% % %     c.NumWorkers = 12;
+% % % else
+% % %     c.NumWorkers = 48;
+% % % end
+% % % 
+% % % % Create a parallel pool using the cluster object
+% % % parpool(c, c.NumWorkers);
+
+%%  OK, start the batch jobs now.
 
 fprintf('The following jobs will be submitted: \n\n')
 
@@ -123,15 +146,17 @@ for iJob=1:num_batch
 
     if ~test_run
         if submit_as_batch
+% % %             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( c, ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
+% % %             job_number(iJob) = batch( c, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( myCluster, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
+            job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
         else
-            build_wrapper( 3, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+            build_wrapper( Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
         end
     end
 end
 
-fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
+fprintf('\nTo get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
 
 % Wait until all jobs have completed and then exit Matlab
 

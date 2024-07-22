@@ -47,21 +47,21 @@ fi
 # Ensure the output directory exists, if it doesn't, create it.
 
 mkdir -p "$LOCAL_OUTPUT_DIRECTORY"
-echo "Checked for the output directory, created if it did not exist." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "Checked for the output directory, created if it did not exist." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
 
 # Some output.
 
-echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-date  | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "Starting the script..." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
-echo "I am $(whoami) and proud of it" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
+echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
+date  | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
+echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
+echo "Starting the script..." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
+echo "I am $(whoami) and proud of it" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
 
 # Change to the git repo directory for this project and pull the latest changes as user ubuntu
 
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
-    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user ubuntu" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user ubuntu" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
     sudo -u ubuntu bash -c "
         cd "$LOCAL_MATLAB_PROJECT_DIRECTORY" &&
         git pull
@@ -87,20 +87,20 @@ fi
 
 # Start Matlab and submit the jobs to submit batch jobs for processing. 
 
-echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
 
 sudo -u ubuntu bash -c '
   export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
   export REMOTE_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
   export REMOTE_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
-  echo "Am running in sudo submitted version of script." | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
+  echo "Am running in sudo submitted version of script." | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log_35_84_138_169.txt"
   cd "$REMOTE_MATLAB_PROJECT_DIRECTORY"
-  echo "Pulling to $REMOTE_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
+  echo "Pulling to $REMOTE_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log_35_84_138_169.txt"
   git pull
   FILENAME="matlab_$(date +'%Y-%m-%d_%H-%M-%S').out"
-  echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt"
+  echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log_35_84_138_169.txt"
   nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); AWS_batch_35_84_138_169;" > "$REMOTE_OUTPUT_DIRECTORY/$FILENAME" 2>&1 &
-  echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log.txt" '
+  echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/remote_session_log_35_84_138_169.txt" '
 
-echo "I just started Matlab. Am still $(whoami). It should be running in the background. This script is finished." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+echo "I just started Matlab. Am still $(whoami). It should be running in the background. This script is finished." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
 

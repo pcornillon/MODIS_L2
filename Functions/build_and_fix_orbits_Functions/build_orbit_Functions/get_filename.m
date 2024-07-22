@@ -10,7 +10,7 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %    metadata file in S3 bucket.
 %
 % OUTPUT
-%   status -    605: 'metadata' call -- metadata granule not found. This should never happen.
+%   status -    975: 'metadata' call -- metadata granule not found. This should never happen.
 %               905: 'metadata' call -- ran out of granules -- end run.
 %               920: 'sst_data' call -- failed 10 times to get the NASA S3 credentials -- end run. 
 
@@ -38,7 +38,10 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %           for an exact correspondence but also looking within a few
 %           seconds of the actual time. This is not likely to alter things
 %           since if it is not at the exact time it is unlikely to be near
-%           in time, but... Also removed lines commented out with % % %.
+%           in time, but... 
+%           Removed lines commented out with % % %. 
+%           Changed return code if metadata file not found from 605 to 975,
+%           this should never happen.
 
 global version_struct
 version_struct.get_filename = '2.0.1';
@@ -79,7 +82,7 @@ switch file_type
             if exist([folder_name file_name])
                 found_one = 1;
             else
-                status = populate_problem_list( 605, ['Metadata granule ' granuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101
+                status = populate_problem_list( 975, ['Metadata granule ' granuleList(iGranuleList).filename ' not found. This should never happen.'], granule_start_time); % old status 101 and then 605
             end
         else
             status = populate_problem_list( 905, ['Ran out of granules, only ' num2str(numGranules) ' on the list and the granule count has reached ' num2str(iGranuleList) '.'], granuleList(iGranuleList-1).first_scan_line_time+fiveMinutesMatTime); % old status 101

@@ -48,6 +48,15 @@ global skip_to_start_of_orbit
 
 global iProblem problem_list 
 
+% Get AWS credentials.
+
+[status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+
+% if status == 921
+if status >= 900
+    return
+end
+
 % Initialize variables.
 
 metadata_directory = '/mnt/s3-uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/';
@@ -82,12 +91,29 @@ numGranules = length(granuleList);
 
 jGranuleList = 0;
 for iGranuleList=1:numGranules
-        search_start_time = granuleList(iGranuleList).first_scan_line_time;
+
+    if (now - s3_expiration_time) > 30 / (60 * 24)
+        [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+
+        if status >= 900
+            fprintf('Problem getting AWS credentials. iGranuleList=%i\n.', iGranuleList)
+            return
+        end
+    end
 
 
 
 
-fiveMinutesMatTime = 5 / (24 * 60);
+
+
+
+    
+    search_start_time = granuleList(iGranuleList).first_scan_line_time;
+
+
+
+
+    fiveMinutesMatTime = 5 / (24 * 60);
 
 % Initialize return variables.
 

@@ -67,9 +67,13 @@ function [status, granule_start_time] = find_next_granule_with_data(granule_star
 %           granule_start_time. Also modified the logic in a number of
 %           places as well as replaced error statements and error handling
 %           - PCC 
+%   2.0.1 - 7/22/2024 - Removed lots of % % % lines. 
+%           Removed error message to 630, it has already been addressed in
+%           get_filename. Need to add code to deal with a return from
+%           get_filename indicating no AWS SST file. - PCC
 
 global version_struct
-version_struct.find_next_granule_with_data = '2.0.0';
+version_struct.find_next_granule_with_data = '2.0.1';
 
 global s3_expiration_time
 
@@ -123,7 +127,6 @@ while 1==1
     else
         granule_start_time = granuleList(iGranuleList).first_scan_line_time;
     end
-
 
     if granule_start_time > Matlab_end_time
         status = populate_problem_list( 915, ['Current time, ' datestr(granule_start_time) ', beyond end of run time ' datestr(Matlab_end_time) '.'], granule_start_time); % old status 901
@@ -196,12 +199,13 @@ while 1==1
 
             [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename('sst_data');
 
-            if status >= 900
-                return
-            end
+            % % % if status >= 900 *** This will actually never happen since no errors >=900 when searching for SST data files.
+            % % %     return
+            % % % end
             
             if found_one == 0
-                status = populate_problem_list( 630, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time); % old status 102
+                % % % status = populate_problem_list( 630, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time); % *** Error already flagged in get_filename, not needed again here.*
+
             else
                 data_temp_filename = [data_granule_folder_name data_granule_file_name];
                 
@@ -383,37 +387,6 @@ while 1==1
 
                         if ~isempty(indices.current.osscan)
 
-                            % % % % % % Generate the orbit name if it has not already been generated.
-                            % % % % % 
-                            % % % % % if isempty(oinfo(iOrbit).name)
-                            % % % % % 
-                            % % % % %     if skip_to_start_of_orbit == 1
-                            % % % % % 
-                            % % % % %         % If this is the first orbit, then it must
-                            % % % % %         % have found an intersection so call
-                            % % % % %         % generate_orbit with sli. This call is
-                            % % % % %         % slightly different from the standard sli
-                            % % % % %         % call in that the sli populate oinfo for
-                            % % % % %         % iOrbit+1, this call, being the first in
-                            % % % % %         % the run populated iOrbit.
-                            % % % % % 
-                            % % % % %         status = generate_output_filename('sliFirst');
-                            % % % % %     else
-                            % % % % %         % Gets here if past the end of the
-                            % % % % %         % previous orbit without finding a
-                            % % % % %         % crossing of 79 S moving northward. At
-                            % % % % %         % present shoudn't get here but maybe
-                            % % % % %         % in the future. 
-                            % % % % % 
-                            % % % % %         status = generate_output_filename('no_sli');
-                            % % % % %     end
-                            % % % % % 
-                            % % % % %     if status >= 900
-                            % % % % %         return
-                            % % % % %     end
-                            % % % % % 
-                            % % % % % end
-
                             % Get the location of this granule in the orbit and
                             % the start and end of orbit if not already known.
 
@@ -430,7 +403,6 @@ while 1==1
                                 oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
                                 oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
                             else
-                                % % % % % [indices] = get_osscan_etc_with_sli(indices);
                                 [indices] = get_osscan_etc_with_sli(indices);
 
                                 if ~skip_to_start_of_orbit
@@ -479,86 +451,6 @@ while 1==1
                             if status >= 900
                                 return
                             end
-                            % % % % %
-                            % % % % % % And now popoulate oinfo for scan line indices.
-                            % % % % %
-                            % % % % % if skip_to_start_of_orbit == 0
-                            % % % % %     % % % % % status = generate_output_filename('sli');
-                            % % % % %     % % % % %
-                            % % % % %     % % % % % % And now popoulate oinfo for scan line indices.
-                            % % % % %
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
-                            % % % % %
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
-                            % % % % %
-                            % % % % %     if isfield(indices, 'pirate') & skip_to_start_of_orbit
-                            % % % % %         oinfo(iOrbit).ginfo = rmfield(oinfo(iOrbit).ginfo, {'pirate_osscan' 'pirate_oescan' 'pirate_gsscan' 'pirate_gescan' });
-                            % % % % %     else
-                            % % % % %         oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.pirate.osscan;
-                            % % % % %         oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.pirate.oescan;
-                            % % % % %
-                            % % % % %         oinfo(iOrbit).ginfo(iGranule).pirate_gsscan = indices.pirate.gsscan;
-                            % % % % %         oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.pirate.gescan;
-                            % % % % %     end
-                            % % % % %
-                            % % % % %     if isfield(indices, 'next')
-                            % % % % %         oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
-                            % % % % %         oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
-                            % % % % %
-                            % % % % %         oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
-                            % % % % %         oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
-                            % % % % %     end
-                            % % % % %
-                            % % % % % else
-                            % % % % %     % % % % % status = generate_output_filename('sliFirst');
-                            % % % % %     % % % % %
-                            % % % % %     % % % % % % And now popoulate oinfo for scan line indices.
-                            % % % % %
-                            % % % % %     % % % % % if isfield(indices, 'next')
-                            % % % % %     % % % % %     oinfo(iOrbit).ginfo(iGranule).osscan = indices.next.osscan;
-                            % % % % %     % % % % %     oinfo(iOrbit).ginfo(iGranule).oescan = indices.next.oescan;
-                            % % % % %     % % % % %
-                            % % % % %     % % % % %     oinfo(iOrbit).ginfo(iGranule).gsscan = indices.next.gsscan;
-                            % % % % %     % % % % %     oinfo(iOrbit).ginfo(iGranule).gescan = indices.next.gescan;
-                            % % % % %     % % % % % else
-                            % % % % %     % % % % %     status = populate_problem_list( 965, 'Bummer no next indices. This really shouldn''t happen.');
-                            % % % % %     % % % % % end
-                            % % % % %
-                            % % % % % end
-                            % % % % %
-                            % % % % % if status >= 900
-                            % % % % %     return
-                            % % % % % end
-                            % % % % % end
-
-                            % % % % % % And now popoulate oinfo for scan line indices.
-                            % % % % %
-                            % % % % % oinfo(iOrbit).ginfo(iGranule).osscan = indices.current.osscan;
-                            % % % % % oinfo(iOrbit).ginfo(iGranule).oescan = indices.current.oescan;
-                            % % % % %
-                            % % % % % oinfo(iOrbit).ginfo(iGranule).gsscan = indices.current.gsscan;
-                            % % % % % oinfo(iOrbit).ginfo(iGranule).gescan = indices.current.gescan;
-                            % % % % % 
-                            % % % % % if isfield(indices, 'pirate')
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).pirate_osscan = indices.pirate.osscan;
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).pirate_oescan = indices.pirate.oescan;
-                            % % % % % 
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).pirate_gsscan = indices.pirate.gsscan;
-                            % % % % %     oinfo(iOrbit).ginfo(iGranule).pirate_gescan = indices.pirate.gescan;
-                            % % % % % end
-                            % % % % % 
-                            % % % % % if isfield(indices, 'next')
-                            % % % % %     oinfo(iOrbit+1).ginfo(1).osscan = indices.next.osscan;
-                            % % % % %     oinfo(iOrbit+1).ginfo(1).oescan = indices.next.oescan;
-                            % % % % % 
-                            % % % % %     oinfo(iOrbit+1).ginfo(1).gsscan = indices.next.gsscan;
-                            % % % % %     oinfo(iOrbit+1).ginfo(1).gescan = indices.next.gescan;
-                            % % % % % 
-                            % % % % %     % Return here because the start of a new orbit has been
-                            % % % % %     % found.
-                            % % % % % end
 
                             return
                         else

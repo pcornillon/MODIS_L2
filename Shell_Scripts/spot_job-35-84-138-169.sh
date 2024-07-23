@@ -9,7 +9,7 @@
 if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
     MYID=$(curl http://169.254.169.254/latest/meta-data/instance-id)
 
-    su ubuntu -c "/usr/local/bin/aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-095c69c402b90902b --instance-id ${MYID}"
+    su ubuntu -c "/usr/local/bin/aws --profile iam_pcornillon ec2 associate-address --allocation-id eipalloc-0b3b8e3acfa1bc6b3 --instance-id ${MYID}"
 
     while true; do
         myip=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)

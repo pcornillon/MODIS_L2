@@ -34,9 +34,10 @@ function [status, granule_start_time] = get_start_of_first_full_orbit(search_sta
 %   2.0.0 - 5/17/2024 - Modified code for switch to list of granules/times.
 %           As part of that replaces granule_start_time_guess with
 %           granule_start_time. Updated for new way of handling errors - PCC
+%   2.0.1 - 7/23/2024 - Removed % % % lines. = PCC
 
 global version_struct
-version_struct.get_start_of_first_full_orbit = '2.0.0';
+version_struct.get_start_of_first_full_orbit = '2.0.1';
 
 local_debug = 0;
 
@@ -77,8 +78,6 @@ start_line_index = [];
 
 while granule_start_time <= Matlab_end_time
     
-    % % % iGranuleList = iGranuleList + 1;
-
     % Zero out iGranule since this is the start of the job and this script
     % is looking for the first granule with a descending 78 S crossing.
     
@@ -102,44 +101,7 @@ while granule_start_time <= Matlab_end_time
 
     if local_debug; fprintf('After call to find_nex_granule_with_data. granule_start_time: %s, start_line_index: %i\n', datestr(granule_start_time), start_line_index); end
     
-    % Return if end of run.
-    
-    % % % % % if status == 201 %%%*** This may require special attention.
-    % % % % %     fprintf('*** This should really never happen, but if it does, end the run.\n')
-    % % % % %     status = 901;
-    % % % % % end
-    % % % % % 
-    % % % % % if status >= 900 %%%*** I think that this is redunant; same check on line 93.
-    % % % % %     fprintf('End of run.\n')
-    % % % % %     return
-    % % % % % end
-    
     if ~isempty(start_line_index)
         break
     end
 end
-
-% % % % % % So, the nadir track of the last granule read crossed 79 S moving northward.
-% % % % % % The way find_next_granule_with_data works is that it populates oinfo(iOrbit) 
-% % % % % % corresponding to the data prior to this crossing and it populates
-% % % % % % oinfor(iOrbit+1) for the portion of the granule after crossing 79 S. When
-% % % % % % build_orbit is called it will be working on iOrbit+1 but it should really
-% % % % % % be iOrbit, so oinfo will be rewritten at this point to address this.
-% % % % % 
-% % % % % clear temp_oinfo
-% % % % % for iOrb=1:iOrbit-1
-% % % % %     temp_oinfo(iOrb) = oinfo(iOrb);
-% % % % % end
-% % % % % temp_oinfo(iOrbit) = oinfo(iOrbit+1);
-% % % % % oinfo = temp_oinfo;
-% % % % % % % % iOrbit = iOrbit - 1;
-
-% If the start of an orbit was not found in the time range specified let
-% the person running the program know.
-
-% % % % % if (status == 201) | (status == 231) | (status > 900) %%%*** Do we need this? I'm guessing that it has already been said.
-% % % % %     if print_diagnostics
-% % % % %         fprintf('No start of an orbit in the specified range %s to %s.\n', datestr(search_start_time), datestr(Matlab_end_time))
-% % % % %     end
-% % % % % end
-

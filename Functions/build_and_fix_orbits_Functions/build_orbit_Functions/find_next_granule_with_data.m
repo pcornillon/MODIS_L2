@@ -67,7 +67,7 @@ function [status, granule_start_time] = find_next_granule_with_data(granule_star
 %           granule_start_time. Also modified the logic in a number of
 %           places as well as replaced error statements and error handling
 %           - PCC 
-%   2.0.1 - 7/22/2024 - Removed lots of % % % lines. 
+%   2.0.1 - 7/22/2024 - Removed % % % lines. 
 %           Removed error message to 630, it has already been addressed in
 %           get_filename. Need to add code to deal with a return from
 %           get_filename indicating no AWS SST file. - PCC
@@ -199,14 +199,7 @@ while 1==1
 
             [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename('sst_data');
 
-            % % % if status >= 900 *** This will actually never happen since no errors >=900 when searching for SST data files.
-            % % %     return
-            % % % end
-            
-            if found_one == 0
-                % % % status = populate_problem_list( 630, ['No data granule found corresponding to ' metadata_granule_folder_name metadata_granule_file_name '.'], granule_start_time); % *** Error already flagged in get_filename, not needed again here.*
-
-            else
+            if found_one
                 data_temp_filename = [data_granule_folder_name data_granule_file_name];
                 
                 % Does this granule ascend past 79 S. 

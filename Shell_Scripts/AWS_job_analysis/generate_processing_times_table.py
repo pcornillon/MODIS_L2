@@ -12,7 +12,7 @@ def extract_processing_times(directory, batch_number):
     file_index = []
     file_number = 0
 
-    log_files = [f for f in os.listdir(directory) if f.endswith('.txt') and 'May' in f]
+    log_files = [f for f in os.listdir(directory) if f.endswith('.txt') and 'Jul' in f]
 
     for log_file in log_files:
         file_number += 1

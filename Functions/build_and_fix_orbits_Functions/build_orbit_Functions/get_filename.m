@@ -42,6 +42,7 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %           Removed lines commented out with % % %. 
 %           Changed return code if metadata file not found from 605 to 975,
 %           this should never happen.
+%           Added fiveMinutesMatTime, which was missing. - PCC
 
 global version_struct
 version_struct.get_filename = '2.0.1';
@@ -57,6 +58,8 @@ global s3_expiration_time amazon_s3_run
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
 
 global granuleList iGranuleList filenamePrefix filenameEnding numGranules
+
+fiveMinutesMatTime = 5 / (24 * 60);
 
 status = 0;
 found_one = 0;

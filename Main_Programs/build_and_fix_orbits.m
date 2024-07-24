@@ -112,9 +112,11 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           Also modified: get_start_of_first_full_orbit,
 %           find_next_granule_with_data, get_filename, pirate_data. 
 %           Modified error handling.
+%   2.0.1 - 7/24/2024 - Removed a mess of % % % lines. Commented out an if
+%           group because would never get there.
 
 global version_struct
-version_struct.build_and_fix_orbits = '2.0.0';
+version_struct.build_and_fix_orbits = '2.0.1';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -454,29 +456,6 @@ for iYear=yearStart:yearEnd
             granuleList(jGranule).filename_time = GranuleListIn.granuleList(iGranule).filename_time;
             granuleList(jGranule).first_scan_line_time = GranuleListIn.granuleList(iGranule).first_scan_line_time;
 
-% % % % %             granuleList(jGranule).filename_time = granuleList(iGranule).matTime;
-% % % % % 
-% % % % %             % % % tempTime = ncreadatt( [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename], '/', 'time_coverage_start');
-% % % % %             % % % granuleList(jGranule).first_scan_line_time = datenum(datetime(tempTime, 'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''', 'TimeZone', 'UTC'));
-% % % % % 
-% % % % % 
-% % % % %             % temp_filename = [metadata_directory num2str(year(granuleList(iGranule).filename_time)) '/' granuleList(iGranule).filename];
-% % % % %             temp_filename = [metadata_directory num2str(year(granuleList(iGranule).matTime)) '/' granuleList(iGranule).filename];
-% % % % % 
-% % % % %             tYear = ncread( temp_filename, '/scan_line_attributes/year');
-% % % % % 
-% % % % %             tYrDay = ncread( temp_filename, '/scan_line_attributes/day');
-% % % % %             [tMonth, tDay] = doy2mmdd(tYear(1), tYrDay(1));
-% % % % % 
-% % % % %             tmSec = ncread( temp_filename, '/scan_line_attributes/msec');
-% % % % %             tSec = tmSec(1) / 1000;
-% % % % % 
-% % % % %             tHour = floor( tSec / 3600);
-% % % % %             tMinute = floor( (tSec - tHour  * 3600) / 60);
-% % % % %             tSecond = round( tSec - tHour * 3600 - tMinute * 60);
-% % % % % 
-% % % % %             % granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
-% % % % %             granuleList(jGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
         end
     end
 
@@ -641,18 +620,6 @@ while granule_start_time <= Matlab_end_time
 
             return
         end
-    % % % % % else
-    % % % % %     status = populate_problem_list( 955, ['length(oinfo) ' num2str(length(oinfo)) ' not equal to iOrbit ' num2str(iOrbit)], granule_start_time);
-    % % % % % 
-    % % % % %     fprintf('\n\n\n%s\n%s\n*\n', lofs_of_astericks, lofs_of_astericks)
-    % % % % %     fprintf('*    Processed %i orbits\n*\n', iOrbit)
-    % % % % %     fprintf('*    Saving oinfo file to: %s\n*\n', strrep(diary_filename, '.txt', '.mat'))
-    % % % % %     fprintf('*    Time for this run: %8.1f seconds or, in minutes, %5.1f or, in hours, %5.1f \n*\n', toc(tic_build_start), toc(tic_build_start)/60, toc(tic_build_start)/3600)
-    % % % % %     fprintf('%s\n%s\n', lofs_of_astericks, lofs_of_astericks)
-    % % % % % 
-    % % % % %     save(strrep(diary_filename, '.txt', '.mat'), 'oinfo', 'mem_struct', 'problem_list', 'version_struct')
-    % % % % % 
-    % % % % %     return
     end
 
 
@@ -662,16 +629,6 @@ while granule_start_time <= Matlab_end_time
 
     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] ...
         = build_orbit( granule_start_time);
-
-    % % % % % % If orbit ended because start of granule was beyond the end of the
-    % % % % % % orbit, finish processing this one and then search for the start of
-    % % % % % % the next orbit starting with the errant granule.
-    % % % % % 
-    % % % % % if (status >= 700) & (status < 800)
-    % % % % %     skip_to_start_of_orbit = true;
-    % % % % % else
-    % % % % %     skip_to_start_of_orbit = false;
-    % % % % % end
 
     % No remaining granules with a 79 crossing.
 
@@ -688,17 +645,18 @@ while granule_start_time <= Matlab_end_time
         return
     end
 
-    % if status == 231
-    if status >= 900
-        % % % % % fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
-
-        % Find the next granule with a ascending 79 S crossing.
-
-        iGranule = 0;
-        [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] ...
-            = build_orbit( granule_start_time);
-
-    else
+    % % % % if status == 231
+    % Commented out the next lines because it can't get here since checked for status >= 900 above.
+    % % % if status >= 900
+    % % %     % % % % % fprintf('\n*** Should never get here. Problem building this orbit, skipping to the next one.\n\n')
+    % % % 
+    % % %     % Find the next granule with a ascending 79 S crossing.
+    % % % 
+    % % %     iGranule = 0;
+    % % %     [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan_seconds_from_start, granule_start_time] ...
+    % % %         = build_orbit( granule_start_time);
+    % % % 
+    % % % else
 
         if length(latitude)==1
 
@@ -777,11 +735,6 @@ while granule_start_time <= Matlab_end_time
                     L2eqaLon, L2eqaLat, L2eqa_MODIS_SST, L2eqa_MODIS_std_SST, L2eqa_MODIS_num_SST, L2eqa_AMSR_E_SST, ...
                     AMSR_E_lon, AMSR_E_lat, AMSR_E_sst, MODIS_SST_on_AMSR_E_grid] = ...
                     regrid_MODIS_orbits( regrid_to_AMSRE, longitude, latitude, SST_In_Masked);
-
-% % % % %                 if (status ~= 0) & (status ~= 1001)
-% % % % %                     [~, orbitName, ~] = fileparts(oinfo(iOrbit).name);
-% % % % %                     fprintf('*** Problem with %s. Status for regrid_MODIS_orbits = %i.\n', orbitName, status)
-% % % % %                 end
 
                 oinfo(iOrbit).time_to_address_bowtie = toc(start_address_bowtie);
 
@@ -899,7 +852,7 @@ while granule_start_time <= Matlab_end_time
                 end
             end
         end
-    end
+    % % % end
 
     % Save oinfo and memory structure files for this run.
 

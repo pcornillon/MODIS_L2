@@ -157,7 +157,7 @@ for iYear=yearStart:yearEnd
 
         else
 
-            fprintf('Data granule #%i (%s) is missing.\n', iGranuleList, data_granule_file_name)
+            fprintf('Data granule #%i for metadata granule %s is missing.\n', iGranuleList, metadata_granule_file_name)
             kGranule = kGranule + 1;
             missingList(kGranule) = granuleList(iGranuleList);
         end

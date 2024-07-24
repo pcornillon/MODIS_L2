@@ -74,7 +74,7 @@ switch file_type
     case 'metadata'
         found_one = 0;
 
-        if iGranuleList < numGranules
+        if iGranuleList <= numGranules
             folder_name = [metadata_directory num2str(year(granuleList(iGranuleList).filename_time)) '/'];
             file_name = [filenamePrefix granuleList(iGranuleList).filename filenameEnding];
 

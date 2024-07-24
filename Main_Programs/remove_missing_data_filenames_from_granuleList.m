@@ -1,16 +1,16 @@
-function [newList, missingList] = remove_missing_data_filenames_from_granuleList(yearStart, yearEnd)
+function remove_missing_data_filenames_from_granuleList
 % remove_missing_data_filenames_from_granule_list - PCC
+%
+% NOTE: NEED TO SET yearStart AND yearEnd BELOW!
 %
 % This function will step through granuleList and removes entries with no
 % corresponding data files at AWS.
 %
 % INPUT
-%   yearStart: Process from this year to yearEnd.
-%   yearEnd: Last year to process
+%   none
 %
 % OUTPUT
-%   newList: updated version of granuleList with missing data files excluded.
-%   missingList: data files corresponding to OBPG files, missing.
+%   none
 %
 %  CHANGE LOG
 %   v. #  -  data    - description     - who
@@ -38,9 +38,11 @@ global amazon_s3_run
 
 % Initialize variables.
 
+yearStart = 2002;
+yearEnd = 2003;
+
 Local = true;
 
-jGranule = 0;
 kGranule = 0;
 
 iProblem = 0;
@@ -91,62 +93,69 @@ end
 % Loop over years to process
 
 for iYear=yearStart:yearEnd
+    jGranule = 0;
 
-    if iYear == yearStart
-        load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
-    else
-        tempList = load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
-        granuleList = [granuleList tempList(1).granuleList];
-    end
-end
+    % % % if iYear == yearStart
+    load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
+    % % % else
+    % % %     tempList = load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
+    % % %     granuleList = [granuleList tempList(1).granuleList];
+    % % % end
+    % % % end
 
-numGranules = length(granuleList);
+    numGranules = length(granuleList);
 
-for iGranuleList=1:numGranules
+    for iGranuleList=1:numGranules
 
-    if ~Local
-        if (now - s3_expiration_time) > 30 / (60 * 24)
-            [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
+        if ~Local
+            if (now - s3_expiration_time) > 30 / (60 * 24)
+                [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');
 
-            if status >= 900
-                fprintf('Problem getting AWS credentials. iGranuleList=%i\n.', iGranuleList)
-                return
+                if status >= 900
+                    fprintf('Problem getting AWS credentials. iGranuleList=%i\n.', iGranuleList)
+                    return
+                end
             end
         end
+
+        % Get the next metadata granule.
+
+        [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time] = get_filename('metadata');
+
+        if status >= 900
+            fprintf('Missing metadata granule for iGranuleList=%i. This should never happen.\n', iGranuleList)
+            return
+        end
+
+        % Get the metadata filename.
+
+        metadata_temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
+
+        % Is the data granule for this time present? If so, get the range
+        % of locations of scanlines in the orbit and the granule to use.
+        % Otherwise, add to problem list and continue search for a data
+        % granule; remember, a metadata granule was found so this should
+        % not occur. BUT FIRST, search for a granule within a minute of
+        % the time passed in.
+
+        [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename('sst_data');
+
+        if found_one
+
+            jGranule = jGranule + 1;
+
+            newList(jGranule) = granuleList(iGranuleList);
+
+        else
+
+            fprintf('Data granule #%i (%s) is missing.\n', iGranuleList, data_granule_file_name)
+            kGranule = kGranule + 1;
+            missingList(kGranule) = granuleList(iGranuleList);
+        end
     end
-
-    % Get the next metadata granule.
-
-    [status, found_one, metadata_granule_folder_name, metadata_granule_file_name, granule_start_time] = get_filename('metadata');
-
-    if status >= 900
-        fprintf('Missing metadata granule for iGranuleList=%i. This should never happen.\n', iGranuleList)
-        return
-    end
-
-    % Get the metadata filename.
-
-    metadata_temp_filename = [metadata_granule_folder_name metadata_granule_file_name];
-
-    % Is the data granule for this time present? If so, get the range
-    % of locations of scanlines in the orbit and the granule to use.
-    % Otherwise, add to problem list and continue search for a data
-    % granule; remember, a metadata granule was found so this should
-    % not occur. BUT FIRST, search for a granule within a minute of
-    % the time passed in.
-
-    [status, found_one, data_granule_folder_name, data_granule_file_name, ~] = get_filename('sst_data');
-
-    if found_one
-
-        jGranule = jGranule + 1;
-
-        newList(jGranule) = granuleList(iGranuleList);
-
-    else
-
-        fprintf('Data granule #%i (%s) is missing.\n', iGranuleList, data_granule_file_name)
-        kGranule = kGranule + 1;
-        missingList(kGranule) = granuleList(iGranuleList);
-    end
+    granuleList = newList;
+    save([metadata_directory 'metadata_granule_lists/NewGranuleList_' num2str(iYear) '.mat'], 'granuleList') 
+    clear granuleList newList
 end
+save([metadata_directory 'metadata_granule_lists/MissingGranuleList.mat'], 'missingList') 
+

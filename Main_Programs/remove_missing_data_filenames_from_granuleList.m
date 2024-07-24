@@ -165,6 +165,6 @@ for iYear=yearStart:yearEnd
     granuleList = newList;
     save([metadata_directory 'metadata_granule_lists/NewGranuleList_' num2str(iYear) '.mat'], 'granuleList') 
     clear newList
+    save([metadata_directory 'metadata_granule_lists/MissingGranuleList_' num2str(iYear) 'mat'], 'missingList') 
 end
-save([metadata_directory 'metadata_granule_lists/MissingGranuleList.mat'], 'missingList') 
 

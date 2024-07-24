@@ -17,6 +17,9 @@ function remove_missing_data_filenames_from_granuleList
 %
 %   1.0.0 - 7/23/2024 - Initial version - PCC
 
+clear global amazon_s3_run formatOut secs_per_day iProblem problem_list ...
+    s3_expiration_time granuleList iGranuleList numGranules
+
 global version_struct
 version_struct.remove_missing_data_filenames_from_granuleList = '1.0.0';
 
@@ -30,7 +33,7 @@ global formatOut
 global secs_per_day
 
 global granules_directory metadata_directory
-global granuleList iGranuleList  numGranules
+global granuleList iGranuleList numGranules
 
 global iProblem problem_list
 
@@ -39,7 +42,7 @@ global amazon_s3_run
 % Initialize variables.
 
 yearStart = 2002;
-yearEnd = 2003;
+yearEnd = 2023;
 
 Local = true;
 
@@ -161,7 +164,7 @@ for iYear=yearStart:yearEnd
     end
     granuleList = newList;
     save([metadata_directory 'metadata_granule_lists/NewGranuleList_' num2str(iYear) '.mat'], 'granuleList') 
-    clear granuleList newList
+    clear newList
 end
 save([metadata_directory 'metadata_granule_lists/MissingGranuleList.mat'], 'missingList') 
 

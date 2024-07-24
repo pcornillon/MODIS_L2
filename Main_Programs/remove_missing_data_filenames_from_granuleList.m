@@ -44,7 +44,7 @@ global amazon_s3_run
 yearStart = 2002;
 yearEnd = 2023;
 
-Local = true;
+Local = false;
 
 kGranule = 0;
 

@@ -95,6 +95,8 @@ end
 for iYear=yearStart:yearEnd
     jGranule = 0;
 
+    fprintf('Working on %i.\n', iYear)
+
     % % % if iYear == yearStart
     load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
     % % % else
@@ -107,6 +109,10 @@ for iYear=yearStart:yearEnd
 
     for iGranuleList=1:numGranules
 
+        if mod(iGranuleList,20000)==0
+            fprintf('Working on file %i in %i. Date/Time: %s\n', iGranuleList, iYear, datestr(now))
+        end
+        
         if ~Local
             if (now - s3_expiration_time) > 30 / (60 * 24)
                 [status, s3Credentials] = loadAWSCredentials('https://archive.podaac.earthdata.nasa.gov/s3credentials', 'pcornillon', 'eiMTJr6yeuD6');

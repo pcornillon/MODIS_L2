@@ -443,7 +443,7 @@ filenameEnding = '_L2_SST_OBPG_extras.nc4';
 
 jGranule = 0;
 for iYear=yearStart:yearEnd
-    GranuleListIn = load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
+    GranuleListIn = load([metadata_directory 'metadata_granule_lists/NewGranuleList_' num2str(iYear) '.mat']);
     
     for iGranule=1:length(GranuleListIn.granuleList)
         granuleTime = GranuleListIn.granuleList(iGranule).first_scan_line_time;

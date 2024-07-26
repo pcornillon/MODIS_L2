@@ -41,8 +41,8 @@ global amazon_s3_run
 
 % Initialize variables.
 
-yearStart = 2020;
-yearEnd = 2021;
+yearStart = 2022;
+yearEnd = 2023;
 
 Local = false;
 

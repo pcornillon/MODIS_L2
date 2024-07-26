@@ -45,7 +45,7 @@ global print_E100 print_E300 print_E600 print_E700 print_E800 print_E900
 
 % Initialize variables.
 
-yearStart = 2022;
+yearStart = 2023;
 yearEnd = 2023;
 
 Local = false;

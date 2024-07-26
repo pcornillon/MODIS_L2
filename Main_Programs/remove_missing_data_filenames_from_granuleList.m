@@ -16,6 +16,8 @@ function remove_missing_data_filenames_from_granuleList
 %   v. #  -  data    - description     - who
 %
 %   1.0.0 - 7/23/2024 - Initial version - PCC
+%   1.0.1 - 7/26/2024 - Added print_Ex00 variables to control printout in 
+%           populate_problems - PCC
 
 clear global amazon_s3_run formatOut secs_per_day iProblem problem_list ...
     s3_expiration_time granuleList iGranuleList numGranules
@@ -39,12 +41,20 @@ global iProblem problem_list
 
 global amazon_s3_run
 
+global print_E100 print_E300 print_E600 print_E700 print_E800 print_E900 
+
 % Initialize variables.
 
 yearStart = 2022;
 yearEnd = 2023;
 
 Local = false;
+
+print_E100 = true;
+print_E300 = true;
+print_E700 = true;
+print_E800 = true;
+print_E900 = true;
 
 kGranule = 0;
 

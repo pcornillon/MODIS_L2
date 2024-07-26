@@ -19,10 +19,14 @@
 %           21-Jan-2010 04:00:00. The reason for the relatively short
 %           period is, if all works well, for this job to finish before I
 %           leave for my bike trip in France. 
+%   2.0.1 - 7/25/2024 - Changed start time to 25 December 2014, the number
+%           of jobs to run (54) to run and the number of days for each job
+%           to process to 40.
+%           Removed code specifying the number of workers to use.
 
 global version_struct
 
-version_struct.AWS_batch_52_34_203_74 = '2.0.0';
+version_struct.AWS_batch_52_34_203_74 = '2.0.1';
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -54,10 +58,10 @@ end
 % were to have entered [2002 7 1 0 0 0], the job would have started at
 % 00h00 on 30 June 2002.
 
-start_time = [2005 02 16 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
-period_to_process = [0 0 20 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
-batch_step = [0 0 20 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 90; % The number of batch jobs to submit
+start_time = [2014 12 25 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+period_to_process = [0 0 40 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
+batch_step = [0 0 40 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
+num_batch = 54; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.
@@ -88,21 +92,6 @@ endTime = startTime + calmonths(12) * yearShift_period + calmonths(1) * monthShi
 
 timeSeries_start = NaT(1, num_batch); % 'NaT' creates an array of Not-a-Time for preallocation
 timeSeries_end = NaT(1, num_batch);
-
-% Now configure the clustr to run 96 workers.
-
-% Create a cluster object
-c = parcluster('local');
-
-% Specify the number of workers
-if test_run
-    c.NumWorkers = 12;
-else
-    c.NumWorkers = 96;
-end
-
-% Create a parallel pool using the cluster object
-parpool(c, c.NumWorkers);
 
 %%  OK, start the batch jobs now.
 
@@ -140,14 +129,14 @@ for iJob=1:num_batch
     if ~test_run
         if submit_as_batch
             fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( myCluster, 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
+            job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
         else
-            build_wrapper( 3, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
+            build_wrapper( Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
         end
     end
 end
 
-fprintf('To get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
+fprintf('\nTo get status of these jobs use ''job_number(iJob).xxx'', where iJob is one of the job numbers above\n and xxx is a particular characteristic of the job such as State or RunningDuration.\n')
 
 % Wait until all jobs have completed and then exit Matlab
 

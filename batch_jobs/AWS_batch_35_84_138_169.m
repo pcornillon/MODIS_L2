@@ -20,7 +20,7 @@
 %           04:00:00. The reason for the relatively short period is, if all
 %           works well, for this job to finish before I leave for my bike
 %           trip in France. 
-%   2.0.1 - modified to process from 7/1/2007 in steps of 2 months,
+%   2.0.1 - modified to process from 7/1/2007 in steps of 1 month,
 %           submitting a new job as soon as one ends. End time 6/30/2012.
 
 global version_struct

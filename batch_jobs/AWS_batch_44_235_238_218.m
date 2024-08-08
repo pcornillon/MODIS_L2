@@ -24,7 +24,7 @@
 %   2.0.1 - modified to process from 7/1/2002 in steps of 40 days. Will
 %           submit 60 jobs. Only 48 will run at once but when one fails, it
 %           will immediately start another.
-%   2.0.2 - modified to process from 7/1/2002 in steps of 1 months,
+%   2.0.2 - modified to process from 7/1/2002 in steps of 1 month,
 %           submitting a new job as soon as one ends. End time 6/30/2007.
 
 global version_struct

@@ -23,7 +23,7 @@
 %           of jobs to run (54) to run and the number of days for each job
 %           to process to 40.
 %           Removed code specifying the number of workers to use.
-%   2.0.2 - modified to process from 7/1/2012 in steps of 2 months,
+%   2.0.2 - modified to process from 7/1/2012 in steps of 1 month,
 %           submitting a new job as soon as one ends. End time 6/30/2017.
 
 global version_struct

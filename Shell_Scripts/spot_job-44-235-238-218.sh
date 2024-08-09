@@ -72,9 +72,9 @@ else
     git pull
 fi
 
-# Create the temporary output folders on /diskdata. Start by defining the base directory.
+# Create the temporary output folders on /datadisk. Start by defining the base directory.
 
-base_dir="/diskdata/SST"
+base_dir="/datadisk/SST"
 
 # Create the SST directory if it doesn't exist
 

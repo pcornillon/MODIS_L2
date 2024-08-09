@@ -6,10 +6,8 @@ import sys
 import subprocess
 from datetime import datetime
 
-# base_input_folder = '/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/SST/'
-# base_output_folder = '/Volumes/MODIS_L2_Modified/OBPG/'
-
-base_input_folder = '/home/ubuntu/Documents/Aqua/output/SST/'
+# base_input_folder = '/home/ubuntu/Documents/Aqua/output/SST/'
+base_input_folder = '/datadisk/SST/'
 base_output_folder = '/mnt/uri-nfs-cornillon/'
 
 class DualLogger:

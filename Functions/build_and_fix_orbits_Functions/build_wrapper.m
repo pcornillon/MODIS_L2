@@ -14,9 +14,10 @@ function build_wrapper( Option, start_date_time, end_date_time, base_diary_filen
 %
 %   1.0.0 - 5/6/2024 - Initial version - PCC
 %   1.0.1 - 5/6/2024 - Added definition of remote directory to case 8. 
+%   1.0.2 - 8/9/2004 - Changed the temporary output for case 8 - PCC
 
 global version_struct
-version_struct.build_wrapper = '1.0.1';
+version_struct.build_wrapper = '1.0.2';
 
 % Open the project if on AWS, otherwise, assume that it is already open.
 
@@ -244,7 +245,8 @@ switch Option
 
         AMSR_E_baseDir                  = '/mnt/s3-uri-gso-pcornillon/AMSR-E_L2-v7/';
 
-        output_file_directory_local     = [BaseDir 'SST/'];
+        % output_file_directory_local     = [BaseDir 'SST/'];
+        output_file_directory_local     = '/datadisk/SST/';
         output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
 %         output_file_directory_remote    = '';
 

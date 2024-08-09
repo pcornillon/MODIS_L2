@@ -24,12 +24,16 @@
 %   2.0.1 - modified to process from 7/1/2002 in steps of 40 days. Will
 %           submit 60 jobs. Only 48 will run at once but when one fails, it
 %           will immediately start another.
-%   2.0.2 - modified to process from 7/1/2002 in steps of 1 month,
+%   2.0.2 - 8/1/2024 - modified to process from 7/1/2002 in steps of 1 month,
 %           submitting a new job as soon as one ends. End time 6/30/2007.
+%   2.0.3 - 8/9/2024 - modified to process from 7/12/2002 in steps of 1 month,
+%           submitting a new job as soon as one ends. Will run 96 jobs. The
+%           idea is to finish processing ones that have been only partially
+%           processed hence the 96 (sort of arbitrary) jobs. 
 
 global version_struct
 
-version_struct.AWS_batch_44_235_238_218 = '2.0.2';
+version_struct.AWS_batch_44_235_238_218 = '2.0.3';
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -61,10 +65,10 @@ end
 % to have entered [2002 7 0 0 0 0], the job would have started at 00h00 on
 % 30 June 2002. 
 
-start_time = [2002 07 01 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
+start_time = [2002 12 01 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 1 0 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 60; % The number of batch jobs to submit
+num_batch = 96; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.

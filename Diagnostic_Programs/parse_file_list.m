@@ -16,16 +16,64 @@ function parse_file_list(filename)
 % 
 % OUTPUT
 
+% Read the data.
 
-% Open the file for reading
-fileID = fopen( filename, 'r');
+lines = readlines(filename);
 
-% Define the format of the data (e.g., %s for string, %d for integer, %f for floating point)
-formatSpec = '%i %i %i %i %i %i %i';  % Example format for a file with string and float data
+% Initialize the results
 
-% Read the file into a cell array
-data = textscan(fileID, formatSpec);
+numOrbits = zeros(23,12);
 
-% Close the file
-fclose(fileID);
+% Put orbit number, year and month in vectors.
+
+iOrbit = 1;
+
+line_string = char(lines(1));
+
+currentOrbit = str2num(line_string(1:6));
+
+currentYearS = line_string(8:11);
+currentMonthS = line_string(13:14);
+
+currentYear = str2num(currentYearS) - 2000;
+currentMonth = str2num(currentMonthS);
+
+numOrbits( currentYear, currentMonth) = 1;
+
+eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).orbits = currentOrbit;'])
+eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).day = str2num(line_string(16:17));'])
+eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).hour = str2num(line_string(19:20));'])
+eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).minute = str2num(line_string(22:23));'])
+eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).second = str2num(line_string(25:26));'])
+
+for iLine=2:length(lines)
+    line_string = char(lines(iLine));
+
+    currentOrbit = str2num(line_string(1:6));
+    
+    orbitS = line_string(1:6);
+    orbit = str2num(orbitS);
+
+    tempYear = str2num(line_string(8:11));
+    tempMonth = str2num(line_string(13:14));
+
+    % Count the number of orbits for this year/month
+
+    if tempMonth ~= currentMonth
+        currentMonth = tempMonth;
+    
+        if tempYear ~= currentYear
+            currentYear = tempYear - 2000;
+        end
+    end
+
+    numOrbits( currentYear, currentMonth) = numOrbits( currentYear, currentMonth) + 1;
+    iOrbit = numOrbits( currentYear, currentMonth);
+
+    eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).orbits = str2num(line_string(1:6));'])
+    eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).day = str2num(line_string(16:17));'])
+    eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).hour = str2num(line_string(19:20));'])
+    eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).minute = str2num(line_string(22:23));'])
+    eval([ 'dataMatrix.y' currentYearS '.m' currentMonthS '(iOrbit).second = str2num(line_string(25:26));'])
+end
 

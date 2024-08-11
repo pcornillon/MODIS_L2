@@ -30,10 +30,15 @@
 %           submitting a new job as soon as one ends. Will run 96 jobs. The
 %           idea is to finish processing ones that have been only partially
 %           processed hence the 96 (sort of arbitrary) jobs. 
+%   2.0.4 - 8/11/2024 - modified to process from 7/12/2002 in steps of 1
+%           month, but submitting 73 jobs to take the processing through
+%           December 2008. Am switching to x2iedn.16xlarge. This computer
+%           has 64 virtural cores and 1.9 TB of main memory, so Matlab will
+%           default to 32 jobs at once - PCC
 
 global version_struct
 
-version_struct.AWS_batch_44_235_238_218 = '2.0.3';
+version_struct.AWS_batch_44_235_238_218 = '2.0.4';
 
 % There is a test mode, which, if set to 1, allows you to run this script
 % without submitting any jobs. It will however print out the range of dates
@@ -68,7 +73,7 @@ end
 start_time = [2002 12 01 0 0 0];   % This is the start date/time the batch jobs are to use as [yyyy mm dd hh min ss]
 period_to_process = [0 1 0 4 0 0]; % This is the date/time range for each batch job entered as the number of [years months days hours minutes seconds]
 batch_step = [0 1 0 0 0 0]; % And the satellite date/time between the start of one batch job and the start of the next [yyyy mm dd hh min ss]
-num_batch = 96; % The number of batch jobs to submit
+num_batch = 73; % The number of batch jobs to submit
 
 % Define the time shift for the length of the interval to process, days,
 % hour, minutes and seconds; months will be handled in the loop.

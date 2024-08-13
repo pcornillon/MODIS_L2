@@ -245,8 +245,8 @@ switch Option
 
         AMSR_E_baseDir                  = '/mnt/s3-uri-gso-pcornillon/AMSR-E_L2-v7/';
 
-        output_file_directory_local     = [BaseDir 'SST/'];
-        % output_file_directory_local     = '/datadisk/SST/';
+        % output_file_directory_local     = [BaseDir 'SST/'];
+        output_file_directory_local     = '/datadisk/SST/';
         output_file_directory_remote    = '/mnt/uri-nfs-cornillon/SST/';
 %         output_file_directory_remote    = '';
 

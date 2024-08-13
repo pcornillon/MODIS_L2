@@ -72,38 +72,6 @@ else
     git pull
 fi
 
-# Create the temporary output folders on /datadisk. Start by defining the base directory.
-
-# base_dir="/datadisk/SST"
-
-# Create the SST directory if it doesn't exist
-
-# mkdir -p "$base_dir"
-
-# Loop through the years 2002 to 2020
-
-# for year in {2002..2020}; do
-    # Create the year directory
-
-#     mkdir -p "$base_dir/$year"
-    
-    # Loop through the months 01 to 12
-
-#     for month in {01..12}; do
-        # Create the month directory within the year directory
-
-#         mkdir -p "$base_dir/$year/$month"
-#     done
-# done
-
-# Set the ownership of the SST directory and its contents to user 'ubuntu'
-
-# chown -R ubuntu:ubuntu "$base_dir"
-
-# Output success message
-
-# echo "Directory structure created for temporary storage of orbit output files and ownership set to ubuntu." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_52_34_203_74.txt"
-
 # Submit Python job to copy .nc4 files from local storage to remote storage. Note that we first move to the folder with the copy script in it.
 
 if [ "$(whoami)" != "petercornillon" ]; then

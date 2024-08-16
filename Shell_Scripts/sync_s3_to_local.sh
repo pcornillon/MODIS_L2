@@ -49,9 +49,6 @@ for YEAR in $(seq $START_YEAR $END_YEAR); do
     # Calculate the elapsed time in seconds
     ELAPSED_TIME=$(($END_EPOCH - $START_EPOCH))
 
-    # Convert elapsed time to minutes
-    ELAPSED_MINUTES=$(echo "scale=2; $ELAPSED_TIME / 60" | bc)
-
     # Check if the sync was successful
     if [ $? -eq 0 ]; then
       echo "Successfully synced $S3_SOURCE to $LOCAL_DEST"
@@ -77,13 +74,6 @@ for YEAR in $(seq $START_YEAR $END_YEAR); do
       else
         FILES_PER_SECOND="N/A"
         MB_PER_SECOND="N/A"
-      fi
-
-      # Calculate megabytes per minute
-      if [ "$ELAPSED_MINUTES" != "0" ]; then
-        MB_PER_MINUTE=$(echo "scale=2; $TOTAL_SIZE_MB / $ELAPSED_MINUTES" | bc)
-      else
-        MB_PER_MINUTE="N/A"
       fi
 
       # Output the summary

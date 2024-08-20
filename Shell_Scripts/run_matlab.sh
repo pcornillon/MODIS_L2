@@ -79,7 +79,10 @@ sudo -u ubuntu bash -c '
   git pull
   echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/$REMOTE_SESSION_FILENAME"
 
-  echo "nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); $BATCH_JOB_FILENAME;" > "$REMOTE_OUTPUT_DIRECTORY/$MATLAB_FILENAME" 2>&1 &"
+  echo $REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj
+  echo $BATCH_JOB_FILENAME
+  echo $REMOTE_OUTPUT_DIRECTORY/$MATLAB_FILENAME
+
   nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); $BATCH_JOB_FILENAME;" > "$REMOTE_OUTPUT_DIRECTORY/$MATLAB_FILENAME" 2>&1 &
   echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/$REMOTE_SESSION_FILENAME" '
 

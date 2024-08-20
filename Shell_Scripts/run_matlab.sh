@@ -13,6 +13,15 @@ LOCAL_SESSION_FILENAME="local_session_${LOCAL_CURRENT_TIME}.txt"
 REMOTE_SESSION_FILENAME="remote_session_${LOCAL_CURRENT_TIME}.txt"
 MATLAB_FILENAME="matlab_${LOCAL_CURRENT_TIME}.txt"
 
+# Define the output directory for the log file for this session.
+
+LOCAL_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
+LOCAL_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
+
+LOCAL_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+
+# Write out the names of output log files.
+
 echo ${LOCAL_OUTPUT_DIRECTORY}
 echo $LOCAL_SESSION_FILENAME
 echo ${LOCAL_OUTPUT_DIRECTORY}/$LOCAL_SESSION_FILENAME
@@ -25,12 +34,7 @@ echo "REMOTE_SESSION_FILENAME: ${LOCAL_OUTPUT_DIRECTORY}/$REMOTE_SESSION_FILENAM
 echo "MATLAB_FILENAME: ${LOCAL_OUTPUT_DIRECTORY}/$MATLAB_FILENAME" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/$MATLAB_FILENAME"
 echo "" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/$LOCAL_SESSION_FILENAME"
 
-# Define the output directory for the log file for this session.
-
-LOCAL_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
-LOCAL_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
-
-LOCAL_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+# Write test file.
 
 touch /home/ubuntu/proof_of_life
 

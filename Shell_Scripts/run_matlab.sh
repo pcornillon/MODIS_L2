@@ -63,6 +63,9 @@ cd Shell_Scripts
 
 echo "Current time is $LOCAL_CURRENT_TIME and it will write the output for the Python portion to $AWS_FILENAME"
 
+echo ${LOCAL_MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py
+echo ${LOCAL_OUTPUT_DIRECTORY}/${LOCAL_FILENAME}
+
 nohup python "${LOCAL_MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${LOCAL_OUTPUT_DIRECTORY}/${LOCAL_FILENAME}" 2>&1 &
 
 # Start Matlab and submit the jobs to submit batch jobs for processing. 
@@ -79,7 +82,7 @@ sudo -u ubuntu bash -c '
   git pull
   echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}/$REMOTE_SESSION_FILENAME"
   nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); $BATCH_JOB_FILENAME;" > "$REMOTE_OUTPUT_DIRECTORY/$MATLAB_FILENAME" 2>&1 &
-  echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/$REMOTE_SESSION_FILENAME"
+  echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}/$REMOTE_SESSION_FILENAME" '
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background. This script is finished." | tee -a "${LOCAL_OUTPUT_DIRECTORY}/$LOCAL_SESSION_FILENAME"
 

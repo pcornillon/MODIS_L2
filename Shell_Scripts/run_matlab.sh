@@ -2,7 +2,7 @@
 
 # Assign the filename passed in to an internal variable.
 
-BATCH_JOB_FILENAME = "$1"
+BATCH_JOB_FILENAME="$1"
 
 # Get local date and time to use in output log file names and generate the names of these log files.
 

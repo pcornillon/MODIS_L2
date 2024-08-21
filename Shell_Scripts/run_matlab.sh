@@ -59,7 +59,7 @@ echo "Current time is $LOCAL_CURRENT_TIME and it will write the output for the P
 
 nohup python "${LOCAL_MATLAB_PROJECT_DIRECTORY}Shell_Scripts/AWS_copy_nc4_to_remote.py" > "${LOCAL_OUTPUT_DIRECTORY}${AWS_FILENAME}" 2>&1 &
 
-$ Write local variables, which will be used and also displayed in the sudo command.
+# Write local variables, which will be used and also displayed in the sudo command.
 
 echo $LOCAL_OUTPUT_DIRECTORY
 echo $LOCAL_SESSION_FILENAME
@@ -69,43 +69,26 @@ echo $REMOTE_SESSION_FILENAME
 
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}$LOCAL_SESSION_FILENAME"
 
-sudo -u ubuntu bash -c '
-
-  # Create new variables unique to this command.
-
-  export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
-  export REMOTE_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
-  export REMOTE_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
-
-  # Reassign variables from outside of this command.
+sudo -u ubuntu bash -c "
+  REMOTE_OUTPUT_DIRECTORY='/mnt/uri-nfs-cornillon/Logs/'
+  REMOTE_MATLAB_PROJECT_DIRECTORY='/home/ubuntu/Documents/MODIS_L2/'
+  REMOTE_OUTPUT_DIRECTORY_NOHUP='/mnt/uri-nfs-cornillon/Logs/nohup/'
 
   REMOTE_SESSION_FILENAME='$REMOTE_SESSION_FILENAME'
   LOCAL_SESSION_FILENAME='$LOCAL_SESSION_FILENAME'
   MATLAB_FILENAME='$MATLAB_FILENAME'
   BATCH_JOB_FILENAME='$BATCH_JOB_FILENAME'
 
-  # Make sure that they are correct.
+  echo \$REMOTE_OUTPUT_DIRECTORY
+  echo \$REMOTE_SESSION_FILENAME
+  echo \$BATCH_JOB_FILENAME
 
-  echo $REMOTE_OUTPUT_DIRECTORY
-  echo $REMOTE_SESSION_FILENAME
-  echo $BATCH_JOB_FILENAME
-
-  echo "Am running in sudo submitted version of script." | tee -a "${REMOTE_OUTPUT_DIRECTORY}$REMOTE_SESSION_FILENAME"
-  
-  # cd to the git directory and pull the updates.
-
-  cd "$REMOTE_MATLAB_PROJECT_DIRECTORY"
-  echo "Pulling to $REMOTE_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}$REMOTE_SESSION_FILENAME"
+  cd \"\$REMOTE_MATLAB_PROJECT_DIRECTORY\"
+  echo \"Pulling to \$REMOTE_MATLAB_PROJECT_DIRECTORY as user \$(whoami)\"
   git pull
 
-  echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}$REMOTE_SESSION_FILENAME"
-
-  echo 'nohup matlab -batch "prj=openProject('\"$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj\"'); run('\"$BATCH_JOB_FILENAME\"');" > \"$REMOTE_OUTPUT_DIRECTORY$MATLAB_FILENAME\" 2>&1 &'
-  # echo 'nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); run(\''$BATCH_JOB_FILENAME\'');" > "$REMOTE_OUTPUT_DIRECTORY$MATLAB_FILENAME" 2>&1 &'
-  # nohup matlab -batch "prj=openProject('\''$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'\''); run(\''$BATCH_JOB_FILENAME\'');" > "$REMOTE_OUTPUT_DIRECTORY$MATLAB_FILENAME" 2>&1 &
-  
-  nohup matlab -batch "prj=openProject('\"$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj\"'); run('\"$BATCH_JOB_FILENAME\"');" > \"$REMOTE_OUTPUT_DIRECTORY$MATLAB_FILENAME\" 2>&1 &
-  echo "Just started Matlab."  | tee -a "${REMOTE_OUTPUT_DIRECTORY}$REMOTE_SESSION_FILENAME" '
+  nohup matlab -batch \"prj=openProject('\$REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj'); run('\$BATCH_JOB_FILENAME');\" > \"\$REMOTE_OUTPUT_DIRECTORY\$MATLAB_FILENAME\" 2>&1 &
+  echo \"Just started Matlab.\"  | tee -a \"\$REMOTE_OUTPUT_DIRECTORY\$REMOTE_SESSION_FILENAME\"
+"
 
 echo "I just started Matlab. Am still $(whoami). It should be running in the background. This script is finished." | tee -a "${LOCAL_OUTPUT_DIRECTORY}$LOCAL_SESSION_FILENAME"
-

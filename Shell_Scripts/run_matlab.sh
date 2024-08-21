@@ -78,10 +78,13 @@ echo $LOCAL_OUTPUT_DIRECTORY
 echo $LOCAL_SESSION_FILENAME
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}$LOCAL_SESSION_FILENAME"
 
-sudo -u ubuntu bash -c '
+sudo -E -u ubuntu bash -c '
   export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
   export REMOTE_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"
   export REMOTE_OUTPUT_DIRECTORY_NOHUP="/mnt/uri-nfs-cornillon/Logs/nohup/"
+
+  # export REMOTE_SESSION_FILENAME="remote_session_${LOCAL_CURRENT_TIME}.txt"
+  # export MATLAB_FILENAME="matlab_${LOCAL_CURRENT_TIME}.txt"
 
   echo $REMOTE_OUTPUT_DIRECTORY
   echo $REMOTE_SESSION_FILENAME
@@ -94,7 +97,7 @@ sudo -u ubuntu bash -c '
   git pull
   echo "Starting Matlab as user $(whoami)" | tee -a "${REMOTE_OUTPUT_DIRECTORY}$REMOTE_SESSION_FILENAME"
 
-  echo $REMOTE_MATLAB_PROJECT_DIRECTORY/MODIS_L2.prj
+  echo ${REMOTE_MATLAB_PROJECT_DIRECTORY}MODIS_L2.prj
   echo $BATCH_JOB_FILENAME
   echo $REMOTE_OUTPUT_DIRECTORY$MATLAB_FILENAME
 

@@ -78,6 +78,8 @@ echo $LOCAL_OUTPUT_DIRECTORY
 echo $LOCAL_SESSION_FILENAME
 echo "I am about to fire up Matlab." 2>&1 | tee -a "${LOCAL_OUTPUT_DIRECTORY}$LOCAL_SESSION_FILENAME"
 
+echo $REMOTE_SESSION_FILENAME
+
 sudo -E -u ubuntu bash -c '
   export REMOTE_OUTPUT_DIRECTORY="/mnt/uri-nfs-cornillon/Logs/"
   export REMOTE_MATLAB_PROJECT_DIRECTORY="/home/ubuntu/Documents/MODIS_L2/"

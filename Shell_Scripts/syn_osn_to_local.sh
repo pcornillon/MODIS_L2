@@ -16,6 +16,8 @@ if [ "$START_YEAR" -gt "$END_YEAR" ]; then
   exit 1
 fi
 
+echo "Processing from $START_YEAR through $END_YEAR."
+
 # Define the S3 bucket path and local destination base directory
 # S3_BUCKET="s3://uri-gso-pcornillon-useast1/SST"
 # PROFILE="iam_pcornillon"
@@ -36,7 +38,7 @@ for YEAR in $(seq $START_YEAR $END_YEAR); do
     START_EPOCH=$(date +%s)
 
     # Construct the S3 source path and local destination path
-    S3_SOURCE="$S3_BUCKET/$YEAR/$MONTH/"
+    S3_SOURCE="$S3_BUCKET$YEAR/$MONTH/"
     LOCAL_DEST="$LOCAL_BASE_DIR/$YEAR/$MONTH/"
 
     # Create the local directory if it doesn't exist
@@ -48,10 +50,9 @@ for YEAR in $(seq $START_YEAR $END_YEAR); do
     # Get a listing: aws s3 ls s3://modis-aqua-l2-sst-orbits/SST/2002/07/ --profile cornillon_osn --endpoint-url https://uri.osn.mghpcc.org
     # Get data:   aws s3 sync s3://modis-aqua-l2-sst-orbits/SST/2009/01/ /Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/2009/01/ --profile cornillon_osn --endpoint-url https://uri.osn.mghpcc.org 
     SYNC_OUTPUT=$(aws s3 sync "$S3_SOURCE" "$LOCAL_DEST" --profile "$PROFILE" --endpoint-url https://uri.osn.mghpcc.org 2>&1)
-    echo $S3_SOURCE
-    echo $LOCAL_DEST
-    echo $PROFILE
-    echo $SYNC_OUTPUT
+    # echo $S3_SOURCE
+    # echo $LOCAL_DEST
+    # echo $PROFILE
 
     # Capture the end time in seconds since epoch
     END_EPOCH=$(date +%s)

@@ -45,8 +45,13 @@ for YEAR in $(seq $START_YEAR $END_YEAR); do
     # Sync the data from S3 to the local directory and capture the output
     # SYNC_OUTPUT=$(aws s3 sync "$S3_SOURCE" "$LOCAL_DEST" --profile "$PROFILE" 2>&1)
     
-    # aws s3 ls s3://modis-aqua-l2-sst-orbits/SST/2002/07/ --profile cornillon_osn --endpoint-url https://uri.osn.mghpcc.org
+    # Get a listing: aws s3 ls s3://modis-aqua-l2-sst-orbits/SST/2002/07/ --profile cornillon_osn --endpoint-url https://uri.osn.mghpcc.org
+    # Get data:   aws s3 sync s3://modis-aqua-l2-sst-orbits/SST/2009/01/ /Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/2009/01/ --profile cornillon_osn --endpoint-url https://uri.osn.mghpcc.org 
     SYNC_OUTPUT=$(aws s3 sync "$S3_SOURCE" "$LOCAL_DEST" --profile "$PROFILE" --endpoint-url https://uri.osn.mghpcc.org 2>&1)
+    echo $S3_SOURCE
+    echo $LOCAL_DEST
+    echo $PROFILE
+    echo $SYNC_OUTPUT
 
     # Capture the end time in seconds since epoch
     END_EPOCH=$(date +%s)

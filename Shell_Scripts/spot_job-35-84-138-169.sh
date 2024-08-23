@@ -67,7 +67,7 @@ if [ "$(whoami)" != "ubuntu" ] && [ "$(whoami)" != "petercornillon" ]; then
         git pull
     "
 else
-    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log.txt"
+    echo "Pulling to $LOCAL_MATLAB_PROJECT_DIRECTORY as user $(whoami)" | tee -a "${LOCAL_OUTPUT_DIRECTORY}/local_session_log_35_84_138_169.txt"
     cd "$LOCAL_MATLAB_PROJECT_DIRECTORY"
     git pull
 fi

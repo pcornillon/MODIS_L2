@@ -10,8 +10,6 @@ from datetime import datetime
 base_input_folder = '/datadisk/SST/'
 base_output_folder = '/mnt/uri-nfs-cornillon/'
 
-print( "Just checking: base_input_folder" % Just checking to see if anything in output.
-
 class DualLogger:
     def __init__(self, log_file_path):
         self.terminal = sys.stdout

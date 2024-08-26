@@ -121,9 +121,9 @@ def copy_files(test_mode=False):
     
     # Initially set kill_time, the time to terminate this script since the last .nc4 file was found (if any) to 30 minutes.
     # This is more than needed but avoids this script stopping before the first orbit has been processed.
-    # kill_time will be reset to 12 minutes after the first orbit has been copied. This is hopefully longer than the time to process an orbit. 
+    # kill_time will be reset to 20 minutes after the first orbit has been copied. This is hopefully longer than the time to process an orbit. 
     kill_time = 30
-    reset_kill_time = 12
+    reset_kill_time = 20
     
     # Set up logging
     log_folder_path = os.path.join(base_output_folder, "Logs/copy_AWS_to_mnt-uri_logs/python_logs/")    

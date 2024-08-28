@@ -1,10 +1,10 @@
 import os
 
 def create_folders():
-    base_directory = "/Users/petercornillon/Data/temp_MODIS_L2_output_directory/output/SST/"
+    base_directory = "/datadisk/SST/"
 
     # Create folders for each year
-    for year in range(2000, 2024):
+    for year in range(2002, 2024):
         year_folder = os.path.join(base_directory, str(year))
         os.makedirs(year_folder)
 

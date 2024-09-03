@@ -1,4 +1,4 @@
-% AWS_batch_07_from_1_2006_to_12_2016 - Batch job to run build_and_fix_orbits at AWS - PCC 
+% AWS_batch_07_from_01_2006_to_12_2016 - Batch job to run build_and_fix_orbits at AWS - PCC 
 %
 % The four variables intialized below, start_time, period_to_process, batch_step 
 % and num_batch define the range of the period for which orbits will be

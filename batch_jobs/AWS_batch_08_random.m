@@ -17,7 +17,7 @@ version_struct.AWS_batch_08_randon = '1.0.0';
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = false; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = true; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
 submit_as_batch = true; % Set to 0 if job is to be submitted interactively.
 
@@ -95,7 +95,7 @@ job_end = job_start;
 for iJob=1:num_batch
     if job_start(iJob,2) == 12
         job_end(iJob,1) = job_start(iJob,1) + 1;
-        job_end(iJob,1) = 1;
+        job_end(iJob,2) = 1;
     else
         job_end(iJob,2) = job_start(iJob,2) + 1;        
     end
@@ -117,7 +117,7 @@ for iJob=1:num_batch
 
     if ~test_run
         if submit_as_batch
-            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
+            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(job_start(iJob,:)) ', ' num2str(job_end(iJob,:)) ', ' base_diary_filename '}, CaptureDiary=true);'])
             job_number(iJob) = batch( 'build_wrapper', 0, {8, (job_start(iJob,:)), (job_end(iJob,:)), base_diary_filename}, CaptureDiary=true);
         else
             build_wrapper( Option, (job_start(iJob,:)), (job_end(iJob,:)), base_diary_filename)

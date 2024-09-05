@@ -103,24 +103,29 @@ for iJob=1:num_batch
     job_end(iJob,4) = 4;
 end
 
-
 fprintf('The following jobs will be submitted: \n\n')
+
+% Generate the time series
+
+for iJob = 1:num_batch
+    mat_start(iJob) = datenum(job_start(iJob,:));
+    mat_end(iJob) = datenum(job_end(iJob,:));
+end
 
 % Two variables that will rarely need to be changed. They will only be
 % changed if you want to submit jobs using a different set of input data
 % and/or if you want to run jobs interactively.
 
 for iJob=1:num_batch
-    base_diary_filename = strrep(strrep([datestr(now) '_Job_' num2str(iJob) '_From_' num2str(job_start(iJob,:)) '_To_' num2str(job_end(iJob,:))], ':', 'h'), ' ', '_');
-
-    fprintf('Submitting job #%i to process from %s to %s. Diary file: %s\n', iJob, num2str(job_start(iJob,:)), num2str(job_end(iJob,:)), base_diary_filename)
+    base_diary_filename = strrep(strrep([datestr(now) '_Job_' num2str(iJob) '_From_' datestr(mat_start(iJob)) '_To_' datestr(mat_end(iJob))], ':', 'h'), ' ', '_');
+    fprintf('Submitting job #%i to process from %s to %s. Diary file: %s\n', iJob, datestr(mat_start(iJob)), datestr(mat_end(iJob)), base_diary_filename)
 
     if ~test_run
         if submit_as_batch
-            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(job_start(iJob,:)) ', ' num2str(job_end(iJob,:)) ', ' base_diary_filename '}, CaptureDiary=true);'])
-            job_number(iJob) = batch( 'build_wrapper', 0, {8, (job_start(iJob,:)), (job_end(iJob,:)), base_diary_filename}, CaptureDiary=true);
+            fprintf('Command for job #%i: %s\n', iJob, ['job_number(iJob) = batch( ''build_wrapper'', 0, {' num2str(Option) ', ' num2str(datevec(mat_start(iJob))) ', ' num2str(datevec(mat_end(iJob))) ', ' base_diary_filename '}, CaptureDiary=true);'])
+            job_number(iJob) = batch( 'build_wrapper', 0, {Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename}, CaptureDiary=true);
         else
-            build_wrapper( Option, (job_start(iJob,:)), (job_end(iJob,:)), base_diary_filename)
+            build_wrapper( Option, datevec(mat_start(iJob)), datevec(mat_end(iJob)), base_diary_filename)
         end
     end
 end

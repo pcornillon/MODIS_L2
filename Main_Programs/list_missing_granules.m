@@ -30,13 +30,13 @@ Local = false;
 
 kGranule = 0;
 
+metadata_directory = '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
+
 % Specify the output text file name
-outputFile = 'file_names_list.txt';  % Change the name if needed
+outputFile = [metadata_directory 'file_names_list.txt'];  % Change the name if needed
 
 % Open the output file.
 fileID = fopen(outputFile, 'w');
-
-metadata_directory = '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
 % Loop over years to process
 
@@ -47,14 +47,14 @@ for iYear=yearStart:yearEnd
 
     clear missingList
 
-    load([metadata_directory 'metadata_granule_lists/ MissingGranuleList_' num2str(iYear) 'mat.mat']);
+    load([metadata_directory 'metadata_granule_lists/MissingGranuleList_' num2str(iYear) 'mat.mat']);
 
     numGranules = length(missingList);
 
     % Loop through the files and write their names to the text file
 
     for iGranule = 1:numGranules
-        fprintf(fileID, '%s\n', fileList(iGranule).name);
+        fprintf(fileID, '%s\n', missingList(iGranule).filename);
     end
 end
 

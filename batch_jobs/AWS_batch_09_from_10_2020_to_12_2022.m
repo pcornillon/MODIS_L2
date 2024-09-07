@@ -20,7 +20,7 @@ version_struct.AWS_batch_09_from_10_2020_to_12_2022 = '1.0.0';
 % change test_run to 0 when you want this script to actually submit batch
 % jobs. 
 
-test_run = true; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
+test_run = false; % Set to 1 to print out jobs to be sumitted. Set to 0 when ready to actually submit the jobs
 
 submit_as_batch = true; % Set to 0 if job is to be submitted interactively.
 

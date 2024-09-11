@@ -1,4 +1,4 @@
-function findMissingOrbitsInRange(startYear, endYear)
+function summary_array = findMissingOrbitsInRange(startYear, endYear)
 % Define the base directory
 baseDirectory = '/Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/';
 
@@ -22,6 +22,7 @@ for year = startYear:endYear
         fprintf('\nWorking on %s of %i\n\n', Months{month}, year)
 
         iMissingThisMonth = 0;
+        iDuplicatesThisMonth = 0;
 
         % Create the directory path for the current year and month
         directory = fullfile(baseDirectory, num2str(year), sprintf('%02d', month));
@@ -89,10 +90,11 @@ for year = startYear:endYear
         else
             % fprintf('Potential missing orbits found in %s:\n', directory);
             for iMissing = 1:length(missingOrbits)
-                iMissingThisMonth = iMissingThisMonth + 1;
                 
                 % Find the number of missing files.
                 num_missing_orbits = round(timeDifferences(missingOrbits(iMissing)) / expectedTime);
+
+                iMissingThisMonth = iMissingThisMonth + num_missing_orbits;
 
                 % If this number is zero means two files with the same
                 % date. I will likely want to delete the first one in the
@@ -104,7 +106,8 @@ for year = startYear:endYear
                 % also need to be fixed.
 
                 if num_missing_orbits == 0
-                    fprintf(fileID, '%s duplicated %s\n', files(missingOrbits(iMissing)).name, files(missingOrbits(iMissing)+1).name);
+                    iDuplicatesThisMonth = iDuplicatesThisMonth + 1;
+                    fprintf(fileID, '%s duplicates %s\n', files(missingOrbits(iMissing)).name, files(missingOrbits(iMissing)+1).name);
                 else
 
                     fprintf('%i) %.2f seconds (%i missing orbits) missing between %s and %s\n', iMissingThisMonth, ...
@@ -115,7 +118,11 @@ for year = startYear:endYear
                 end
             end
         end
-        fprintf('%i orbits missing for %i/%i\n\n', iMissingThisMonth, month, year)
+        summary_array(year-2001,month,1) = length(files);
+        summary_array(year-2001,month,2) = iMissingThisMonth;
+        summary_array(year-2001,month,3) = iDuplicatesThisMonth;
+        
+        fprintf('%i orbits found. %i orbits missing and %i duplicates for %i/%i\n\n', length(files), iMissingThisMonth, iDuplicatesThisMonth, month, year)
     end
 end
 

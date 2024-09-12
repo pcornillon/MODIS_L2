@@ -120,9 +120,7 @@ for iYear=yearStart:yearEnd
 
     numGranules = length(granuleList);
 
-    % for iGranuleList=1:numGranules
-    for iGranuleList=63646:63700
-        keyboard
+    for iGranuleList=1:numGranules
         
         if mod(iGranuleList,20000)==0
             fprintf('Working on file %i in %i. Date/Time: %s\n', iGranuleList, iYear, datestr(now))

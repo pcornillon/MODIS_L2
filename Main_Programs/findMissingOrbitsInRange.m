@@ -11,7 +11,6 @@ if fileID == -1
     error('Failed to open the file for writing.');
 end
 
-
 Months = {'January' 'February' 'March' 'April' 'May' 'June' 'July' 'August' 'September' 'October' 'November' 'December'};
 % Loop over each year in the specified range
 for year = startYear:endYear

@@ -44,6 +44,9 @@ orbitsChecked = 0;
 
 iBadFile = 0;
 
+% Load all AWS missing granules first to avoid possible seams between years.
+
+
 firstOrbitProcessed = true;
 
 % Loop over years.

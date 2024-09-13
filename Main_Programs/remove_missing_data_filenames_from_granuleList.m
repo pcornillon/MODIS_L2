@@ -45,8 +45,8 @@ global print_E100 print_E300 print_E600 print_E700 print_E800 print_E900
 
 % Initialize variables.
 
-yearStart = 2024;
-yearEnd = 2024;
+yearStart = 2014;
+yearEnd = 2014;
 
 Local = false;
 
@@ -121,7 +121,7 @@ for iYear=yearStart:yearEnd
     numGranules = length(granuleList);
 
     for iGranuleList=1:numGranules
-
+        
         if mod(iGranuleList,20000)==0
             fprintf('Working on file %i in %i. Date/Time: %s\n', iGranuleList, iYear, datestr(now))
         end

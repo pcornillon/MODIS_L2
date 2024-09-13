@@ -38,31 +38,37 @@ columnNames = {'Year', 'Month', 'Day', 'Hour', 'OrbitNumber1', 'OrbitNumber2', '
 % referenceoOrbitDuration = orbit_duration_initial;
 % orbit_duration = orbit_duration_initial;
 % 
-% previous_orbit_number = referenceOrbit - 1;
+% previousOrbitNumber = referenceOrbit - 1;
 
 orbitsChecked = 0;
 
 iBadFile = 0;
 
-% Load all AWS missing granules first to avoid possible seams between years.
+% Get the list of all missing AWS granules 
+combinedFilenames = [];
+for year=2002:2023
+    eval(['load ~/Dropbox/Data/MODIS_L2/granule_lists/MissingGranuleList_' num2str(year) 'mat.mat'])
+    
+    % Extract filenames from missingList
+    for iGranule=1:length(missingList)
+        filenames(iGranule) = string(missingList(iGranule).filename);
+    end
 
+    % And combine them with the previous ones.
+    combinedFilenames = [combinedFilenames filenames];
+end
+
+% Get unique filenames.
+uniqueFilenames = unique(combinedFilenames); whos uniqueFilenames
+
+%% Now prepare to loop over all years/months/granules.
 
 firstOrbitProcessed = true;
 
 % Loop over years.
-for year = yearStart:yearEnd
-
-    % Load the missing granules list for the current year
-    missing_granules_file = fullfile(granule_list_dir, sprintf('MissingGranuleList_%04dmat.mat', year));
+for year=yearStart:yearEnd
     
-    if exist(missing_granules_file, 'file')
-        load(missing_granules_file); % Load the missing granules list
-    else
-        missingList = '';
-    end
-
     for month = 1:12
-        clear parquet_data
 
         iMissingThisMonth = 0;
         iDuplicatesThisMonth = 0;
@@ -148,19 +154,23 @@ for year = yearStart:yearEnd
                 % Calculate the orbit number
                 orbit_number = round((start_time - startTimeFirstOrbit) * secPerday / orbit_duration) + firstOrbit;
 
+                % Initialize variables used to determine if there are
+                % missing orbits prior to this orbit. This is only done if
+                % this is the very first orbit found in the selected time
+                % range.
 
-                % Initialize variables if this is first orbit being processed.
-                
                 if firstOrbitProcessed
                     firstOrbit = orbit_number;
                     startTimeFirstOrbit =  start_time;
 
-                    referenceOrbit = firstOrbit;
-                    referenceStartTime = startTimeFirstOrbit;
+                    referenceOrbit = firstOrbit - 1;
+                    referenceStartTime = startTimeFirstOrbit - orbit_duration_initial;
+
                     referenceoOrbitDuration = orbit_duration_initial;
+
                     orbit_duration = orbit_duration_initial;
 
-                    previous_orbit_number = firstOrbit - 1;
+                    previousOrbitNumber = firstOrbit - 1;
                     previousStartTime = startTimeFirstOrbit - orbit_duration_initial;
 
                     firstOrbitProcessed = false;
@@ -168,9 +178,9 @@ for year = yearStart:yearEnd
 
                 % Handle gaps between orbits
                 
-                for iFill=previous_orbit_number:orbit_number-1
-                    next_orbit_start_time = datenum(extractBetween(orbit_files(i+1).name, '_20', '_L2'), 'yyyymmddTHHMMSS');
-                    if (next_orbit_start_time - start_time) * secPerday > orbit_duration + tolerance_orbit
+                for iFill=previousOrbitNumber:orbit_number-1
+                    % next_orbit_start_time = datenum(extractBetween(orbit_files(i+1).name, '_20', '_L2'), 'yyyymmddTHHMMSS');
+                    % if (next_orbit_start_time - start_time) * secPerday > orbit_duration + tolerance_orbit
                         parquet_data{end+1,1} = year;
                         parquet_data{end,2} = month;
                         parquet_data{end,3} = day(next_orbit_start_time);
@@ -182,10 +192,10 @@ for year = yearStart:yearEnd
                         parquet_data{end,9} = nan;
                         parquet_data{end,10} = nan;
                         parquet_data{end,11} = AWS_missing_in_orbit;
-                    end
+                    % end
                 end
 
-                previous_orbit_number = orbit_number;
+                previousOrbitNumber = orbit_number;
 
                 % If more than 10 orbits have been processed recalibrate orbit_duration.
 

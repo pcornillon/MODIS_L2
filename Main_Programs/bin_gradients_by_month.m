@@ -67,9 +67,11 @@ for year = 2002:2022
             % Compute the exact time for each scan line
             time_fractional_days = DateTime + time_offset_flat / 86400; % Convert seconds to fractional days
             [year_vec, month_vec, day_vec, hour_vec, min_vec, sec_vec] = datevec(time_fractional_days); % Convert to date vectors
-            
+            % % % tt = datetime(datestr(time_fractional_days));
+
             % Compute the solar zenith angle for each pixel
             solar_zenith_angle = compute_solar_zenith_angle(lat_flat, lon_flat, year_vec, month_vec, day_vec, hour_vec, min_vec, sec_vec);
+            % % % solar_zenith_angle = compute_solar_zenith_angle(lat_flat, lon_flat, tt);
             
             % Find the indices for the 1-degree grid bins using histcounts
             [~, ~, lat_bin] = histcounts(lat_flat, lat_bins);

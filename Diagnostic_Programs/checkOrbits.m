@@ -196,10 +196,10 @@ for year=yearStart:yearEnd
                     missing_granules_end = 0;
                 end
 
-                % Check missing granules from the MissingGranuleList
-                if ~isempty(missingList)
-                    nn = find(start_time <= [missingList.first_scan_line_time] & ...
-                        (start_time + orbitDuration/24/3600) >= ([missingList.first_scan_line_time] + 300/24/3600));
+                % Check missing granules from the AWS missing granule list
+                if ~isempty(AWSmissingGranuleList)
+                    nn = find(start_time <= AWSmissingStartTimes & ...
+                        (start_time + orbitDuration/24/3600) >= (AWSmissingStartTimes + 300/24/3600));
                     AWS_missing_in_orbit = length(nn);
                 else
                     AWS_missing_in_orbit = 0;
@@ -233,42 +233,17 @@ for year=yearStart:yearEnd
 
                 % Now calculate the orbit number
                 
-                dtime = (start_time - previousOrbitStartTime);
+                dtime = (start_time - previousOrbitStartTime) * secPerday;
                 OrbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
 
+                % Handle missing orbits
 
-                % % % orbit_number = round((start_time - startTimeFirstOrbit) / orbitDuration) + firstOrbit;
-                % % % 
-                % % % % Initialize variables used to determine if there are
-                % % % % missing orbits prior to this orbit. This is only done if
-                % % % % this is the very first orbit found in the selected time
-                % % % % range.
-                % % % 
-                % % % if firstOrbitProcessed
-                % % %     firstOrbit = orbit_number;
-                % % %     startTimeFirstOrbit =  start_time;
-                % % % 
-                % % %     referenceOrbit = firstOrbit - 1;
-                % % %     referenceStartTime = startTimeFirstOrbit - orbitDurationInitial;
-                % % % 
-                % % %     referenceoOrbitDuration = orbitDurationInitial;
-                % % % 
-                % % %     orbitDuration = orbitDurationInitial;
-                % % % 
-                % % %     previousOrbitNumber = firstOrbit - 1;
-                % % %     previousStartTime = startTimeFirstOrbit - orbitDurationInitial;
-                % % % 
-                % % %     firstOrbitProcessed = false;
-                % % % end
-
-                % Handle gaps between orbits
-
-                if orbit_number > previousOrbitNumber +1
+                if OrbitNumber > previousOrbitNumber +1
                     next_orbit_start_time = previousOrbitStartTime;
-                    for iFillOrbitNumber=previousOrbitNumber+1:orbit_number-1
+                    for iFillOrbitNumber=previousOrbitNumber+1:OrbitNumber-1
 
                         next_orbit_start_time = next_orbit_start_time + orbitDuration;
-                        [tempYear, tempMonth, tempDay, tempHour, ~] = datevec(datenum(now))
+                        [tempYear, tempMonth, tempDay, tempHour, ~] = datevec(datenum(now));
 
                         parquet_data{end+1,1} = tempYear;
                         parquet_data{end,2} = tempMonth;
@@ -282,18 +257,18 @@ for year=yearStart:yearEnd
                         parquet_data{end,10} = nan;
                         parquet_data{end,11} = AWS_missing_in_orbit;
 
-                        checked_list(end,1) = next_orbit_start_time;
-                        checked_list(end,2) = iFillOrbitNumber;
+                        checked_list(end+1,2) = next_orbit_start_time;
+                        checked_list(end,1) = iFillOrbitNumber;
                     end
                 end
-                previousOrbitNumber = orbit_number;
+                previousOrbitNumber = OrbitNumber;
 
                 % Append data to parquet
                 parquet_data{end+1,1} = year;
                 parquet_data{end,2} = month;
                 parquet_data{end,3} = day(start_time);
                 parquet_data{end,4} = hour(start_time);
-                parquet_data{end,5} = orbit_number;
+                parquet_data{end,5} = OrbitNumber;
                 parquet_data{end,6} = fileOrbitNumber;
                 parquet_data{end,7} = orbit_filename;
                 parquet_data{end,8} = start_time;
@@ -302,8 +277,8 @@ for year=yearStart:yearEnd
                 parquet_data{end,11} = AWS_missing_in_orbit;
 
 
-                checked_list(end,1) = start_time;
-                checked_list(end,2) = orbit_number;
+                checked_list(end+1,2) = start_time;
+                checked_list(end,1) = OrbitNumber;
 
                 % If more than 10 orbits have been processed since the last
                 % save of the check list, save it.

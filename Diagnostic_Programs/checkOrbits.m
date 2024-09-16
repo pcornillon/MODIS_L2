@@ -6,7 +6,7 @@ function checkOrbits(yearStart,yearEnd)
 % missing granule and logs this information. The function also checks for missing granules at the end of the orbit.
 
 % Set the following to true if you want to read in the list of good and missing granules.
-buildLists = false; 
+buildLists = true; 
 
 % Set up directories
 data_dir = '/Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/';
@@ -25,12 +25,15 @@ end
 
 secPerday = 86400;
 
+orbitStartTimeTolerance = 2;
+
 epoch = datenum(1970,1,1,0,0,0); % Epoch time for conversion
 
 orbitDurationInitial = 5933; % seconds
-granule_interval = 300; % seconds
 orbitDurationTolerance = 10; % seconds
-granuleTolerance = 2; % seconds
+
+granuleDuration = 300; % seconds
+granuleStartTimeTolerance = 2; % seconds
 
 columnNames = {'Year', 'Month', 'Day', 'Hour', 'OrbitNumber1', 'OrbitNumber2', 'OrbitFilename', ...
     'OrbitStartTime', '# of Granules Used', '# of Missing Granules', '# of AWS Granules Missing'};
@@ -67,11 +70,12 @@ if buildLists
 
         clear TempStartTimes filenames
 
-        TempStartTimes = [granuleList.first_scan_line_time];
+        % % % TempStartTimes = [granuleList.first_scan_line_time];
 
         % Extract filenames from missingList
         for iGranule=1:length(granuleList)
             filenames(iGranule) = string(granuleList(iGranule).filename);
+            TempStartTimes(iGranule) = granuleList(iGranule).first_scan_line_time;
         end
 
         % And combine them with the previous ones.
@@ -79,9 +83,22 @@ if buildLists
         tempTimes = [tempTimes TempStartTimes];
     end
 
+    % % % nn = find(tempTimes > 100);
+
     % Get unique filenames and start times.
     OBPGgranuleList = unique(tempNames);
     OBPGgranuleStartTimes = unique(tempTimes);
+
+    % Check the dates.
+    for iGranule=1:length(OBPGgranuleList)
+        start_time_str = extractBetween(OBPGgranuleList(iGranule), '_20', '_L2');
+        orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
+        
+        dTime = (orbitStartTime - OBPGgranuleStartTimes(iGranule)) * secPerday;
+        if abs(dTime) > orbitStartTimeTolerance
+            keyboard
+        end
+    end
 
     % Get the list of all missing AWS granules
 
@@ -93,11 +110,12 @@ if buildLists
 
         clear TempStartTimes filenames
 
-        TempStartTimes = [missingList.first_scan_line_time];
+        % % % TempStartTimes = [missingList.first_scan_line_time];
 
         % Extract filenames from missingList
         for iGranule=1:length(missingList)
             filenames(iGranule) = string(missingList(iGranule).filename);
+            TempStartTimes(iGranule) = missingList(iGranule).first_scan_line_time;
         end
 
         % And combine them with the previous ones.
@@ -108,6 +126,18 @@ if buildLists
     % Get unique filenames and start times.
     AWSmissingGranuleList = unique(tempNames);
     AWSmissingStartTimes = unique(tempTimes);
+
+    % Check the dates.
+    for iGranule=1:length(AWSmissingGranuleList)
+        start_time_str = extractBetween(AWSmissingGranuleList(iGranule), '_20', '_L2');
+        orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
+        
+        dTime = (orbitStartTime - AWSmissingStartTimes(iGranule)) * secPerday;
+        if abs(dTime) > orbitStartTimeTolerance
+            keyboard
+        end
+    end
+
 else
     load([granule_list_dir 'granuleLists'])
 end
@@ -149,7 +179,7 @@ for year=yearStart:yearEnd
 
                 % Extract the start time from the orbit filename
                 start_time_str = extractBetween(orbit_filename, '_20', '_L2');
-                start_time = datenum(start_time_str, 'yyyymmddTHHMMSS');
+                orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
 
                 % Read contributing granules and their start times
                 orbitFullFileName = fullfile(data_dir, num2str(year), month_str, orbit_filename);
@@ -174,32 +204,42 @@ for year=yearStart:yearEnd
 
                 % Get time of first scan line.
                 DateTime = ncread( orbitFullFileName, 'DateTime');
-                scanLineStartTime = datenum(DateTime/86400 + datenum(1970,1,1,0,0,0));
+                scanLineStartTime = datenum(DateTime/secPerday + datenum(1970,1,1,0,0,0));
 
-                if abs(scanLineStartTime - start_time)*86400 > 2
+                if abs(scanLineStartTime - orbitStartTime)*secPerday > orbitStartTimeTolerance
                     fprintf('%i) time if first scan line (%s) and time extracted from filename (%s) differ by more than 2 seconds for %s.\n', ...
-                        orbitsChecked, datetime(scanLineStartTime), datetime(start_time), orbit_files(iOrbit).name)
+                        orbitsChecked, datetime(scanLineStartTime), datetime(orbitStartTime), orbit_files(iOrbit).name)
+                end
+
+                % Are there any missing granules at the beginning of this orbit.
+                num_missing_granules = round((scanLineStartTime - granule_start_times(1)) * secPerday / granuleDuration);
+
+                if num_missing_granules < 0
+                    num_missing_granules = 0;
                 end
 
                 % Calculate time differences between granules
-                granule_diffs = diff(granule_start_times) * 86400;
-                missing_indices = find(abs(granule_diffs - granule_interval) > granuleTolerance);
-                num_missing_granules = length(missing_indices);
+                granule_diffs = diff(granule_start_times) * secPerday;
+                % % % missing_indices = find(abs(granule_diffs - granuleDuration) > granuleStartTimeTolerance);
+                % % % num_missing_granules = num_missing_granules + length(missing_indices);
+                num_missing_granules = num_missing_granules + sum(round( (granule_diffs - granuleDuration) / granuleDuration));
 
+                OBPGIndices = find( (OBPGgranuleStartTimes > (orbitStartTime-granuleDuration*secPerday)) & ((OBPGgranuleStartTimes+orbitDuration) < orbitStartTime));
+                numOBPGGranulesInOrbit = length();
                 % Check for missing granules at the end
-                end_time_of_last_granule = granule_start_times(end) + granule_interval / secPerday;
-                time_from_start_to_end = (end_time_of_last_granule - start_time) * secPerday; % Convert to seconds
+                end_time_of_last_granule = granule_start_times(end) + granuleDuration / secPerday;
+                time_from_start_to_end = (end_time_of_last_granule - orbitStartTime) * secPerday; % Convert to seconds
                 
                 if time_from_start_to_end < orbitDuration - orbitDurationTolerance
-                    missing_granules_end = round((orbitDuration - time_from_start_to_end) / granule_interval);
+                    missing_granules_end = round((orbitDuration - time_from_start_to_end) / granuleDuration);
                 else
                     missing_granules_end = 0;
                 end
 
                 % Check missing granules from the AWS missing granule list
                 if ~isempty(AWSmissingGranuleList)
-                    nn = find(start_time <= AWSmissingStartTimes & ...
-                        (start_time + orbitDuration/24/3600) >= (AWSmissingStartTimes + 300/24/3600));
+                    nn = find(orbitStartTime <= AWSmissingStartTimes & ...
+                        (orbitStartTime + orbitDuration/24/3600) >= (AWSmissingStartTimes + 300/24/3600));
                     AWS_missing_in_orbit = length(nn);
                 else
                     AWS_missing_in_orbit = 0;
@@ -214,7 +254,7 @@ for year=yearStart:yearEnd
                 % orbit number.
 
                 % Find the last checked orbit before this one.
-                nn = find(checked_list(:,2) < start_time);
+                nn = find(checked_list(:,2) < orbitStartTime);
                 
                 previousOrbitNumber = checked_list(nn(end),1);
                 previousOrbitStartTime = checked_list(nn(end),2);
@@ -233,7 +273,7 @@ for year=yearStart:yearEnd
 
                 % Now calculate the orbit number
                 
-                dtime = (start_time - previousOrbitStartTime) * secPerday;
+                dtime = (orbitStartTime - previousOrbitStartTime) * secPerday;
                 OrbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
 
                 % Handle missing orbits
@@ -266,18 +306,18 @@ for year=yearStart:yearEnd
                 % Append data to parquet
                 parquet_data{end+1,1} = year;
                 parquet_data{end,2} = month;
-                parquet_data{end,3} = day(start_time);
-                parquet_data{end,4} = hour(start_time);
+                parquet_data{end,3} = day(orbitStartTime);
+                parquet_data{end,4} = hour(orbitStartTime);
                 parquet_data{end,5} = OrbitNumber;
                 parquet_data{end,6} = fileOrbitNumber;
                 parquet_data{end,7} = orbit_filename;
-                parquet_data{end,8} = start_time;
+                parquet_data{end,8} = orbitStartTime;
                 parquet_data{end,9} = size(granule_filenames,1);
                 parquet_data{end,10} = num_missing_granules;
                 parquet_data{end,11} = AWS_missing_in_orbit;
 
 
-                checked_list(end+1,2) = start_time;
+                checked_list(end+1,2) = orbitStartTime;
                 checked_list(end,1) = OrbitNumber;
 
                 % If more than 10 orbits have been processed since the last
@@ -291,7 +331,7 @@ for year=yearStart:yearEnd
 
             % Convert the data to a table and write to parquet
             parquet_table = cell2table(parquet_data, 'VariableNames', columnNames);
-            parquet_filename = sprintf([check_orbits '/orbit_data_%04d_%02d.parquet', year, month]);
+            parquet_filename = sprintf([output_dir '/orbit_data_%04d_%02d.parquet', year, month]);
             parquetwrite(parquet_filename, parquet_table);
 
             summary_array(year-2001,month,1) = length(orbit_files);

@@ -16,7 +16,7 @@ base_dir_out =          '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-D
 
 % Load the granule list for this year.
 
-eval(['load ~/Dropbox/Data/MODIS_L2/granule_lists/GoodGranuleList_' YearS '.mat)'])
+eval(['load ~/Dropbox/Data/MODIS_L2/granule_lists/GoodGranuleList_' YearS '.mat'])
 
 % Display the contents of the 'bad' granule and check that it is the one to fix. 
 
@@ -26,6 +26,8 @@ action = input('Does this look right to you (y/n): ', 's');
 
 if strcmp(action, 'n')
     return
+elseif strcmp(action, 'k')
+    keyboard
 end
 
 % OK, looks good, get the filename
@@ -36,12 +38,12 @@ end
 
 metadataFilename = granuleList(iGranule).filename;
 
-OBPGFilename = ['AQUA_MODIS.' extractBetween(metadataFilename, '_MODIS_', '_L2_') '.L2.SST.nc'];
+OBPGFilename = ['AQUA_MODIS.' char(extractBetween(metadataFilename, '_MODIS_', '_L2_')) '.L2.SST.nc'];
 
 %% First fix the OBPG metadata file.
 
-file_in = [ base_dir_in '/' YearS '/OBPGFilename']);
-good_filename_out = [base_dir_out metadataFilename];
+file_in = [ base_dir_in YearS '/' OBPGFilename];
+file_out = [base_dir_out YearS '/' metadataFilename];
 
 % Get year and month to put this granule in the proper directory.
 
@@ -54,9 +56,18 @@ action = input(['Ready to extract metadata from ' file_in ', want to continue (y
 if strcmp(action, 'n')
     fprintf('Bummer, sounds like you don''t like what it did.\n')
     return
+elseif strcmp(action, 'k')
+    keyboard
 end
 
 status = system(['/usr/local/bin/nccopy -w -V year,day,msec,slon,slat,clon,clat,elon,elat,csol_z,sstref,qual_sst,flags_sst,tilt ' file_in ' ' file_out]);
+
+if status == 0
+    eval(['! aws s3 cp ' file_out ' s3://uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/' YearS ' / --profile iam_pcornillon'])
+else
+    fprintf('Problem with OBPG metadata for %s\n', file_in)
+    return
+end
 
 %% Now fix file lists
 
@@ -78,19 +89,59 @@ tSecond = round( tSec - tHour * 3600 - tMinute * 60);
 
 granuleList(iGranule).first_scan_line_time = datenum( [tYear(1), tMonth, tDay, tHour, tMinute, tSecond]);
 
-
 granuleList(iGranule).filename
 datestr(granuleList(iGranule).first_scan_line_time)
 
-action = input('If the above looks good, type y to save: ', 's');
+good_file_out = ['/Users/petercornillon/Dropbox/Data/MODIS_L2/granule_lists/GoodGranuleList_' YearS '.mat'];
+
+action = input(['I''m about to save ' good_file_out '. Is that OK with you? (y/n/k) : '], 's');
 if strcmp(action, 'n')
     fprintf('Bummer, sounds like you don''t like what it did.\n')
     return
+elseif strcmp(action, 'k')
+    keyboard
 end
 
-save('~/Dropbox/Data/MODIS_L2/granule_lists/GoodGranuleList_2016.mat', 'granuleList');
+save(good_file_out, 'granuleList');
 
-aws s3 cp /Users/petercornillon/Dropbox/Data/MODIS_L2/granule_lists/GoodGranuleList_2016.mat s3://uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/metadata_granule_lists/ --profile iam_pcornillon
-% aws s3 cp /Users/petercornillon/Dropbox/Data/MODIS_L2/granule_lists/NewGranuleList_2016.mat s3://uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/metadata_granule_lists/ --profile iam_pcornillon
+if status == 0
+    fprintf('Copying the GoodGranuleList_%s.mat to AWS.\n', good_file_out)
+    eval(['! aws s3 cp ' good_file_out ' s3://uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/metadata_granule_lists/ --profile iam_pcornillon'])
+else
+    fprintf('Problem with OBPG metadata for %s\n', file_in)
+    return
+end
+
+% Check to see if NewGranuleList needs to be updated as well.
+
+new_file_out = ['/Users/petercornillon/Dropbox/Data/MODIS_L2/granule_lists/NewGranuleList_' YearS '.mat'];
+
+tempEntry = granuleList(iGranule);
+tempTime = granuleList(iGranule).filename_time;
+
+load(new_file_out)
+for jGranule=1:length(granuleList)
+    if granuleList(jGranule).filename_time == tempTime
+        fprintf('\nFound a match NewGranuleList\n\n')
+        action = input('Do you want to fix this? (y): ', 's');
+        if strcmp(action, 'y')
+            if status == 0
+                granuleList(jGranule) = tempEntry;
+
+                fprintf('Saving the NewGranuleList_%s.mat to AWS.\n', new_file_out)
+                save(new_file_out, 'granuleList');
+
+                fprintf('Copying the NewGranuleList_%s.mat to AWS.\n', new_file_out)
+                eval(['! aws s3 cp ' new_file_out ' s3://uri-gso-pcornillon/Data_from_OBPG_for_PO-DAAC/metadata_granule_lists/ --profile iam_pcornillon'])
+                break
+            else
+                fprintf('Problem with OBPG metadata for %s\n', file_in)
+                return
+            end
+        elseif strcmp(action, 'k')
+            keyboard
+        end
+    end
+end
 
 

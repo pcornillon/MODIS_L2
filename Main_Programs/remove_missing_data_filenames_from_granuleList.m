@@ -18,12 +18,15 @@ function remove_missing_data_filenames_from_granuleList
 %   1.0.0 - 7/23/2024 - Initial version - PCC
 %   1.0.1 - 7/26/2024 - Added print_Ex00 variables to control printout in 
 %           populate_problems - PCC
+%   1.0.2 - 9/17/2024 - Removed and added some comments. Added code to
+%           reset the list of missing granules at the start of each year.
+%           - PCC  
 
 clear global amazon_s3_run formatOut secs_per_day iProblem problem_list ...
     s3_expiration_time granuleList iGranuleList numGranules
 
 global version_struct
-version_struct.remove_missing_data_filenames_from_granuleList = '1.0.0';
+version_struct.remove_missing_data_filenames_from_granuleList = '1.0.2';
 
 global s3_expiration_time
 
@@ -55,8 +58,6 @@ print_E300 = true;
 print_E700 = true;
 print_E800 = true;
 print_E900 = true;
-
-kGranule = 0;
 
 iProblem = 0;
 
@@ -110,13 +111,14 @@ for iYear=yearStart:yearEnd
 
     fprintf('Working on %i.\n', iYear)
 
-    % % % if iYear == yearStart
+    % Clear the list of missing granules and set the missing granule counter to 0.
+
+    clear missingList
+    iMissingGranule = 0;
+
+    % Get the list of OBPG granules.
+    
     load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
-    % % % else
-    % % %     tempList = load([metadata_directory 'metadata_granule_lists/GoodGranuleList_' num2str(iYear) '.mat']);
-    % % %     granuleList = [granuleList tempList(1).granuleList];
-    % % % end
-    % % % end
 
     numGranules = length(granuleList);
 
@@ -168,8 +170,8 @@ for iYear=yearStart:yearEnd
         else
 
             fprintf('Data granule #%i for metadata granule %s is missing.\n', iGranuleList, metadata_granule_file_name)
-            kGranule = kGranule + 1;
-            missingList(kGranule) = granuleList(iGranuleList);
+            iMissingGranule = iMissingGranule + 1;
+            missingList(iMissingGranule) = granuleList(iGranuleList);
         end
     end
     granuleList = newList;

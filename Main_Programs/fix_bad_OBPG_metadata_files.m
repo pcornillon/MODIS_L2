@@ -11,7 +11,8 @@ YearS = num2str(Year);
 granule_list_dir =      '/Users/petercornillon/Dropbox/Data/MODIS_L2/granule_lists/';
 metadata_directory =    '/Volumes/MODIS_L2_modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
-base_dir_in =           '/Volumes/Aqua-1/MODIS_R2019/combined/';
+% base_dir_in =           '/Volumes/Aqua-1/MODIS_R2019/combined/';
+base_dir_in =           '/Volumes/MODIS_L2_Original/OBPG/combined/';
 base_dir_out =          '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
 
 % Load the granule list for this year.

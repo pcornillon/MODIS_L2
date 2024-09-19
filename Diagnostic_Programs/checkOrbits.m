@@ -6,7 +6,7 @@ function checkOrbits(yearStart,yearEnd)
 % missing granule and logs this information. The function also checks for missing granules at the end of the orbit.
 
 % Set the following to true if you want to read in the list of good and missing granules.
-buildLists = true; 
+buildLists = false; 
 
 % Set up directories
 data_dir = '/Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/';
@@ -25,7 +25,8 @@ end
 
 secPerday = 86400;
 
-orbitStartTimeTolerance = 2;
+orbitStartTimeTolerance = 10;
+orbitStartTimeExtremeTolerance = 250;
 
 epoch = datenum(1970,1,1,0,0,0); % Epoch time for conversion
 
@@ -60,6 +61,8 @@ orbitsChecked = 0;
 iBadFile = 0;
 
 if buildLists
+    iproblemGranules = 0;
+
     % Get the list of all OBPG granules
 
     tempNames = [];
@@ -91,12 +94,26 @@ if buildLists
 
     % Check the dates.
     for iGranule=1:length(OBPGgranuleList)
-        start_time_str = extractBetween(OBPGgranuleList(iGranule), '_20', '_L2');
+        start_time_str = extractBetween(OBPGgranuleList(iGranule), 'MODIS_', '_L2');
         orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
         
         dTime = (orbitStartTime - OBPGgranuleStartTimes(iGranule)) * secPerday;
-        if abs(dTime) > orbitStartTimeTolerance
-            keyboard
+        if abs(dTime) > orbitStartTimeExtremeTolerance
+            fprintf('***  Start times for granule #%i (%s) differ by way too much %f\n', iGranule, OBPGgranuleList(iGranule), dTime)
+
+            iproblemGranules = iproblemGranules + 1;
+            problemGranules(iproblemGranules).filename = OBPGgranuleList(iGranule);
+            problemGranules(iproblemGranules).start_time = OBPGgranuleStartTimes(iGranule);
+            problemGranules(iproblemGranules).delta_time = dTime;
+            problemGranules(iproblemGranules).whichlist = 'OBPG';
+        elseif abs(dTime) > orbitStartTimeTolerance
+            fprintf('***  Start times for granule #%i (%s) differ by %f\n', iGranule, OBPGgranuleList(iGranule), dTime)
+
+            iproblemGranules = iproblemGranules + 1;
+            problemGranules(iproblemGranules).filename = OBPGgranuleList(iGranule);
+            problemGranules(iproblemGranules).start_time = OBPGgranuleStartTimes(iGranule);
+            problemGranules(iproblemGranules).delta_time = dTime;
+            problemGranules(iproblemGranules).whichlist = 'OBPG';
         end
     end
 
@@ -129,15 +146,31 @@ if buildLists
 
     % Check the dates.
     for iGranule=1:length(AWSmissingGranuleList)
-        start_time_str = extractBetween(AWSmissingGranuleList(iGranule), '_20', '_L2');
+        start_time_str = extractBetween(AWSmissingGranuleList(iGranule), 'MODIS_', '_L2');
         orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
         
         dTime = (orbitStartTime - AWSmissingStartTimes(iGranule)) * secPerday;
-        if abs(dTime) > orbitStartTimeTolerance
-            keyboard
+        if abs(dTime) > orbitStartTimeExtremeTolerance
+            fprintf('***  Start times for granule #%i (%s) differ by way too much %f\n', iGranule, AWSmissingGranuleList(iGranule), dTime)
+
+            iproblemGranules = iproblemGranules + 1;
+            problemGranules(iproblemGranules).filename = AWSmissingGranuleList(iGranule);
+            problemGranules(iproblemGranules).start_time = AWSmissingStartTimes(iGranule);
+            problemGranules(iproblemGranules).delta_time = dTime;
+            problemGranules(iproblemGranules).whichlist = 'AWSmissing';
+        elseif abs(dTime) > orbitStartTimeTolerance
+            fprintf('***  Start times for granule #%i (%s) differ by %f\n', iGranule, AWSmissingGranuleList(iGranule), dTime)
+
+            iproblemGranules = iproblemGranules + 1;
+            problemGranules(iproblemGranules).filename = AWSmissingGranuleList(iGranule);
+            problemGranules(iproblemGranules).start_time = AWSmissingStartTimes(iGranule);
+            problemGranules(iproblemGranules).delta_time = dTime;
+            problemGranules(iproblemGranules).whichlist = 'AWSmissing';
         end
     end
 
+    % Save the list
+    save([granule_list_dir 'granuleLists'], 'AWSmissingGranuleList', 'AWSmissingStartTimes', 'OBPGgranuleList', 'OBPGgranuleStartTimes', 'problemGranules')
 else
     load([granule_list_dir 'granuleLists'])
 end
@@ -178,7 +211,7 @@ for year=yearStart:yearEnd
                 fileOrbitNumber = str2num(orbit_filename(nn+6:nn+11));
 
                 % Extract the start time from the orbit filename
-                start_time_str = extractBetween(orbit_filename, '_20', '_L2');
+                start_time_str = orbit_filename(nn+13:nn+27);
                 orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
 
                 % Read contributing granules and their start times

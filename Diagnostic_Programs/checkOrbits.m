@@ -90,20 +90,20 @@ if buildLists
 
     % Get unique filenames and start times.
     OBPGgranuleList = unique(tempNames);
-    OBPGgranuleStartTimes = unique(tempTimes);
+    OBP_granule_start_imes = unique(tempTimes);
 
     % Check the dates.
     for iGranule=1:length(OBPGgranuleList)
         start_time_str = extractBetween(OBPGgranuleList(iGranule), 'MODIS_', '_L2');
         orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
         
-        dTime = (orbitStartTime - OBPGgranuleStartTimes(iGranule)) * secPerday;
+        dTime = (orbitStartTime - OBP_granule_start_imes(iGranule)) * secPerday;
         if abs(dTime) > orbitStartTimeExtremeTolerance
             fprintf('***  Start times for granule #%i (%s) differ by way too much %f\n', iGranule, OBPGgranuleList(iGranule), dTime)
 
             iproblemGranules = iproblemGranules + 1;
             problemGranules(iproblemGranules).filename = OBPGgranuleList(iGranule);
-            problemGranules(iproblemGranules).start_time = OBPGgranuleStartTimes(iGranule);
+            problemGranules(iproblemGranules).start_time = OBP_granule_start_imes(iGranule);
             problemGranules(iproblemGranules).delta_time = dTime;
             problemGranules(iproblemGranules).whichlist = 'OBPG';
         elseif abs(dTime) > orbitStartTimeTolerance
@@ -111,7 +111,7 @@ if buildLists
 
             iproblemGranules = iproblemGranules + 1;
             problemGranules(iproblemGranules).filename = OBPGgranuleList(iGranule);
-            problemGranules(iproblemGranules).start_time = OBPGgranuleStartTimes(iGranule);
+            problemGranules(iproblemGranules).start_time = OBP_granule_start_imes(iGranule);
             problemGranules(iproblemGranules).delta_time = dTime;
             problemGranules(iproblemGranules).whichlist = 'OBPG';
         end
@@ -170,7 +170,7 @@ if buildLists
     end
 
     % Save the list
-    save([granule_list_dir 'granuleLists'], 'AWSmissingGranuleList', 'AWSmissingStartTimes', 'OBPGgranuleList', 'OBPGgranuleStartTimes', 'problemGranules')
+    save([granule_list_dir 'granuleLists'], 'AWSmissingGranuleList', 'AWSmissingStartTimes', 'OBPGgranuleList', 'OBP_granule_start_imes', 'problemGranules')
 else
     load([granule_list_dir 'granuleLists'])
 end
@@ -206,13 +206,13 @@ for year=yearStart:yearEnd
 
                 orbit_filename = orbit_files(iOrbit).name;
 
-                % Get orbit number associated with filename.
+                % Get orbit number associated with this filename.
                 nn = strfind(orbit_filename, 'orbit');
                 fileOrbitNumber = str2num(orbit_filename(nn+6:nn+11));
 
                 % Extract the start time from the orbit filename
                 start_time_str = orbit_filename(nn+13:nn+27);
-                orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
+                Time_of_orbit_extracted_from_title = datenum(start_time_str, 'yyyymmddTHHMMSS');
 
                 % Read contributing granules and their start times
                 orbitFullFileName = fullfile(data_dir, num2str(year), month_str, orbit_filename);
@@ -233,35 +233,46 @@ for year=yearStart:yearEnd
                     % Continue to the next file
                     continue;
                 end
-                granule_start_times = ncread(orbitFullFileName, '/contributing_granules/start_time') / secPerday + epoch;
+                Time_of_1st_scan_in_granules = ncread(orbitFullFileName, '/contributing_granules/start_time') / secPerday + epoch;
 
-                % Get time of first scan line.
+                % Get time of first scan line in this orbit
                 DateTime = ncread( orbitFullFileName, 'DateTime');
-                scanLineStartTime = datenum(DateTime/secPerday + datenum(1970,1,1,0,0,0));
+                Time_of_1st_scan_in_orbit = datenum(DateTime/secPerday + datenum(1970,1,1,0,0,0));
 
-                if abs(scanLineStartTime - orbitStartTime)*secPerday > orbitStartTimeTolerance
-                    fprintf('%i) time if first scan line (%s) and time extracted from filename (%s) differ by more than 2 seconds for %s.\n', ...
-                        orbitsChecked, datetime(scanLineStartTime), datetime(orbitStartTime), orbit_files(iOrbit).name)
+                if abs(Time_of_1st_scan_in_orbit - Time_of_orbit_extracted_from_title)*secPerday > orbitStartTimeTolerance
+                    fprintf('%i) time of first scan line (%s) and time extracted from filename (%s) differ by more than %i seconds for %s.\n', ...
+                        orbitsChecked, datetime(Time_of_1st_scan_in_orbit), datetime(Time_of_orbit_extracted_from_title), orbitStartTimeTolerance, orbit_files(iOrbit).name)
                 end
 
                 % Are there any missing granules at the beginning of this orbit.
-                num_missing_granules = round((scanLineStartTime - granule_start_times(1)) * secPerday / granuleDuration);
+                num_missing_granules = round((Time_of_1st_scan_in_orbit - Time_of_1st_scan_in_granules(1)) * secPerday / granuleDuration);
 
                 if num_missing_granules < 0
                     num_missing_granules = 0;
                 end
 
                 % Calculate time differences between granules
-                granule_diffs = diff(granule_start_times) * secPerday;
-                % % % missing_indices = find(abs(granule_diffs - granuleDuration) > granuleStartTimeTolerance);
-                % % % num_missing_granules = num_missing_granules + length(missing_indices);
+                granule_diffs = diff(Time_of_1st_scan_in_granules) * secPerday;
                 num_missing_granules = num_missing_granules + sum(round( (granule_diffs - granuleDuration) / granuleDuration));
 
-                OBPGIndices = find( (OBPGgranuleStartTimes > (orbitStartTime-granuleDuration*secPerday)) & ((OBPGgranuleStartTimes+orbitDuration) < orbitStartTime));
-                numOBPGGranulesInOrbit = length();
-                % Check for missing granules at the end
-                end_time_of_last_granule = granule_start_times(end) + granuleDuration / secPerday;
-                time_from_start_to_end = (end_time_of_last_granule - orbitStartTime) * secPerday; % Convert to seconds
+                % Check for missing granules at the end of the orbit.
+                end_time_of_orbit = Time_of_1st_scan_in_orbit + orbitDuration / secPerday;
+                end_time_of_last_granule = Time_of_1st_scan_in_granules(end) + granuleDuration / secPerday;
+                num_to_add = round((end_time_of_orbit - end_time_of_last_granule) / granuleDuration);
+
+                if num_to_add > 0
+                    num_missing_granules = num_missing_granules + num_to_add;
+                end
+
+                % Now check to see if OBPG or AWS granules are missing if there are missing granules.
+                if num_missing_granules > 0
+
+                    % Find all OBPG granules that would have contributed to this orbit.
+                    OBPGIndices = find( (OBP_granule_start_imes > (Time_of_1st_scan_in_orbit - granuleDuration/secPerday)) & ...
+                        (OBP_granule_start_imes < (Time_of_1st_scan_in_orbit + orbitDuration/secPerday)) );
+                    
+                    numOBPGGranulesInOrbit = length(OBPGIndices);
+
                 
                 if time_from_start_to_end < orbitDuration - orbitDurationTolerance
                     missing_granules_end = round((orbitDuration - time_from_start_to_end) / granuleDuration);
@@ -271,8 +282,8 @@ for year=yearStart:yearEnd
 
                 % Check missing granules from the AWS missing granule list
                 if ~isempty(AWSmissingGranuleList)
-                    nn = find(orbitStartTime <= AWSmissingStartTimes & ...
-                        (orbitStartTime + orbitDuration/24/3600) >= (AWSmissingStartTimes + 300/24/3600));
+                    nn = find(Time_of_1st_scan_in_orbit <= AWSmissingStartTimes & ...
+                        (Time_of_1st_scan_in_orbit + orbitDuration/24/3600) >= (AWSmissingStartTimes + 300/24/3600));
                     AWS_missing_in_orbit = length(nn);
                 else
                     AWS_missing_in_orbit = 0;
@@ -287,7 +298,7 @@ for year=yearStart:yearEnd
                 % orbit number.
 
                 % Find the last checked orbit before this one.
-                nn = find(checked_list(:,2) < orbitStartTime);
+                nn = find(checked_list(:,2) < Time_of_1st_scan_in_orbit);
                 
                 previousOrbitNumber = checked_list(nn(end),1);
                 previousOrbitStartTime = checked_list(nn(end),2);
@@ -306,7 +317,7 @@ for year=yearStart:yearEnd
 
                 % Now calculate the orbit number
                 
-                dtime = (orbitStartTime - previousOrbitStartTime) * secPerday;
+                dtime = (Time_of_1st_scan_in_orbit - previousOrbitStartTime) * secPerday;
                 OrbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
 
                 % Handle missing orbits
@@ -339,18 +350,18 @@ for year=yearStart:yearEnd
                 % Append data to parquet
                 parquet_data{end+1,1} = year;
                 parquet_data{end,2} = month;
-                parquet_data{end,3} = day(orbitStartTime);
-                parquet_data{end,4} = hour(orbitStartTime);
+                parquet_data{end,3} = day(Time_of_1st_scan_in_orbit);
+                parquet_data{end,4} = hour(Time_of_1st_scan_in_orbit);
                 parquet_data{end,5} = OrbitNumber;
                 parquet_data{end,6} = fileOrbitNumber;
                 parquet_data{end,7} = orbit_filename;
-                parquet_data{end,8} = orbitStartTime;
+                parquet_data{end,8} = Time_of_1st_scan_in_orbit;
                 parquet_data{end,9} = size(granule_filenames,1);
                 parquet_data{end,10} = num_missing_granules;
                 parquet_data{end,11} = AWS_missing_in_orbit;
 
 
-                checked_list(end+1,2) = orbitStartTime;
+                checked_list(end+1,2) = Time_of_1st_scan_in_orbit;
                 checked_list(end,1) = OrbitNumber;
 
                 % If more than 10 orbits have been processed since the last

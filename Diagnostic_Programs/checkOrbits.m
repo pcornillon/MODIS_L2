@@ -90,7 +90,7 @@ if buildLists
 
     % Get unique filenames and start times.
     OBPGgranuleList = unique(tempNames);
-    OBPGgranuleStartTimes = unique(tempTimes);
+    OBP_granule_start_imes = unique(tempTimes);
 
     % Check the dates.
     for iGranule=1:length(OBPGgranuleList)
@@ -103,7 +103,7 @@ if buildLists
 
             iproblemGranules = iproblemGranules + 1;
             problemGranules(iproblemGranules).filename = OBPGgranuleList(iGranule);
-            problemGranules(iproblemGranules).start_time = OBPGgranuleStartTimes(iGranule);
+            problemGranules(iproblemGranules).start_time = OBP_granule_start_imes(iGranule);
             problemGranules(iproblemGranules).delta_time = dTime;
             problemGranules(iproblemGranules).whichlist = 'OBPG';
         elseif abs(dTime) > orbitStartTimeTolerance
@@ -111,7 +111,7 @@ if buildLists
 
             iproblemGranules = iproblemGranules + 1;
             problemGranules(iproblemGranules).filename = OBPGgranuleList(iGranule);
-            problemGranules(iproblemGranules).start_time = OBPGgranuleStartTimes(iGranule);
+            problemGranules(iproblemGranules).start_time = OBP_granule_start_imes(iGranule);
             problemGranules(iproblemGranules).delta_time = dTime;
             problemGranules(iproblemGranules).whichlist = 'OBPG';
         end
@@ -170,7 +170,7 @@ if buildLists
     end
 
     % Save the list
-    save([granule_list_dir 'granuleLists'], 'AWSmissingGranuleList', 'AWSmissingStartTimes', 'OBPGgranuleList', 'OBPGgranuleStartTimes', 'problemGranules')
+    save([granule_list_dir 'granuleLists'], 'AWSmissingGranuleList', 'AWSmissingStartTimes', 'OBPGgranuleList', 'OBP_granule_start_imes', 'problemGranules')
 else
     load([granule_list_dir 'granuleLists'])
 end
@@ -208,13 +208,13 @@ for year=yearStart:yearEnd
 
                 orbit_filename = orbit_files(iOrbit).name;
 
-                % Get orbit number associated with filename.
+                % Get orbit number associated with this filename.
                 nn = strfind(orbit_filename, 'orbit');
                 fileOrbitNumber = str2num(orbit_filename(nn+6:nn+11));
 
                 % Extract the start time from the orbit filename
                 start_time_str = orbit_filename(nn+13:nn+27);
-                orbitStartTime = datenum(start_time_str, 'yyyymmddTHHMMSS');
+                Time_of_orbit_extracted_from_title = datenum(start_time_str, 'yyyymmddTHHMMSS');
 
                 % Read contributing granules and their start times
                 orbitFullFileName = fullfile(data_dir, num2str(year), month_str, orbit_filename);

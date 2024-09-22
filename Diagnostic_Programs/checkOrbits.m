@@ -58,7 +58,7 @@ orbitDuration = (checked_list(end,2) - checked_list(1,2)) / (checked_list(end,1)
 
 orbitsChecked = 0;
 
-iBadFile = 0;
+iBadOrbit = 0;
 
 if buildLists
     iproblemGranules = 0;
@@ -224,8 +224,8 @@ for year=yearStart:yearEnd
     % % %                 granule_filenames = ncread(orbitFullFileName, '/contributing_granules/filenames');
     % % %
     % % %             catch ME
-    % % %                 iBadFile = iBadFile + 1;
-    % % %                 badFiles(iBadFile) = string(orbitFullFileName);
+    % % %                 iBadOrbit = iBadOrbit + 1;
+    % % %                 BadOrbits(iBadOrbit) = string(orbitFullFileName);
     % % %                 fprintf( fileID, '%s\n', string(orbitFullFileName));
     % % %
     % % %                 % If an error occurs, catch it and flag the problem
@@ -430,6 +430,10 @@ for year=yearStart:yearEnd
     for month = 1:12
 
         kNumMissing = 0;
+        iMissingThisMonth = 0;
+        iDuplicatesThisMonth = 0;
+        BadOrbits = '';
+        duplicateOrbits = nan;
 
         % Get the list of orbit files for the current year and month
         month_str = sprintf('%02d', month);
@@ -462,8 +466,8 @@ for year=yearStart:yearEnd
                     granule_filenames = ncread(orbitFullFileName, '/contributing_granules/filenames');
 
                 catch ME
-                    iBadFile = iBadFile + 1;
-                    badFiles(iBadFile) = string(orbitFullFileName);
+                    iBadOrbit = iBadOrbit + 1;
+                    BadOrbits(iBadOrbit) = string(orbitFullFileName);
                     fprintf(fileID, '%s\n', string(orbitFullFileName));
 
                     kNumMissing = kNumMissing + 1;
@@ -610,6 +614,14 @@ for year=yearStart:yearEnd
                 dtime = (time_of_first_scan_line_in_orbit - previousOrbitStartTime) * secPerday;
                 OrbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
 
+                % Is this a duplicate orbit number
+
+                nn = find(checked_list(:,1) == OrbitNumber);
+                if isempty(nn) == 0
+                    iDuplicatesThisMonth = iDuplicatesThisMonth + 1
+                    duplicateOrbits(iDuplicatesThisMonth) = orbitNumber;
+                end
+
                 % Handle missing orbits
 
                 if OrbitNumber > previousOrbitNumber +1
@@ -618,6 +630,8 @@ for year=yearStart:yearEnd
 
                         next_orbit_start_time = next_orbit_start_time + orbitDuration;
                         [tempYear, tempMonth, tempDay, tempHour, ~, ~] = datevec(datenum(now));
+
+                        iMissingThisMonth = iMissingThisMonth + 1;
 
                         % Search for OBPG granules that would have contributed to this orbit.
                         OBPGStartTimeIndices = find((OBPGgranuleStartTimes > (next_orbit_start_time - granuleDuration / secPerday)) & ...
@@ -685,11 +699,12 @@ for year=yearStart:yearEnd
             summary_array(year-2001,month,1) = length(orbit_files);
             summary_array(year-2001,month,2) = iMissingThisMonth;
             summary_array(year-2001,month,3) = iDuplicatesThisMonth;
+            summary_array(year-2001,month,4) = iBadOrbit;
 
-            fprintf('%i orbits found. %i orbits missing and %i duplicates for %i/%i\n\n', length(files), iMissingThisMonth, iDuplicatesThisMonth, month, year)
+            fprintf('%i orbits found. %i orbits missing, %i orbits duplicated and bad orbits for %i/%i\n\n', length(files), iMissingThisMonth, iDuplicatesThisMonth, iBadOrbit, month, year)
 
             if exist('MissingGranules')
-                save([granule_list_dir 'problem_granules'], 'year', 'month', 'MissingGranules')
+                save([granule_list_dir 'problem_granules'], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
                 clear MissingGranules
             end
         end

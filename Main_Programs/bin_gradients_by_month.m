@@ -60,7 +60,7 @@ for year=yearStart:yearEnd
 
                 % Read data from file
                 orbit_filename = fullfile(orbit_files(fileIdx).folder, orbit_files(fileIdx).name);
-                fprint('Working on %s at %s\n', orbit_filename, datestr(now, 'HH:MM:SS'))
+                fprintf('Working on %s at %s\n', orbit_filename, datestr(now, 'HH:MM:SS'))
                 
                 % Get orbit number associated with this filename.
                 nn = strfind(orbit_filename, 'orbit');

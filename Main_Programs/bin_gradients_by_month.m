@@ -1,4 +1,4 @@
-function BadOrbits = bin_gradients_by_month(yearStart,yearEnd)
+function bin_gradients_by_month(yearStart,yearEnd)
 %
 
 epoch = datenum(1970,1,1,0,0,0); % Epoch time for conversion
@@ -76,12 +76,12 @@ for year=yearStart:yearEnd
                     lat = ncread(orbit_filename, 'latitude');
 
                 catch ME
-                    iBadOrbit = iBadOrbit + 1;
-                    BadOrbits(iBadOrbit) = string(orbitFullFileName);
-                    BadOrbits(iBadOrbit).filename_start_time = Time_of_orbit_extracted_from_title;
-                    BadOrbits(iBadOrbit).file_orbit_number = fileOrbitNumber;
+                    % iBadOrbit = iBadOrbit + 1;
+                    % BadOrbits(iBadOrbit) = string(orbitFullFileName);
+                    % BadOrbits(iBadOrbit).filename_start_time = Time_of_orbit_extracted_from_title;
+                    % BadOrbits(iBadOrbit).file_orbit_number = fileOrbitNumber;
 
-                    fprintf(fileID, '%s\n', string(orbitFullFileName));
+                    fprintf(fileID, '%s\n', string(orbit_filename));
 
                     % If an error occurs, catch it and flag the problem
                     % warning(['Error reading file: ', orbit_files(iOrbit).name, '. Moving to next file.']);

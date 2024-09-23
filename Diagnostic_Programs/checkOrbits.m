@@ -401,7 +401,7 @@ for year=yearStart:yearEnd
                     for iFillOrbitNumber=previousOrbitNumber+1:OrbitNumber-1
 
                         next_orbit_start_time = next_orbit_start_time + orbitDuration;
-                        [tempYear, tempMonth, tempDay, tempHour, ~, ~] = datevec(datenum(now));
+                        [tempYear, tempMonth, tempDay, tempHour, ~, ~] = datevec(next_orbit_start_time);
 
                         iMissingThisMonth = iMissingThisMonth + 1;
 

@@ -59,6 +59,7 @@ orbitDuration = (checked_list(end,2) - checked_list(1,2)) / (checked_list(end,1)
 orbitsChecked = 0;
 
 iBadOrbit = 0;
+BadOrbits = '';
 
 if buildLists
     iproblemGranules = 0;
@@ -432,7 +433,6 @@ for year=yearStart:yearEnd
         kNumMissing = 0;
         iMissingThisMonth = 0;
         iDuplicatesThisMonth = 0;
-        BadOrbits = '';
         duplicateOrbits = nan;
 
         % Get the list of orbit files for the current year and month

@@ -14,9 +14,9 @@ nLon = length(lon_bins) - 1; % Number of bins for longitude
 for year = 2002:2022
     for month = 1:12
         % Get list of files for the current month
-        files = dir(fullfile(dataDir, sprintf('%04d/%02d/*.nc', year, month)));
+        orbit_files = dir(fullfile(dataDir, sprintf('%04d/%02d/*.nc', year, month)));
 
-        if ~isempty(files)
+        if isempty(orbit_files) == 0
 
             % Initialize the arrays to hold the sum of values for the month
             day_pixel_count = zeros(nLat, nLon); % Number of pixels in each 1-degree square (daytime)
@@ -40,15 +40,32 @@ for year = 2002:2022
             day_sum_magnitude_gradient_squared = zeros(nLat, nLon); % Sum of square of gradient magnitude (daytime)
             night_sum_magnitude_gradient_squared = zeros(nLat, nLon); % Sum of square of gradient magnitude (nighttime)
 
-            % Get list of files for the current month
-            files = dir(fullfile(dataDir, sprintf('%04d/%02d/*.nc', year, month)));
-
-            for fileIdx = 1:length(files)
+            for fileIdx = 1:length(orbit_files)
                 % Read data from file
-                filePath = fullfile(files(fileIdx).folder, files(fileIdx).name);
+                filePath = fullfile(orbit_files(fileIdx).folder, orbit_files(fileIdx).name);
 
                 % Read latitude, longitude, eastward gradient, and northward gradient from file
-                lat = ncread(filePath, 'latitude');
+                try
+                    % Attempt to read the netCDF file
+                    lat = ncread(filePath, 'latitude');
+
+                catch ME
+                    iBadOrbit = iBadOrbit + 1;
+                    BadOrbits(iBadOrbit) = string(orbitFullFileName);
+                    fprintf(fileID, '%s\n', string(orbitFullFileName));
+
+                    kNumMissing = kNumMissing + 1;
+
+                    MissingGranules(kNumMissing).orbit_filename = orbit_filename;
+                    MissingGranules(kNumMissing).problem = 'bad orbit file';
+
+                    % If an error occurs, catch it and flag the problem
+                    % warning(['Error reading file: ', orbit_files(iOrbit).name, '. Moving to next file.']);
+                    % disp(['Error message: ', ME.message]);
+
+                    % Continue to the next file
+                    continue;
+                end
                 lon = ncread(filePath, 'longitude');
                 east_grad = ncread(filePath, 'eastward_gradient');
                 north_grad = ncread(filePath, 'northward_gradient');

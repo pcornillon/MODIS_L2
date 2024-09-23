@@ -36,7 +36,7 @@ orbitDurationTolerance = 10; % seconds
 granuleDuration = 300; % seconds
 granuleStartTimeTolerance = 2; % seconds
 
-columnNames = {'Year', 'Month', 'Day', 'Hour', 'OrbitNumber1', 'OrbitNumber2', 'OrbitFilename', ...
+columnNames = {'Year', 'Month', 'Day', 'Hour', 'orbitNumber1', 'orbitNumber2', 'OrbitFilename', ...
     'OrbitStartTime', '# of Granules Used', '# of Missing Granules', '# of OBPG Granules Not Found', '# of AWS Granules Missing'};
 
 % List of files checked before starting to check any. The list was
@@ -384,11 +384,11 @@ for year=yearStart:yearEnd
                 % Now calculate the orbit number
 
                 dtime = (time_of_first_scan_line_in_orbit - previousOrbitStartTime) * secPerday;
-                OrbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
+                orbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
 
                 % Is this a duplicate orbit number
 
-                nn = find(checked_list(:,1) == OrbitNumber);
+                nn = find(checked_list(:,1) == orbitNumber);
                 if isempty(nn) == 0
                     iDuplicatesThisMonth = iDuplicatesThisMonth + 1;
                     duplicateOrbits(iDuplicatesThisMonth) = orbitNumber;
@@ -396,9 +396,9 @@ for year=yearStart:yearEnd
 
                 % Handle missing orbits
 
-                if OrbitNumber > previousOrbitNumber +1
+                if orbitNumber > previousOrbitNumber +1
                     next_orbit_start_time = previousOrbitStartTime;
-                    for iFillOrbitNumber=previousOrbitNumber+1:OrbitNumber-1
+                    for iFileOrbitNumber=previousOrbitNumber+1:orbitNumber-1
 
                         next_orbit_start_time = next_orbit_start_time + orbitDuration;
                         [tempYear, tempMonth, tempDay, tempHour, ~, ~] = datevec(next_orbit_start_time);
@@ -419,7 +419,7 @@ for year=yearStart:yearEnd
                         parquet_data{end,2} = tempMonth;
                         parquet_data{end,3} = tempDay;
                         parquet_data{end,4} = tempHour;
-                        parquet_data{end,5} = iFillOrbitNumber;
+                        parquet_data{end,5} = iFileOrbitNumber;
                         parquet_data{end,6} = nan;
                         parquet_data{end,7} = '';
                         parquet_data{end,8} = nan;
@@ -429,10 +429,10 @@ for year=yearStart:yearEnd
                         parquet_data{end,12} = length(AWSStartTimeIndices);
 
                         checked_list(end+1,2) = next_orbit_start_time;
-                        checked_list(end,1) = iFillOrbitNumber;
+                        checked_list(end,1) = iFileOrbitNumber;
                     end
                 end
-                previousOrbitNumber = OrbitNumber;
+                previousOrbitNumber = orbitNumber;
 
                 [orbitYear, orbitMonth, orbitDay, orbitHour, ~, ~] = datevec(time_of_first_scan_line_in_orbit);
                 % Append data to parquet
@@ -440,7 +440,7 @@ for year=yearStart:yearEnd
                 parquet_data{end,2} = orbitMonth;
                 parquet_data{end,3} = orbitDay;
                 parquet_data{end,4} = orbitHour;
-                parquet_data{end,5} = OrbitNumber;
+                parquet_data{end,5} = orbitNumber;
                 parquet_data{end,6} = fileOrbitNumber;
                 parquet_data{end,7} = orbit_filename;
                 parquet_data{end,8} = time_of_first_scan_line_in_orbit;
@@ -451,7 +451,7 @@ for year=yearStart:yearEnd
 
 
                 checked_list(end+1,2) = time_of_first_scan_line_in_orbit;
-                checked_list(end,1) = OrbitNumber;
+                checked_list(end,1) = orbitNumber;
 
                 % If more than 10 orbits have been processed since the last save of the check list, save it.
 

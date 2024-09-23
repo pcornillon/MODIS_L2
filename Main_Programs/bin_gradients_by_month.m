@@ -1,6 +1,17 @@
+function summary_array = bin_gradients_by_month(yearStart,yearEnd)
+%
+
 % Define directories and file pattern
-dataDir = 'path_to_your_data_directory'; % Replace with the path to your data
-outputDir = 'path_to_output_directory'; % Replace with the path where you want to save the netCDF file
+data_dir = '/Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/';
+output_dir = '/Users/petercornillon/Dropbox/Data/MODIS_L2/check_orbits/';
+
+% Open the file that will contain the filenames for bad files, files that couldn't be read.
+fileID = fopen([output_dir '/bad_files_in_bin_gradients.txt'], 'w');
+
+% Check if the file opened successfully
+if fileID == -1
+    error('Failed to open the file for writing.');
+end
 
 % Define the latitude and longitude ranges for 1-degree grid
 lat_bins = -90:1:90; % Bins for latitude
@@ -11,8 +22,10 @@ nLat = length(lat_bins) - 1; % Number of bins for latitude
 nLon = length(lon_bins) - 1; % Number of bins for longitude
 
 % Loop through months
-for year = 2002:2022
+for year=yearStart:yearEnd
+
     for month = 1:12
+
         % Get list of files for the current month
         orbit_files = dir(fullfile(dataDir, sprintf('%04d/%02d/*.nc', year, month)));
 
@@ -41,8 +54,17 @@ for year = 2002:2022
             night_sum_magnitude_gradient_squared = zeros(nLat, nLon); % Sum of square of gradient magnitude (nighttime)
 
             for fileIdx = 1:length(orbit_files)
+
                 % Read data from file
                 filePath = fullfile(orbit_files(fileIdx).folder, orbit_files(fileIdx).name);
+
+                % Get orbit number associated with this filename.
+                nn = strfind(orbit_filename, 'orbit');
+                fileOrbitNumber = str2num(orbit_filename(nn+6:nn+11));
+
+                % Extract the start time from the orbit filename
+                start_time_str = orbit_filename(nn+13:nn+27);
+                Time_of_orbit_extracted_from_title = datenum(start_time_str, 'yyyymmddTHHMMSS');
 
                 % Read latitude, longitude, eastward gradient, and northward gradient from file
                 try
@@ -52,12 +74,10 @@ for year = 2002:2022
                 catch ME
                     iBadOrbit = iBadOrbit + 1;
                     BadOrbits(iBadOrbit) = string(orbitFullFileName);
+                    BadOrbits(iBadOrbit).filename_start_time = Time_of_orbit_extracted_from_title;
+                    BadOrbits(iBadOrbit).file_orbit_number = fileOrbitNumber;
+
                     fprintf(fileID, '%s\n', string(orbitFullFileName));
-
-                    kNumMissing = kNumMissing + 1;
-
-                    MissingGranules(kNumMissing).orbit_filename = orbit_filename;
-                    MissingGranules(kNumMissing).problem = 'bad orbit file';
 
                     % If an error occurs, catch it and flag the problem
                     % warning(['Error reading file: ', orbit_files(iOrbit).name, '. Moving to next file.']);
@@ -66,6 +86,7 @@ for year = 2002:2022
                     % Continue to the next file
                     continue;
                 end
+                
                 lon = ncread(filePath, 'longitude');
                 east_grad = ncread(filePath, 'eastward_gradient');
                 north_grad = ncread(filePath, 'northward_gradient');

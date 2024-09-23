@@ -467,7 +467,7 @@ for year=yearStart:yearEnd
 
                 catch ME
                     iBadOrbit = iBadOrbit + 1;
-                    BadOrbits(iBadOrbit) = string(orbitFullFileName);
+                    BadOrbits(iBadOrbit).filename = string(orbitFullFileName);
                     fprintf(fileID, '%s\n', string(orbitFullFileName));
 
                     kNumMissing = kNumMissing + 1;

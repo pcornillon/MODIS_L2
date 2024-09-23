@@ -456,16 +456,16 @@ for year=yearStart:yearEnd
                 % If more than 10 orbits have been processed since the last save of the check list, save it.
 
                 if mod(orbitsChecked, 10) == 1
-                    save('/Users/petercornillon/Git_repos/MODIS_L2/Data/Aqua_orbit_list', 'checked_list')
+                    save([output_dir 'Aqua_orbit_list', 'checked_list')
                 end
             end
 
             % Write the summary for this month.
-            save([output_dir 'Aqua_orbit_list_' num2str(year) '_' num2str(month)], 'checked_list')
+            save([output_dir 'Aqua_orbit_list'], 'checked_list')
 
             % Convert the data to a table and write to parquet
             parquet_table = cell2table(parquet_data, 'VariableNames', columnNames);
-            parquet_filename = sprintf([output_dir '/orbit_data_%04d_%02d.parquet', year, month]);
+            parquet_filename = [output_dir '/orbit_data_' return_a_string( 2, month) '_' num2str(year) '.parquet'];
             parquetwrite(parquet_filename, parquet_table);
 
             summary_array(year-2001,month,1) = length(orbit_files);
@@ -476,7 +476,7 @@ for year=yearStart:yearEnd
             fprintf('Of %i orbits found in %i/%i, %i orbits are missing, %i are duplicated and %i are bad. The current time is: %s\n', length(orbit_files), month, year, iMissingThisMonth, iDuplicatesThisMonth, iBadThisMonth, datestr(now, 'HH:MM:SS'))
 
             if exist('MissingGranules')
-                save([granule_list_dir 'problem_granules'], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
+                save([granule_list_dir 'problem_granules_' return_a_string( 2, month) '_' num2str(yearS)], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
                 clear MissingGranules
             end
 

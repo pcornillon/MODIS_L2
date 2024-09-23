@@ -71,11 +71,6 @@ if buildLists
 
     for year=2002:2023
 
-        iNumberThisYear = 0;
-        iMissingThisYear = 0;
-        iDuplicatesThisYear = 0;
-        iBadThisYear = 0;
-
         eval(['load ' granule_list_dir 'GoodGranuleList_' num2str(year) '.mat'])
 
         clear TempStartTimes filenames
@@ -190,6 +185,11 @@ firstOrbitProcessed = true;
 
 % Loop over years.
 for year=yearStart:yearEnd
+
+    iNumberThisYear = 0;
+    iMissingThisYear = 0;
+    iDuplicatesThisYear = 0;
+    iBadThisYear = 0;
 
     for month = 1:12
 

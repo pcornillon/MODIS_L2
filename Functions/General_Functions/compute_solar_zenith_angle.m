@@ -3,7 +3,7 @@ function zenith_angle = compute_solar_zenith_angle(lat, lon, year_vec, month_vec
     % Convert the date and time to Julian date
 
     time_fractional_days = datenum(year_vec, month_vec, day_vec, hour_vec, min_vec, sec_vec);
-    tt = datetime(datestr(time_fractional_days));
+    tt = datetime(datevec(time_fractional_days));
 
     jd = juliandate(tt);
     

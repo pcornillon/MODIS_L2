@@ -1,6 +1,9 @@
 function BadOrbits = bin_gradients_by_month(yearStart,yearEnd)
 %
 
+epoch = datenum(1970,1,1,0,0,0); % Epoch time for conversion
+secPerday = 86400;               % Seconds per day
+
 % Define directories and file pattern
 data_dir = '/Volumes/MODIS_L2_Modified/OBPG/SST_Orbits/';
 output_dir = '/Users/petercornillon/Dropbox/Data/MODIS_L2/check_orbits/';
@@ -57,7 +60,8 @@ for year=yearStart:yearEnd
 
                 % Read data from file
                 orbit_filename = fullfile(orbit_files(fileIdx).folder, orbit_files(fileIdx).name);
-
+                fprint('Working on %s at %s\n', orbit_filename, datestr(now, 'HH:MM:SS'))
+                
                 % Get orbit number associated with this filename.
                 nn = strfind(orbit_filename, 'orbit');
                 fileOrbitNumber = str2num(orbit_filename(nn+6:nn+11));
@@ -90,11 +94,23 @@ for year=yearStart:yearEnd
                 lon = ncread(orbit_filename, 'longitude');
                 east_grad = ncread(orbit_filename, 'eastward_gradient');
                 north_grad = ncread(orbit_filename, 'northward_gradient');
-                DateTime = ncread(orbit_filename, 'DateTime'); % Read the time of the first scan line
+                dateTime = ncread(orbit_filename, 'DateTime') / secPerday + epoch; % Read the time of the first scan lin
                 time_from_start_orbit = ncread(orbit_filename, 'time_from_start_orbit'); % Time offset for each scan line
+
+                % Exclude the edge pixels plus some.
+                
+                elim = 5;
+                lat = lat(elim:end-elim,elim:end-elim);
+                lon = lon(elim:end-elim,elim:end-elim);
+                east_grad = east_grad(elim:end-elim,elim:end-elim);
+                north_grad = north_grad(elim:end-elim,elim:end-elim);
+                time_from_start_orbit = time_from_start_orbit(elim:end-elim);
 
                 % Calculate the gradient magnitude
                 grad_magnitude = sqrt(east_grad.^2 + north_grad.^2);
+
+                % Adjust longitude values to the range of -180 to 180 degrees
+                lon = mod(lon + 180, 360) - 180;
 
                 % Flatten the data arrays for efficient indexing
                 lat_flat = lat(:);
@@ -104,16 +120,13 @@ for year=yearStart:yearEnd
                 grad_magnitude_flat = grad_magnitude(:);
                 time_offset_flat = time_from_start_orbit(:); % Flatten the time offset array
 
-                % Adjust longitude values to the range of -180 to 180 degrees
-                lon_flat = mod(lon_flat + 180, 360) - 180;
-
-                % Compute the exact time for each scan line
-                time_fractional_days = DateTime + time_offset_flat / 86400; % Convert seconds to fractional days
+                % Compute the exact time for each scan line. 
+                time_fractional_days = dateTime + time_offset_flat / 86400; % Convert seconds to fractional days
                 [year_vec, month_vec, day_vec, hour_vec, min_vec, sec_vec] = datevec(time_fractional_days); % Convert to date vectors
-                % % % tt = datetime(datestr(time_fractional_days));
+                % % % tt = dateTime(datestr(time_fractional_days));
 
                 % Compute the solar zenith angle for each pixel
-                solar_zenith_angle = compute_solar_zenith_angle(lat_flat, lon_flat, year_vec, month_vec, day_vec, hour_vec, min_vec, sec_vec);
+                solar_zenith_angle = compute_solar_zenith_angle(lat, lon, year_vec, month_vec, day_vec, hour_vec, min_vec, sec_vec);
                 % % % solar_zenith_angle = compute_solar_zenith_angle(lat_flat, lon_flat, tt);
 
                 % Find the indices for the 1-degree grid bins using histcounts
@@ -122,24 +135,33 @@ for year=yearStart:yearEnd
 
                 % Identify daytime (solar zenith angle < 90) and nighttime pixels (solar zenith angle >= 90)
                 is_daytime = solar_zenith_angle < 90;
+                is_nighttime = solar_zenith_angle >= 90;
 
                 % Use accumarray to perform efficient summation for daytime
-                day_pixel_count = day_pixel_count + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], 1, [nLat, nLon]);
-                day_sum_eastward_gradient = day_sum_eastward_gradient + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], east_grad_flat(is_daytime), [nLat, nLon]);
-                day_sum_northward_gradient = day_sum_northward_gradient + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], north_grad_flat(is_daytime), [nLat, nLon]);
-                day_sum_magnitude_gradient = day_sum_magnitude_gradient + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], grad_magnitude_flat(is_daytime), [nLat, nLon]);
-                day_sum_eastward_gradient_squared = day_sum_eastward_gradient_squared + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], east_grad_flat(is_daytime).^2, [nLat, nLon]);
-                day_sum_northward_gradient_squared = day_sum_northward_gradient_squared + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], north_grad_flat(is_daytime).^2, [nLat, nLon]);
-                day_sum_magnitude_gradient_squared = day_sum_magnitude_gradient_squared + accumarray([lat_bin(is_daytime), lon_bin(is_daytime)], grad_magnitude_flat(is_daytime).^2, [nLat, nLon]);
+                % Only count pixels where there were good gradient values.
+                nn = find(is_daytime & (isnan(north_grad) == 0));
 
+                if isempty(nn) == 0
+                    day_pixel_count = day_pixel_count + accumarray([lat_bin(nn), lon_bin(nn)], 1, [nLat, nLon]);
+                    day_sum_eastward_gradient = day_sum_eastward_gradient + accumarray([lat_bin(nn), lon_bin(nn)], east_grad_flat(nn), [nLat, nLon]);
+                    day_sum_northward_gradient = day_sum_northward_gradient + accumarray([lat_bin(nn), lon_bin(nn)], north_grad_flat(nn), [nLat, nLon]);
+                    day_sum_magnitude_gradient = day_sum_magnitude_gradient + accumarray([lat_bin(nn), lon_bin(nn)], grad_magnitude_flat(nn), [nLat, nLon]);
+                    day_sum_eastward_gradient_squared = day_sum_eastward_gradient_squared + accumarray([lat_bin(nn), lon_bin(nn)], east_grad_flat(nn).^2, [nLat, nLon]);
+                    day_sum_northward_gradient_squared = day_sum_northward_gradient_squared + accumarray([lat_bin(nn), lon_bin(nn)], north_grad_flat(nn).^2, [nLat, nLon]);
+                    day_sum_magnitude_gradient_squared = day_sum_magnitude_gradient_squared + accumarray([lat_bin(nn), lon_bin(nn)], grad_magnitude_flat(nn).^2, [nLat, nLon]);
+                end
                 % Use accumarray to perform efficient summation for nighttime
-                night_pixel_count = night_pixel_count + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], 1, [nLat, nLon]);
-                night_sum_eastward_gradient = night_sum_eastward_gradient + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], east_grad_flat(~is_daytime), [nLat, nLon]);
-                night_sum_northward_gradient = night_sum_northward_gradient + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], north_grad_flat(~is_daytime), [nLat, nLon]);
-                night_sum_magnitude_gradient = night_sum_magnitude_gradient + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], grad_magnitude_flat(~is_daytime), [nLat, nLon]);
-                night_sum_eastward_gradient_squared = night_sum_eastward_gradient_squared + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], east_grad_flat(~is_daytime).^2, [nLat, nLon]);
-                night_sum_northward_gradient_squared = night_sum_northward_gradient_squared + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], north_grad_flat(~is_daytime).^2, [nLat, nLon]);
-                night_sum_magnitude_gradient_squared = night_sum_magnitude_gradient_squared + accumarray([lat_bin(~is_daytime), lon_bin(~is_daytime)], grad_magnitude_flat(~is_daytime).^2, [nLat, nLon]);
+                nn = find(is_nighttime & (isnan(north_grad) == 0));
+
+                if isempty(nn) == 0
+                    night_pixel_count = night_pixel_count + accumarray([lat_bin(nn), lon_bin(nn)], 1, [nLat, nLon]);
+                    night_sum_eastward_gradient = night_sum_eastward_gradient + accumarray([lat_bin(nn), lon_bin(nn)], east_grad_flat(nn), [nLat, nLon]);
+                    night_sum_northward_gradient = night_sum_northward_gradient + accumarray([lat_bin(nn), lon_bin(nn)], north_grad_flat(nn), [nLat, nLon]);
+                    night_sum_magnitude_gradient = night_sum_magnitude_gradient + accumarray([lat_bin(nn), lon_bin(nn)], grad_magnitude_flat(nn), [nLat, nLon]);
+                    night_sum_eastward_gradient_squared = night_sum_eastward_gradient_squared + accumarray([lat_bin(nn), lon_bin(nn)], east_grad_flat(nn).^2, [nLat, nLon]);
+                    night_sum_northward_gradient_squared = night_sum_northward_gradient_squared + accumarray([lat_bin(nn), lon_bin(nn)], north_grad_flat(nn).^2, [nLat, nLon]);
+                    night_sum_magnitude_gradient_squared = night_sum_magnitude_gradient_squared + accumarray([lat_bin(nn), lon_bin(nn)], grad_magnitude_flat(nn).^2, [nLat, nLon]);
+                end
             end
 
             % Write the accumulated data to a netCDF file for the current month

@@ -70,6 +70,12 @@ if buildLists
     tempTimes = [];
 
     for year=2002:2023
+
+        iNumberThisYear = 0;
+        iMissingThisYear = 0;
+        iDuplicatesThisYear = 0;
+        iBadThisYear = 0;
+
         eval(['load ' granule_list_dir 'GoodGranuleList_' num2str(year) '.mat'])
 
         clear TempStartTimes filenames
@@ -192,6 +198,7 @@ for year=yearStart:yearEnd
         kNumMissing = 0;
         iMissingThisMonth = 0;
         iDuplicatesThisMonth = 0;
+        iBadThisMonth = 0;
         duplicateOrbits = nan;
 
         % Get the list of orbit files for the current year and month
@@ -229,6 +236,8 @@ for year=yearStart:yearEnd
                     BadOrbits(iBadOrbit).filename = string(orbitFullFileName);
                     BadOrbits(iBadOrbit).filename_start_time = Time_of_orbit_extracted_from_title;
                     BadOrbits(iBadOrbit).file_orbit_number = fileOrbitNumber;
+
+                    iBadThisMonth = iBadThisMonth + 1;
 
                     fprintf(fileID, '%s\n', string(orbitFullFileName));
 
@@ -462,15 +471,22 @@ for year=yearStart:yearEnd
             summary_array(year-2001,month,1) = length(orbit_files);
             summary_array(year-2001,month,2) = iMissingThisMonth;
             summary_array(year-2001,month,3) = iDuplicatesThisMonth;
-            summary_array(year-2001,month,4) = iBadOrbit;
+            summary_array(year-2001,month,4) = iBadThisMonth;
 
-            fprintf('Of %i orbits found in %i/%i, %i orbits are missing, %i are duplicated and %i are bad. The current time is: %s\n', length(orbit_files), month, year, iMissingThisMonth, iDuplicatesThisMonth, iBadOrbit, datestr(now, 'HH:MM:SS'))
+            fprintf('Of %i orbits found in %i/%i, %i orbits are missing, %i are duplicated and %i are bad. The current time is: %s\n', length(orbit_files), month, year, iMissingThisMonth, iDuplicatesThisMonth, iBadThisMonth, datestr(now, 'HH:MM:SS'))
 
             if exist('MissingGranules')
                 save([granule_list_dir 'problem_granules'], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
                 clear MissingGranules
             end
-        end
 
+            iNumberThisYear = iNumberThisYear + length(orbit_files);
+            iMissingThisYear = iMissingThisYear + iMissingThisMonth;
+            iDuplicatesThisYear = iDuplicatesThisYear + iDuplicatesThisMonth; 
+            iBadThisYear = iBadThisYear + iBadThisMonth;
+        end
     end
+    
+    fprintf('\nOf %i orbits found in %i, %i orbits are missing, %i are duplicated and %i are bad. The current time is: %s\n\n', iNumberThisYear, year, iMissingThisYear, iDuplicatesThisYear, iBadThisYear, datestr(now, 'HH:MM:SS'))
+    
 end

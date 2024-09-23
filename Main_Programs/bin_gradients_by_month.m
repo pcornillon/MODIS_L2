@@ -1,4 +1,4 @@
-function summary_array = bin_gradients_by_month(yearStart,yearEnd)
+function BadOrbits = bin_gradients_by_month(yearStart,yearEnd)
 %
 
 % Define directories and file pattern

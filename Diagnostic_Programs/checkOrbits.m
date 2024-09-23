@@ -390,7 +390,7 @@ for year=yearStart:yearEnd
 
                 nn = find(checked_list(:,1) == OrbitNumber);
                 if isempty(nn) == 0
-                    iDuplicatesThisMonth = iDuplicatesThisMonth + 1
+                    iDuplicatesThisMonth = iDuplicatesThisMonth + 1;
                     duplicateOrbits(iDuplicatesThisMonth) = orbitNumber;
                 end
 
@@ -476,7 +476,7 @@ for year=yearStart:yearEnd
             fprintf('Of %i orbits found in %i/%i, %i orbits are missing, %i are duplicated and %i are bad. The current time is: %s\n', length(orbit_files), month, year, iMissingThisMonth, iDuplicatesThisMonth, iBadThisMonth, datestr(now, 'HH:MM:SS'))
 
             if exist('MissingGranules')
-                save([granule_list_dir 'problem_granules_' return_a_string( 2, month) '_' num2str(yearS)], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
+                save([granule_list_dir 'problem_granules_' return_a_string( 2, month) '_' num2str(year)], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
                 clear MissingGranules
             end
 

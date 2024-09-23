@@ -456,7 +456,7 @@ for year=yearStart:yearEnd
                 % If more than 10 orbits have been processed since the last save of the check list, save it.
 
                 if mod(orbitsChecked, 10) == 1
-                    save([output_dir 'Aqua_orbit_list', 'checked_list')
+                    save([output_dir 'Aqua_orbit_list'], 'checked_list')
                 end
             end
 

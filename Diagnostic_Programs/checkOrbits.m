@@ -187,7 +187,7 @@ for year=yearStart:yearEnd
 
     for month = 1:12
 
-        fprintf('Am working on %i/%i at %s\n', month, year, datestr(now, 'HH:MM:SS'))
+        % fprintf('Am working on %i/%i at %s\n', month, year, datestr(now, 'HH:MM:SS'))
 
         kNumMissing = 0;
         iMissingThisMonth = 0;
@@ -464,7 +464,7 @@ for year=yearStart:yearEnd
             summary_array(year-2001,month,3) = iDuplicatesThisMonth;
             summary_array(year-2001,month,4) = iBadOrbit;
 
-            fprintf('%i orbits found. %i orbits missing, %i orbits duplicated and bad orbits for %i/%i\n\n', length(orbit_files), iMissingThisMonth, iDuplicatesThisMonth, iBadOrbit, month, year)
+            fprintf('Of %i orbits found, %i orbits are missing, %i orbits duplicated and %i orbits are bad for %i/%i. The current time is: %s\n', length(orbit_files), iMissingThisMonth, iDuplicatesThisMonth, iBadOrbit, month, year, datestr(now, 'HH:MM:SS'))
 
             if exist('MissingGranules')
                 save([granule_list_dir 'problem_granules'], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')

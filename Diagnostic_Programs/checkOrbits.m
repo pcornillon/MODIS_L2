@@ -245,9 +245,9 @@ for year=yearStart:yearEnd
 
                     kNumMissing = kNumMissing + 1;
 
-                    MissingGranules(kNumMissing).orbit_filename = orbit_filename;
-                    MissingGranules(kNumMissing).problem = 'bad orbit file';
-                    MissingGranules(kNumMissing).orbit_start_time = Time_of_orbit_extracted_from_title;
+                    ProblemOrbits(kNumMissing).orbit_filename = orbit_filename;
+                    ProblemOrbits(kNumMissing).problem = 'bad orbit file';
+                    ProblemOrbits(kNumMissing).orbit_start_time = Time_of_orbit_extracted_from_title;
 
                     % If an error occurs, catch it and flag the problem
                     warning(['Error reading file: ', orbit_files(iOrbit).name, '. Moving to next file.']);
@@ -298,46 +298,46 @@ for year=yearStart:yearEnd
                 % If there are missing granules, add them to the structure
                 iMissingAWS = 0;
                 iMissingOBPG = 0;
-                iMissingGranules = length(missing_granules_start_time);
+                iProblemOrbits = length(missing_granules_start_time);
 
                 if ~isempty(missing_granules_start_time)
                     kNumMissing = kNumMissing + 1;
                     updatedkNumMissing = 1;
 
-                    MissingGranules(kNumMissing).orbit_filename = orbit_filename;
-                    MissingGranules(kNumMissing).problem = 'missing granules';
-                    MissingGranules(kNumMissing).orbit_start_time = time_of_first_scan_line_in_orbit;
-                    MissingGranules(kNumMissing).granules_used_start_time = time_of_first_scan_lines_in_granules;
-                    MissingGranules(kNumMissing).granules_used_filenames = granule_filenames;
-                    MissingGranules(kNumMissing).missing_granule_start_times = missing_granules_start_time;
+                    ProblemOrbits(kNumMissing).orbit_filename = orbit_filename;
+                    ProblemOrbits(kNumMissing).problem = 'missing granules';
+                    ProblemOrbits(kNumMissing).orbit_start_time = time_of_first_scan_line_in_orbit;
+                    ProblemOrbits(kNumMissing).granules_used_start_time = time_of_first_scan_lines_in_granules;
+                    ProblemOrbits(kNumMissing).granules_used_filenames = granule_filenames;
+                    ProblemOrbits(kNumMissing).missing_granule_start_times = missing_granules_start_time;
 
                     % Search for OBPG granules that match missing granules
                     OBPGStartTimeIndices = find((OBPGgranuleStartTimes > (time_of_first_scan_line_in_orbit - granuleDuration / secPerday)) & ...
                         (OBPGgranuleStartTimes < (time_of_first_scan_line_in_orbit + orbitDuration /secPerday)));
 
-                    OBPGMissingGranuleStartTimes = [];
+                    OBPGProblemOrbitstartTimes = [];
                     OBPGMissingGranuleFilenames = {''};
                     for jGranule = 1:length(missing_granules_start_time)
                         for kGranule = OBPGStartTimeIndices
                             if abs(OBPGgranuleStartTimes(kGranule) - missing_granules_start_time(jGranule)) < 30 / secPerday
                                 iMissingOBPG = iMissingOBPG + 1;
-                                OBPGMissingGranuleStartTimes(iMissingOBPG) = OBPGgranuleStartTimes(kGranule);
+                                OBPGProblemOrbitstartTimes(iMissingOBPG) = OBPGgranuleStartTimes(kGranule);
                                 OBPGMissingGranuleFilenames{iMissingOBPG} = OBPGgranuleList(kGranule);
                             end
                         end
                     end
 
-                    % And write into the MissingGranules structure.
+                    % And write into the ProblemOrbits structure.
                     if iMissingOBPG > 0
-                        MissingGranules(kNumMissing).missing_OBPG_start_times = OBPGMissingGranuleStartTimes;
-                        MissingGranules(kNumMissing).missing_OBPG_filenames = OBPGMissingGranuleFilenames;
+                        ProblemOrbits(kNumMissing).missing_OBPG_start_times = OBPGProblemOrbitstartTimes;
+                        ProblemOrbits(kNumMissing).missing_OBPG_filenames = OBPGMissingGranuleFilenames;
                     end
 
                     % Search for AWS granules that match missing granules
                     AWSStartTimeIndices = find((AWSmissingStartTimes > (time_of_first_scan_line_in_orbit - granuleDuration / secPerday)) & ...
                         (AWSmissingStartTimes < (time_of_first_scan_line_in_orbit + orbitDuration / secPerday)));
 
-                    AWSMissingGranuleStartTimes = [];
+                    AWSProblemOrbitstartTimes = [];
                     AWSMissingGranuleFilenames = {''};
                     for jGranule = 1:length(missing_granules_start_time)
                         for kGranule = AWSStartTimeIndices
@@ -349,10 +349,10 @@ for year=yearStart:yearEnd
                         end
                     end
 
-                    % And write the missing AWS info into the MissingGranules structure.
+                    % And write the missing AWS info into the ProblemOrbits structure.
                     if iMissingAWS > 0
-                        MissingGranules(kNumMissing).missing_AWS_start_times = AWSMissingMissingStartTimes;
-                        MissingGranules(kNumMissing).missing_AWS_filenames = AWSMissingMissingGranuleFilenames;
+                        ProblemOrbits(kNumMissing).missing_AWS_start_times = AWSMissingMissingStartTimes;
+                        ProblemOrbits(kNumMissing).missing_AWS_filenames = AWSMissingMissingGranuleFilenames;
                     end
                 end
 
@@ -394,15 +394,15 @@ for year=yearStart:yearEnd
                 nn = find(checked_list(:,1) == orbitNumber);
                 if isempty(nn) == 0
                     if updatedkNumMissing
-                        MissingGranules(kNumMissing).problem = 'missing granules and duplicate orbit';
+                        ProblemOrbits(kNumMissing).problem = 'missing granules and duplicate orbit';
                     else
                         kNumMissing = kNumMissing + 1;
                         
-                        MissingGranules(kNumMissing).orbit_filename = orbit_filename;
-                        MissingGranules(kNumMissing).problem = 'duplicate orbit';
-                        MissingGranules(kNumMissing).orbit_start_time = time_of_first_scan_line_in_orbit;
-                        MissingGranules(kNumMissing).granules_used_start_time = time_of_first_scan_lines_in_granules;
-                        MissingGranules(kNumMissing).granules_used_filenames = granule_filenames;
+                        ProblemOrbits(kNumMissing).orbit_filename = orbit_filename;
+                        ProblemOrbits(kNumMissing).problem = 'duplicate orbit';
+                        ProblemOrbits(kNumMissing).orbit_start_time = time_of_first_scan_line_in_orbit;
+                        ProblemOrbits(kNumMissing).granules_used_start_time = time_of_first_scan_lines_in_granules;
+                        ProblemOrbits(kNumMissing).granules_used_filenames = granule_filenames;
                     end
 
                     iDuplicatesThisMonth = iDuplicatesThisMonth + 1;
@@ -460,7 +460,7 @@ for year=yearStart:yearEnd
                 parquet_data{end,7} = orbit_filename;
                 parquet_data{end,8} = time_of_first_scan_line_in_orbit;
                 parquet_data{end,9} = size(granule_filenames,1);
-                parquet_data{end,10} = iMissingGranules;
+                parquet_data{end,10} = iProblemOrbits;
                 parquet_data{end,11} = iMissingOBPG;
                 parquet_data{end,12} = iMissingAWS;
 
@@ -490,9 +490,9 @@ for year=yearStart:yearEnd
 
             fprintf('Of %i orbits found in %i/%i, %i orbits are missing, %i are duplicated and %i are bad. The current time is: %s\n', length(orbit_files), month, year, iMissingThisMonth, iDuplicatesThisMonth, iBadThisMonth, datestr(now, 'HH:MM:SS'))
 
-            if exist('MissingGranules')
-                save([granule_list_dir 'problem_granules_' return_a_string( 2, month) '_' num2str(year)], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')
-                clear MissingGranules
+            if exist('ProblemOrbits')
+                save([granule_list_dir 'problem_granules_' return_a_string( 2, month) '_' num2str(year)], 'year', 'month', 'ProblemOrbits', 'BadOrbits', 'duplicateOrbits')
+                clear ProblemOrbits
             end
 
             iNumberThisYear = iNumberThisYear + length(orbit_files);

@@ -212,6 +212,8 @@ for year=yearStart:yearEnd
             % Process each orbit file
             for iOrbit = 1:length(orbit_files)
 
+                updatedkNumMissing = 0; % Used to avoid flagging the same file twice; if it is a duplicate and has missing granules.
+
                 orbitsChecked = orbitsChecked + 1;
 
                 orbit_filename = orbit_files(iOrbit).name;
@@ -300,6 +302,7 @@ for year=yearStart:yearEnd
 
                 if ~isempty(missing_granules_start_time)
                     kNumMissing = kNumMissing + 1;
+                    updatedkNumMissing = 1;
 
                     MissingGranules(kNumMissing).orbit_filename = orbit_filename;
                     MissingGranules(kNumMissing).problem = 'missing granules';
@@ -390,6 +393,18 @@ for year=yearStart:yearEnd
 
                 nn = find(checked_list(:,1) == orbitNumber);
                 if isempty(nn) == 0
+                    if updatedkNumMissing
+                        MissingGranules(kNumMissing).problem = 'missing granules and duplicate orbit';
+                    else
+                        kNumMissing = kNumMissing + 1;
+                        
+                        MissingGranules(kNumMissing).orbit_filename = orbit_filename;
+                        MissingGranules(kNumMissing).problem = 'duplicate orbit';
+                        MissingGranules(kNumMissing).orbit_start_time = time_of_first_scan_line_in_orbit;
+                        MissingGranules(kNumMissing).granules_used_start_time = time_of_first_scan_lines_in_granules;
+                        MissingGranules(kNumMissing).granules_used_filenames = granule_filenames;
+                    end
+
                     iDuplicatesThisMonth = iDuplicatesThisMonth + 1;
                     duplicateOrbits(iDuplicatesThisMonth) = orbitNumber;
                 end

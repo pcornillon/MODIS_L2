@@ -27,7 +27,7 @@ for year=yearStart:yearEnd
     for month = 1:12
 
         % Get list of files for the current month
-        orbit_files = dir(fullfile(dataDir, sprintf('%04d/%02d/*.nc', year, month)));
+        orbit_files = dir([data_dir num2str(year) '/' return_a_string( 2, month) '/*.nc4']);
 
         if isempty(orbit_files) == 0
 
@@ -56,7 +56,7 @@ for year=yearStart:yearEnd
             for fileIdx = 1:length(orbit_files)
 
                 % Read data from file
-                filePath = fullfile(orbit_files(fileIdx).folder, orbit_files(fileIdx).name);
+                orbit_filename = fullfile(orbit_files(fileIdx).folder, orbit_files(fileIdx).name);
 
                 % Get orbit number associated with this filename.
                 nn = strfind(orbit_filename, 'orbit');
@@ -69,7 +69,7 @@ for year=yearStart:yearEnd
                 % Read latitude, longitude, eastward gradient, and northward gradient from file
                 try
                     % Attempt to read the netCDF file
-                    lat = ncread(filePath, 'latitude');
+                    lat = ncread(orbit_filename, 'latitude');
 
                 catch ME
                     iBadOrbit = iBadOrbit + 1;
@@ -87,11 +87,11 @@ for year=yearStart:yearEnd
                     continue;
                 end
                 
-                lon = ncread(filePath, 'longitude');
-                east_grad = ncread(filePath, 'eastward_gradient');
-                north_grad = ncread(filePath, 'northward_gradient');
-                DateTime = ncread(filePath, 'DateTime'); % Read the time of the first scan line
-                time_from_start_orbit = ncread(filePath, 'time_from_start_orbit'); % Time offset for each scan line
+                lon = ncread(orbit_filename, 'longitude');
+                east_grad = ncread(orbit_filename, 'eastward_gradient');
+                north_grad = ncread(orbit_filename, 'northward_gradient');
+                DateTime = ncread(orbit_filename, 'DateTime'); % Read the time of the first scan line
+                time_from_start_orbit = ncread(orbit_filename, 'time_from_start_orbit'); % Time offset for each scan line
 
                 % Calculate the gradient magnitude
                 grad_magnitude = sqrt(east_grad.^2 + north_grad.^2);

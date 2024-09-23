@@ -59,7 +59,7 @@ orbitDuration = (checked_list(end,2) - checked_list(1,2)) / (checked_list(end,1)
 orbitsChecked = 0;
 
 iBadOrbit = 0;
-BadOrbits = '';
+BadOrbits.filename = {''};
 
 if buildLists
     iproblemGranules = 0;
@@ -185,250 +185,9 @@ firstOrbitProcessed = true;
 % Loop over years.
 for year=yearStart:yearEnd
 
-    % % % for month = 1:12
-    % % %
-    % % %     kNumMissing = 0;
-    % % %
-    % % %     iMissingThisMonth = 0;
-    % % %     iDuplicatesThisMonth = 0;
-    % % %     iPartialThisMonth = 0;
-    % % %     iAWSPartialThisMonth = 0;
-    % % %
-    % % %     % Get the list of orbit files for the current year and month
-    % % %     month_str = sprintf('%02d', month);
-    % % %     orbit_files = dir(fullfile(data_dir, num2str(year), month_str, '*.nc4'));
-    % % %
-    % % %     if ~isempty(orbit_files)
-    % % %
-    % % %         parquet_data = {}; % Initialize an empty cell array to store parquet data
-    % % %
-    % % %         % Process each orbit file
-    % % %         for iOrbit = 1:length(orbit_files)
-    % % %
-    % % %             orbitsChecked = orbitsChecked + 1;
-    % % %
-    % % %             orbit_filename = orbit_files(iOrbit).name;
-    % % %
-    % % %             % Get orbit number associated with this filename.
-    % % %             nn = strfind(orbit_filename, 'orbit');
-    % % %             fileOrbitNumber = str2num(orbit_filename(nn+6:nn+11));
-    % % %
-    % % %             % Extract the start time from the orbit filename
-    % % %             start_time_str = orbit_filename(nn+13:nn+27);
-    % % %             Time_of_orbit_extracted_from_title = datenum(start_time_str, 'yyyymmddTHHMMSS');
-    % % %
-    % % %             % Read contributing granules and their start times
-    % % %             orbitFullFileName = fullfile(data_dir, num2str(year), month_str, orbit_filename);
-    % % %
-    % % %             try
-    % % %                 % Attempt to read the netCDF file
-    % % %                 granule_filenames = ncread(orbitFullFileName, '/contributing_granules/filenames');
-    % % %
-    % % %             catch ME
-    % % %                 iBadOrbit = iBadOrbit + 1;
-    % % %                 BadOrbits(iBadOrbit) = string(orbitFullFileName);
-    % % %                 fprintf( fileID, '%s\n', string(orbitFullFileName));
-    % % %
-    % % %                 % If an error occurs, catch it and flag the problem
-    % % %                 warning(['Error reading file: ', orbit_files(iOrbit).name, '. Moving to next file.']);
-    % % %                 % disp(['Error message: ', ME.message]);
-    % % %
-    % % %                 % Continue to the next file
-    % % %                 continue;
-    % % %             end
-    % % %             time_of_first_scan_lines_in_granules = ncread(orbitFullFileName, '/contributing_granules/start_time') / secPerday + epoch;
-    % % %
-    % % %             % Get time of first scan line IN THE ORBIT.
-    % % %
-    % % %             DateTime = ncread( orbitFullFileName, 'DateTime');
-    % % %             time_of_first_scan_line_in_orbit = datenum(DateTime/secPerday + datenum(1970,1,1,0,0,0));
-    % % %
-    % % %             if abs(time_of_first_scan_line_in_orbit - orbitStartTime)*secPerday > orbitStartTimeTolerance
-    % % %                 fprintf('%i) time if first scan line (%s) and time extracted from filename (%s) differ by more than 2 seconds for %s.\n', ...
-    % % %                     orbitsChecked, datetime(time_of_first_scan_line_in_orbit), datetime(orbitStartTime), orbit_files(iOrbit).name)
-    % % %             end
-    % % %
-    % % %             % Are there any missing granules at the beginning of this
-    % % %             % orbit.
-    % % %
-    % % %             num_missing_granules = round((time_of_first_scan_lines_in_granules(1) - time_of_first_scan_line_in_orbit) * secPerday / granuleDuration);
-    % % %             missing_at_start_of_orbit = num_missing_granules;
-    % % %
-    % % %             if num_missing_granules < 0
-    % % %                 num_missing_granules = 0;
-    % % %             end
-    % % %
-    % % %             % Calculate time differences between granules
-    % % %
-    % % %             granule_diffs = diff(time_of_first_scan_lines_in_granules) * secPerday;
-    % % %             num_missing_granules = num_missing_granules + sum(round( (granule_diffs - granuleDuration) / granuleDuration));
-    % % %
-    % % %             if num_missing_granules > 0
-    % % %
-    % % %                 kNumMissing = kNumMissing + 1;
-    % % %                 MissingGranules(kNumMissing).orbit_filename = orbitFullFileName;
-    % % %
-    % % %                 % Get list of OBPG granules, which qualify for this orbit.
-    % % %
-    % % %                 OBPGAtartTimeIndices = find( (OBPGgranuleStartTimes > (orbitStartTime-granuleDuration*secPerday)) & ((OBPGgranuleStartTimes+orbitDuration) < orbitStartTime));
-    % % %
-    % % %                 if OBPGAtartTimeIndices == 0
-    % % %                     frpintf('There are NO OBPG granules available for orbit %s. This should never happen.\n', orbitFullFileName)
-    % % %                     keyboard
-    % % %                 end
-    % % %
-    % % %
-    % % %                 orbit_OBPG_granule_ist = {''};
-    % % %                 for kOrbit=1:length(OBPGAtartTimeIndices)
-    % % %                     orbit_OBPG_granule_ist = orbit_OBPG_granule_ist
-    % % %
-    % % %                 % Are any on this list missing from the list read from
-    % % %                 % the orbit file?
-    % % %
-    % % %                 for
-    % % %
-    % % %             % % If there are missing granules check to see if they were
-    % % %             % % processed by OBPG and if so, are they missing at AWS.
-    % % %             %
-    % % %             % if num_missing_granules > 0
-    % % %             %
-    % % %             %     kNumMissing = kNumMissing + 1;
-    % % %             %
-    % % %             %     % First, were they processed at OBPG. Start looking for
-    % % %             %     % at start of orbit if any.
-    % % %             %
-    % % %             %     if (time_of_first_scan_lines_in_granules(1) - time_of_first_scan_line_in_orbit) > 0
-    % % %             %         for kGranule=1:missing_at_start_of_orbit
-    % % %             %             MissingGranules(kNumMissing).filename = orbitFullFileName;
-    % % %             %             MissingGranules(kNumMissing).missingGranuleEstimatedStartTimes(kGranule) = time_of_first_scan_lines_in_granules(1) - (num_missing_granules - kGranule + 1) / secPerday;
-    % % %             %         end
-    % % %             %     end
-    % % %             %
-    % % %             %     % Now any other missing granules
-    % % %
-    % % %                 OBPGIndices = find( (OBPGgranuleStartTimes > (orbitStartTime-granuleDuration*secPerday)) & ((OBPGgranuleStartTimes+orbitDuration) < orbitStartTime));
-    % % %
-    % % %
-    % % %                 numOBPGGranulesInOrbit = length();
-    % % %                 % Check for missing granules at the end
-    % % %                 end_time_of_last_granule = time_of_first_scan_lines_in_granules(end) + granuleDuration / secPerday;
-    % % %                 time_from_start_to_end = (end_time_of_last_granule - orbitStartTime) * secPerday; % Convert to seconds
-    % % %
-    % % %                 if time_from_start_to_end < orbitDuration - orbitDurationTolerance
-    % % %                     missing_granules_end = round((orbitDuration - time_from_start_to_end) / granuleDuration);
-    % % %                 else
-    % % %                     missing_granules_end = 0;
-    % % %                 end
-    % % %
-    % % %                 % Check missing granules from the AWS missing granule list
-    % % %                 if ~isempty(AWSmissingGranuleList)
-    % % %                     nn = find(orbitStartTime <= AWSmissingStartTimes & ...
-    % % %                         (orbitStartTime + orbitDuration/24/3600) >= (AWSmissingStartTimes + 300/24/3600));
-    % % %                     AWS_missing_in_orbit = length(nn);
-    % % %                 else
-    % % %                     AWS_missing_in_orbit = 0;
-    % % %                 end
-    % % %
-    % % %                 % Get the actual orbit number for this orbit. To do this,
-    % % %                 % find the last orbit checked, i.e., processed by this
-    % % %                 % script, with a start time before the start time of the
-    % % %                 % current orbit, determine the mean duration of all orbits
-    % % %                 % prior to the last one before this one and use this and
-    % % %                 % the orbit number of the last one to determine the current
-    % % %                 % orbit number.
-    % % %
-    % % %                 % Find the last checked orbit before this one.
-    % % %                 nn = find(checked_list(:,2) < orbitStartTime);
-    % % %
-    % % %                 previousOrbitNumber = checked_list(nn(end),1);
-    % % %                 previousOrbitStartTime = checked_list(nn(end),2);
-    % % %
-    % % %                 % Get the mean length (in time) of an orbit prior to this
-    % % %                 % one and make sure that it is less than the acceptable
-    % % %                 % tolerance, nominally 2 s.
-    % % %
-    % % %                 orbitDuration = (previousOrbitStartTime - checked_list(1,2)) / (previousOrbitNumber - checked_list(1,1)) * secPerday;
-    % % %
-    % % %                 if abs(orbitDuration - orbitDurationInitial) > orbitDurationTolerance
-    % % %                     fprintf('Mean orbit duration calculated for orbit #%\i (%f) is more than %i s from the nominal time of %f.\n', ...
-    % % %                         previousOrbitNumber, orbitDuration, orbitDurationTolerance, orbitDurationInitial)
-    % % %                     keyboard
-    % % %                 end
-    % % %
-    % % %                 % Now calculate the orbit number
-    % % %
-    % % %                 dtime = (orbitStartTime - previousOrbitStartTime) * secPerday;
-    % % %                 OrbitNumber = round(dtime / orbitDuration) + previousOrbitNumber;
-    % % %
-    % % %                 % Handle missing orbits
-    % % %
-    % % %                 if OrbitNumber > previousOrbitNumber +1
-    % % %                     next_orbit_start_time = previousOrbitStartTime;
-    % % %                     for iFillOrbitNumber=previousOrbitNumber+1:OrbitNumber-1
-    % % %
-    % % %                         next_orbit_start_time = next_orbit_start_time + orbitDuration;
-    % % %                         [tempYear, tempMonth, tempDay, tempHour, ~] = datevec(datenum(now));
-    % % %
-    % % %                         parquet_data{end+1,1} = tempYear;
-    % % %                         parquet_data{end,2} = tempMonth;
-    % % %                         parquet_data{end,3} = tempDay;
-    % % %                         parquet_data{end,4} = tempHour;
-    % % %                         parquet_data{end,5} = iFillOrbitNumber;
-    % % %                         parquet_data{end,6} = nan;
-    % % %                         parquet_data{end,7} = '';
-    % % %                         parquet_data{end,8} = nan;
-    % % %                         parquet_data{end,9} = nan;
-    % % %                         parquet_data{end,10} = nan;
-    % % %                         parquet_data{end,11} = AWS_missing_in_orbit;
-    % % %
-    % % %                         checked_list(end+1,2) = next_orbit_start_time;
-    % % %                         checked_list(end,1) = iFillOrbitNumber;
-    % % %                     end
-    % % %                 end
-    % % %                 previousOrbitNumber = OrbitNumber;
-    % % %
-    % % %                 % Append data to parquet
-    % % %                 parquet_data{end+1,1} = year;
-    % % %                 parquet_data{end,2} = month;
-    % % %                 parquet_data{end,3} = day(orbitStartTime);
-    % % %                 parquet_data{end,4} = hour(orbitStartTime);
-    % % %                 parquet_data{end,5} = OrbitNumber;
-    % % %                 parquet_data{end,6} = fileOrbitNumber;
-    % % %                 parquet_data{end,7} = orbit_filename;
-    % % %                 parquet_data{end,8} = orbitStartTime;
-    % % %                 parquet_data{end,9} = size(granule_filenames,1);
-    % % %                 parquet_data{end,10} = num_missing_granules;
-    % % %                 parquet_data{end,11} = AWS_missing_in_orbit;
-    % % %
-    % % %
-    % % %                 checked_list(end+1,2) = orbitStartTime;
-    % % %                 checked_list(end,1) = OrbitNumber;
-    % % %
-    % % %                 % If more than 10 orbits have been processed since the last
-    % % %                 % save of the check list, save it.
-    % % %
-    % % %                 if mod(orbitsChecked, 10)
-    % % %                     save('/Users/petercornillon/Git_repos/MODIS_L2/Data/Aqua_orbit_list', 'checked_list')
-    % % %                 end
-    % % %
-    % % %             end
-    % % %
-    % % %             % Convert the data to a table and write to parquet
-    % % %             parquet_table = cell2table(parquet_data, 'VariableNames', columnNames);
-    % % %             parquet_filename = sprintf([output_dir '/orbit_data_%04d_%02d.parquet', year, month]);
-    % % %             parquetwrite(parquet_filename, parquet_table);
-    % % %
-    % % %             summary_array(year-2001,month,1) = length(orbit_files);
-    % % %             summary_array(year-2001,month,2) = iMissingThisMonth;
-    % % %             summary_array(year-2001,month,3) = iDuplicatesThisMonth;
-    % % %
-    % % %             fprintf('%i orbits found. %i orbits missing and %i duplicates for %i/%i\n\n', length(files), iMissingThisMonth, iDuplicatesThisMonth, month, year)
-    % % %
-    % % %         end
-    % % %     end
-    % % % end
-
     for month = 1:12
+
+        fprintf('Am working on %i/%i at %s\n', month, year, datestr(now, 'HH:MM:SS'))
 
         kNumMissing = 0;
         iMissingThisMonth = 0;
@@ -468,12 +227,16 @@ for year=yearStart:yearEnd
                 catch ME
                     iBadOrbit = iBadOrbit + 1;
                     BadOrbits(iBadOrbit).filename = string(orbitFullFileName);
+                    BadOrbits(iBadOrbit).filename_start_time = Time_of_orbit_extracted_from_title;
+                    BadOrbits(iBadOrbit).file_orbit_number = fileOrbitNumber;
+
                     fprintf(fileID, '%s\n', string(orbitFullFileName));
 
                     kNumMissing = kNumMissing + 1;
 
                     MissingGranules(kNumMissing).orbit_filename = orbit_filename;
                     MissingGranules(kNumMissing).problem = 'bad orbit file';
+                    MissingGranules(kNumMissing).orbit_start_time = Time_of_orbit_extracted_from_title;
 
                     % If an error occurs, catch it and flag the problem
                     warning(['Error reading file: ', orbit_files(iOrbit).name, '. Moving to next file.']);
@@ -701,7 +464,7 @@ for year=yearStart:yearEnd
             summary_array(year-2001,month,3) = iDuplicatesThisMonth;
             summary_array(year-2001,month,4) = iBadOrbit;
 
-            fprintf('%i orbits found. %i orbits missing, %i orbits duplicated and bad orbits for %i/%i\n\n', length(files), iMissingThisMonth, iDuplicatesThisMonth, iBadOrbit, month, year)
+            fprintf('%i orbits found. %i orbits missing, %i orbits duplicated and bad orbits for %i/%i\n\n', length(orbit_files), iMissingThisMonth, iDuplicatesThisMonth, iBadOrbit, month, year)
 
             if exist('MissingGranules')
                 save([granule_list_dir 'problem_granules'], 'year', 'month', 'MissingGranules', 'BadOrbits', 'duplicateOrbits')

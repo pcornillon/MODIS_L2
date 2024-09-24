@@ -111,22 +111,22 @@ for year=yearStart:yearEnd
                     % % % time_from_start_orbit = ncread(orbit_filename, 'time_from_start_orbit'); % Time offset for each scan line
 
                     [status, lat] = read_nc_variable( orbit_filename, 'regridded_latitude', month, year, data_dir, iBadOrbit, badOrbits, ...
-                        'Could not read this file.', Time_of_orbit_extracted_from_title, fileOrbitNumber, 'lat');
+                        'Could not read this file.', Time_of_orbit_extracted_from_title, fileOrbitNumber);
                     if status == 0
                         [status, lon] = read_nc_variable( orbit_filename, 'regridded_longitude', month, year, data_dir, iBadOrbit, badOrbits, ...
-                            'longitude does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber, 'lon');
+                            'longitude does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber);
                         if status == 0
                             [status, east_grad] = read_nc_variable( orbit_filename, 'eastward_gradient', month, year, data_dir, iBadOrbit, badOrbits, ...
-                                'eastward_gradient does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber, 'east_grad');
+                                'eastward_gradient does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber);
                             if status == 0
                                 [status, north_grad] = read_nc_variable( orbit_filename, 'northward_gradient', month, year, data_dir, iBadOrbit, badOrbits, ...
-                                    'northward_gradient does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber, 'north_grad');
+                                    'northward_gradient does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber);
                                 if status == 0
                                     [status, dateTime] = read_nc_variable( orbit_filename, 'DateTime', month, year, data_dir, iBadOrbit, badOrbits, ...
-                                        'DateTime does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber, 'DateTime');
+                                        'DateTime does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber);
                                     if status == 0
                                         [status, time_from_start_orbit] = read_nc_variable( orbit_filename, 'time_from_start_orbit', month, year, data_dir, iBadOrbit, badOrbits, ...
-                                            'time_from_start_orbit does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber, 'time_from_start_orbit');
+                                            'time_from_start_orbit does not exist.', Time_of_orbit_extracted_from_title, fileOrbitNumber);
                                         if status == 0
 
                                             % Exclude the edge pixels plus some.

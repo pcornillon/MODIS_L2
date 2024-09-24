@@ -19,7 +19,7 @@ status = 0;
 variable_read = '';
 try
     % Attempt to read the netCDF file
-    eval(['variable_read = ncread(orbit_filename, ' variableName ');'])
+    eval([variable_read ' = ncread(' orbit_filename ','' variableName '');'])
 
 catch ME
     status = 1;

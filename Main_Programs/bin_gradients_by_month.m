@@ -30,7 +30,7 @@ for year=yearStart:yearEnd
     for month = 1:12
 
         iBadOrbit = 0;
-        clear badOrbits
+        badOrbits.filename = 1;
 
         outputFile = [data_dir 'gradient_stats_by_period/monthly_stats_' return_a_string( 2, month) '_' num2str(year) '.nc'];
 

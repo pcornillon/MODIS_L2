@@ -16,6 +16,7 @@ function [status, variable_read] = read_nc_variable( orbit_filename, variableNam
 
 status = 0;
 
+variable_read = '';
 try
     % Attempt to read the netCDF file
     eval(['variable_read = ncread(orbit_filename, ' variableName ');'])

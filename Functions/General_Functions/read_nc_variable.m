@@ -25,7 +25,7 @@ catch ME
 
     iBadOrbit = iBadOrbit + 1;
 
-    badOrbits(iBadOrbit) = string(orbit_filename);
+    badOrbits(iBadOrbit).filename = string(orbit_filename);
     badOrbits(iBadOrbit).failure_mode = failure_mode;
     badOrbits(iBadOrbit).filename_start_time = Time_of_orbit_extracted_from_title;
     badOrbits(iBadOrbit).file_orbit_number = fileOrbitNumber;

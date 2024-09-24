@@ -1,4 +1,4 @@
-function [status, variable_read] = read_nc_variable( orbit_filename, variableName, month, year, data_dir, iBadOrbit, badOrbits, failure_mode, Time_of_orbit_extracted_from_title, fileOrbitNumber, variableRead)
+function [status, variable_read] = read_nc_variable( orbit_filename, variableName, month, year, data_dir, iBadOrbit, badOrbits, failure_mode, Time_of_orbit_extracted_from_title, fileOrbitNumber)
 % read_nc_variable - if error save file with accumulated problems for this month - PCC.
 %
 % INPUT
@@ -19,7 +19,7 @@ status = 0;
 variable_read = '';
 try
     % Attempt to read the netCDF file
-    eval([ variableRead ' = ncread(''' orbit_filename ''',''' variableName ''');'])
+    eval([ 'variableRead = ncread(''' orbit_filename ''',''' variableName ''');'])
 
 catch ME
     status = 1;

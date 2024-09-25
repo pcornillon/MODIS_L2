@@ -38,7 +38,9 @@ mpx = [28.5183
    48.1204
    52.8325
    57.7330
-   62.2565];
+   62.2565
+   68.4538
+   74.5154];
 
 mpy = [-36.8863
   -37.1499
@@ -46,7 +48,39 @@ mpy = [-36.8863
   -38.8633
   -39.5222
   -40.8402
-  -41.6310];
+  -41.6310
+  -41.0075
+  -42.4880];
+
+lonTrough = (mpx(1:length(mpx)-1) + mpx(2:length(mpx))) / 2;
+latTrough = (mpy(1:length(mpy)-1) + mpy(2:length(mpy))) / 2;
+
+% Calculate separation of peaks.
+
+ddlon = diff(mpx);
+ddlat = diff(mpy);
+dd = sqrt(ddlat.^2 + (cosd(latTrough) .* ddlon).^2) * 111;
+
+figure(1)
+clf
+% plot(dd, linewidth=1)
+% hold on
+plot(dd, 'ok', markerfacecolor='r', markersize=20)
+ylim([0 750])
+xlim([0 9])
+hold on
+grid on
+plot( [0 length(dd)+1], [1 1]*mean(dd), 'k')
+xlabel('Trough Number')
+ylabel('Separation of Peaks (km)')
+text( 0.5, mean(dd)+20, ['$\overline{\lambda}$: ' num2str(mean(dd),3) ' km '], fontsize=titleFontSize, Interpreter='latex')
+for iTrough=1:length(lonTrough)
+    text( iTrough, dd(iTrough)-40, ['(' num2str(lonTrough(iTrough),4) ', ' num2str(latTrough(iTrough),4) ') '], fontsize=axisFontSize, Interpreter='latex', HorizontalAlignment='center')
+end
+set(gca,fontsize=axisFontSize)
+title('Separation of Meander Peaks', FontSize=titleFontSize)
+
+%% Initialize counters
 
 dayCountSum = zeros(180,360);
 dayEastGrad =  zeros(180,360);
@@ -130,8 +164,7 @@ nightMeanGradMag = nightGradMagSum ./ nightCountSum;
 
 meanEastGrad = (dayEastGrad + nightEastGrad) ./ (dayCountSum + nightCountSum);
 meanNorthGrad = (dayNorthGrad + nightNorthGrad) ./ (dayCountSum + nightCountSum);
-
-meanEastwardGradient = (dayGradMagSum + nightGradMagSum) ./ (dayCountSum + nightCountSum);
+meanGradMag = (dayGradMagSum + nightGradMagSum) ./ (dayCountSum + nightCountSum);
 
 gradStructure.dayMeanEastGrad = dayMeanEastGrad;
 gradStructure.dayMeanNorthGrad = dayMeanNorthGrad;
@@ -375,7 +408,7 @@ else
     set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
 end
 colorbar
-caxis([0 0.15])
+caxis([-0.03 0.03])
 xlabel('Longitude')
 ylabel('Latitude')
 set(gca, fontsize=axisFontSize, ydir="normal")
@@ -400,7 +433,7 @@ else
     set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
 end
 colorbar
-caxis([0 0.15])
+caxis([-0.03 0.03])
 xlabel('Longitude')
 ylabel('Latitude')
 set(gca, fontsize=axisFontSize, ydir="normal")
@@ -417,9 +450,14 @@ hold on
 plot(mpx, mpy, 'ok', markerfacecolor='k', markersize=5)
 axis([10 100 -70 -30])
 
-for iPlotIndex=[2 4 5]
+figure(figNo+2)
+hold on
+plot(mpx, mpy, 'ok', markerfacecolor='r', markersize=5)
+
+for iPlotIndex=[4 5]
     figure(figNo+iPlotIndex)
     hold on
-    plot(mpx, mpy, 'ok', markerfacecolor='r', markersize=5)
+    plot(mpx, mpy, 'ok', markerfacecolor='k', markersize=5)
+    axis([10 100 -70 -30])
 end
 

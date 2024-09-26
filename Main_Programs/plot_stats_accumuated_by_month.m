@@ -21,6 +21,7 @@ titleFontSize = 30;
 
 plot_with_imagesc = 0;
 generateLandMask = 0;
+generateBathy = 0;
 
 cmap = jet(256); % Example colormap (jet) with 256 colors
 colormap(cmap);
@@ -467,6 +468,47 @@ xlabel('Longitude')
 ylabel('Latitude')
 set(gca, fontsize=axisFontSize, ydir="normal")
 title(['Mean Northward Gradient (' yearsText ')'], fontsize=titleFontSize)
+
+%% Plot bathy - get bathy data first
+
+if generateBathy
+    FIBathy = '~/Dropbox/Data/gebco_2020_netcdf/GEBCO_2020.nc';
+
+    bathyLon = ncread(FIBathy, 'lon', 1, 86399/10, 10);
+    bathyLat = ncread(FIBathy, 'lat', 1, 43199/10, 10);
+    elevation = ncread( FIBathy, 'elevation', [1 1], [86399/10 43199/10], [10 10]);
+else
+    load('/Users/petercornillon/Dropbox/Data/MODIS_L2/gradient_stats_by_period/bathymetry', 'bathyLon', 'bathyLat', 'elevation')
+end
+
+figure(figNo+6)
+clf
+
+if plot_with_imagesc
+    imagesc(lon, lat, elevation')
+    colormap("jet")
+else
+    % Set land areas to NaN
+    % maskedData = elevation;
+    % maskedData(inLand) = NaN;
+    pcolor(bathyLon, bathyLat, elevation)
+    shading flat
+    cmap = jet(256); % Example colormap (jet) with 256 colors
+    colormap(cmap);
+    % set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
+end
+hold on
+plot(gradStructure.mpx, gradStructure.mpy, 'ok', markerfacecolor='k', markersize=10)
+plot(coastlon, coastlat,'w',linewidth=3)
+
+set(gca,fontsize=18, ydir='normal')
+colorbar
+caxis([-8000 1000])
+axis([10 100 -70 -30])
+xlabel('Longitude')
+ylabel('Latitude')
+set(gca, fontsize=axisFontSize, ydir="normal")
+title('Bathymetry', fontsize=titleFontSize)
 
 %% Additional annotation
 

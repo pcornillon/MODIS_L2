@@ -1,4 +1,4 @@
-function gradStructure = plot_stats_accumuated_by_month( figNo, yearsToProcess, temporalIntervals)
+function gradStructure = plot_stats_accumuated_by_month( figNo, yearsToProcess, temporalIntervals, Title)
 %
 % Usage: To plot a number of years use the following. 
 %
@@ -130,11 +130,15 @@ else
     load('/Users/petercornillon/Dropbox/Data/MODIS_L2/gradient_stats_by_period/landMask')
 end
 
-yearsText = '';
-if length(yearsToProcess) == 1
-    yearsText = num2str(yearsToProcess);
-elseif length(yearsToProcess) == 2
-    yearsText = [num2str(yearsToProcess(1)) ' & ' num2str(yearsToProcess(2))];
+if isempty(Title)
+    yearsText = '';
+    if length(yearsToProcess) == 1
+        yearsText = num2str(yearsToProcess);
+    elseif length(yearsToProcess) == 2
+        yearsText = [num2str(yearsToProcess(1)) ' & ' num2str(yearsToProcess(2))];
+    end
+else
+    yearsText = Title;
 end
 
 filelist = dir('~/Dropbox/Data/MODIS_L2/gradient_stats_by_period/monthly_stats_*');

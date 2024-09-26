@@ -30,71 +30,94 @@ set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
 
 load coastlines; % MATLAB built-in coastline data
 
-% Meander peak locations found in Agulhas in 2008
+% % Old meander peak locations found in Agulhas in 2008
+% 
+% gradStructure.mpx = [28.5183
+%    34.1728
+%    42.0890
+%    48.1204
+%    52.8325
+%    57.7330
+%    62.2565
+%    68.4538
+%    74.5154];
+% 
+% gradStructure.mpy = [-36.8863
+%   -37.1499
+%   -37.9407pu
+%   -38.8633
+%   -39.5222
+%   -40.8402
+%   -41.6310
+%   -41.0075
+%   -42.4880];
 
-mpx = [28.5183
-   34.1728
-   42.0890
-   48.1204
-   52.8325
-   57.7330
-   62.2565
+% New meander peaks found in 2008-2012 & 2008-2009
+
+gradStructure.mpx = [28.5359
+   34.5236
+   41.0287
+   45.9076
+   52.5606
+   57.3655
+   61.5791
    68.4538
-   74.5154];
+   73.7023];
 
-mpy = [-36.8863
-  -37.1499
-  -37.9407
-  -38.8633
-  -39.5222
-  -40.8402
-  -41.6310
-  -41.0075
-  -42.4880];
 
-lonTrough = (mpx(1:length(mpx)-1) + mpx(2:length(mpx))) / 2;
-latTrough = (mpy(1:length(mpy)-1) + mpy(2:length(mpy))) / 2;
+gradStructure.mpy = [-36.8403
+  -37.1145
+  -38.1563
+  -38.9239
+  -39.0336
+  -40.8979
+  -42.9267
+  -41.0624
+  -42.7622];
+
+lonTrough = (gradStructure.mpx(1:length(gradStructure.mpx)-1) + gradStructure.mpx(2:length(gradStructure.mpx))) / 2;
+latTrough = (gradStructure.mpy(1:length(gradStructure.mpy)-1) + gradStructure.mpy(2:length(gradStructure.mpy))) / 2;
 
 % Calculate separation of peaks.
 
-ddlon = diff(mpx);
-ddlat = diff(mpy);
-dd = sqrt(ddlat.^2 + (cosd(latTrough) .* ddlon).^2) * 111;
+gradStructure.peak_separation_lon = diff(gradStructure.mpx);
+gradStructure.peak_separation_lat = diff(gradStructure.mpy);
+gradStructure.peak_separation = sqrt(gradStructure.peak_separation_lat.^2 + (cosd(latTrough) .* gradStructure.peak_separation_lon).^2) * 111;
 
 figure(1)
 clf
-% plot(dd, linewidth=1)
+% plot(gradStructure.peak_separation, linewidth=1)
 % hold on
-plot(dd, 'ok', markerfacecolor='r', markersize=20)
+plot(gradStructure.peak_separation, 'ok', markerfacecolor='r', markersize=20)
 ylim([0 750])
 xlim([0 9])
 hold on
 grid on
-plot( [0 length(dd)+1], [1 1]*mean(dd), 'k')
+plot( [0 length(gradStructure.peak_separation)+1], [1 1]*mean(gradStructure.peak_separation), 'k')
 xlabel('Trough Number')
 ylabel('Separation of Peaks (km)')
-text( 0.5, mean(dd)+20, ['$\overline{\lambda}$: ' num2str(mean(dd),3) ' km '], fontsize=titleFontSize, Interpreter='latex')
+text( 8, mean(gradStructure.peak_separation)+20, ['$\overline{\lambda}$: ' num2str(mean(gradStructure.peak_separation),3) ' km '], fontsize=titleFontSize, Interpreter='latex')
 for iTrough=1:length(lonTrough)
-    text( iTrough, dd(iTrough)-40, ['(' num2str(lonTrough(iTrough),4) ', ' num2str(latTrough(iTrough),4) ') '], fontsize=axisFontSize, Interpreter='latex', HorizontalAlignment='center')
+    text( iTrough, gradStructure.peak_separation(iTrough)-40, ['(' num2str(lonTrough(iTrough),4) ', ' num2str(latTrough(iTrough),4) ') '], fontsize=axisFontSize, Interpreter='latex', HorizontalAlignment='center')
 end
 set(gca,fontsize=axisFontSize)
 title('Separation of Meander Peaks', FontSize=titleFontSize)
 
 %% Initialize counters
 
-dayCountSum = zeros(180,360);
-dayEastGrad =  zeros(180,360);
-dayNorthGrad =  zeros(180,360);
-dayGradMagSum = zeros(180,360);
+gradStructure.dayCountSum = zeros(180,360);
+gradStructure.dayEastGrad =  zeros(180,360);
+gradStructure.dayNorthGrad =  zeros(180,360);
+gradStructure.dayGradMagSum = zeros(180,360);
 
-dayGradMagHist = zeros(1,300);
+gradStructure.dayGradMagHist = zeros(1,300);
 
-nightCountSum = zeros(180,360);
-nightEastGrad =  zeros(180,360);
-nightNorthGrad =  zeros(180,360);
-nightGradMagSum = zeros(180,360);
+gradStructure.nightCountSum = zeros(180,360);
+gradStructure.nightEastGrad =  zeros(180,360);
+gradStructure.nightNorthGrad =  zeros(180,360);
+gradStructure.nightGradMagSum = zeros(180,360);
 
-nightGradMagHist = zeros(1,300);
+gradStructure.nightGradMagHist = zeros(1,300);
 
 latVector = -89.5:1:89.5;
 lonVector = -179.5:1:179.5;
@@ -110,6 +133,8 @@ end
 yearsText = '';
 if length(yearsToProcess) == 1
     yearsText = num2str(yearsToProcess);
+elseif length(yearsToProcess) == 2
+    yearsText = [num2str(yearsToProcess(1)) ' & ' num2str(yearsToProcess(2))];
 end
 
 filelist = dir('~/Dropbox/Data/MODIS_L2/gradient_stats_by_period/monthly_stats_*');
@@ -129,21 +154,21 @@ for iFile=1:length(filelist)
             case 'Years'
                 numMonths = numMonths + 1;
 
-                dayCountSum = dayCountSum + ncread(filename, 'day_pixel_count');
-                dayEastGrad = dayEastGrad + ncread(filename, 'day_sum_eastward_gradient');
-                dayNorthGrad = dayNorthGrad + ncread(filename, 'day_sum_northward_gradient');
-                dayGradMagSum = dayGradMagSum + ncread(filename, 'day_sum_magnitude_gradient');
+                gradStructure.dayCountSum = gradStructure.dayCountSum + ncread(filename, 'day_pixel_count');
+                gradStructure.dayEastGrad = gradStructure.dayEastGrad + ncread(filename, 'day_sum_eastward_gradient');
+                gradStructure.dayNorthGrad = gradStructure.dayNorthGrad + ncread(filename, 'day_sum_northward_gradient');
+                gradStructure.dayGradMagSum = gradStructure.dayGradMagSum + ncread(filename, 'day_sum_magnitude_gradient');
 
-                nightCountSum = nightCountSum + ncread(filename, 'night_pixel_count');
-                nightEastGrad = nightEastGrad + ncread(filename, 'night_sum_eastward_gradient');
-                nightNorthGrad = nightNorthGrad + ncread(filename, 'night_sum_northward_gradient');
-                nightGradMagSum = nightGradMagSum + ncread(filename, 'night_sum_magnitude_gradient');
+                gradStructure.nightCountSum = gradStructure.nightCountSum + ncread(filename, 'night_pixel_count');
+                gradStructure.nightEastGrad = gradStructure.nightEastGrad + ncread(filename, 'night_sum_eastward_gradient');
+                gradStructure.nightNorthGrad = gradStructure.nightNorthGrad + ncread(filename, 'night_sum_northward_gradient');
+                gradStructure.nightGradMagSum = gradStructure.nightGradMagSum + ncread(filename, 'night_sum_magnitude_gradient');
 
                 [N, edges] = histcounts(ncread(filename, 'day_sum_magnitude_gradient')./ncread(filename, 'day_pixel_count'), 0:0.001:0.3);
-                dayGradMagHist = dayGradMagHist + N;
+                gradStructure.dayGradMagHist = gradStructure.dayGradMagHist + N;
 
                 [N, edges] = histcounts(ncread(filename, 'night_sum_magnitude_gradient')./ncread(filename, 'night_pixel_count'), 0:0.001:0.3);
-                nightGradMagHist = nightGradMagHist + N;
+                gradStructure.nightGradMagHist = gradStructure.nightGradMagHist + N;
 
             case 'Seasons'
 
@@ -154,30 +179,30 @@ for iFile=1:length(filelist)
     end
 end
 
-dayMeanEastGrad = dayEastGrad ./ dayCountSum;
-dayMeanNorthGrad = dayNorthGrad ./ dayCountSum;
-dayMeanGradMag = dayGradMagSum ./ dayCountSum;
+gradStructure.dayMeanEastGrad = gradStructure.dayEastGrad ./ gradStructure.dayCountSum;
+gradStructure.dayMeanNorthGrad = gradStructure.dayNorthGrad ./ gradStructure.dayCountSum;
+gradStructure.dayMeanGradMag = gradStructure.dayGradMagSum ./ gradStructure.dayCountSum;
 
-nightMeanEastGrad = nightEastGrad ./ nightCountSum;
-nightMeanNorthGrad = nightNorthGrad ./ nightCountSum;
-nightMeanGradMag = nightGradMagSum ./ nightCountSum;
+gradStructure.nightMeanEastGrad = gradStructure.nightEastGrad ./ gradStructure.nightCountSum;
+gradStructure.nightMeanNorthGrad = gradStructure.nightNorthGrad ./ gradStructure.nightCountSum;
+gradStructure.nightMeanGradMag = gradStructure.nightGradMagSum ./ gradStructure.nightCountSum;
 
-meanEastGrad = (dayEastGrad + nightEastGrad) ./ (dayCountSum + nightCountSum);
-meanNorthGrad = (dayNorthGrad + nightNorthGrad) ./ (dayCountSum + nightCountSum);
-meanGradMag = (dayGradMagSum + nightGradMagSum) ./ (dayCountSum + nightCountSum);
+gradStructure.meanEastGrad = (gradStructure.dayEastGrad + gradStructure.nightEastGrad) ./ (gradStructure.dayCountSum + gradStructure.nightCountSum);
+gradStructure.meanNorthGrad = (gradStructure.dayNorthGrad + gradStructure.nightNorthGrad) ./ (gradStructure.dayCountSum + gradStructure.nightCountSum);
+gradStructure.meanGradMag = (gradStructure.dayGradMagSum + gradStructure.nightGradMagSum) ./ (gradStructure.dayCountSum + gradStructure.nightCountSum);
 
-gradStructure.dayMeanEastGrad = dayMeanEastGrad;
-gradStructure.dayMeanNorthGrad = dayMeanNorthGrad;
-gradStructure.dayMeanGradMag = dayMeanGradMag;
-
-gradStructure.dayGradMagHist = dayGradMagHist;
-gradStructure.edges = edges;
-
-gradStructure.nightMeanEastGrad = nightMeanEastGrad;
-gradStructure.nightMeanNorthGrad = nightMeanNorthGrad;
-gradStructure.nightMeanGradMag = nightMeanGradMag;
-
-gradStructure.nightGradMagHist = nightGradMagHist;
+% gradStructure.dayMeanEastGrad = dayMeanEastGrad;
+% gradStructure.dayMeanNorthGrad = dayMeanNorthGrad;
+% gradStructure.dayMeanGradMag = dayMeanGradMag;
+% 
+% gradStructure.dayGradMagHist = dayGradMagHist;
+% gradStructure.edges = edges;
+% 
+% gradStructure.nightMeanEastGrad = nightMeanEastGrad;
+% gradStructure.nightMeanNorthGrad = nightMeanNorthGrad;
+% gradStructure.nightMeanGradMag = nightMeanGradMag;
+% 
+% gradStructure.nightGradMagHist = nightGradMagHist;
 
 %% Plot eastward and northward gradient images
 
@@ -186,11 +211,11 @@ clf
 
 subplot(221)
 if plot_with_imagesc
-    imagesc(lonVector, latVector, dayMeanEastGrad)
+    imagesc(lonVector, latVector, gradStructure.dayMeanEastGrad)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = dayMeanEastGrad;
+    maskedData = gradStructure.dayMeanEastGrad;
     maskedData(inLand) = NaN;
 
     pcolor(lonVector, latVector, maskedData)
@@ -211,11 +236,11 @@ title(['Daytime Eastward Gradient (' yearsText ')'], fontsize=titleFontSize)
 
 subplot(222)
 if plot_with_imagesc
-    imagesc(lonVector, latVector, dayMeanNorthGrad)
+    imagesc(lonVector, latVector, gradStructure.dayMeanNorthGrad)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = dayMeanNorthGrad;
+    maskedData = gradStructure.dayMeanNorthGrad;
     maskedData(inLand) = NaN;
 
     pcolor(lonVector, latVector, maskedData)
@@ -236,11 +261,11 @@ title(['Daytime Northward Gradient (' yearsText ')'], fontsize=titleFontSize)
 
 subplot(223)
 if plot_with_imagesc
-    imagesc(lonVector, latVector, nightMeanEastGrad)
+    imagesc(lonVector, latVector, gradStructure.nightMeanEastGrad)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = nightMeanEastGrad;
+    maskedData = gradStructure.nightMeanEastGrad;
     maskedData(inLand) = NaN;
 
     pcolor(lonVector, latVector, maskedData)
@@ -261,11 +286,11 @@ title(['Nighttime Eastward Gradient (' yearsText ')'], fontsize=titleFontSize)
 
 subplot(224)
 if plot_with_imagesc
-    imagesc(lonVector, latVector, nightMeanNorthGrad)
+    imagesc(lonVector, latVector, gradStructure.nightMeanNorthGrad)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = nightMeanNorthGrad;
+    maskedData = gradStructure.nightMeanNorthGrad;
     maskedData(inLand) = NaN;
 
     pcolor(lonVector, latVector, maskedData)
@@ -291,11 +316,11 @@ figure(figNo+1)
 clf
 subplot(211)
 if plot_with_imagesc
-    imagesc(lonVector, latVector, dayMeanGradMag)
+    imagesc(lonVector, latVector, gradStructure.dayMeanGradMag)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = dayMeanGradMag;
+    maskedData = gradStructure.dayMeanGradMag;
     maskedData(inLand) = NaN;
     pcolor(lonVector, latVector, maskedData)
     shading flat
@@ -313,11 +338,11 @@ title('Daytime Gradient Magnitude', fontsize=titleFontSize)
 
 subplot(212)
 if plot_with_imagesc
-    imagesc(lonVector, latVector, nightMeanGradMag)
+    imagesc(lonVector, latVector, gradStructure.nightMeanGradMag)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = nightMeanGradMag;
+    maskedData = gradStructure.nightMeanGradMag;
     maskedData(inLand) = NaN;
     pcolor(lonVector, latVector, maskedData)
     shading flat
@@ -339,11 +364,11 @@ figure(figNo+2)
 clf
 
 if plot_with_imagesc
-    imagesc(lonVector, latVector, meanGradMag)
+    imagesc(lonVector, latVector, gradStructure.meanGradMag)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = meanGradMag;
+    maskedData = gradStructure.meanGradMag;
     maskedData(inLand) = NaN;
     pcolor(lonVector, latVector, maskedData)
     shading flat
@@ -365,11 +390,11 @@ figure(figNo+3)
 clf
 
 if plot_with_imagesc
-    imagesc(lonVector, latVector, log10((dayCountSum + nightCountSum)/(2 * numMonths)))
+    imagesc(lonVector, latVector, log10((gradStructure.dayCountSum + gradStructure.nightCountSum)/(2 * numMonths)))
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = log10((dayCountSum + nightCountSum)/length(filelist));
+    maskedData = log10((gradStructure.dayCountSum + gradStructure.nightCountSum)/length(filelist));
     maskedData(inLand) = NaN;
     pcolor(lonVector, latVector, maskedData)
     shading flat
@@ -380,7 +405,7 @@ else
 
     % Set the color scale to be a couple of orders of orders of magnitude
     % larger than the largest value.
-    maxVal = max(log10((dayCountSum + nightCountSum)/(2 * numMonths)), [], 'all', 'omitnan');
+    maxVal = max(log10((gradStructure.dayCountSum + gradStructure.nightCountSum)/(2 * numMonths)), [], 'all', 'omitnan');
     caxis([0 floor(maxVal)+2])
 end
 colorbar
@@ -394,11 +419,11 @@ figure(figNo+4)
 clf
 
 if plot_with_imagesc
-    imagesc(lonVector, latVector, meanEastGrad)
+    imagesc(lonVector, latVector, gradStructure.meanEastGrad)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = meanEastGrad;
+    maskedData = gradStructure.meanEastGrad;
     maskedData(inLand) = NaN;
     pcolor(lonVector, latVector, maskedData)
     shading flat
@@ -419,11 +444,11 @@ figure(figNo+5)
 clf
 
 if plot_with_imagesc
-    imagesc(lonVector, latVector, meanNorthGrad)
+    imagesc(lonVector, latVector, gradStructure.meanNorthGrad)
     colormap("jet")
 else
     % Set land areas to NaN
-    maskedData = meanNorthGrad;
+    maskedData = gradStructure.meanNorthGrad;
     maskedData(inLand) = NaN;
     pcolor(lonVector, latVector, maskedData)
     shading flat
@@ -447,17 +472,17 @@ title(['Mean Northward Gradient (' yearsText ')'], fontsize=titleFontSize)
 figure(figNo)
 subplot(221)
 hold on
-plot(mpx, mpy, 'ok', markerfacecolor='k', markersize=5)
+plot(gradStructure.mpx, gradStructure.mpy, 'ok', markerfacecolor='k', markersize=5)
 axis([10 100 -70 -30])
 
 figure(figNo+2)
 hold on
-plot(mpx, mpy, 'ok', markerfacecolor='r', markersize=5)
+plot(gradStructure.mpx, gradStructure.mpy, 'ok', markerfacecolor='r', markersize=5)
 
 for iPlotIndex=[4 5]
     figure(figNo+iPlotIndex)
     hold on
-    plot(mpx, mpy, 'ok', markerfacecolor='k', markersize=5)
+    plot(gradStructure.mpx, gradStructure.mpy, 'ok', markerfacecolor='k', markersize=5)
     axis([10 100 -70 -30])
 end
 

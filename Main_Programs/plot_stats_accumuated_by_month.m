@@ -481,22 +481,22 @@ else
     load('/Users/petercornillon/Dropbox/Data/MODIS_L2/gradient_stats_by_period/bathymetry', 'bathyLon', 'bathyLat', 'elevation')
 end
 
-figure(figNo+6)
+figure(999)
 clf
 
-if plot_with_imagesc
-    imagesc(lon, lat, elevation')
+% if plot_with_imagesc
+    imagesc(bathyLon, bathyLat, elevation')
     colormap("jet")
-else
-    % Set land areas to NaN
-    % maskedData = elevation;
-    % maskedData(inLand) = NaN;
-    pcolor(bathyLon, bathyLat, elevation)
-    shading flat
-    cmap = jet(256); % Example colormap (jet) with 256 colors
-    colormap(cmap);
-    % set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
-end
+% else
+%     % Set land areas to NaN
+%     % maskedData = elevation;
+%     % maskedData(inLand) = NaN;
+%     pcolor(bathyLon, bathyLat, elevation')
+%     shading flat
+%     cmap = jet(256); % Example colormap (jet) with 256 colors
+%     colormap(cmap);
+%     % set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
+% end
 hold on
 plot(gradStructure.mpx, gradStructure.mpy, 'ok', markerfacecolor='k', markersize=10)
 plot(coastlon, coastlat,'w',linewidth=3)

@@ -1,6 +1,6 @@
 function gradStructure = plot_stats_accumuated_by_month( figNo, yearsToProcess, temporalIntervals, Title)
 %
-% Usage: To plot a number of years use the following. 
+% Usage: To plot a number of years use the following.
 %
 % This will run the plotting function three times, plotting 4 figures. The
 % figure number will be the year - 2000 with 1 to 4 appended to the end. So
@@ -32,7 +32,7 @@ set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
 load coastlines; % MATLAB built-in coastline data
 
 % % Old meander peak locations found in Agulhas in 2008
-% 
+%
 % gradStructure.mpx = [28.5183
 %    34.1728
 %    42.0890
@@ -42,7 +42,7 @@ load coastlines; % MATLAB built-in coastline data
 %    62.2565
 %    68.4538
 %    74.5154];
-% 
+%
 % gradStructure.mpy = [-36.8863
 %   -37.1499
 %   -37.9407pu
@@ -56,25 +56,25 @@ load coastlines; % MATLAB built-in coastline data
 % New meander peaks found in 2008-2012 & 2008-2009
 
 gradStructure.mpx = [28.5359
-   34.5236
-   41.0287
-   45.9076
-   52.5606
-   57.3655
-   61.5791
-   68.4538
-   73.7023];
+    34.5236
+    41.0287
+    45.9076
+    52.5606
+    57.3655
+    61.5791
+    68.4538
+    73.7023];
 
 
 gradStructure.mpy = [-36.8403
-  -37.1145
-  -38.1563
-  -38.9239
-  -39.0336
-  -40.8979
-  -42.9267
-  -41.0624
-  -42.7622];
+    -37.1145
+    -38.1563
+    -38.9239
+    -39.0336
+    -40.8979
+    -42.9267
+    -41.0624
+    -42.7622];
 
 lonTrough = (gradStructure.mpx(1:length(gradStructure.mpx)-1) + gradStructure.mpx(2:length(gradStructure.mpx))) / 2;
 latTrough = (gradStructure.mpy(1:length(gradStructure.mpy)-1) + gradStructure.mpy(2:length(gradStructure.mpy))) / 2;
@@ -199,14 +199,14 @@ gradStructure.meanGradMag = (gradStructure.dayGradMagSum + gradStructure.nightGr
 % gradStructure.dayMeanEastGrad = dayMeanEastGrad;
 % gradStructure.dayMeanNorthGrad = dayMeanNorthGrad;
 % gradStructure.dayMeanGradMag = dayMeanGradMag;
-% 
+%
 % gradStructure.dayGradMagHist = dayGradMagHist;
 % gradStructure.edges = edges;
-% 
+%
 % gradStructure.nightMeanEastGrad = nightMeanEastGrad;
 % gradStructure.nightMeanNorthGrad = nightMeanNorthGrad;
 % gradStructure.nightMeanGradMag = nightMeanGradMag;
-% 
+%
 % gradStructure.nightGradMagHist = nightGradMagHist;
 
 %% Plot eastward and northward gradient images
@@ -485,8 +485,8 @@ figure(999)
 clf
 
 % if plot_with_imagesc
-    imagesc(bathyLon, bathyLat, elevation')
-    colormap("jet")
+imagesc(bathyLon, bathyLat, elevation')
+colormap("jet")
 % else
 %     % Set land areas to NaN
 %     % maskedData = elevation;
@@ -532,3 +532,75 @@ for iPlotIndex=[4 5]
     axis([10 100 -70 -30])
 end
 
+%% Compare periods. Run after running the periods to compare.
+
+plot_comparison = 0;
+if plot_comparison
+
+    % Set up for plotting
+
+    load coastlines; % MATLAB built-in coastline data
+    axisFontSize = 18;
+    titleFontSize = 30;
+    set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
+
+    % Load variables that don't change from run to run.
+
+    gradStructure.mpx = gradStructure_2008_through_2010.mpx;
+    gradStructure.mpy = gradStructure_2008_through_2010.mpy;
+    gradStructure.peak_separation_lon = gradStructure_2008_through_2010.peak_separation_lon;
+    gradStructure.peak_separation_lat = gradStructure_2008_through_2010.peak_separation_lat;
+    gradStructure.peak_separation = gradStructure_2008_through_2010.peak_separation;
+    latVector = -89.5:1:89.5;
+    lonVector = -179.5:1:179.5;
+
+    load('/Users/petercornillon/Dropbox/Data/MODIS_L2/gradient_stats_by_period/landMask')
+
+    % Define the difference variable to plot.
+
+    diffnightGradMagSum = gradStructure_2018_through_2020.meanGradMag - gradStructure_2008_through_2010.meanGradMag;
+    maskedData = diffnightGradMagSum;
+    maskedData(inLand) = NaN;
+
+    % Initialize the figure and plot it.
+    
+    figure(901)
+    clf
+
+    pcolor(lonVector, latVector, maskedData)
+    shading flat
+    cmap = jet(256);
+    colormap(cmap);
+    set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
+    colorbar
+    caxis([0 0.15])
+    xlabel('Longitude')
+    ylabel('Latitude')
+    set(gca, fontsize=axisFontSize, ydir="normal")
+    title(['Mean Gradient Magnitude Difference'], fontsize=titleFontSize)
+    caxis([-1 1]*0.1)
+    caxis([-1 1]*0.02)
+    caxis([-1 1]*0.01)
+    title(['Mean Gradient Magnitude (2018-2020) minus (2008-2020)'], fontsize=titleFontSize)
+    
+    % Now plot the percentage change.
+
+    figure(902)
+    clf
+
+    maskedData = 100 * diffnightGradMagSum./((gradStructure_2018_through_2020.meanGradMag + gradStructure_2008_through_2010.meanGradMag)/2);
+    maskedData(inLand) = NaN;
+    
+    pcolor(lonVector, latVector, maskedData)
+    shading flat
+    cmap = jet(256);
+    colormap(cmap);
+    set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
+    colorbar
+    xlabel('Longitude')
+    ylabel('Latitude')
+    set(gca, fontsize=axisFontSize, ydir="normal")
+    title(['Mean Gradient Magnitude Difference'], fontsize=titleFontSize)
+    caxis([-1 1]*20)
+    title(['Percent Mean Gradient Magnitude Change for (2018-2020) minus (2008-2020)'], fontsize=titleFontSize)
+end

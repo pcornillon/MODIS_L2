@@ -20,6 +20,7 @@ axisFontSize = 18;
 titleFontSize = 30;
 
 plot_with_imagesc = 0;
+plot_peaks = 1;
 generateLandMask = 0;
 generateBathy = 0;
 
@@ -30,28 +31,6 @@ colormap(cmap);
 set(gca, 'Color', [0.7 0.7 0.7]); % Gray background for NaN values
 
 load coastlines; % MATLAB built-in coastline data
-
-% % Old meander peak locations found in Agulhas in 2008
-%
-% gradStructure.mpx = [28.5183
-%    34.1728
-%    42.0890
-%    48.1204
-%    52.8325
-%    57.7330
-%    62.2565
-%    68.4538
-%    74.5154];
-%
-% gradStructure.mpy = [-36.8863
-%   -37.1499
-%   -37.9407pu
-%   -38.8633
-%   -39.5222
-%   -40.8402
-%   -41.6310
-%   -41.0075
-%   -42.4880];
 
 % New meander peaks found in 2008-2012 & 2008-2009
 
@@ -85,24 +64,26 @@ gradStructure.peak_separation_lon = diff(gradStructure.mpx);
 gradStructure.peak_separation_lat = diff(gradStructure.mpy);
 gradStructure.peak_separation = sqrt(gradStructure.peak_separation_lat.^2 + (cosd(latTrough) .* gradStructure.peak_separation_lon).^2) * 111;
 
-figure(1)
-clf
-% plot(gradStructure.peak_separation, linewidth=1)
-% hold on
-plot(gradStructure.peak_separation, 'ok', markerfacecolor='r', markersize=20)
-ylim([0 750])
-xlim([0 9])
-hold on
-grid on
-plot( [0 length(gradStructure.peak_separation)+1], [1 1]*mean(gradStructure.peak_separation), 'k')
-xlabel('Trough Number')
-ylabel('Separation of Peaks (km)')
-text( 8, mean(gradStructure.peak_separation)+20, ['$\overline{\lambda}$: ' num2str(mean(gradStructure.peak_separation),3) ' km '], fontsize=titleFontSize, Interpreter='latex')
-for iTrough=1:length(lonTrough)
-    text( iTrough, gradStructure.peak_separation(iTrough)-40, ['(' num2str(lonTrough(iTrough),4) ', ' num2str(latTrough(iTrough),4) ') '], fontsize=axisFontSize, Interpreter='latex', HorizontalAlignment='center')
+if plot_peaks
+    figure(1)
+    clf
+    % plot(gradStructure.peak_separation, linewidth=1)
+    % hold on
+    plot(gradStructure.peak_separation, 'ok', markerfacecolor='r', markersize=20)
+    ylim([0 750])
+    xlim([0 9])
+    hold on
+    grid on
+    plot( [0 length(gradStructure.peak_separation)+1], [1 1]*mean(gradStructure.peak_separation), 'k')
+    xlabel('Trough Number')
+    ylabel('Separation of Peaks (km)')
+    text( 8, mean(gradStructure.peak_separation)+20, ['$\overline{\lambda}$: ' num2str(mean(gradStructure.peak_separation),3) ' km '], fontsize=titleFontSize, Interpreter='latex')
+    for iTrough=1:length(lonTrough)
+        text( iTrough, gradStructure.peak_separation(iTrough)-40, ['(' num2str(lonTrough(iTrough),4) ', ' num2str(latTrough(iTrough),4) ') '], fontsize=axisFontSize, Interpreter='latex', HorizontalAlignment='center')
+    end
+    set(gca,fontsize=axisFontSize)
+    title('Separation of Meander Peaks', FontSize=titleFontSize)
 end
-set(gca,fontsize=axisFontSize)
-title('Separation of Meander Peaks', FontSize=titleFontSize)
 
 %% Initialize counters
 

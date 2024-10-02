@@ -38,12 +38,13 @@ fi
 for year in $(seq $start_year $end_year)
 do
     # Replace the year and satellite in the wget command
-    wget -q --post-data="results_as_file=1&sensor_id=${sensor_id}&dtid=${dtid}&sdate=${year}-01-01 00:00:00&edate=${year}-12-31 23:59:59&subType=1&addurl=1" -O /Users/petercornillon/${year}_${satellite}_filelist-10-02-2024.txt - https://oceandata.sci.gsfc.nasa.gov/api/file_search
+    response=$(wget --post-data="results_as_file=1&sensor_id=${sensor_id}&dtid=${dtid}&sdate=${year}-01-01 00:00:00&edate=${year}-12-31 23:59:59&subType=1&addurl=1" -O /Users/petercornillon/${year}_${satellite}_filelist-10-02-2024.txt https://oceandata.sci.gsfc.nasa.gov/api/file_search 2>&1)
 
     # Check if the download was successful
     if [ $? -eq 0 ]; then
         echo "Successfully downloaded file for year ${year} for ${satellite}"
     else
         echo "Failed to download file for year ${year} for ${satellite}"
+        echo "Response: $response"
     fi
 done

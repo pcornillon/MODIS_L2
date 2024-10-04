@@ -17,7 +17,7 @@ shopt -s nullglob
 
 # Create the title for the table and the header row
 echo "Satellite: $satellite" > "$output_file"
-echo "Year,File Name,Number of Lines,Column 4,Column 5" >> "$output_file"
+echo "Year,Number of Lines,Column 3,Column 4,Column 5,Column 6,File Name" >> "$output_file"
 
 # Loop over the specified range of years
 for year in $(seq $start_year $end_year)
@@ -43,12 +43,10 @@ do
         # Get the number of lines in the file
         num_lines=$(wc -l < "$file")
         
-        # Write the row to the CSV file: Year, File Name, Number of Lines, (Empty column 4), (Empty column 5)
-        echo "$year,$file,$num_lines,," >> "$output_file"
+        # Write the row to the CSV file: Year, Number of Lines, (Empty 3rd to 6th columns), File Name in 7th column
+        echo "$year,$num_lines,,,,,$file" >> "$output_file"
     done
 done
 
 # Notify the user of the file creation
 echo "Table created in file: $output_file"
-
-#!/bin/bash

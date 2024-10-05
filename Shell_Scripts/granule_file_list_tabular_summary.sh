@@ -40,8 +40,8 @@ do
         # Debugging: print the found file name
         echo "Found file: $file"
 
-        # Get the number of lines in the file
-        num_lines=$(wc -l < "$file")
+        # Get the number of lines in the file. Add 1 since these listings do not have a linefeed for the last line so it doesn't get counted.
+        num_lines=$(wc -l < "$file")+1
         
         # Write the row to the CSV file: Year, Number of Lines, (Empty 3rd to 6th columns), File Name in 7th column
         echo "$year,$num_lines,,,,,$file" >> "$output_file"

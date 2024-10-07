@@ -23,10 +23,10 @@ echo "Year,Number of Lines,Column 3,Column 4,Column 5,Column 6,File Name" >> "$o
 for year in $(seq $start_year $end_year)
 do
     # Debugging: show the pattern being searched
-    echo "Looking for files matching: /Volumes/MODIS_L2_Original/granule_lists_from_OBPG/${year}_${satellite}_*.txt"
+    echo "Looking for files matching: /Volumes/MODIS_L2_Original/granule_lists_from_OBPG/${year}_${satellite}_filelist-*.txt"
     
     # Find files that match the year and satellite pattern
-    files=(/Volumes/MODIS_L2_Original/granule_lists_from_OBPG/${year}_${satellite}_*.txt)
+    files=(/Volumes/MODIS_L2_Original/granule_lists_from_OBPG/${year}_${satellite}_filelist-*.txt)
     
     # Check if any files are found
     if [ ${#files[@]} -eq 0 ]; then
@@ -41,7 +41,7 @@ do
         echo "Found file: $file"
 
         # Get the number of lines in the file. Add 1 since these listings do not have a linefeed for the last line so it doesn't get counted.
-        num_lines=$(wc -l < "$file")+1
+        num_lines=$(( $(wc -l < "$file") + 1 ))
         
         # Write the row to the CSV file: Year, Number of Lines, (Empty 3rd to 6th columns), File Name in 7th column
         echo "$year,$num_lines,,,,,$file" >> "$output_file"

@@ -25,18 +25,23 @@ granule_list_dir = '/Volumes/MODIS_L2_Original/granule_lists_from_OBPG';
 
 % Loop through the specified years
 for year = startYear:endYear
+
+    fprintf('Working on %i at %s\n', year, datestr(now))
+    
     % Create the metadata list file for the current year
     metadata_list_file = fullfile(granule_list_dir, sprintf('%d_AQUA_metadata_list.txt', year));
     granule_list_pattern = fullfile(granule_list_dir, sprintf('%d_AQUA_filelist-*.txt', year));
 
-    % Get all metadata files for the current year
-    metadata_files = dir(fullfile(metadata_dir, sprintf('AQUA_MODIS_*_L2_SST_OBPG_extras.nc4')));
-    fid_meta = fopen(metadata_list_file, 'w');
+    % Get all metadata files for the current year if the metadata file list does not already exist. 
+    if ~exist(metadata_list_file)
+        metadata_files = dir( [metadata_dir '/' num2str(year) '/AQUA_MODIS_' num2str(year) '*_L2_SST_OBPG_extras.nc4']);
+        fid_meta = fopen(metadata_list_file, 'w');
 
-    for i = 1:length(metadata_files)
-        fprintf(fid_meta, '%s\n', metadata_files(i).name);
+        for i = 1:length(metadata_files)
+            fprintf(fid_meta, '%s\n', metadata_files(i).name);
+        end
+        fclose(fid_meta);
     end
-    fclose(fid_meta);
 
     % Find the granule file list for the current year
     granule_file_list = dir(granule_list_pattern);
@@ -50,12 +55,14 @@ for year = startYear:endYear
     fid_granule = fopen(granule_list_file, 'r');
     granule_lines = textscan(fid_granule, '%s', 'Delimiter', '\n');
     granule_lines = granule_lines{1};
+    granule_lines = sort(granule_lines);
     fclose(fid_granule);
 
     % Read metadata list
     fid_meta = fopen(metadata_list_file, 'r');
     metadata_lines = textscan(fid_meta, '%s', 'Delimiter', '\n');
     metadata_lines = metadata_lines{1};
+    metadata_lines = sort(metadata_lines);
     fclose(fid_meta);
 
     % Open file for missing metadata granules
@@ -63,6 +70,7 @@ for year = startYear:endYear
     fid_missing = fopen(missing_metadata_file, 'w');
 
     % Search for each granule in the metadata file list
+    lastMetadataGranuleFound = 1;
     for i = 1:length(granule_lines)
         granule_line = granule_lines{i};
         if contains(granule_line, '.nc')
@@ -71,10 +79,11 @@ for year = startYear:endYear
 
             % Search for corresponding metadata file
             found = false;
-            for j = 1:length(metadata_lines)
+            for j = lastMetadataGranuleFound:length(metadata_lines)
                 metadata_time_str = extractBetween(metadata_lines{j}, 'AQUA_MODIS_', '_L2_SST_OBPG_extras.nc4');
                 if strcmp(granule_time_str, metadata_time_str)
                     found = true;
+                    lastMetadataGranuleFound = j;
                     break;
                 end
             end

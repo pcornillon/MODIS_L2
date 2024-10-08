@@ -1,5 +1,18 @@
 #!/bin/bash
 
+# Use wget to get the list of granules for either TERRA or AQUA from OBPG
+# for all years between the two specified. The lists will be put in files:
+# /Volumes/MODIS_L2_Original/${satellite}/Logs/YYYY_SAT_filelist-MM-DD-YYYY).txt
+# /Users/petercornillon/YYYY_SAT_filelist-MM-DD-YYYY.txt, where the first 
+# YYYY is the year for which the list has been acquired, SAT is either 
+# AQUA or TERRA, MM-DD-YYYY is today's month-day-year.
+#
+# The satellite, beginning year and end year are passed in. Here's a sample,
+# which will obtain the lists for TERRA for years 2002-2005 and place them
+# in:
+#
+# ./get_MODIS_granule_list_from_OBPG.sh TERRA 2002 2005
+
 # Check if the correct number of arguments is provided
 if [ $# -ne 3 ]; then
     echo "Usage: $0 <satellite> <start_year> <end_year>"
@@ -38,7 +51,7 @@ fi
 for year in $(seq $start_year $end_year)
 do
     # Replace the year and satellite in the wget command
-    response=$(wget --post-data="results_as_file=1&sensor_id=${sensor_id}&dtid=${dtid}&sdate=${year}-01-01 00:00:00&edate=${year}-12-31 23:59:59&subType=1&addurl=1" -O /Users/petercornillon/${year}_${satellite}_filelist-10-02-2024.txt https://oceandata.sci.gsfc.nasa.gov/api/file_search 2>&1)
+    response=$(wget --post-data="results_as_file=1&sensor_id=${sensor_id}&dtid=${dtid}&sdate=${year}-01-01 00:00:00&edate=${year}-12-31 23:59:59&subType=1&addurl=1" -O /Volumes/MODIS_L2_Original/${satellite}/Logs/${year}_${satellite}_filelist-$(date +"%m-%d-%Y").txt https://oceandata.sci.gsfc.nasa.gov/api/file_search 2>&1)
 
     # Check if the download was successful
     if [ $? -eq 0 ]; then

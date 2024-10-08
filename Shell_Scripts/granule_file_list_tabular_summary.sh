@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# This script will generate a csv file for the specified satellite and years
+# with the year in the first column, the number of granules found at OBPG in
+# the second column, 4 blank columns and the file name from which the list 
+# providing the number of granules in the 2nd column was extracted. The csv
+# file will be /Volumes/MODIS_L2_Original/${satellite}/Logs/${satellite}_table.csv
+#
+# INPUT: satellite (TERRA or AQUA) first_year last_year
+#
+# EXAMPLE
+#
+# ./granule_file_list_tabular_summary.sh TERRA 2002 2005
+
 # Check if the correct number of arguments is provided
 if [ $# -ne 3 ]; then
     echo "Usage: $0 <satellite> <start_year> <end_year>"
@@ -10,7 +22,7 @@ fi
 satellite=$1
 start_year=$2
 end_year=$3
-output_file="/Volumes/MODIS_L2_Original/granule_lists_from_OBPG/${satellite}_table.csv"
+output_file="/Volumes/MODIS_L2_Original/${satellite}/Logs/${satellite}_table.csv"
 
 # Enable nullglob to prevent errors if no files are found
 shopt -s nullglob

@@ -75,6 +75,10 @@ fclose(fileID);
 % Now compare the lists
 
 nn = strfind(A(1), 'AQUA_MODIS');
+if isempty(nn)
+    nn = strfind(A(1), 'TERRA_MODIS') + 1;
+end
+
 iMissing = int16(0);
 
 for iFile1=1:length(A)

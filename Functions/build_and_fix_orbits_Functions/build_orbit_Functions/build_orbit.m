@@ -49,9 +49,10 @@ function [status, latitude, longitude, SST_In, qual_sst, flags_sst, sstref, scan
 %           printing out - PCC
 %   2.0.0 - 5/17/2024 - Modified code for switch to list of granules/times.
 %           Changed granule_start_time_guess to granule_start_time - PCC 
+%   3.0.0 - 10/7/2024 - Modified to work with Terra as well as Aqua - PCC 
 
 global version_struct
-version_struct.build_orbit = '2.0.0';
+version_struct.build_orbit = '3.0.0';
 
 % globals for the run as a whole.
 
@@ -74,6 +75,8 @@ global skip_to_start_of_orbit
 
 global iProblem problem_list 
 global determine_fn_size
+
+global satellite skipCharacters
 
 if determine_fn_size; get_job_and_var_mem; end
 
@@ -193,11 +196,11 @@ if name_test
         [YR, MN, DY, ~, ~, ~] = datevec(oinfo(iOrbit).start_time + orbit_duration / secs_per_day);
 
         exist_list = dir( [output_file_directory_local return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
-            'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
+            satellite '_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
 
         if ~isempty(output_file_directory_remote) & isempty(exist_list)
             exist_list = dir( [output_file_directory_remote return_a_string( 4, YR) '/' return_a_string( 2, MN) '/' ...
-                'AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
+                satellite '_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number + 1) '*_SST-URI_24-1*']);
         end
 
         if ~isempty(exist_list)

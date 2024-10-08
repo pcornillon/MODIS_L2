@@ -114,9 +114,10 @@ function build_and_fix_orbits( start_date_time, end_date_time, fix_mask, fix_bow
 %           Modified error handling.
 %   2.0.1 - 7/24/2024 - Removed a mess of % % % lines. Commented out an if
 %           group because would never get there.
+%   3.0.0 - 10/7/2024 - Modified to work with Terra as well as Aqua - PCC 
 
 global version_struct
-version_struct.build_and_fix_orbits = '2.0.1';
+version_struct.build_and_fix_orbits = '3.0.0';
 
 % Start with a clean state for globals with the exception of directories.
 % This is necessary when running build_and_fix... from one of the
@@ -181,6 +182,8 @@ global skip_to_start_of_orbit
 
 global med_op
 global pixStartm pixEndm pixStartp pixEndp
+
+global satellite skipCharacters
 
 lofs_of_astericks = '****************************************************************';
 
@@ -438,7 +441,7 @@ yearEnd = year(matEnd);
 % Loop over all years in the range of data and build a new list of granules
 % to consider for this run.
 
-filenamePrefix = 'AQUA_MODIS_';
+filenamePrefix = [satellite '_MODIS_'];
 filenameEnding = '_L2_SST_OBPG_extras.nc4';
 
 jGranule = 0;
@@ -597,7 +600,9 @@ while granule_start_time <= Matlab_end_time
         oinfo(iOrbit).end_time = oinfo(iOrbit).start_time + secs_per_orbit / secs_per_day;
         oinfo(iOrbit).orbit_number = oinfo(iOrbit-1).orbit_number + 1;
 
-        orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+        % % % orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+        % % %     '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
+        orbit_file_name = [satellite '_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
             '_' datestr( oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
 
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...

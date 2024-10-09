@@ -32,10 +32,10 @@ end
 
 % Define directories
 if strfind(satellite, 'AQUA')
-    metadata_dir = '/Volumes/MODIS_L2_Modified/AQUA/Data_from_OBPG_for_PO-DAAC/';
+    metadata_dir = '/Volumes/MODIS_L2_Modified/AQUA/';
     granule_dir = '/Volumes/MODIS_L2_Original/AQUA/';
 elseif strfind(satellite, 'TERRA')
-    metadata_dir = '/Volumes/MODIS_L2_Modified/TERRA/Data_from_OBPG_for_PO-DAAC/';
+    metadata_dir = '/Volumes/MODIS_L2_Modified/TERRA/';
     granule_dir = '/Volumes/MODIS_L2_Original/TERRA/combined/';
 else
     fprintf('You entered %s for the satellite. This is bad, it must be either AQUA or TERRA\n', satellite)
@@ -49,12 +49,12 @@ for year = startYear:endYear
     fprintf('Working on %s at %s\n', yearS, datestr(now))
     
     % Create the metadata list file for the current year
-    metadata_file_list = [metadata_dir 'Logs/' yearS '_' satellite 'metadata_list.txt'];
-    granule_file_list = [granule_dir 'Logs/' yearS '_' satellite 'granule_list.txt'];
+    metadata_file_list = [metadata_dir 'Logs/' yearS '_' satellite '_metadata_list.txt'];
+    granule_file_list = [granule_dir 'Logs/' yearS '_' satellite '_granule_list.txt'];
 
     % Get all metadata files for the current year if the metadata file list does not already exist. 
     if ~exist(metadata_file_list) | override
-        metadata_files = dir( [metadata_dir '/' num2str(year) '/' satellite '_MODIS_' num2str(year) '*_L2_SST_OBPG_extras.nc4']);
+        metadata_files = dir( [metadata_dir 'Data_from_OBPG_for_PO-DAAC/' num2str(year) '/' satellite '_MODIS_' num2str(year) '*_L2_SST_OBPG_extras.nc4']);
         fid_meta = fopen(metadata_file_list, 'w');
 
         for i = 1:length(metadata_files)

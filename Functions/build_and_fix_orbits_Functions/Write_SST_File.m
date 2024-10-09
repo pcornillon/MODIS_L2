@@ -41,11 +41,16 @@ function Write_SST_File( longitude, latitude, SST_In, qual_sst, SST_In_Masked, r
 %   1.0.2 - 6/13/2021 - Changed the valid range for longitude from -360 to
 %           360 to -720 to 720 - PCC
 %   2.0.0 - 5/20/2024 - Added versioning - PCC 
+%   3.0.0 - 10/09/2024 - Added code to write version, oinfo and mem_struct
+%           to a mat file with the same name (but ending in .mat instead of
+%           .nc4) as the orbit data. 
 
 global version_struct
 version_struct.Write_SST_File = '2.0.0';
 
 % globals for the run as a whole.
+
+global mem_count mem_orbit_count mem_print print_dbStack mem_struct diary_filename
 
 global regridded_debug
 
@@ -980,6 +985,23 @@ if nn > 1
         oinfo(iOrbit).ginfo(jGranule).metadata_global_attrib = [];
     end
 end
+
+%% Save version_struct, oinfo(iOrbit) and mem_struct(mem_count) structures for this orbit to a .mat file
+% Writing to a .mat file since netCDF-4 doesn't support structures in a
+% nice way. The file will be saved in the same location as the orbit file
+% with the same name but ending in .mat.
+%
+% Get the output filename for this file.
+
+struct_output_filename = strrep(output_filename, '.nc4', '.mat');
+
+% Extract just the information for this orbit from oinfo and mem_struct
+
+oinfo_this_orbit = oinfo(iOrbit);
+mem_struct_this_orbit = mem_struct(mem_count);
+time_saved = datestr(now);
+
+save(struct_output_filename, 'time_saved', 'oinfo_this_orbit', 'mem_struct_this_orbit', 'version_struct')
 
 %% Submit a batch job to copy the file just written from local to remote storage.
 

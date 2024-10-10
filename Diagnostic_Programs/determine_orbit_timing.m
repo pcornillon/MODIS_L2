@@ -4,7 +4,7 @@
 % orbit in matlab time and the list of granules contributing to the orbit.
 % It will open the OBPG metadata for that file and get the NASA orbit
 % number. From this information it will generate a table of seconds/orbit
-% for the given year. 
+% for the given year.
 
 granule_dir = '/Volumes/MODIS_L2_Modified/AQUA/SST_Orbits/';
 metadata_dir = '/Volumes/MODIS_L2_Modified/AQUA/Data_from_OBPG_for_PO-DAAC/';
@@ -28,31 +28,43 @@ for year=2002:2023
         else
             iOrbit = iOrbit + 1;
 
-            % Get the filename for this orbit.
-            orbit_filename = [orbit_list(1).folder '/' orbitlist(1).folder];
+            jOrbit = 0;
+            while 1==1
+                jOrbit = jOrbit + 1;
 
-            % Get the start time of this orbit.
+                if jOrbit > length(orbit_list)
+                    break
+                else
+                    % Get the filename for this orbit.
+                    orbit_filename = [orbit_list(jOrbit).folder '/' orbit_list(jOrbit).folder];
 
-            DateTime(iOrbit) = ncread( orbit_filename, 'DateTime');
-            matTime(iOrbit) = datenum(1970,1,1,0,0,0) + DateTime(iOrbit) / 86400;
+                    % Get the start time of this orbit.
 
-            % Get the list of filenames
+                    DateTime(iOrbit) = ncread( orbit_filename, 'DateTime');
+                    matTime(iOrbit) = datenum(1970,1,1,0,0,0) + DateTime(iOrbit) / 86400;
 
-            filenames = ncread( orbit_filename, '/contributing_granules/filenames');
-            datetime_string = filenames(1,1:14);
+                    % Get the list of filenames
 
-            % Build the OBPG metadata filename from the first file on the list.
+                    filenames = ncread( orbit_filename, '/contributing_granules/filenames');
+                    datetime_string = filenames(1,1:14);
 
-            OBPG_filename(iOrbit) = [metadata_dir yearS '/AQUA_MODIS_' datetime_string(1:8) 'T' datetime_string(9:16) '_L2_SST_OBPG_extras.nc4'];
+                    % Build the OBPG metadata filename from the first file on the list.
 
-            yearStart = ncread( OBPG_filename(iOrbit), '/scan_line_attributes/year');
-            dayStart = ncread( OBPG_filename(iOrbit), '/scan_line_attributes/day');
-            msecStart = ncread( OBPG_filename(iOrbit), '/scan_line_attributes/msec');
+                    OBPG_filename(iOrbit) = [metadata_dir yearS '/AQUA_MODIS_' datetime_string(1:8) 'T' datetime_string(9:16) '_L2_SST_OBPG_extras.nc4'];
 
-            granule_start_time = datenum( yearStart(1), dayStart(1), msecStart(1)/(1000*86400));
+                    yearStart = ncread( OBPG_filename(iOrbit), '/scan_line_attributes/year');
+                    dayStart = ncread( OBPG_filename(iOrbit), '/scan_line_attributes/day');
+                    msecStart = ncread( OBPG_filename(iOrbit), '/scan_line_attributes/msec');
 
-            NASA_orbit(iOrbit) = ncreadatt( OBPG_filename(iOrbit). '/' 'orbit_number');
+                    granule_start_time = datenum( yearStart(1), dayStart(1), msecStart(1)/(1000*86400));
 
+                    NASA_orbit(iOrbit) = ncreadatt( OBPG_filename(iOrbit). '/' 'orbit_number');
+
+                    if (granule_start_time <= matTime(iOrbit)) & ( (granule_start_time + 5/(60*24)) > matTime(iOrbit))
+                        break
+                    end
+                end
+            end
         end
     end
 end

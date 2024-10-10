@@ -65,7 +65,7 @@ gradStructure.peak_separation_lat = diff(gradStructure.mpy);
 gradStructure.peak_separation = sqrt(gradStructure.peak_separation_lat.^2 + (cosd(latTrough) .* gradStructure.peak_separation_lon).^2) * 111;
 
 if plot_peaks
-    figure(1)
+    figure(201)
     clf
     % plot(gradStructure.peak_separation, linewidth=1)
     % hold on

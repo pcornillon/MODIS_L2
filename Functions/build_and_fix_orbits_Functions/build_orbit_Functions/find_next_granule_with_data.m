@@ -71,9 +71,10 @@ function [status, granule_start_time] = find_next_granule_with_data(granule_star
 %           Removed error message to 630, it has already been addressed in
 %           get_filename. Need to add code to deal with a return from
 %           get_filename indicating no AWS SST file. - PCC
+%   3.0.0 - 10/7/2024 - Modified to work with Terra as well as Aqua - PCC 
 
 global version_struct
-version_struct.find_next_granule_with_data = '2.0.1';
+version_struct.find_next_granule_with_data = '3.0.0';
 
 global s3_expiration_time
 
@@ -99,6 +100,8 @@ global skip_to_start_of_orbit
 % globals used in the other major functions of build_and_fix_orbits.
 
 global iProblem problem_list 
+
+global satellite skipCharacters
 
 fiveMinutesMatTime = 5 / (24 * 60);
 
@@ -327,6 +330,9 @@ while 1==1
                             if (lines_to_skip - possible_num_scan_lines_skip(3,nn)) ~= 0
 
                                 kk = strfind(oinfo(iOrbit).ginfo(iGranule).metadata_name, 'AQUA_MODIS_'); % Used in error statements below.
+                                if isempty(kk)
+                                    kk = strfind(oinfo(iOrbit).ginfo(iGranule).metadata_name, 'TERRA_MODIS_') + 1; % Used in error statements below.
+                                end
 
                                 if lines_to_skip == 10
 

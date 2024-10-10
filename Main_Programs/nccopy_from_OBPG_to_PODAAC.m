@@ -1,3 +1,4 @@
+function nccopy_from_OBPG_to_PO-DAAC( satellite, year_list)
 % nccopy_from_OBPG_to_PO-DAAC - this script will copy data from OBPG files needed to work with PO.DAAC files - PCC
 %
 % Specifically, it will copy year, day, msec, slon, slat, clon, clat, elon,
@@ -7,9 +8,35 @@
 %
 % It will ask for the years to copy and for the starting month and day if
 %  the year is entered with a minus sign.
+%
+% INPUT
+%   satellite - AQUA or TERRA - the satellit for which the metadata is to
+%    be extracted. The satellite names must be all caps.
+%   year_list - a cell array of years; e.g., {'2003' '2008' '2020'] - If 
+%    the first year is negative, it will ask for the starting month and
+%    day, which it will use for that year. All subsequent years will be
+%    completely processed.
+%
+% OUTPUT 
+%   none
+%
+% EXAMPLE
+%   To extract metadata for TERRA for 2000-2002.
+%
+%   nccopy_from_OBPG_to_PO-DAAC( 'TERRA', {'2000' '2001' '2002'})
+
 
 which_dataset = 1;
 datasets = {'combined' 'recover'};
+
+if strcmp(satellite, 'TERRA')
+    skipCharacters = '10';
+elseif strcmp(satellite, 'AQUA')
+    skipCharacters = '11';
+else
+    fprintf('You entered %s as the satellite name but I don''t know this one, it has to be either TERRA or AQUA\n', satellite)
+    return
+end
 
 temp = 0; % For temporary, i.e., partial directories.
 
@@ -17,34 +44,20 @@ temp = 0; % For temporary, i.e., partial directories.
 
 [ret, computer_name] = system('hostname');
 
-% base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+eval(['diary_dir = ''/Users/petercornillon/Dropbox/Data/MODIS_L2/Logs/' satellite '/'';'])
 
 if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')
-%     diary_dir = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Logs/';
-    diary_dir = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-%     base_dir_in = '/Volumes/MODIS-AVHRR/MODIS_L2/';
     base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
-    
-%     base_dir_out = '/Volumes/MSG-GOES-AMSR-MODEL/MODIS_L2/Data_from_OBPG_for_PO-DAAC/';
     base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
 elseif strcmp( deblank(computer_name), 'satdat1.gso.uri.edu')
-    %     diary_dir = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/Logs/';
-%     diary_dir = '/Users/petercornillon/MATLAB/Projects/Temp_for_MODIS_L2/Logs/';
-    diary_dir = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-    % base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
-    base_dir_in = '/Volumes/MODIS_L2_Original/OBPG/';
-
-    % base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-    base_dir_out = '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
+    eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+elseif strcmp( deblank(computer_name), 'satdat1.local')
+    eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
 else
-    %     diary_dir = '/Volumes/Aqua-1/Fronts/MODIS_Aqua_L2/Logs/';
-%     diary_dir = '/Users/petercornillon/MATLAB/Projects/Temp_for_MODIS_L2/Logs/';
-    diary_dir = '/Users/petercornillon/Dropbox/Data/Fronts_test/MODIS_Aqua_L2/Logs/';
-    % base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
-    base_dir_in = '/Volumes/MODIS_L2_Original/OBPG/';
-
-    % base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-    base_dir_out = '/Volumes/MODIS_L2_Modified/OBPG/Data_from_OBPG_for_PO-DAAC/';
+    eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
 end
 
 diary_dir = [ diary_dir, 'Rewrite_OBPG_for_PO-DAAC_' strrep(num2str(now), '.', '_') '.txt'];
@@ -52,9 +65,9 @@ diary(diary_dir)
 
 % Get the year, month and day at which to start processing.
 
-fprintf('\n\nIf the first element in year list is entered with a - in front, then ask\nfor month and day to start. Otherwise, get the month and day of the most\nrecently processed file for this year and determine month and day to start if requested.\n\n')
-
-year_list = input('Enter year(s) to process cell array (e.g., {''2003'' ''2004'' ''2005'' ''2006'' ''2007''}): ');
+% fprintf('\n\nIf the first element in year list is entered with a - in front, then ask\nfor month and day to start. Otherwise, get the month and day of the most\nrecently processed file for this year and determine month and day to start if requested.\n\n')
+% 
+% year_list = input('Enter year(s) to process cell array (e.g., {''2003'' ''2004'' ''2005'' ''2006'' ''2007''}): ');
 
 % If the first element in year list is entered with a - in front, then ask
 %  for month and day to start. Otherwise, get the month and day of the most
@@ -70,14 +83,8 @@ if strfind(year_list{1}, '-')
     day_start = input(['Enter the day to start with ', num2str(month_start) '/' year_list{1} ' (1 for first day or cr): ']);
     if isempty(day_start); day_start = 1; end
 else
-    % if which_dataset == 1
-    %     file_list = dir( [ base_dir_out, year_list{1} '/AQUA*']);
-    %     month_start = 1;
-    %     day_start = 1;
-    % else
-        month_start = 1;
-        day_start = 1;
-    % end
+    month_start = 1;
+    day_start = 1;
 end
 
 % Specify the cutoff date (e.g., files modified after 1st January 2023 would be entered as [2023 1 1 0 0 0]
@@ -109,9 +116,11 @@ for iYear=1:length(year_list) % Loop over years to process .....................
     
     YearS = year_list{iYear};
     if temp
-        temp_file_list = dir([ base_dir_in, datasets{which_dataset} '/temp_' YearS '/AQUA*.nc']);
+        dirArgument = [base_dir_in datasets{which_dataset} '/temp_' YearS '/' satellite '_MODIS*.nc'];
+        temp_file_list = dir(dirArgument);
     else
-        temp_file_list = dir([ base_dir_in, datasets{which_dataset} '/' YearS '/AQUA*.nc']);
+        dirArgument = [base_dir_in datasets{which_dataset} '/' YearS '/' satellite '_MODIS*.nc'];
+        temp_file_list = dir(dirArgument);
     end
 
     % If a cutoff date has been specified filter the file list.
@@ -160,7 +169,7 @@ for iYear=1:length(year_list) % Loop over years to process .....................
         
         % Get year and month to put this granule in the proper directory.
         
-        nn_year = strfind(file_in, 'AQUA_MODIS.') + 11;
+        eval(['nn_year = strfind(' strfindArgument ') + ' skipCharacters ';'])
         YearS = file_in(nn_year:nn_year+3);
         MonthS = file_in(nn_year+4:nn_year+5);
         DayS = file_in(nn_year+6:nn_year+7);

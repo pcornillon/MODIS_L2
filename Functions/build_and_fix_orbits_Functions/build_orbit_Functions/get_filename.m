@@ -43,9 +43,10 @@ function [status, found_one, folder_name, file_name, granule_start_time] = get_f
 %           Changed return code if metadata file not found from 605 to 975,
 %           this should never happen.
 %           Added fiveMinutesMatTime, which was missing. - PCC
+%   3.0.0 - 10/7/2024 - Modified to work with Terra as well as Aqua - PCC 
 
 global version_struct
-version_struct.get_filename = '2.0.1';
+version_struct.get_filename = '3.0.0';
 
 % globals for the run as a whole.
 
@@ -58,6 +59,8 @@ global s3_expiration_time amazon_s3_run
 global secs_per_day secs_per_orbit secs_per_scan_line orbit_length secs_per_granule_minus_10 
 
 global granuleList iGranuleList filenamePrefix filenameEnding numGranules
+
+global satellite skipCharacters
 
 fiveMinutesMatTime = 5 / (24 * 60);
 
@@ -132,7 +135,8 @@ switch file_type
             %   granules_directory = '/Volumes/Aqua-1/MODIS_R2019/combined/';
 
 
-            filename_start = 'AQUA_MODIS.';
+            % % % filename_start = 'AQUA_MODIS.';
+            filename_start = [satellite '_MODIS.'];
             filename_end_day = '.L2.SST.nc';
             filename_end_night = filename_end_day;
 

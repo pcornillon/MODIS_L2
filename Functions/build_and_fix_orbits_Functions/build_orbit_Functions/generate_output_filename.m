@@ -32,9 +32,10 @@ function status = generate_output_filename(build_type)
 %           for version URI_24-1. 
 %   2.0.0 - 5/20/2024 - Modified the logic in a number of places as well as
 %           replaced error statements and error handling - PCC 
+%   3.0.0 - 10/7/2024 - Modified to work with Terra as well as Aqua - PCC 
 
 global version_struct
-version_struct.generate_output_filename = '2.0.0';
+version_struct.generate_output_filename = '3.0.0';
 
 % globals for the run as a whole.
 
@@ -60,6 +61,8 @@ global Matlab_start_time Matlab_end_time
 % globals used in the other major functions of build_and_fix_orbits.
 
 global med_op
+
+global satellite skipCharacters
 
 status = 0;
 
@@ -96,8 +99,10 @@ switch build_type
         else
              oinfo(iOrbit).orbit_number = oinfo(iOrbit).ginfo(iGranule).NASA_orbit_number + 1;
         end
-        
-        orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+
+        % % % orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+        % % %     '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
+        orbit_file_name = [satellite '_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
             '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...
@@ -114,7 +119,9 @@ switch build_type
         oinfo(iOrbit+1).end_time = oinfo(iOrbit+1).start_time + secs_per_orbit / secs_per_day;
         oinfo(iOrbit+1).orbit_number = oinfo(iOrbit).ginfo(end).NASA_orbit_number + 1;
         
-        orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit+1).orbit_number) ...
+        % % % orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit+1).orbit_number) ...
+        % % %     '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
+        orbit_file_name = [satellite '_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit+1).orbit_number) ...
             '_' datestr(oinfo(iOrbit+1).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit+1).name = [output_file_directory_local datestr(oinfo(iOrbit+1).start_time, formatOut.yyyy) '/' ...
@@ -138,7 +145,9 @@ switch build_type
 
         oinfo(iOrbit).orbit_number = round(1920 + (oinfo(iOrbit).start_time - datenum([2002 9 13 0 44 32])) * 86400 / secs_per_orbit);
         
-        orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+        % % % orbit_file_name = ['AQUA_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
+        % % %     '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
+        orbit_file_name = [satellite '_MODIS_orbit_' return_a_string( 6, oinfo(iOrbit).orbit_number) ...
             '_' datestr(oinfo(iOrbit).start_time, formatOut.yyyymmddTHHMMSS) '_L2_SST-URI_24-1'];
         
         oinfo(iOrbit).name = [output_file_directory_local datestr(oinfo(iOrbit).start_time, formatOut.yyyy) '/' ...

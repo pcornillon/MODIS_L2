@@ -44,21 +44,25 @@ temp = 0; % For temporary, i.e., partial directories.
 
 [ret, computer_name] = system('hostname');
 
-eval(['diary_dir = ''/Users/petercornillon/Dropbox/Data/MODIS_L2/Logs/' satellite '/'';'])
+% eval(['diary_dir = ''/Users/petercornillon/Dropbox/Data/MODIS_L2/Logs/' satellite '/'';'])
+eval(['diary_dir = ''/Volumes/MODIS_L2_Modified/' satellite '/Logs/'';'])
 
-if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')
-    base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
-    base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-elseif strcmp( deblank(computer_name), 'satdat1.gso.uri.edu')
-    eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
-elseif strcmp( deblank(computer_name), 'satdat1.local')
-    eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
-else
-    eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
-end
+% % % if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')
+% % %     base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
+% % %     base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
+% % % elseif strcmp( deblank(computer_name), 'satdat1.gso.uri.edu')
+% % %     eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+% % %     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+% % % elseif strcmp( deblank(computer_name), 'satdat1.local')
+% % %     eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+% % %     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+% % % else
+% % %     eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+% % %     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+% % % end
+
+eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
+eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
 
 diary_dir = [ diary_dir, 'Rewrite_OBPG_for_PO-DAAC_' strrep(num2str(now), '.', '_') '.txt'];
 diary(diary_dir)

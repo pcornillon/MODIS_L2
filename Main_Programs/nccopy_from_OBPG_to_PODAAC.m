@@ -34,9 +34,9 @@ which_dataset = 1;
 datasets = {'' 'recover'};
 
 if strcmp(satellite, 'TERRA')
-    skipCharacters = '10';
-elseif strcmp(satellite, 'AQUA')
     skipCharacters = '11';
+elseif strcmp(satellite, 'AQUA')
+    skipCharacters = '10';
 else
     fprintf('You entered %s as the satellite name but I don''t know this one, it has to be either TERRA or AQUA\n', satellite)
     return
@@ -112,7 +112,7 @@ if exist('cutoffDate')
     end
 else
     cutoffDate = '';
-    
+
 end
 
 disp(['Successfully started job submitted for ' year_list{1} ' starting at month ' num2str(month_start) ' and day ' num2str(day_start)])
@@ -182,7 +182,7 @@ for iYear=1:length(year_list) % Loop over years to process .....................
         
         % Get year and month to put this granule in the proper directory.
         
-        eval(['nn_year = strfind(' strfindArgument ') + ' skipCharacters ';'])
+        nn_year =  strfind(file_in, [satellite '_MODIS']) + 2 + str2num(skipCharacters);
         YearS = file_in(nn_year:nn_year+3);
         MonthS = file_in(nn_year+4:nn_year+5);
         DayS = file_in(nn_year+6:nn_year+7);

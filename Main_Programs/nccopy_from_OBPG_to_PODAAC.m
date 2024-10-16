@@ -114,7 +114,7 @@ matlab_start = datenum(str2num(year_list{1}), month_start, day_start);
 
 for iYear=1:length(year_list) % Loop over years to process ......................................
     
-    fprintf('Processing %5.0f \n', convertCharsToStrings(year_list{iYear}))
+    fprintf('Processing %5.0f at %s\n', convertCharsToStrings(year_list{iYear}), datestr(now))
     
     % Get the list of files to consider for processing.
     

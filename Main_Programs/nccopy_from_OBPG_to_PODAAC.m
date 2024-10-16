@@ -1,4 +1,4 @@
-function nccopy_from_OBPG_to_PO-DAAC( satellite, year_list)
+function nccopy_from_OBPG_to_PODAAC( satellite, year_list)
 % nccopy_from_OBPG_to_PO-DAAC - this script will copy data from OBPG files needed to work with PO.DAAC files - PCC
 %
 % Specifically, it will copy year, day, msec, slon, slat, clon, clat, elon,

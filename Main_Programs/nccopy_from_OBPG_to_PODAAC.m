@@ -110,6 +110,9 @@ if exist('cutoffDate')
             relationalOperator = '<';
         end
     end
+else
+    cutoffDate = '';
+    
 end
 
 disp(['Successfully started job submitted for ' year_list{1} ' starting at month ' num2str(month_start) ' and day ' num2str(day_start)])

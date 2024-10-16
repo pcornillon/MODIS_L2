@@ -182,7 +182,7 @@ for iYear=1:length(year_list) % Loop over years to process .....................
         
         % Get year and month to put this granule in the proper directory.
         
-        nn_year =  strfind(file_in, [satellite '_MODIS']) + 2 + str2num(skipCharacters);
+        nn_year =  strfind(file_in, [satellite '_MODIS']) + 1 + str2num(skipCharacters);
         YearS = file_in(nn_year:nn_year+3);
         MonthS = file_in(nn_year+4:nn_year+5);
         DayS = file_in(nn_year+6:nn_year+7);

@@ -1,4 +1,4 @@
-function nccopy_from_OBPG_to_PODAAC( satellite, year_list)
+function nccopy_from_OBPG_to_PODAAC( satellite, year_list, cutoffDate)
 % nccopy_from_OBPG_to_PO-DAAC - this script will copy data from OBPG files needed to work with PO.DAAC files - PCC
 %
 % Specifically, it will copy year, day, msec, slon, slat, clon, clat, elon,
@@ -16,6 +16,10 @@ function nccopy_from_OBPG_to_PODAAC( satellite, year_list)
 %    the first year is negative, it will ask for the starting month and
 %    day, which it will use for that year. All subsequent years will be
 %    completely processed.
+%   cutoffDate - if present only input files created on or after this date
+%    will be processed\nunless the cutoff date is preceeded by a minus sign.
+%    If nothing specified, all files found will be processed. 
+
 %
 % OUTPUT 
 %   none
@@ -27,7 +31,7 @@ function nccopy_from_OBPG_to_PODAAC( satellite, year_list)
 
 
 which_dataset = 1;
-datasets = {'combined' 'recover'};
+datasets = {'' 'recover'};
 
 if strcmp(satellite, 'TERRA')
     skipCharacters = '10';
@@ -91,18 +95,20 @@ else
     day_start = 1;
 end
 
-% Specify the cutoff date (e.g., files modified after 1st January 2023 would be entered as [2023 1 1 0 0 0]
-
-fprintf('\n\nYou can select a cutouff date in the following. Only input files created on or after this date will be processed\nunless the cutoff date is preceeded by a minus sign. If nothing specified, all files found will be processed.\n\n')
-
-cutoffDate = input('Specify the cutoff date as [yyyy mm dd hh mm ss]. Default, no cutoff. Preceeded by - cutoff before otherwise after: '); 
+% % % % Specify the cutoff date (e.g., files modified after 1st January 2023 would be entered as [2023 1 1 0 0 0]
+% % % 
+% % % fprintf('\n\nYou can select a cutouff date in the following. Only input files created on or after this date will be processed\nunless the cutoff date is preceeded by a minus sign. If nothing specified, all files found will be processed.\n\n')
+% % % 
+% % % cutoffDate = input('Specify the cutoff date as [yyyy mm dd hh mm ss]. Default, no cutoff. Preceeded by - cutoff before otherwise after: '); 
 
 relationalOperator = '>=';
 
-if ~isempty(cutoffDate)
-    if cutoffDate(1) < 0
-        cutoffDate = -cutoffDate;
-        relationalOperator = '<';
+if exist('cutoffDate')
+    if ~isempty(cutoffDate)
+        if cutoffDate(1) < 0
+            cutoffDate = -cutoffDate;
+            relationalOperator = '<';
+        end
     end
 end
 

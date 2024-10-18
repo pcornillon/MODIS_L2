@@ -1,4 +1,4 @@
-function nccopy_from_OBPG_to_PODAAC( satellite, year_list, cutoffDate)
+function nccopy_from_OBPG_to_PODAAC( satellite, year_list, archive, cutoffDate)
 % nccopy_from_OBPG_to_PO-DAAC - this script will copy data from OBPG files needed to work with PO.DAAC files - PCC
 %
 % Specifically, it will copy year, day, msec, slon, slat, clon, clat, elon,
@@ -16,6 +16,8 @@ function nccopy_from_OBPG_to_PODAAC( satellite, year_list, cutoffDate)
 %    the first year is negative, it will ask for the starting month and
 %    day, which it will use for that year. All subsequent years will be
 %    completely processed.
+%   archive - 'NAS' or 'MacStudio'. This specifies the location of the
+%    output files.
 %   cutoffDate - if present only input files created on or after this date
 %    will be processed\nunless the cutoff date is preceeded by a minus sign.
 %    If nothing specified, all files found will be processed. 
@@ -51,22 +53,16 @@ temp = 0; % For temporary, i.e., partial directories.
 % eval(['diary_dir = ''/Users/petercornillon/Dropbox/Data/MODIS_L2/Logs/' satellite '/'';'])
 eval(['diary_dir = ''/Volumes/MODIS_L2_Modified/' satellite '/Logs/'';'])
 
-% % % if strcmp( deblank(computer_name), '208.100.10.10.dhcp.uri.edu')
-% % %     base_dir_in = '/Volumes/Aqua-1/MODIS_R2019/';
-% % %     base_dir_out = '/Volumes/Aqua-1/MODIS_R2019/Data_from_OBPG_for_PO-DAAC/';
-% % % elseif strcmp( deblank(computer_name), 'satdat1.gso.uri.edu')
-% % %     eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-% % %     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
-% % % elseif strcmp( deblank(computer_name), 'satdat1.local')
-% % %     eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-% % %     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
-% % % else
-% % %     eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-% % %     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
-% % % end
-
 eval(['base_dir_in = ''/Volumes/MODIS_L2_Original/' satellite '/'';'])
-eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+
+if contains( archive, 'NAS')
+    eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+elseif contains( archive, 'MacStudio')
+    eval(['base_dir_out = ''/Volumes/Aqua-1/MODIS_R2019/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+else
+    fprintf('You specified the archive for the output metadata files as %s, it must be either ''NAS'' or ''MacStudio''.\n', archive)
+    return
+end
 
 diary_dir = [ diary_dir, 'Rewrite_OBPG_for_PO-DAAC_' strrep(num2str(now), '.', '_') '.txt'];
 diary(diary_dir)

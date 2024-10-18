@@ -64,8 +64,8 @@ else
     return
 end
 
-diary_dir = [ diary_dir, 'Rewrite_OBPG_for_PO-DAAC_' strrep(num2str(now), '.', '_') '.txt'];
-diary(diary_dir)
+diary_name = [ diary_dir, 'Rewrite_OBPG_for_PO-DAAC_' strrep(num2str(now), '.', '_') '.txt'];
+diary(diary_name)
 
 % Get the year, month and day at which to start processing.
 

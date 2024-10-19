@@ -160,6 +160,7 @@ for iYear=1:length(year_list) % Loop over years to process .....................
     end
 
     tic
+    numFilesProcessed = 0;
     for iFile=1:length(file_list) % Loop over granules *******************************************
         
         file_in = [file_list(iFile).folder '/' file_list(iFile).name];
@@ -203,6 +204,11 @@ for iYear=1:length(year_list) % Loop over years to process .....................
                     status = system(['/opt/homebrew/bin/nccopy -w -V year,day,msec,slon,slat,clon,clat,elon,elat,csol_z,sstref,qual_sst,flags_sst,tilt ' file_in ' ' file_out]);
                 else
                     status = system(['/usr/local/bin/nccopy -w -V year,day,msec,slon,slat,clon,clat,elon,elat,csol_z,sstref,qual_sst,flags_sst,tilt ' file_in ' ' file_out]);
+                    numFilesProcessed = numFilesProcessed + 1;
+
+                    if rem(numFilesProcessed,10000) == 1
+                        fprintf('*** Have processed %i at %s.\n', numFilesProcessed, datestr(now))
+                    end
                 end
                 
                 if status ~= 0

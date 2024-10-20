@@ -16,8 +16,9 @@ function nccopy_from_OBPG_to_PODAAC( satellite, year_list, archive, cutoffDate)
 %    the first year is negative, it will ask for the starting month and
 %    day, which it will use for that year. All subsequent years will be
 %    completely processed.
-%   archive - 'NAS' or 'MacStudio'. This specifies the location of the
-%    output files.
+%   archive - 'NAS', 'MacStudio' or 'satdat1'. This specifies the location
+%    of the output files. For the MacStudio it will be on Aqua-1 and for
+%    satdat1 it will be in /Users/petercornillon/data.
 %   cutoffDate - if present only input files created on or after this date
 %    will be processed\nunless the cutoff date is preceeded by a minus sign.
 %    If nothing specified, all files found will be processed. 
@@ -59,8 +60,10 @@ if contains( archive, 'NAS')
     eval(['base_dir_out = ''/Volumes/MODIS_L2_Modified/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
 elseif contains( archive, 'MacStudio')
     eval(['base_dir_out = ''/Volumes/Aqua-1/MODIS_R2019/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
+elseif contains( archive, 'satdat1')
+    eval(['base_dir_out = ''/Users/petercornillon/data/' satellite '/Data_from_OBPG_for_PO-DAAC/'';'])
 else
-    fprintf('You specified the archive for the output metadata files as %s, it must be either ''NAS'' or ''MacStudio''.\n', archive)
+    fprintf('You specified the archive for the output metadata files as %s, it must be either ''NAS'', ''MacStudio'' or ''satdat1''.\n', archive)
     return
 end
 

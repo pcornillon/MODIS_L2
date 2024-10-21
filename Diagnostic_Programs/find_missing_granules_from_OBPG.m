@@ -1,3 +1,4 @@
+
 function [iBad, missing_files] = find_missing_granules_from_OBPG(satellite, startYear, endYear)
 % find_missing_granules_from_OBPG - compare filelist from OBPG with that for metadata files to AWS - PCC
 %
